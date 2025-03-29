@@ -1,5 +1,6 @@
 import { useWriteVisualsAuctionEndAuction } from '@/contracts/generated';
 import { useAccount } from 'wagmi';
+import { Button } from '../ui/button';
 
 export default function EndAuctionButton({ auctionId }: { auctionId: any }) {
   const { isConnected, chain } = useAccount();
@@ -13,15 +14,15 @@ export default function EndAuctionButton({ auctionId }: { auctionId: any }) {
   };
 
   return (
-    <div>
-      <button
-        type="button"
-        onClick={action}
-        disabled={!enabled}
-        className={enabled ? '' : 'text-neutral-400'}
-      >
-        [End Auction]
-      </button>
-    </div>
+    <Button
+      type="button"
+      onClick={action}
+      disabled={!enabled}
+      variant={enabled ? "destructive" : "outline"}
+      size="sm"
+      className={!enabled ? "text-gray-400" : ""}
+    >
+      End Auction
+    </Button>
   );
 }
