@@ -6,7 +6,6 @@ import { Button } from '../ui/button';
 export default function FeedButton({ id }: { id: string }) {
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
-
   const feed = useWriteAminalsFeed();
 
   async function action() {
@@ -20,12 +19,11 @@ export default function FeedButton({ id }: { id: string }) {
 
   return (
     <Button
-      type="button"
       onClick={action}
       disabled={!enabled}
-      className={enabled ? '' : 'text-neutral-400'}
+      className="w-full bg-green-600 hover:bg-green-700 text-white"
     >
-      Feed 0.01 ETH
+      🍖 Feed (0.01 ETH)
     </Button>
   );
 }

@@ -16,3 +16,41 @@ query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
     }
   }
 }
+
+query AminalById($aminalId: BigInt) {
+  aminals(where: { aminalId: $aminalId }) {
+    id
+    aminalId
+    mom
+    dad
+    tokenUri
+    energy
+    totalLove
+    breeding
+    lovers {
+      id
+      love
+      user {
+        address
+      }
+    }
+    breedableWith {
+      id
+      aminalTwo {
+        id
+        aminalId
+      }
+    }
+    skills {
+      id
+      skillAddress
+      removed
+    }
+    traits {
+      id
+      visualId
+      catEnum
+      svg
+    }
+  }
+}

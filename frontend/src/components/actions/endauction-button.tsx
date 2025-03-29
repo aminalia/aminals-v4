@@ -1,28 +1,28 @@
 import { useWriteVisualsAuctionEndAuction } from '@/contracts/generated';
-import { useAccount } from 'wagmi';
-import { Button } from '../ui/button';
+import { Web3Button } from '../ui/web3-button';
 
-export default function EndAuctionButton({ auctionId }: { auctionId: any }) {
-  const { isConnected, chain } = useAccount();
-  const enabled = isConnected && chain;
+interface EndAuctionButtonProps {
+  auctionId: bigint | string;
+  className?: string;
+}
+
+export default function EndAuctionButton({ auctionId, className }: EndAuctionButtonProps) {
   const endAuction = useWriteVisualsAuctionEndAuction();
 
-  const action = async () => {
-    if (enabled) {
-      await endAuction.writeContractAsync({ args: [auctionId] });
-    }
+  const handleEndAuction = async () => {
+    await endAuction.writeContractAsync({ 
+      args: [BigInt(auctionId)] 
+    });
   };
 
   return (
-    <Button
-      type="button"
-      onClick={action}
-      disabled={!enabled}
-      variant={enabled ? "destructive" : "outline"}
+    <Web3Button
+      actionMessage="End Auction"
+      connectMessage="Connect to end auction"
+      onAction={handleEndAuction}
+      variant="destructive"
       size="sm"
-      className={!enabled ? "text-gray-400" : ""}
-    >
-      End Auction
-    </Button>
+      className={className}
+    />
   );
 }

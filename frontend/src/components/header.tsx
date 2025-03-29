@@ -29,6 +29,12 @@ export default function Header() {
               asChild
               className={navigationMenuTriggerStyle()}
             >
+              <Link href="/skills">Skills</Link>
+            </NavigationMenuLink>
+            <NavigationMenuLink
+              asChild
+              className={navigationMenuTriggerStyle()}
+            >
               <Link href="/traits">Traits</Link>
             </NavigationMenuLink>
             <NavigationMenuLink
