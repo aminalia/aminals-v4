@@ -1,0 +1,29 @@
+query SkillsList {
+  skills {
+    id
+    aminal {
+      id
+      aminalId
+    }
+    skillAddress
+    removed
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
+
+query SkillById($id: ID!) {
+  skill(id: $id) {
+    id
+    aminal {
+      id
+      aminalId
+    }
+    skillAddress
+    removed
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
