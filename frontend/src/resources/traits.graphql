@@ -1,0 +1,33 @@
+query TraitsList {
+  traits {
+    id
+    visualId
+    catEnum
+    svg
+    creator {
+      id
+      address
+    }
+    aminals {
+      id
+      aminalId
+    }
+  }
+}
+
+query TraitById($id: ID!) {
+  trait(id: $id) {
+    id
+    visualId
+    catEnum
+    svg
+    creator {
+      id
+      address
+    }
+    aminals {
+      id
+      aminalId
+    }
+  }
+}

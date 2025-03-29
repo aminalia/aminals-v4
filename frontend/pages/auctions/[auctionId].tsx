@@ -6,6 +6,7 @@ import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Layout from '../_layout';
+import ProposeButton from '@/components/actions/propose-button';
 
 const AuctionPage: NextPage = () => {
   const router = useRouter();
@@ -160,15 +161,19 @@ const AuctionPage: NextPage = () => {
           </div>
           <BulkVoteButton
             auctionId={auctionId}
-            backId={parts.background[selectedParts.background].visualId}
-            armId={parts.arm[selectedParts.arm].visualId}
-            tailId={parts.tail[selectedParts.tail].visualId}
-            earsId={parts.ears[selectedParts.ears].visualId}
-            bodyId={parts.body[selectedParts.body].visualId}
-            faceId={parts.face[selectedParts.face].visualId}
-            mouthId={parts.mouth[selectedParts.mouth].visualId}
-            miscId={parts.misc[selectedParts.misc].visualId}
+            backId={parts.background[selectedParts.background]?.visualId}
+            armId={parts.arm[selectedParts.arm]?.visualId}
+            tailId={parts.tail[selectedParts.tail]?.visualId}
+            earsId={parts.ears[selectedParts.ears]?.visualId}
+            bodyId={parts.body[selectedParts.body]?.visualId}
+            faceId={parts.face[selectedParts.face]?.visualId}
+            mouthId={parts.mouth[selectedParts.mouth]?.visualId}
+            miscId={parts.misc[selectedParts.misc]?.visualId}
           />
+                    
+          <div className="pt-2">
+            <ProposeButton auctionId={auctionId} />
+          </div>
         </CardContent>
       </Card>
     </Layout>
