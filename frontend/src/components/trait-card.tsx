@@ -1,4 +1,5 @@
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import Link from 'next/link';
 
 interface TraitCardProps {
   trait: {
@@ -9,45 +10,44 @@ interface TraitCardProps {
     creator: {
       address: string;
     };
+    aminals?: {
+      id: string;
+      aminalId: string;
+    }[];
   };
+  aminalCount?: number;
 }
 
-const TraitCard = ({ trait }: TraitCardProps) => {
+const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
   const category =
     TRAIT_CATEGORIES[trait.catEnum as keyof typeof TRAIT_CATEGORIES];
 
   return (
-    <div className="rounded-lg border border-gray-200 shadow-sm bg-white p-6 transition-all hover:shadow-lg">
-      <div className="flex flex-col gap-4">
-        <svg
-          viewBox="0 0 1000 1000"
-          className="w-full h-full"
-          dangerouslySetInnerHTML={{
-            __html: trait?.svg,
-          }}
-        />
+    <Link href={`/traits/${trait.id}`} className="block">
+      <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden transition-all hover:shadow-lg">
+        <div className="aspect-square bg-indigo-50 flex items-center justify-center p-4">
+          <svg
+            viewBox="0 0 1000 1000"
+            className="w-full h-full"
+            dangerouslySetInnerHTML={{
+              __html: trait?.svg,
+            }}
+          />
+        </div>
 
-        <div className="space-y-2">
+        <div className="p-4 space-y-3">
           <div className="flex justify-between items-center">
             <span className="text-lg font-semibold flex items-center gap-2">
               <span className="text-xl">{category.emoji}</span>
-              Trait #{trait.visualId}
+              {category.name} #{trait.visualId}
             </span>
-            <span className="px-2 py-1 text-sm bg-blue-100 text-blue-700 rounded-md">
-              {category.name}
-            </span>
-          </div>
-
-          <div className="text-sm text-gray-600">
-            <span>Created by: </span>
-            <span className="font-mono">
-              {trait.creator.address.slice(0, 6)}...
-              {trait.creator.address.slice(-4)}
-            </span>
+            <div className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs">
+              {aminalCount} {aminalCount === 1 ? 'Aminal' : 'Aminals'}
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
