@@ -36,7 +36,7 @@ const HomePage: NextPage = () => {
                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 flex-wrap">
                   {/* Count */}
                   <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                    {aminals?.length || 0} Aminals found
+                    {aminals?.length || 0} Aminals Born
                   </div>
 
                   <div className="flex flex-wrap gap-3">

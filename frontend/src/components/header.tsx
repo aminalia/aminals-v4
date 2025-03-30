@@ -26,7 +26,7 @@ export default function Header() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/auctions">💕 Breeding</Link>
+                <Link href="/breeding">💕 Breeding</Link>
               </NavigationMenuLink>
               <NavigationMenuLink
                 asChild
@@ -67,7 +67,7 @@ export default function Header() {
             <span className="text-xs mt-1">Aminals</span>
           </Link>
           <Link
-            href="/auctions"
+            href="/breeding"
             className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
           >
             <span className="text-2xl">💕</span>

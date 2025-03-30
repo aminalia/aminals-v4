@@ -49,7 +49,7 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
         <div className="w-full md:w-1/2 p-5">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-3">
-              <Link href={`/auctions/${auction.auctionId}`}>
+              <Link href={`/breeding/${auction.auctionId}`}>
                 <h2 className="text-xl font-bold hover:text-primary transition-colors">
                   <span className="text-xl">💕</span> #{aminalOne.aminalId} × #
                   {aminalTwo.aminalId}
