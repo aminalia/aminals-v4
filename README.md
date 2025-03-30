@@ -11,12 +11,6 @@
 - Aminal filtering (most loved, newest)
 - Trait filtering (most reproduced)
 
-#### Aminal Details Page TODO:
-
-- Show breedableWith info
-- Improve trait list display
-- Show energy
-
 ### Graph TODO
 
 - After successful breeding, remove BreedableWith

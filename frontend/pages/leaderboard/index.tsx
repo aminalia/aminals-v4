@@ -3,7 +3,7 @@ import Layout from '../_layout';
 const LeaderboardPage = () => {
   return (
     <Layout>
-      <div className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-purple-50 to-pink-50 flex items-center justify-center p-4">
+      <div className="min-h-[calc(100vh-4rem)] from-purple-50 to-pink-50 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="text-6xl mb-4 animate-bounce">🏆</div>
 

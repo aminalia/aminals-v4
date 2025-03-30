@@ -12,28 +12,46 @@ const BASE_KEY = 'traits';
 
 export type TraitFilter = 'all' | 'yours';
 export type TraitSort = 'aminals-count' | 'created-at';
+export type CategoryFilter =
+  | 'all'
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7';
 
 type Trait = TraitsListQuery['traits'][number];
 
 export const useTraits = (
   filter: TraitFilter = 'all',
-  sort: TraitSort = 'aminals-count'
+  sort: TraitSort = 'aminals-count',
+  category: CategoryFilter = 'all'
 ) => {
   const { address } = useAccount();
 
   return useQuery<TraitsListQuery['traits']>({
-    queryKey: [BASE_KEY, filter, sort, address],
+    queryKey: [BASE_KEY, filter, sort, category, address],
     queryFn: async () => {
       const response = await execute(TraitsListDocument, {});
       if (response.errors) throw new Error(response.errors[0].message);
 
       let traits = response.data.traits;
 
-      // Apply filter
+      // Apply owner filter
       if (filter === 'yours' && address) {
         traits = traits.filter(
           (trait: Trait) =>
             trait.creator?.address?.toLowerCase() === address?.toLowerCase()
+        );
+      }
+
+      // Apply category filter
+      if (category !== 'all') {
+        traits = traits.filter(
+          (trait: Trait) => trait.catEnum === Number(category)
         );
       }
 

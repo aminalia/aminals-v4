@@ -1,5 +1,11 @@
+import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { cn } from '@/lib/utils';
-import { TraitFilter, TraitSort, useTraits } from '@/resources/traits';
+import {
+  CategoryFilter,
+  TraitFilter,
+  TraitSort,
+  useTraits,
+} from '@/resources/traits';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
@@ -15,8 +21,13 @@ const TraitsPage: NextPage = () => {
   const { address } = useAccount();
   const [filter, setFilter] = useState<TraitFilter>('all');
   const [sort, setSort] = useState<TraitSort>('aminals-count');
+  const [category, setCategory] = useState<CategoryFilter>('all');
 
-  const { data: traits, isLoading: isLoadingTraits } = useTraits(filter, sort);
+  const { data: traits, isLoading: isLoadingTraits } = useTraits(
+    filter,
+    sort,
+    category
+  );
 
   return (
     <Layout>
@@ -82,6 +93,43 @@ const TraitsPage: NextPage = () => {
             </div>
           </div>
 
+          {/* Category Filters */}
+          <div className="overflow-x-auto pb-2">
+            <div className="flex gap-2 min-w-max">
+              <button
+                className={cn(
+                  'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
+                  category === 'all'
+                    ? 'bg-gray-900 text-white hover:bg-gray-800'
+                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                )}
+                onClick={() => setCategory('all')}
+              >
+                <span>🔍</span>
+                <span>All Categories</span>
+              </button>
+
+              {/* Generate a button for each trait category */}
+              {Object.entries(TRAIT_CATEGORIES).map(
+                ([key, { name, emoji }]) => (
+                  <button
+                    key={key}
+                    className={cn(
+                      'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
+                      category === key
+                        ? 'bg-gray-900 text-white hover:bg-gray-800'
+                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                    )}
+                    onClick={() => setCategory(key as CategoryFilter)}
+                  >
+                    <span>{emoji}</span>
+                    <span>{name}</span>
+                  </button>
+                )
+              )}
+            </div>
+          </div>
+
           {isLoadingTraits ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -93,7 +141,7 @@ const TraitsPage: NextPage = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {traits.map((trait) => (
                 <TraitCard
                   key={trait.id}
