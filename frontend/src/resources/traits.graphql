@@ -1,5 +1,5 @@
 query TraitsList {
-  traits {
+  traits(where: { visualId_not: "0" }) {
     id
     visualId
     catEnum

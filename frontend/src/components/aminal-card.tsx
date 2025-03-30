@@ -7,10 +7,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Image from 'next/image';
-import { Aminal } from '../../.graphclient';
-import BreedButton from './actions/breed-button';
-import FeedButton from './actions/feed-button';
 import Link from 'next/link';
+import { Aminal } from '../../.graphclient';
+import FeedButton from './actions/feed-button';
 
 export default function AminalCard({ aminal }: { aminal: Aminal }) {
   return (
@@ -18,17 +17,20 @@ export default function AminalCard({ aminal }: { aminal: Aminal }) {
       <CardMedia className="relative w-full aspect-square overflow-hidden">
         <TokenUriImage tokenUri={aminal.tokenUri} aminalId={aminal.aminalId} />
       </CardMedia>
-      
+
       <CardSection className="border-t flex-1 flex flex-col">
         <CardHeader className="p-4 pb-0">
           <div className="flex items-center justify-between">
             <CardTitle className="text-xl font-bold">
-              <Link href={`/aminals/${aminal.aminalId}`} className="hover:text-blue-600 transition-colors">
+              <Link
+                href={`/aminals/${aminal.aminalId}`}
+                className="hover:text-blue-600 transition-colors"
+              >
                 Aminal #{aminal.aminalId}
               </Link>
             </CardTitle>
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
-              <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+              <span>⚡</span>
               {(aminal.energy / 1e18).toFixed(2)} Energy
             </span>
           </div>
@@ -53,31 +55,9 @@ export default function AminalCard({ aminal }: { aminal: Aminal }) {
             )}
           </div>
 
-          {/* Breeding Info */}
-          {aminal.breedableWith.length > 0 && (
-            <div>
-              <div className="text-sm font-medium text-gray-500 mb-1.5">
-                Breedable with
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {aminal.breedableWith.map((buddy) => (
-                  buddy && (
-                    <span
-                      key={buddy.aminalTwo.aminalId}
-                      className="px-2 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-700"
-                    >
-                      #{buddy.aminalTwo.aminalId}
-                    </span>
-                  )
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Actions */}
           <div className="flex flex-col gap-2 mt-auto pt-3">
             <FeedButton id={aminal.aminalId} />
-            <BreedButton id={aminal.aminalId} />
           </div>
         </CardContent>
       </CardSection>
@@ -86,22 +66,31 @@ export default function AminalCard({ aminal }: { aminal: Aminal }) {
 }
 
 interface TokenUriImageProps {
-  tokenUri: string;
-  aminalId: string;
+  tokenUri?: string;
+  aminalId?: string;
+  aminal?: any;
 }
 
-function TokenUriImage({ tokenUri, aminalId }: TokenUriImageProps) {
+export function TokenUriImage({
+  tokenUri,
+  aminalId,
+  aminal,
+}: TokenUriImageProps) {
+  // If aminal is provided, extract tokenUri and aminalId from it
+  const finalTokenUri = tokenUri || (aminal && aminal.tokenUri);
+  const finalAminalId = aminalId || (aminal && aminal.aminalId);
+
   let image,
     error = null;
   try {
-    const base64Payload = tokenUri.split(',')[1];
+    const base64Payload = finalTokenUri.split(',')[1];
     const decodedJsonString = atob(base64Payload);
     const json = JSON.parse(decodedJsonString);
     image = json.image;
   } catch (e) {
     error = e;
   }
-  
+
   if (error || !image) {
     return (
       <div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400">
@@ -112,15 +101,17 @@ function TokenUriImage({ tokenUri, aminalId }: TokenUriImageProps) {
       </div>
     );
   }
-  
+
   return (
-    <Image 
-      src={image} 
-      alt={`Aminal #${aminalId}`}
-      fill
-      className="object-cover"
-      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
-      priority
-    />
+    <div className="relative w-full h-full flex items-center justify-center">
+      <Image
+        src={image}
+        alt={`Aminal #${finalAminalId}`}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+        priority
+      />
+    </div>
   );
 }

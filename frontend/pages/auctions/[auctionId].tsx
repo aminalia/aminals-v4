@@ -1,12 +1,13 @@
 import BulkVoteButton from '@/components/actions/bulk-vote-button';
+import ProposeButton from '@/components/actions/propose-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import VisualsList from '@/components/visuals-list';
 import { useAuction, useAuctionProposeVisuals } from '@/resources/auctions';
 import type { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import Layout from '../_layout';
-import ProposeButton from '@/components/actions/propose-button';
 
 const AuctionPage: NextPage = () => {
   const router = useRouter();
@@ -170,10 +171,12 @@ const AuctionPage: NextPage = () => {
             mouthId={parts.mouth[selectedParts.mouth]?.visualId}
             miscId={parts.misc[selectedParts.misc]?.visualId}
           />
-                    
+
           <div className="pt-2">
-            <ProposeButton auctionId={auctionId} />
+            <ProposeButton auctionId={auctionId as string} />
           </div>
+
+          <VisualsList auctionId={auctionId as string} />
         </CardContent>
       </Card>
     </Layout>
