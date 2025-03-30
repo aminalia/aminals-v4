@@ -32,19 +32,13 @@ export default function Header() {
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
-                <Link href="/skills">⚡ Skills</Link>
+                <Link href="/leaderboard">🏆 Leaderboard</Link>
               </NavigationMenuLink>
               <NavigationMenuLink
                 asChild
                 className={navigationMenuTriggerStyle()}
               >
                 <Link href="/traits">🧬 Traits</Link>
-              </NavigationMenuLink>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/visuals">🎨 Visuals</Link>
               </NavigationMenuLink>
             </NavigationMenuItem>
             <NavigationMenuItem>
@@ -66,6 +60,13 @@ export default function Header() {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-sm border-t z-50 shadow-lg">
         <div className="grid grid-cols-4 gap-1 p-2">
           <Link
+            href="/"
+            className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
+          >
+            <span className="text-2xl">👾</span>
+            <span className="text-xs mt-1">Aminals</span>
+          </Link>
+          <Link
             href="/auctions"
             className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
           >
@@ -73,11 +74,11 @@ export default function Header() {
             <span className="text-xs mt-1">Breeding</span>
           </Link>
           <Link
-            href="/skills"
+            href="/leaderboard"
             className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
           >
-            <span className="text-2xl">⚡</span>
-            <span className="text-xs mt-1">Skills</span>
+            <span className="text-2xl">🏆</span>
+            <span className="text-xs mt-1">Leaderboard</span>
           </Link>
           <Link
             href="/traits"
@@ -85,13 +86,6 @@ export default function Header() {
           >
             <span className="text-2xl">🧬</span>
             <span className="text-xs mt-1">Traits</span>
-          </Link>
-          <Link
-            href="/visuals"
-            className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
-          >
-            <span className="text-2xl">🎨</span>
-            <span className="text-xs mt-1">Visuals</span>
           </Link>
         </div>
       </nav>

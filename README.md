@@ -2,20 +2,26 @@
 
 ### UI TODO:
 
-- Create new trait
+- UI to create new trait
 - Only show end auction button if auction is endable
 - Add traits to a breeding aminal
 - Update values after a successful tx
-- Auctions should have a different name?
-- Visuals -> kill, put voting on traits somewhere else
-- Trait leader board (what do we need to index?)
+- Toast for TXs
 - Show zero traits on breeding?
-- Hide trait zero in trait library
+- Aminal filtering (most loved, newest)
+- Trait filtering (most reproduced)
+
+#### Aminal Details Page TODO:
+
+- Show breedableWith info
+- Improve trait list display
+- Show energy
 
 ### Graph TODO
 
 - After successful breeding, remove BreedableWith
 - Not sure if new visual proposals are fully working...
+- Figure out what we need to index to make an MVP leaderboard (most love given, most loved, most successful traits)
 
 ### Contracts TODO
 

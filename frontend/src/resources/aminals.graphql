@@ -9,6 +9,7 @@ query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
       love
     }
     totalLove
+    blockTimestamp
     breedableWith {
       aminalTwo {
         aminalId
@@ -27,6 +28,7 @@ query AminalById($aminalId: BigInt) {
     energy
     totalLove
     breeding
+    blockTimestamp
     lovers {
       id
       love
