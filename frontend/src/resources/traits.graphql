@@ -28,6 +28,9 @@ query TraitById($id: ID!) {
     aminals {
       id
       aminalId
+      tokenUri
+      totalLove
+      energy
     }
   }
 }

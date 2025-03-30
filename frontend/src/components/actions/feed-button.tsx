@@ -21,7 +21,7 @@ export default function FeedButton({ id }: { id: string }) {
     <Button
       onClick={action}
       disabled={!enabled}
-      className="w-full bg-green-600 hover:bg-green-700 text-white"
+      className="w-full rounded-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5"
     >
       🍖 Feed (0.01 ETH)
     </Button>
