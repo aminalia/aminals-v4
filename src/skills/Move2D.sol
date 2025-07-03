@@ -3,12 +3,12 @@ pragma solidity ^0.8.20;
 
 import "forge-std/console.sol";
 
-import {Aminals} from "src/Aminals.sol";
-import {IAminal} from "src/IAminal.sol";
+import {AminalFactory} from "src/AminalFactory.sol";
+import {Aminal} from "src/Aminal.sol";
 import {ISkill} from "src/skills/ISkills.sol";
 
 contract Move2D is ISkill {
-    address public aminals;
+    AminalFactory public factory;
 
     mapping(uint256 aminalId => Coordinates2D coords) public Coords2D;
 
@@ -17,12 +17,12 @@ contract Move2D is ISkill {
         uint256 y;
     }
 
-    constructor(address _aminals) {
-        aminals = _aminals;
+    constructor(address _factory) {
+        factory = AminalFactory(_factory);
     }
 
     function useSkill(address, uint256 aminalId, bytes calldata data) public payable returns (uint256 squeak) {
-        require(msg.sender == aminals);
+        require(factory.isAminal(msg.sender), "Only Aminal contracts can call this");
         (uint256 x, uint256 y) = abi.decode(data, (uint256, uint256));
         console.log("request to move to x = ", x, " & y = ", y);
         return _move2D(aminalId, x, y);

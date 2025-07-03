@@ -17,10 +17,17 @@ import {ISkill} from "src/skills/ISkills.sol";
 import {VisualsAuction} from "src/utils/VisualsAuction.sol";
 import {GenesNFT} from "src/nft/GenesNFT.sol";
 
-contract Aminals is IAminal, ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializable, Ownable {
+contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializable, Ownable {
     mapping(uint256 aminalId => Aminal aminal) public aminals;
     uint256 public lastAminalId;
     VisualsAuction public visualsAuction;
+    
+    error NotEnoughEther();
+    error NotEnoughLove();
+    error NotEnoughEnergy();
+    error NotRegisteredSkill();
+    error OnlyFactory();
+    error AminalDoesNotExist();
 
     mapping(address => bool) public skills;
 
@@ -171,6 +178,7 @@ contract Aminals is IAminal, ERC721S("Aminals", "AMINALS"), AminalsDescriptor, I
         require(aminals[aminalID].exists, "Aminal does not exist");
         return dataURI(aminalID);
     }
+
 
     function getAminalLoveTotal(uint256 aminalID) public view returns (uint256) {
         Aminal storage aminal = aminals[aminalID];
