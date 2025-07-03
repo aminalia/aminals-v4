@@ -5,9 +5,10 @@ pragma solidity ^0.8.20;
 
 import {Base64} from "src/utils/Base64.sol";
 import {IAminal} from "src/IAminal.sol";
+import {IAminalStructs} from "src/IAminalStructs.sol";
 import {NFTDescriptor} from "src/nft/NFTDescriptor.sol";
 
-abstract contract AminalsDescriptor is IAminal, NFTDescriptor {
+abstract contract AminalsDescriptor is IAminalStructs, NFTDescriptor {
     uint8 private constant _ADDRESS_LENGTH = 20;
     bytes16 private constant _SYMBOLS = "0123456789abcdef";
 

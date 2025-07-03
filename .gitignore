@@ -22,3 +22,10 @@ build
 
 # Mac OS
 .DS_STORE
+
+# Claude Code
+anvil
+cast
+chisel
+forge
+foundry.tar.gz
