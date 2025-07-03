@@ -7,71 +7,111 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Aminal } from '../../.graphclient';
-import BreedButton from './actions/breed-button';
 import FeedButton from './actions/feed-button';
 
 export default function AminalCard({ aminal }: { aminal: Aminal }) {
   return (
-    <Card>
-      <CardMedia>
-        <TokenUriImage tokenUri={aminal.tokenUri} />
+    <Card className="overflow-hidden rounded-xl transition-all hover:shadow-lg flex flex-col h-full border border-gray-200 bg-white">
+      <CardMedia className="relative w-full aspect-square overflow-hidden">
+        <TokenUriImage tokenUri={aminal.tokenUri} aminalId={aminal.aminalId} />
       </CardMedia>
-      <CardSection>
-        <CardHeader>
-          <CardTitle>Aminal #{aminal.aminalId}</CardTitle>
-          {/* <CardDescription>{aminal.name}</CardDescription> */}
-        </CardHeader>
-        <CardContent>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <table>
-              <td>
-                <b>Informations:</b>
-                <br />
-                Love: {aminal.totalLove / 1e18}
-                <br />
-                {aminal.lovers[0] && (
-                  <>
-                    Love for YOU: {aminal.lovers[0].love / 1e18}
-                    <br />
-                  </>
-                )}
-                Energy: {aminal.energy / 1e18}
-                <br />
-                Breedable with:{' '}
-                {aminal.breedableWith.map((lovebuddy) => (
-                  <>{lovebuddy?.aminalTwo.aminalId}, </>
-                ))}
-              </td>
-            </table>
 
+      <CardSection className="border-t flex-1 flex flex-col">
+        <CardHeader className="p-4 pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-xl font-bold">
+              <Link
+                href={`/aminals/${aminal.aminalId}`}
+                className="hover:text-blue-600 transition-colors"
+              >
+                Aminal #{aminal.aminalId}
+              </Link>
+            </CardTitle>
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
+              <span>⚡</span>
+              {(aminal.energy / 1e18).toFixed(2)} Energy
+            </span>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4 space-y-4 flex-1 flex flex-col">
+          {/* Stats */}
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
             <div>
-              <b>Actions:</b>
-              <br />
-              <FeedButton id={aminal.aminalId} />
-              <BreedButton id={aminal.aminalId} />
+              <div className="text-sm text-gray-500">Total Love</div>
+              <div className="text-lg font-semibold text-pink-600">
+                ❤️ {(aminal.totalLove / 1e18).toFixed(2)}
+              </div>
             </div>
+            {aminal.lovers[0] && (
+              <div>
+                <div className="text-sm text-gray-500">Your Love</div>
+                <div className="text-lg font-semibold text-pink-600">
+                  ❤️ {(aminal.lovers[0].love / 1e18).toFixed(2)}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex flex-col gap-2 mt-auto pt-2">
+            <FeedButton id={aminal.aminalId} />
           </div>
         </CardContent>
-        {/* <CardFooter></CardFooter> */}
       </CardSection>
     </Card>
   );
 }
 
-function TokenUriImage({ tokenUri }: { tokenUri: string }) {
+interface TokenUriImageProps {
+  tokenUri?: string;
+  aminalId?: string;
+  aminal?: any;
+}
+
+export function TokenUriImage({
+  tokenUri,
+  aminalId,
+  aminal,
+}: TokenUriImageProps) {
+  // If aminal is provided, extract tokenUri and aminalId from it
+  const finalTokenUri = tokenUri || (aminal && aminal.tokenUri);
+  const finalAminalId = aminalId || (aminal && aminal.aminalId);
+
   let image,
     error = null;
   try {
-    const base64Payload = tokenUri.split(',')[1];
+    const base64Payload = finalTokenUri.split(',')[1];
     const decodedJsonString = atob(base64Payload);
     const json = JSON.parse(decodedJsonString);
     image = json.image;
   } catch (e) {
     error = e;
   }
+
   if (error || !image) {
-    return <span className="text-gray-400">Unable to load image</span>;
+    return (
+      <div className="flex items-center justify-center w-full h-full bg-gray-100 text-gray-400">
+        <div className="text-center">
+          <div className="text-4xl mb-2">🖼️</div>
+          <div className="text-sm">Unable to load image</div>
+        </div>
+      </div>
+    );
   }
-  return <Image src={image} alt="Aminal" width={200} height={200} />;
+
+  return (
+    <div className="relative w-full h-full flex items-center justify-center bg-indigo-50">
+      <Image
+        src={image}
+        alt={`Aminal #${finalAminalId}`}
+        fill
+        className="object-contain"
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 25vw"
+        priority
+      />
+    </div>
+  );
 }
