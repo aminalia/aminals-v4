@@ -162,7 +162,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         // Direct call to skill should fail
         vm.prank(alice);
         vm.expectRevert("Only Aminal contracts can call this");
-        move2DSkill.useSkill{value: 0.001 ether}(alice, 0, skillData);
+        move2DSkill.useSkill{value: 0.001 ether}(alice, address(0), skillData);
         
         // Call through Aminal should work
         vm.prank(alice);

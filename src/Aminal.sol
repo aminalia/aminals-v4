@@ -111,7 +111,7 @@ contract Aminal is IAminalStructs, ERC721S {
             revert NotRegisteredSkill();
         }
         
-        uint256 squeakCost = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, aminalIndex, data);
+        uint256 squeakCost = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, address(this), data);
         
         if (squeakCost > 0) {
             if (energy >= squeakCost) {
