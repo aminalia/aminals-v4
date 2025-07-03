@@ -9,12 +9,10 @@ import { Input } from '../ui/input';
 export default function BreedButton({ id }: { id: string }) {
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
-
   const [breedWithId, setBreedWithId] = useState<string>('');
   const breedWith = useWriteAminalsBreedWith();
 
   async function action() {
-    console.log('breedWithId', breedWithId);
     if (enabled && isBigInt(breedWithId)) {
       await breedWith.writeContractAsync({
         args: [BigInt(id), BigInt(breedWithId)],
@@ -23,20 +21,23 @@ export default function BreedButton({ id }: { id: string }) {
     }
   }
 
-  const handleBreedWithIdChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setBreedWithId(event.target.value);
-  };
-
   return (
-    <div>
-      <Input placeholder="ID of the mate" onChange={handleBreedWithIdChange} />
+    <div className="flex gap-2">
+      <Input 
+        placeholder="Enter mate ID" 
+        value={breedWithId}
+        onChange={(e) => setBreedWithId(e.target.value)}
+        type="number"
+        min="0"
+        className="flex-1"
+      />
       <Button
-        type="button"
         onClick={action}
-        disabled={!enabled}
-        className={enabled ? '' : 'text-neutral-400'}
+        disabled={!enabled || !breedWithId}
+        variant="outline"
+        className="whitespace-nowrap"
       >
-        Breed
+        Breed (0.001 ETH)
       </Button>
     </div>
   );
