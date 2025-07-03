@@ -6,8 +6,9 @@ import "forge-std/console.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {ISkill} from "src/skills/ISkills.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
+import {ERC721S} from "src/nft/ERC721S.sol";
 
-contract Aminal is IAminalStructs {
+contract Aminal is IAminalStructs, ERC721S {
     AminalFactory public immutable factory;
     
     address public immutable momAddress;
@@ -45,7 +46,7 @@ contract Aminal is IAminalStructs {
         address _dadAddress,
         Visuals memory _visuals,
         uint256 _aminalIndex
-    ) {
+    ) ERC721S("Aminal", "AMINAL") {
         factory = AminalFactory(_factory);
         momAddress = _momAddress;
         dadAddress = _dadAddress;
@@ -54,6 +55,9 @@ contract Aminal is IAminalStructs {
         
         // Initial energy for new Aminal
         energy = 50 * 10**18;
+        
+        // Mint the NFT to the factory (which will transfer to the actual owner)
+        _mint(address(_factory), 1);
     }
     
     function feed() external payable returns (uint256) {
@@ -125,6 +129,11 @@ contract Aminal is IAminalStructs {
         breedableWith[partner] = false;
     }
     
+    function transferToOwner(address to) external onlyFactory {
+        require(to != address(0), "Invalid recipient");
+        transferFrom(address(factory), to, 1);
+    }
+    
     function _adjustLove(uint256 love, address user, bool increment) internal {
         if (increment) {
             lovePerUser[user] += love;
@@ -185,7 +194,8 @@ contract Aminal is IAminalStructs {
     }
     
     // Generate token URI using factory's descriptor
-    function tokenURI() external view returns (string memory) {
+    function tokenURI(uint256 id) public view override returns (string memory) {
+        require(id == 1, "Token does not exist");
         return factory.dataURI(aminalIndex);
     }
     
