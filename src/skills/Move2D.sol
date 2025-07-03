@@ -10,7 +10,7 @@ import {ISkill} from "src/skills/ISkills.sol";
 contract Move2D is ISkill {
     AminalFactory public factory;
 
-    mapping(uint256 aminalId => Coordinates2D coords) public Coords2D;
+    mapping(address aminalContract => Coordinates2D coords) public Coords2D;
 
     struct Coordinates2D {
         uint256 x;
@@ -21,11 +21,11 @@ contract Move2D is ISkill {
         factory = AminalFactory(_factory);
     }
 
-    function useSkill(address, uint256 aminalId, bytes calldata data) public payable returns (uint256 squeak) {
+    function useSkill(address, uint256, bytes calldata data) public payable returns (uint256 squeak) {
         require(factory.isAminal(msg.sender), "Only Aminal contracts can call this");
         (uint256 x, uint256 y) = abi.decode(data, (uint256, uint256));
         console.log("request to move to x = ", x, " & y = ", y);
-        return _move2D(aminalId, x, y);
+        return _move2D(msg.sender, x, y);
     }
 
     // Getters
@@ -33,17 +33,17 @@ contract Move2D is ISkill {
         return abi.encode(x, y);
     }
 
-    function getCoords(uint256 aminalID) public view returns (uint256, uint256) {
-        return (Coords2D[aminalID].x, Coords2D[aminalID].y);
+    function getCoords(address aminalContract) public view returns (uint256, uint256) {
+        return (Coords2D[aminalContract].x, Coords2D[aminalContract].y);
     }
 
     // Internal functions
-    function _move2D(uint256 aminalID, uint256 x, uint256 y) internal returns (uint256 squeak) {
+    function _move2D(address aminalContract, uint256 x, uint256 y) internal returns (uint256 squeak) {
         // replace with squeak calc based on distance
         squeak = 2;
 
-        Coords2D[aminalID].x = x;
-        Coords2D[aminalID].y = y;
+        Coords2D[aminalContract].x = x;
+        Coords2D[aminalContract].y = y;
         console.log("still alive!");
         return squeak;
     }

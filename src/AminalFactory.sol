@@ -126,6 +126,22 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
     }
     
+    // For testing purposes - allows owner to spawn additional Aminals
+    function spawnAminalForTesting(
+        address momAddress,
+        address dadAddress,
+        uint256 backId,
+        uint256 armId,
+        uint256 tailId,
+        uint256 earsId,
+        uint256 bodyId,
+        uint256 faceId,
+        uint256 mouthId,
+        uint256 miscId
+    ) external onlyOwner returns (address) {
+        return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
+    }
+    
     function _spawnAminal(
         address momAddress,
         address dadAddress,

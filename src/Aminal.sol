@@ -68,9 +68,16 @@ contract Aminal is IAminalStructs, ERC721S {
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
         _adjustLove(amount, feeder, true);
         
-        uint256 gap = 10**18 - energy;
-        uint256 delta = (amount * gap) / 10**18;
-        energy += delta;
+        // Calculate energy increase, capping at maximum energy
+        uint256 maxEnergy = 100 * 10**18; // Set max energy to 100
+        uint256 delta = 0;
+        
+        if (energy < maxEnergy) {
+            uint256 gap = maxEnergy - energy;
+            delta = (amount * gap) / 10**18;
+            if (delta > gap) delta = gap; // Don't exceed max energy
+            energy += delta;
+        }
         
         emit FeedAminal(feeder, amount, lovePerUser[feeder], totalLove, energy);
         return delta;
@@ -129,10 +136,8 @@ contract Aminal is IAminalStructs, ERC721S {
         breedableWith[partner] = false;
     }
     
-    function transferToOwner(address to) external onlyFactory {
-        require(to != address(0), "Invalid recipient");
-        transferFrom(address(factory), to, 1);
-    }
+    // Note: Aminals are soulbound NFTs and cannot be transferred
+    // The NFT remains owned by the factory for identification purposes
     
     function _adjustLove(uint256 love, address user, bool increment) internal {
         if (increment) {

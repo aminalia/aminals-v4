@@ -150,7 +150,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         aminal.callSkill{value: 0.001 ether}(address(move2DSkill), skillData);
         
         // Check that the skill was executed
-        (uint256 x, uint256 y) = move2DSkill.getCoords(0);
+        (uint256 x, uint256 y) = move2DSkill.getCoords(aminalAddress);
         assertEq(x, 10);
         assertEq(y, 20);
         
