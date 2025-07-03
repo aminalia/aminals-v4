@@ -9,10 +9,12 @@ import {IAminalStructs} from "src/IAminalStructs.sol";
 
 error OnlyAminalsNFT();
 error OnlyNFTOwner();
+error OnlyFactory();
 error AlreadySetup();
 
 contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
     address public aminalsNFT;
+    address public geneFactory;
     uint256 public currentId;
     mapping(uint256 id => string) public geneSVGs;
     mapping(uint256 id => IAminalStructs.VisualsCat) public geneVisualsCat;
@@ -22,7 +24,18 @@ contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
         _;
     }
 
+    modifier onlyFactory() {
+        if (msg.sender != geneFactory) revert OnlyFactory();
+        _;
+    }
+
+    modifier onlyAminalsNFTOrFactory() {
+        if (msg.sender != aminalsNFT && msg.sender != geneFactory) revert OnlyFactory();
+        _;
+    }
+
     event Setup(address aminalsNFT);
+    event FactorySet(address geneFactory);
 
     constructor() Initializable() Ownable() {}
 
@@ -32,25 +45,24 @@ contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
         emit Setup(aminalsNFT_);
     }
 
-    // TODO: Pass in SVG code upon minting
-    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
-        external
-        onlyAminalsNFT
-    {
-        geneSVGs[currentId] = geneSVG;
-        geneVisualsCat[currentId] = visualsCategory;
-
-        ++currentId;
-        _mint(to, currentId);
+    function setFactory(address geneFactory_) external onlyOwner {
+        geneFactory = geneFactory_;
+        emit FactorySet(geneFactory_);
     }
 
-    // TODO: Make this NFT non-transferable upon calling e.g. addFace(), make it
-    // transferable after it's accepted in the VisualRegistry (VisualRegistry
-    // acceptance is not implemented yet, it's auto-accepted. Eventually it will
-    // be accepted by Aminals voting)
-    // NOTE: Right now, all of the NFTs are transferable. Soulbound NFTs are not
-    // yet implemented.
-    function makeTransferable(uint256 id) external onlyAminalsNFT {}
+    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
+        external
+        onlyAminalsNFTOrFactory
+    {
+        uint256 tokenId = currentId;
+        geneSVGs[tokenId] = geneSVG;
+        geneVisualsCat[tokenId] = visualsCategory;
+
+        ++currentId;
+        _mint(to, tokenId);
+    }
+
+    // Gene NFTs are always transferable - no soulbound mechanism
 
     // Can only be burnt by the holder
     function burn(uint256 id) external {
@@ -60,5 +72,15 @@ contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
 
     function tokenURI(uint256 id) public view override returns (string memory) {
         return string(abi.encodePacked("GENE_SVG_PLACEHOLDER"));
+    }
+
+    /**
+     * @notice Get Gene NFT information
+     */
+    function getGeneInfo(uint256 id) external view returns (
+        string memory svg,
+        IAminalStructs.VisualsCat category
+    ) {
+        return (geneSVGs[id], geneVisualsCat[id]);
     }
 }

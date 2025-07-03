@@ -329,7 +329,7 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
     // Calls useSkill on an aminal skill
     function callSkill(uint256 aminalId, address skillAddress, bytes calldata data) public payable {
         require(skills[skillAddress] == true, "Skill does not exist");
-        uint256 amount = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, aminalId, data);
+        uint256 amount = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, address(uint160(aminalId)), data);
         console.log("Call Skill pubilc function (ABOUT TO SQUEEK) for ", amount);
         squeak(aminalId, amount);
     }
@@ -342,7 +342,7 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
         require(skills[msg.sender] == true, "callSkillInternal can only be called by a registered skill");
         require(skills[skillAddress] == true, "Skill does not exist");
         console.log("calling UseSkill externally with msg.value == ", msg.value);
-        uint256 amount = ISkill(skillAddress).useSkill{value: msg.value}(sender, aminalId, data);
+        uint256 amount = ISkill(skillAddress).useSkill{value: msg.value}(sender, address(uint160(aminalId)), data);
         console.log("Call Skill Internal (about to squeak) amount === ", amount);
         squeak(aminalId, amount);
     }
