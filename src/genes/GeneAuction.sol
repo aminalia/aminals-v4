@@ -8,8 +8,8 @@ import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
 
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {IAminalFactory} from "src/IAminalFactory.sol";
-import {GenesNFT} from "src/nft/GenesNFT.sol";
-import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
+import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 
 /**
  * @title GeneAuction

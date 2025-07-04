@@ -4,7 +4,7 @@ import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {IAminal} from "src/IAminal.sol";
 import {Aminal} from "src/Aminal.sol";
-import {GeneAuction} from "src/utils/GeneAuction.sol";
+import {GeneAuction} from "src/genes/GeneAuction.sol";
 
 contract BreedAminal is Script {
     function run() external {

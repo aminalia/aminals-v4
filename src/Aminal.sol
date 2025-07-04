@@ -7,7 +7,7 @@ import {IAminalStructs} from "src/IAminalStructs.sol";
 import {ISkill} from "src/skills/ISkills.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {ERC721} from "oz/token/ERC721/ERC721.sol";
-import {GeneBasedDescriptor} from "src/nft/GeneBasedDescriptor.sol";
+import {GeneBasedDescriptor} from "src/genes/GeneBasedDescriptor.sol";
 
 contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     AminalFactory public immutable factory;

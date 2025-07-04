@@ -5,8 +5,8 @@ pragma solidity ^0.8.20;
 
 import {Base64} from "src/utils/Base64.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
-import {GenesNFT} from "src/nft/GenesNFT.sol";
-import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
+import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 
 abstract contract GeneBasedDescriptor is IAminalStructs {
     uint8 private constant _ADDRESS_LENGTH = 20;
