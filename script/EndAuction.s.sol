@@ -11,17 +11,20 @@ contract EndAuction is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
+        AminalFactory factory = AminalFactory(
+            address(vm.envAddress("AMINAL_FACTORY_CONTRACT"))
+        );
         GeneAuction geneAuction = GeneAuction(factory.geneAuction());
 
         // Display info for existing Aminals
         for (uint256 i = 0; i < factory.totalAminals() && i < 2; i++) {
             address aminalAddress = factory.aminalsByIndex(i);
             Aminal aminal = Aminal(payable(aminalAddress));
-            
+
             console.log("Aminal Address:", aminalAddress);
             console.log(
-                "Aminal love by user:", aminal.getLoveByUser(address(vm.envAddress("ADDRESS")))
+                "Aminal love by user:",
+                aminal.getLoveByUser(address(vm.envAddress("ADDRESS")))
             );
             console.log("Aminal total love:", aminal.getTotalLove());
         }
@@ -29,14 +32,16 @@ contract EndAuction is Script {
         // End a specific auction (replace 3 with actual auction ID)
         uint256 auctionId = 3;
         console.log("Ending auction ID:", auctionId);
-        
+
         // Note: This will depend on the specific auction implementation
         // The Gene Auction system may have different methods than the old VisualsAuction
-        
+
         // Check auction status first
-        // geneAuction.endAuction(auctionId);
-        
-        console.log("Note: Gene Auction system implementation may differ from VisualsAuction");
+        geneAuction.settleAuction(auctionId);
+
+        console.log(
+            "Note: Gene Auction system implementation may differ from VisualsAuction"
+        );
         console.log("Please verify auction methods before running this script");
 
         vm.stopBroadcast();

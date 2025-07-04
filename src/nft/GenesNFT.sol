@@ -6,13 +6,14 @@ import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
 import {IAminalStructs} from "src/IAminalStructs.sol";
+import {Base64} from "src/utils/Base64.sol";
 
 error OnlyAminalsNFT();
 error OnlyNFTOwner();
 error OnlyFactory();
 error AlreadySetup();
 
-contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
+contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
     address public aminalsNFT;
     address public geneFactory;
     uint256 public currentId;
@@ -70,8 +71,27 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
         _burn(id);
     }
 
-    function tokenURI(uint256) public pure override returns (string memory) {
-        return "https://aminals.io/gene-metadata/";
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        require(_ownerOf(tokenId) != address(0), "Token does not exist");
+        
+        string memory svg = geneSVGs[tokenId];
+        IAminalStructs.VisualsCat category = geneVisualsCat[tokenId];
+        
+        // Create JSON metadata with the SVG
+        string memory json = string(abi.encodePacked(
+            '{"name": "Aminal Gene #', 
+            _toString(tokenId),
+            '", "description": "A gene NFT representing a trait for Aminals", "category": "',
+            _categoryToString(category),
+            '", "image": "data:image/svg+xml;base64,',
+            Base64.encode(bytes(svg)),
+            '"}'
+        ));
+        
+        return string(abi.encodePacked(
+            "data:application/json;base64,",
+            Base64.encode(bytes(json))
+        ));
     }
 
     /**
@@ -86,4 +106,42 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
     {
         return (geneSVGs[id], geneVisualsCat[id]);
     }
+
+    /**
+     * @dev Convert number to string
+     */
+    function _toString(uint256 value) internal pure returns (string memory) {
+        if (value == 0) {
+            return "0";
+        }
+        uint256 temp = value;
+        uint256 digits;
+        while (temp != 0) {
+            digits++;
+            temp /= 10;
+        }
+        bytes memory buffer = new bytes(digits);
+        while (value != 0) {
+            digits -= 1;
+            buffer[digits] = bytes1(uint8(48 + uint256(value % 10)));
+            value /= 10;
+        }
+        return string(buffer);
+    }
+
+    /**
+     * @dev Convert VisualsCat enum to string
+     */
+    function _categoryToString(IAminalStructs.VisualsCat category) internal pure returns (string memory) {
+        if (category == IAminalStructs.VisualsCat.BACK) return "Background";
+        if (category == IAminalStructs.VisualsCat.ARM) return "Arms";
+        if (category == IAminalStructs.VisualsCat.TAIL) return "Tail";
+        if (category == IAminalStructs.VisualsCat.EARS) return "Ears";
+        if (category == IAminalStructs.VisualsCat.BODY) return "Body";
+        if (category == IAminalStructs.VisualsCat.FACE) return "Face";
+        if (category == IAminalStructs.VisualsCat.MOUTH) return "Mouth";
+        if (category == IAminalStructs.VisualsCat.MISC) return "Miscellaneous";
+        return "Unknown";
+    }
+
 }
