@@ -342,15 +342,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return backgrounds.length - 1;
     }
 
-    // TODO breedAminals should replace breedWith, we don't need keep both
-    // Alias for breedWith for backwards compatibility
-    function breedAminals(
-        address aminalOne,
-        address aminalTwo
-    ) external payable returns (uint256 auctionId) {
-        return this.breedWith{value: msg.value}(aminalOne, aminalTwo);
-    }
-
     function addArm(string memory arm) public returns (uint256 id) {
         VisualTrait memory trait = VisualTrait(arm, msg.sender);
         arms.push(trait);
@@ -400,36 +391,45 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return miscs.length - 1;
     }
 
-    // Getter functions for array lengths
-    function getBackgroundsLength() external view returns (uint256) {
+    // Getter functions for trait counts
+    function getBackgroundsLength() public view returns (uint256) {
         return backgrounds.length;
     }
 
-    function getArmsLength() external view returns (uint256) {
+    function getArmsLength() public view returns (uint256) {
         return arms.length;
     }
 
-    function getTailsLength() external view returns (uint256) {
+    function getTailsLength() public view returns (uint256) {
         return tails.length;
     }
 
-    function getEarsLength() external view returns (uint256) {
+    function getEarsLength() public view returns (uint256) {
         return ears.length;
     }
 
-    function getBodiesLength() external view returns (uint256) {
+    function getBodiesLength() public view returns (uint256) {
         return bodies.length;
     }
 
-    function getFacesLength() external view returns (uint256) {
+    function getFacesLength() public view returns (uint256) {
         return faces.length;
     }
 
-    function getMouthsLength() external view returns (uint256) {
+    function getMouthsLength() public view returns (uint256) {
         return mouths.length;
     }
 
-    function getMiscsLength() external view returns (uint256) {
+    function getMiscsLength() public view returns (uint256) {
         return miscs.length;
+    }
+
+    // TODO breedAminals should replace breedWith, we don't need keep both
+    // Alias for breedWith for backwards compatibility
+    function breedAminals(
+        address aminalOne,
+        address aminalTwo
+    ) external payable returns (uint256 auctionId) {
+        return this.breedWith{value: msg.value}(aminalOne, aminalTwo);
     }
 }
