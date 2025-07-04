@@ -1,0 +1,293 @@
+# Testnet Deployment Guide
+
+This guide provides instructions for deploying the Aminals ecosystem to testnet networks.
+
+## Prerequisites
+
+1. **Environment Setup**
+   ```bash
+   # Install Foundry if not already installed
+   curl -L https://foundry.paradigm.xyz | bash
+   foundryup
+   
+   # Install dependencies
+   forge install
+   ```
+
+2. **Configure Environment Variables**
+   ```bash
+   # Copy environment template
+   cp .env.example .env
+   
+   # Edit .env with your values
+   PRIVATE_KEY=your_private_key_here
+   ETHERSCAN_API_KEY=your_etherscan_api_key_here
+   ```
+
+3. **Fund Deployer Account**
+   - Get testnet ETH from faucets:
+     - Sepolia: https://sepoliafaucet.com/
+     - Goerli: https://goerlifaucet.com/
+     - Base Sepolia: https://bridge.base.org/deposit
+
+## Deployment Steps
+
+### Step 1: Deploy Core Contracts
+
+Deploy the core contracts in the correct order:
+
+```bash
+# Deploy to Sepolia testnet
+forge script script/Deploy.s.sol:DeployScript --rpc-url sepolia --broadcast --verify
+
+# Deploy to Base Sepolia
+forge script script/Deploy.s.sol:DeployScript --rpc-url base-sepolia --broadcast --verify
+
+# Deploy to Goerli (if needed)
+forge script script/Deploy.s.sol:DeployScript --rpc-url goerli --broadcast --verify
+```
+
+### Step 2: Verify Contract Deployment
+
+After deployment, verify all contracts are properly deployed:
+
+```bash
+# Check deployment addresses
+forge script script/Deploy.s.sol:DeployScript --rpc-url sepolia --broadcast --resume
+
+# Verify contracts on Etherscan
+forge verify-contract <CONTRACT_ADDRESS> <CONTRACT_NAME> --chain sepolia
+```
+
+### Step 3: Initialize Contracts
+
+Initialize the deployed contracts with proper configuration:
+
+```bash
+# Run initialization script
+forge script script/Initialize.s.sol:InitializeScript --rpc-url sepolia --broadcast
+```
+
+### Step 4: Test Deployment
+
+Verify the deployment by running integration tests:
+
+```bash
+# Run tests against deployed contracts
+forge test --fork-url sepolia --fork-block-number latest
+```
+
+## Contract Addresses
+
+After deployment, update this section with the deployed contract addresses:
+
+### Sepolia Testnet
+- **AminalFactory**: `0x...`
+- **GenesNFT**: `0x...`
+- **GeneNFTFactory**: `0x...`
+- **GeneAuction**: `0x...`
+- **AminalProposals**: `0x...`
+- **AminalVRGDA**: `0x...`
+
+### Base Sepolia
+- **AminalFactory**: `0x...`
+- **GenesNFT**: `0x...`
+- **GeneNFTFactory**: `0x...`
+- **GeneAuction**: `0x...`
+- **AminalProposals**: `0x...`
+- **AminalVRGDA**: `0x...`
+
+## Testnet Configuration
+
+### Network Settings
+
+Add these networks to your foundry.toml:
+
+```toml
+[rpc_endpoints]
+sepolia = "https://rpc.sepolia.org"
+base-sepolia = "https://sepolia.base.org"
+goerli = "https://goerli.infura.io/v3/${INFURA_API_KEY}"
+
+[etherscan]
+sepolia = { key = "${ETHERSCAN_API_KEY}" }
+base-sepolia = { key = "${BASESCAN_API_KEY}" }
+goerli = { key = "${ETHERSCAN_API_KEY}" }
+```
+
+### VRGDA Parameters
+
+The VRGDA is configured with these parameters for optimal love curves:
+
+- **Target Price**: 1 ETH (base unit for calculations)
+- **Price Decay**: -0.5 (50% decay when behind target)
+- **Logistic Asymptote**: 100 (maximum units for S-curve)
+- **Time Scale**: 20 (controls curve transition speed)
+
+This creates:
+- 10x love multiplier for hungry Aminals (<10 energy)
+- Smooth diminishing returns as energy increases
+- 0.1x love multiplier for overfed Aminals (>1M energy)
+
+## Testing on Testnet
+
+### Basic Flow Test
+
+1. **Spawn Initial Aminals**
+   ```bash
+   # Call spawnInitialAminals with test visuals
+   cast send $FACTORY_ADDRESS "spawnInitialAminals((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[])" "[(1,1,1,1,1,1,1,1)]" --rpc-url sepolia --private-key $PRIVATE_KEY
+   ```
+
+2. **Feed an Aminal**
+   ```bash
+   # Get first Aminal address
+   AMINAL_ADDRESS=$(cast call $FACTORY_ADDRESS "getAminalByIndex(uint256)" 0 --rpc-url sepolia)
+   
+   # Feed the Aminal
+   cast send $AMINAL_ADDRESS "feed()" --value 0.01ether --rpc-url sepolia --private-key $PRIVATE_KEY
+   ```
+
+3. **Check Love and Energy**
+   ```bash
+   # Check energy
+   cast call $AMINAL_ADDRESS "getEnergy()" --rpc-url sepolia
+   
+   # Check love
+   cast call $AMINAL_ADDRESS "getTotalLove()" --rpc-url sepolia
+   ```
+
+### Advanced Testing
+
+4. **Create Gene NFTs**
+   ```bash
+   # Create a gene NFT for a trait
+   cast send $GENE_FACTORY_ADDRESS "createGeneNFT(string,string,uint256)" "Eyes" "Blue Eyes" 1 --rpc-url sepolia --private-key $PRIVATE_KEY
+   ```
+
+5. **Test Breeding**
+   ```bash
+   # Set breeding consent
+   cast send $AMINAL_ADDRESS "setBreedableWith(address,bool)" $PARTNER_ADDRESS true --rpc-url sepolia --private-key $PRIVATE_KEY
+   
+   # Initiate breeding
+   cast send $FACTORY_ADDRESS "breed(address,address)" $AMINAL_ADDRESS $PARTNER_ADDRESS --rpc-url sepolia --private-key $PRIVATE_KEY
+   ```
+
+6. **Use Skills**
+   ```bash
+   # Deploy a skill contract
+   forge create src/skills/Move2D.sol:Move2D --constructor-args $FACTORY_ADDRESS --rpc-url sepolia --private-key $PRIVATE_KEY
+   
+   # Use the skill
+   cast send $AMINAL_ADDRESS "callSkill(address,bytes)" $SKILL_ADDRESS "0x..." --value 0.001ether --rpc-url sepolia --private-key $PRIVATE_KEY
+   ```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Gas Estimation Failures**
+   - Increase gas limit: `--gas-limit 3000000`
+   - Check contract state and prerequisites
+
+2. **Verification Failures**
+   - Ensure constructor args match exactly
+   - Wait for block confirmations before verifying
+
+3. **Initialization Errors**
+   - Check deployment order dependencies
+   - Verify all contracts are deployed before initialization
+
+### Debug Commands
+
+```bash
+# Check contract bytecode
+cast code $CONTRACT_ADDRESS --rpc-url sepolia
+
+# Check transaction status
+cast tx $TX_HASH --rpc-url sepolia
+
+# Check logs
+cast logs --address $CONTRACT_ADDRESS --rpc-url sepolia
+```
+
+## Frontend Integration
+
+After testnet deployment, update the frontend configuration:
+
+1. **Update Contract Addresses**
+   ```typescript
+   // frontend/src/contracts/addresses.ts
+   export const TESTNET_ADDRESSES = {
+     sepolia: {
+       factory: '0x...',
+       genesNFT: '0x...',
+       // ... other addresses
+     }
+   };
+   ```
+
+2. **Configure Network**
+   ```typescript
+   // frontend/src/config/networks.ts
+   export const SEPOLIA_CONFIG = {
+     chainId: 11155111,
+     name: 'Sepolia',
+     rpcUrl: 'https://rpc.sepolia.org',
+     blockExplorer: 'https://sepolia.etherscan.io',
+   };
+   ```
+
+3. **Test Frontend Integration**
+   ```bash
+   cd frontend
+   npm run dev
+   # Navigate to testnet environment and test functionality
+   ```
+
+## Monitoring and Maintenance
+
+### Event Monitoring
+
+Monitor key events for proper operation:
+
+```bash
+# Monitor Aminal creation
+cast logs --address $FACTORY_ADDRESS --topics "AminalCreated(address,uint256)" --rpc-url sepolia
+
+# Monitor feeding events
+cast logs --address $AMINAL_ADDRESS --topics "FeedAminal(address,uint256,uint256,uint256,uint256)" --rpc-url sepolia
+```
+
+### Health Checks
+
+Regular health checks to ensure system stability:
+
+```bash
+# Check factory state
+cast call $FACTORY_ADDRESS "aminalCount()" --rpc-url sepolia
+
+# Check VRGDA parameters
+cast call $VRGDA_ADDRESS "MAX_LOVE_MULTIPLIER()" --rpc-url sepolia
+```
+
+## Security Considerations
+
+1. **Use Separate Testnet Keys**: Never use mainnet private keys for testnet
+2. **Limit Testnet Funds**: Only fund accounts with necessary testnet ETH
+3. **Monitor Contracts**: Set up monitoring for unusual activity
+4. **Regular Updates**: Keep deployment scripts updated with latest contract versions
+
+## Next Steps
+
+After successful testnet deployment:
+
+1. **Conduct User Testing**: Invite community to test on testnet
+2. **Performance Testing**: Monitor gas usage and optimization opportunities
+3. **Security Audit**: Prepare for security audit of deployed contracts
+4. **Mainnet Preparation**: Create mainnet deployment scripts and checklist
+
+---
+
+**Note**: This is a testnet deployment. All contracts and transactions are for testing purposes only. Do not use real funds or sensitive data.
