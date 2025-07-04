@@ -306,7 +306,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Auction created with ID:", auctionId);
 
         // Verify auction was created
-        assertTrue(geneAuction.isAuctionActive(auctionId), "Auction should be active");
+        assertTrue(geneAuction.isVotingActive(auctionId), "Voting should be active");
         
         (
             uint256 aminalOne,
@@ -363,66 +363,63 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Verify all genes were proposed
         for (uint8 i = 0; i < 8; i++) {
             VisualsCat category = VisualsCat(i);
-            GeneAuction.CategoryBidInfo memory bidInfo = geneAuction.getCategoryBidding(auctionId, category);
-            assertEq(bidInfo.proposedGenes.length, 1, "Each category should have one proposed gene");
+            GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, category);
+            assertEq(voteInfo.proposedGenes.length, 1, "Each category should have one proposed gene");
         }
 
         console.log("All 8 gene categories have been proposed");
     }
 
     function _voteOnGenes(uint256 auctionId) internal {
-        console.log("Voting on genes through bidding...");
+        console.log("Voting on genes through love-based voting...");
 
-        // Record initial balances of gene owners
-        uint256 aliceInitialBalance = alice.balance;
-        uint256 bobInitialBalance = bob.balance;
-        uint256 charlieInitialBalance = charlie.balance;
-        uint256 davidInitialBalance = david.balance;
-        uint256 eveInitialBalance = eve.balance;
+        // Alice should have love for both parent Aminals from feeding them
+        uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
+        console.log("Alice's voting power:", aliceVotingPower);
 
-        // Vote on genes by bidding (simulating community voting)
+        // Vote on genes using love-based voting power
+        // Each voter uses their love/voting power to vote on genes
         
-        // Alice votes on her own background gene
+        // Alice votes on background gene with 10% of her voting power
         vm.prank(alice);
-        geneAuction.bidOnGene{value: 0.01 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 10);
 
-        // Bob votes on his arms gene
-        vm.prank(bob);
-        geneAuction.bidOnGene{value: 0.015 ether}(auctionId, VisualsCat.ARM, armsGeneId);
-
-        // Charlie votes on his tail gene
-        vm.prank(charlie);
-        geneAuction.bidOnGene{value: 0.02 ether}(auctionId, VisualsCat.TAIL, tailGeneId);
-
-        // David votes on his ears gene
-        vm.prank(david);
-        geneAuction.bidOnGene{value: 0.025 ether}(auctionId, VisualsCat.EARS, earsGeneId);
-
-        // Eve votes on her body gene
-        vm.prank(eve);
-        geneAuction.bidOnGene{value: 0.03 ether}(auctionId, VisualsCat.BODY, bodyGeneId);
-
-        // Alice votes on her face gene
+        // Alice votes on arms gene
         vm.prank(alice);
-        geneAuction.bidOnGene{value: 0.035 ether}(auctionId, VisualsCat.FACE, faceGeneId);
+        geneAuction.voteOnGene(auctionId, VisualsCat.ARM, armsGeneId, aliceVotingPower / 10);
 
-        // Bob votes on his mouth gene
-        vm.prank(bob);
-        geneAuction.bidOnGene{value: 0.04 ether}(auctionId, VisualsCat.MOUTH, mouthGeneId);
+        // Alice votes on tail gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.TAIL, tailGeneId, aliceVotingPower / 10);
 
-        // Charlie votes on his misc gene
-        vm.prank(charlie);
-        geneAuction.bidOnGene{value: 0.045 ether}(auctionId, VisualsCat.MISC, miscGeneId);
+        // Alice votes on ears gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.EARS, earsGeneId, aliceVotingPower / 10);
 
-        // Verify bids were placed
+        // Alice votes on body gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BODY, bodyGeneId, aliceVotingPower / 10);
+
+        // Alice votes on face gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.FACE, faceGeneId, aliceVotingPower / 10);
+
+        // Alice votes on mouth gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.MOUTH, mouthGeneId, aliceVotingPower / 10);
+
+        // Alice votes on misc gene
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.MISC, miscGeneId, aliceVotingPower / 10);
+
+        // Verify votes were placed
         for (uint8 i = 0; i < 8; i++) {
             VisualsCat category = VisualsCat(i);
-            GeneAuction.CategoryBidInfo memory bidInfo = geneAuction.getCategoryBidding(auctionId, category);
-            assertTrue(bidInfo.highestBid > 0, "Each category should have bids");
-            assertTrue(bidInfo.highestBidder != address(0), "Each category should have a bidder");
+            GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, category);
+            assertTrue(voteInfo.highestVotes > 0, "Each category should have votes");
         }
 
-        console.log("All categories have received bids");
+        console.log("All categories have received votes");
     }
 
     function _settleAuction(uint256 auctionId) internal {
@@ -431,34 +428,38 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Fast forward past auction end (7 days + 1 hour)
         vm.warp(block.timestamp + 7 days + 1 hours);
 
-        // Verify auction is ready to settle
-        assertFalse(geneAuction.isAuctionActive(auctionId), "Auction should be inactive after time passes");
+        // Verify voting is ready to settle
+        assertFalse(geneAuction.isVotingActive(auctionId), "Voting should be inactive after time passes");
 
-        // Record balances before settlement
-        uint256 aliceBalanceBefore = alice.balance;
-        uint256 bobBalanceBefore = bob.balance;
-        uint256 charlieBalanceBefore = charlie.balance;
-        uint256 davidBalanceBefore = david.balance;
-        uint256 eveBalanceBefore = eve.balance;
+        // Record parent energies before settlement
+        uint256 aminal1EnergyBefore = aminal1.getEnergy();
+        uint256 aminal2EnergyBefore = aminal2.getEnergy();
 
         uint256 totalAminalsBefore = factory.totalAminals();
 
-        console.log("Settling auction...");
+        console.log("Settling voting...");
         geneAuction.settleAuction(auctionId);
 
-        // Verify auction is settled
+        // Verify voting is settled
         (, , , , , bool settled, ) = geneAuction.getAuctionInfo(auctionId);
-        assertTrue(settled, "Auction should be settled");
+        assertTrue(settled, "Voting should be settled");
 
         // Verify a new Aminal was created
         assertEq(factory.totalAminals(), totalAminalsBefore + 1, "A new Aminal should be created");
 
-        console.log("Auction settled successfully");
+        // Verify energy was transferred from parents (10% each)
+        uint256 aminal1EnergyAfter = aminal1.getEnergy();
+        uint256 aminal2EnergyAfter = aminal2.getEnergy();
+        
+        assertTrue(aminal1EnergyAfter < aminal1EnergyBefore, "Parent 1 should have lost energy");
+        assertTrue(aminal2EnergyAfter < aminal2EnergyBefore, "Parent 2 should have lost energy");
+
+        console.log("Voting settled successfully");
         console.log("New Aminal created - Total Aminals:", factory.totalAminals());
     }
 
     function _verifyChildBirthAndPayouts(uint256 auctionId) internal {
-        console.log("Verifying child birth and payouts...");
+        console.log("Verifying child birth and energy transfers...");
 
         // Get the child Aminal
         uint256 childIndex = factory.totalAminals() - 1;
@@ -471,7 +472,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Verify child traits match winning genes
         Visuals memory childVisuals = child.getVisuals();
         
-        // The child should have the gene IDs from the winning bids
+        // The child should have the gene IDs from the winning votes
         assertEq(childVisuals.backId, backgroundGeneId, "Child should have winning background gene");
         assertEq(childVisuals.armId, armsGeneId, "Child should have winning arms gene");
         assertEq(childVisuals.tailId, tailGeneId, "Child should have winning tail gene");
@@ -491,11 +492,11 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Mouth gene ID:", childVisuals.mouthId);
         console.log("Misc gene ID:", childVisuals.miscId);
 
-        // Verify gene NFT owners received payouts
-        // Note: The actual payout verification depends on the auction settlement logic
-        // The settlement should pay gene NFT owners based on their winning bids
+        // Verify gene NFT owners received energy transfers
+        // Note: In the new system, gene owners receive energy transfers instead of ETH
+        // The settlement should transfer 10% of parent energy to gene NFT owners
         
-        console.log("Gene NFT owners should have received payouts");
+        console.log("Gene NFT owners should have received energy transfers");
         console.log("Alice owns background and face genes");
         console.log("Bob owns arms and mouth genes");
         console.log("Charlie owns tail and misc genes");
@@ -550,12 +551,12 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     }
 
     /**
-     * @dev Test multiple bidders on the same gene
+     * @dev Test multiple voters on the same gene
      */
-    function testMultipleBiddersOnSameGene() public {
-        console.log("=== TESTING MULTIPLE BIDDERS ON SAME GENE ===");
+    function testMultipleVotersOnSameGene() public {
+        console.log("=== TESTING MULTIPLE VOTERS ON SAME GENE ===");
 
-        // Use existing setup but test multiple bidders
+        // Use existing setup but test multiple voters
         _feedAminals();
         uint256 auctionId = _initiateBreeding();
 
@@ -563,29 +564,26 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.prank(alice);
         geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
-        // Multiple people bid on the same gene
-        vm.prank(bob);
-        geneAuction.bidOnGene{value: 0.01 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
+        // Get voting powers for each user
+        uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
+        
+        // Multiple people vote on the same gene (alice has voting power from feeding the parents)
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 4);
 
-        vm.prank(charlie);
-        geneAuction.bidOnGene{value: 0.02 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
+        // Verify votes were cast
+        GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, VisualsCat.BACK);
+        assertTrue(voteInfo.highestVotes > 0, "Should have votes");
+        assertEq(voteInfo.winningGeneId, backgroundGeneId, "Background gene should be winning");
 
-        vm.prank(david);
-        geneAuction.bidOnGene{value: 0.03 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
-
-        // Verify highest bidder
-        GeneAuction.CategoryBidInfo memory bidInfo = geneAuction.getCategoryBidding(auctionId, VisualsCat.BACK);
-        assertEq(bidInfo.highestBidder, david, "David should be highest bidder");
-        assertEq(bidInfo.highestBid, 0.03 ether, "Highest bid should be 0.03 ether");
-
-        console.log("Multiple bidding system working correctly");
+        console.log("Multiple voting system working correctly");
     }
 
     /**
-     * @dev Test bid refunds when outbid
+     * @dev Test vote updating when users change their votes
      */
-    function testBidRefunds() public {
-        console.log("=== TESTING BID REFUNDS ===");
+    function testVoteUpdating() public {
+        console.log("=== TESTING VOTE UPDATING ===");
 
         _feedAminals();
         uint256 auctionId = _initiateBreeding();
@@ -594,18 +592,24 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.prank(alice);
         geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
-        // Bob bids
-        uint256 bobInitialBalance = bob.balance;
-        vm.prank(bob);
-        geneAuction.bidOnGene{value: 0.01 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
+        uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
 
-        // Charlie outbids Bob
-        vm.prank(charlie);
-        geneAuction.bidOnGene{value: 0.02 ether}(auctionId, VisualsCat.BACK, backgroundGeneId);
+        // Alice votes with some of her power
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 4);
 
-        // Bob should have been refunded
-        assertEq(bob.balance, bobInitialBalance - 0.01 ether + 0.01 ether, "Bob should be refunded");
+        // Check initial vote
+        uint256 initialVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
+        assertEq(initialVotes, aliceVotingPower / 4, "Initial vote should be recorded");
 
-        console.log("Bid refund system working correctly");
+        // Alice updates her vote
+        vm.prank(alice);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 2);
+
+        // Check updated vote
+        uint256 updatedVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
+        assertEq(updatedVotes, aliceVotingPower / 2, "Vote should be updated");
+
+        console.log("Vote updating system working correctly");
     }
 }

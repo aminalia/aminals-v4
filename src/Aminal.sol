@@ -236,6 +236,27 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         return (momAddress, dadAddress);
     }
 
+    function transferEnergyToOwner(uint256 amount, address recipient) external {
+        // Only factory or gene auction can call this function
+        require(
+            msg.sender == address(factory) || msg.sender == address(factory.geneAuction()),
+            "Only factory or gene auction can transfer energy"
+        );
+        if (energy < amount) revert NotEnoughEnergy();
+        
+        energy -= amount;
+        
+        // In this simplified implementation, we just reduce the Aminal's energy
+        // In a more complex system, you might want to:
+        // 1. Create an energy token that can be transferred
+        // 2. Track energy balances per user
+        // 3. Allow users to deposit energy back to Aminals
+        
+        emit EnergyTransferred(recipient, amount, energy);
+    }
+
+    event EnergyTransferred(address indexed recipient, uint256 amount, uint256 remainingEnergy);
+
     // Implementation of abstract function from GeneBasedDescriptor
     function getAminalVisualsByID(
         uint256 aminalID
