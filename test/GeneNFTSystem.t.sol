@@ -144,7 +144,31 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     }
 
     function testAuctionCreation() public {
-        uint256 auctionId = geneAuction.createAuction(1, 2, 100 ether);
+        // First spawn some initial Aminals to test with
+        Visuals[] memory initialVisuals = new Visuals[](2);
+        initialVisuals[0] = Visuals({
+            backId: 1,
+            armId: 1,
+            tailId: 1,
+            earsId: 1,
+            bodyId: 1,
+            faceId: 1,
+            mouthId: 1,
+            miscId: 1
+        });
+        initialVisuals[1] = Visuals({
+            backId: 2,
+            armId: 2,
+            tailId: 2,
+            earsId: 2,
+            bodyId: 2,
+            faceId: 2,
+            mouthId: 2,
+            miscId: 2
+        });
+        aminalFactory.spawnInitialAminals(initialVisuals);
+
+        uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
 
         (
             uint256 aminalOne,
@@ -156,8 +180,8 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
             uint256 childAminalId
         ) = geneAuction.getAuctionInfo(auctionId);
 
-        assertEq(aminalOne, 1);
-        assertEq(aminalTwo, 2);
+        assertEq(aminalOne, 0);
+        assertEq(aminalTwo, 1);
         assertEq(totalLove, 100 ether);
         assertEq(startTime, block.timestamp);
         assertEq(endTime, block.timestamp + 7 days);
@@ -168,6 +192,30 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     }
 
     function testGeneProposalInAuction() public {
+        // First spawn some initial Aminals to test with
+        Visuals[] memory initialVisuals = new Visuals[](2);
+        initialVisuals[0] = Visuals({
+            backId: 1,
+            armId: 1,
+            tailId: 1,
+            earsId: 1,
+            bodyId: 1,
+            faceId: 1,
+            mouthId: 1,
+            miscId: 1
+        });
+        initialVisuals[1] = Visuals({
+            backId: 2,
+            armId: 2,
+            tailId: 2,
+            earsId: 2,
+            bodyId: 2,
+            faceId: 2,
+            mouthId: 2,
+            miscId: 2
+        });
+        aminalFactory.spawnInitialAminals(initialVisuals);
+
         // Create a gene
         vm.prank(alice);
         uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
@@ -176,7 +224,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         );
 
         // Create auction
-        uint256 auctionId = geneAuction.createAuction(1, 2, 100 ether);
+        uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
 
         // Propose the gene
         vm.prank(alice);
@@ -190,6 +238,30 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     }
 
     function testGeneVotingInAuction() public {
+        // First spawn some initial Aminals to test with
+        Visuals[] memory initialVisuals = new Visuals[](2);
+        initialVisuals[0] = Visuals({
+            backId: 1,
+            armId: 1,
+            tailId: 1,
+            earsId: 1,
+            bodyId: 1,
+            faceId: 1,
+            mouthId: 1,
+            miscId: 1
+        });
+        initialVisuals[1] = Visuals({
+            backId: 2,
+            armId: 2,
+            tailId: 2,
+            earsId: 2,
+            bodyId: 2,
+            faceId: 2,
+            mouthId: 2,
+            miscId: 2
+        });
+        aminalFactory.spawnInitialAminals(initialVisuals);
+
         // Create a gene
         vm.prank(alice);
         uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
@@ -198,7 +270,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         );
 
         // Create voting
-        uint256 auctionId = geneAuction.createAuction(1, 2, 100 ether);
+        uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
 
         // Propose the gene
         vm.prank(alice);
@@ -234,6 +306,30 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     }
 
     function testVoteUpdating() public {
+        // First spawn some initial Aminals to test with
+        Visuals[] memory initialVisuals = new Visuals[](2);
+        initialVisuals[0] = Visuals({
+            backId: 1,
+            armId: 1,
+            tailId: 1,
+            earsId: 1,
+            bodyId: 1,
+            faceId: 1,
+            mouthId: 1,
+            miscId: 1
+        });
+        initialVisuals[1] = Visuals({
+            backId: 2,
+            armId: 2,
+            tailId: 2,
+            earsId: 2,
+            bodyId: 2,
+            faceId: 2,
+            mouthId: 2,
+            miscId: 2
+        });
+        aminalFactory.spawnInitialAminals(initialVisuals);
+
         // Create a gene
         vm.prank(alice);
         uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
@@ -242,7 +338,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         );
 
         // Create voting
-        uint256 auctionId = geneAuction.createAuction(1, 2, 100 ether);
+        uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
 
         // Propose the gene
         vm.prank(alice);
