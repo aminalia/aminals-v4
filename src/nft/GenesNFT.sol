@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.20;
 
-import {ERC721} from "src/nft/ERC721.sol";
+import {ERC721} from "oz/token/ERC721/ERC721.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
@@ -30,7 +30,8 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
     }
 
     modifier onlyAminalsNFTOrFactory() {
-        if (msg.sender != aminalsNFT && msg.sender != geneFactory) revert OnlyFactory();
+        if (msg.sender != aminalsNFT && msg.sender != geneFactory)
+            revert OnlyFactory();
         _;
     }
 
@@ -50,10 +51,11 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
         emit FactorySet(geneFactory_);
     }
 
-    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
-        external
-        onlyAminalsNFTOrFactory
-    {
+    function mint(
+        address to,
+        string calldata geneSVG,
+        IAminalStructs.VisualsCat visualsCategory
+    ) external onlyAminalsNFTOrFactory {
         uint256 tokenId = currentId;
         geneSVGs[tokenId] = geneSVG;
         geneVisualsCat[tokenId] = visualsCategory;
@@ -61,8 +63,6 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
         ++currentId;
         _mint(to, tokenId);
     }
-
-    // Gene NFTs are always transferable - no soulbound mechanism
 
     // Can only be burnt by the holder
     function burn(uint256 id) external {
@@ -77,10 +77,13 @@ contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
     /**
      * @notice Get Gene NFT information
      */
-    function getGeneInfo(uint256 id) external view returns (
-        string memory svg,
-        IAminalStructs.VisualsCat category
-    ) {
+    function getGeneInfo(
+        uint256 id
+    )
+        external
+        view
+        returns (string memory svg, IAminalStructs.VisualsCat category)
+    {
         return (geneSVGs[id], geneVisualsCat[id]);
     }
 }

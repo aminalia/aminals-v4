@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 import {IProposals} from "src/proposals/IProposals.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
-import {Aminals} from "src/Aminals.sol";
+// TODO: Update to use IAminal interface when implementing Gene NFT governance
 import "forge-std/console.sol";
 
 contract AminalProposals is IProposals, Initializable, Ownable {
@@ -299,7 +299,8 @@ contract AminalProposals is IProposals, Initializable, Ownable {
         LoveProposal storage proposal = loveProposals[proposalId];
         require(proposal.closed == 0);
 
-        uint256 love = Aminals(aminals).getAminalLoveByIdByUser(aminalID, sender);
+        // TODO: Update to use IAminal interface
+        uint256 love = 0; // Placeholder - getAminalLoveByIdByUser(aminalID, sender);
 
         console.log("LOVE FOR LOVE VOTE = ", love);
 
@@ -335,7 +336,8 @@ contract AminalProposals is IProposals, Initializable, Ownable {
             emit LoveVoteResult(
                 proposalId, proposal.pass, voteCount, quorum, membersLength, yesPercent, requiredMajority
             );
-            Aminals(aminals)._vote(aminalID, proposalId, proposal.pass);
+            // TODO: Update to use IAminal interface
+            // aminals._vote(aminalID, proposalId, proposal.pass);
             console.log("Aminal ", aminalID, " is voting for ", proposalId);
         }
 

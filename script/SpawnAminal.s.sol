@@ -1,15 +1,13 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import {Aminals} from "src/Aminals.sol";
+import {AminalFactory} from "src/AminalFactory.sol";
 import {IAminal} from "src/IAminal.sol";
-import {VisualsAuction} from "src/utils/VisualsAuction.sol";
+import {GeneAuction} from "src/utils/GeneAuction.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 
 /*
-forge script script/GetTokenUri.s.sol:GetTokenUri   -vvvv
-forge script script/SpawnAminal.s.sol:SpawnAminal -vvvv --rpc-url https://rpc.ankr.com/eth_goerli --broadc
-ast
+forge script script/SpawnAminal.s.sol:SpawnAminal -vvvv --rpc-url https://rpc.ankr.com/eth_goerli --broadcast
 */
 
 contract SpawnAminal is Script {
@@ -19,24 +17,16 @@ contract SpawnAminal is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        Aminals aminals = Aminals(address(vm.envAddress("AMINALS_CONTRACT")));
+        AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
 
-        // string memory uri1 = aminals.tokenURI(1);
-        // console.log(uri1);
-        // string memory uri2 = aminals.tokenURI(2);
-        // console.log(uri2);
-
-        // Aminals.Visuals[] memory visuals;
-        // // [1, 2, 1, 2, 1, 2, 1 ,2];
-        // for (uint i = 1; i <= 8; i++) {
-        //     visuals[i] = i % 2;
-        // }
-
-        // IAminalStructs.Visuals[] memory newVisuals = new IAminalStructs.Visuals[];
-
+        // Create new Aminal with specified visuals
         newVisuals.push(IAminalStructs.Visuals(1, 2, 1, 2, 1, 2, 1, 2));
-
-        aminals.spawnInitialAminals(newVisuals);
+        
+        // Spawn the new Aminal through factory
+        factory.spawnInitialAminals(newVisuals);
+        
+        console.log("New Aminal spawned through factory");
+        console.log("Total Aminals:", factory.totalAminals());
 
         vm.stopBroadcast();
     }
