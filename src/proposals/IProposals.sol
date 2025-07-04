@@ -5,15 +5,20 @@ interface IProposals {
     enum ProposalType {
         AddSkill, //  0 Add skill
         RemoveSkill //  1 Remove skill
-
     }
 
-    function proposeAddSkill(uint256 aminalID, string calldata skillName, address skillAddress)
-        external
-        returns (uint256 proposalId);
-    function proposeRemoveSkill(uint256 aminalID, string calldata description, address skillAddress)
-        external
-        returns (uint256 proposalId);
+    // TODO we don't need skill related functions as skills are permissionless
+    function proposeAddSkill(
+        uint256 aminalID,
+        string calldata skillName,
+        address skillAddress
+    ) external returns (uint256 proposalId);
+
+    function proposeRemoveSkill(
+        uint256 aminalID,
+        string calldata description,
+        address skillAddress
+    ) external returns (uint256 proposalId);
 
     function AminalVote(
         uint256 aminalID,
@@ -34,17 +39,25 @@ interface IProposals {
         uint256 requiredMajority
     ) external returns (uint256 squeak);
 
-    function getQuorum(uint256 proposalTime, uint256 currentTime) external view returns (uint256);
+    function getQuorum(
+        uint256 proposalTime,
+        uint256 currentTime
+    ) external view returns (uint256);
 
     function getInitiated(uint256 proposalId) external view returns (uint256);
 
-    function getProposalType(uint256 proposalId) external view returns (ProposalType);
+    function getProposalType(
+        uint256 proposalId
+    ) external view returns (ProposalType);
 
     function toExecute(uint256 proposalId) external view returns (bool);
 
-    function getDescription(uint256 proposalId) external view returns (string memory);
+    function getDescription(
+        uint256 proposalId
+    ) external view returns (string memory);
 
     function getAddress1(uint256 proposalId) external view returns (address);
+
     function getAmount(uint256 proposalId) external view returns (uint256);
 
     function close(uint256 proposalId) external;

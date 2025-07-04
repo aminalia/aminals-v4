@@ -8,15 +8,17 @@ import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
-import {MockGeneAuction} from "test/mocks/MockGeneAuction.sol";
-import {MockAminalProposals} from "test/mocks/MockAminalProposals.sol";
-import {MockGenesNFT} from "test/mocks/MockGenesNFT.sol";
+import {GeneAuction} from "src/utils/GeneAuction.sol";
+import {AminalProposals} from "src/proposals/AminalProposals.sol";
+import {GenesNFT} from "src/nft/GenesNFT.sol";
+import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
 
 contract IndividualAminalTest is Test, IAminalStructs {
     AminalFactory public factory;
-    MockGeneAuction public geneAuction;
-    MockAminalProposals public proposals;
-    MockGenesNFT public genesNFT;
+    GeneAuction public geneAuction;
+    AminalProposals public proposals;
+    GenesNFT public genesNFT;
+    GeneNFTFactory public geneFactory;
     Move2D public move2DSkill;
 
     AminalContract public aminal;
@@ -26,10 +28,11 @@ contract IndividualAminalTest is Test, IAminalStructs {
     address public charlie = address(0x3);
 
     function setUp() public {
-        // Deploy dependencies
-        geneAuction = new MockGeneAuction();
-        proposals = new MockAminalProposals();
-        genesNFT = new MockGenesNFT();
+        // Deploy real dependencies
+        genesNFT = new GenesNFT();
+        geneFactory = new GeneNFTFactory(address(genesNFT));
+        geneAuction = new GeneAuction(address(genesNFT), address(geneFactory));
+        proposals = new AminalProposals();
 
         // Deploy factory
         factory = new AminalFactory();
@@ -39,7 +42,11 @@ contract IndividualAminalTest is Test, IAminalStructs {
             address(genesNFT)
         );
 
-        // Setup factory
+        // Setup contracts properly
+        genesNFT.setup(address(factory));
+        genesNFT.setFactory(address(geneFactory));
+        geneAuction.setup(address(factory), address(factory));
+        proposals.setup(address(factory));
         factory.setup();
 
         // Deploy a skill

@@ -102,6 +102,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         proposals = AminalProposals(_aminalProposals);
     }
 
+    // TODO empty SVGs need to be added as part of setting up the Gene Factory
     function setup() external {
         string memory emptySVG = "";
         addBackground(emptySVG);

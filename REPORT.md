@@ -128,7 +128,7 @@ The codebase implements a sophisticated factory-based architecture that exceeds 
 **Current Implementation**: Structure complete, integration partial
 
 **AminalProposals Features**:
-- ✅ **Dual Voting Systems**: 
+- ✅ **Dual Voting Systems**:
   - Aminal voting (one Aminal = one vote)
   - Love voting (weighted by relationship strength)
 - ✅ **Proposal Types**: Add skill, remove skill proposals
@@ -137,8 +137,7 @@ The codebase implements a sophisticated factory-based architecture that exceeds 
 
 **Gaps**:
 - ⚠️ **Love Integration**: Placeholder for love calculations in voting
-- ⚠️ **Limited Proposal Types**: Only skill-related proposals implemented
-- ⚠️ **Gene Governance**: Gene NFT proposal system not integrated
+- ⚠️ **Limited Proposal Types**: Only skill-related proposals implemented, as skills are now permissionless these should be deprecated.
 
 ### 7. Testing & Quality Assurance
 
