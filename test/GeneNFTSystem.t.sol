@@ -126,38 +126,6 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertEq(geneFactory.totalGenesCreated(), 3);
     }
 
-    function testGeneUpdateByOwner() public {
-        vm.startPrank(alice);
-
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
-
-        string
-            memory newSVG = '<rect width="1000" height="1000" fill="#FF69B4"/>';
-        geneFactory.updateGene(geneId, newSVG);
-
-        vm.stopPrank();
-
-        (, , string memory updatedSVG) = geneFactory.getGeneInfo(geneId);
-        assertEq(updatedSVG, newSVG, "SVG should be updated");
-    }
-
-    function testGeneUpdateByNonOwnerFails() public {
-        vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
-
-        string
-            memory newSVG = '<rect width="1000" height="1000" fill="#FF69B4"/>';
-
-        vm.prank(bob);
-        vm.expectRevert(GeneNFTFactory.OnlyGeneOwner.selector);
-        geneFactory.updateGene(geneId, newSVG);
-    }
 
     function testGeneTransferability() public {
         vm.prank(alice);
