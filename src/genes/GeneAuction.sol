@@ -560,7 +560,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         address momAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
         address dadAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
-        aminalFactory.spawnAminalFromAuction(momAddress, dadAddress, winningGeneIds);
+        aminalFactory.spawnAminal(momAddress, dadAddress, winningGeneIds);
 
         // Update the child Aminal ID to the actual spawned Aminal index
         auction.childAminalId = aminalFactory.totalAminals() - 1;

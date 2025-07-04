@@ -103,19 +103,14 @@ contract SkillComposabilityTest is Test, IAminalStructs {
     }
 
     function testGlobalSkillAccessibility() public {
-        // Create a second Aminal
-        address aminal2Address = factory.spawnAminalForTesting(
-            address(0),
-            address(0),
-            2, // backId
-            2, // armId
-            2, // tailId
-            2, // earsId
-            2, // bodyId
-            2, // faceId
-            2, // mouthId
-            2 // miscId
-        );
+        // Create a second Aminal by temporarily enabling initial spawn
+        // Reset the initial spawn flag to allow spawning another Aminal
+        vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
+
+        Visuals[] memory additionalVisuals = new Visuals[](1);
+        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        factory.spawnInitialAminals(additionalVisuals);
+        address aminal2Address = factory.getAminalByIndex(1);
         AminalContract aminal2 = AminalContract(payable(aminal2Address));
 
         vm.deal(alice, 1 ether);
