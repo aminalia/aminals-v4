@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.20;
 
-import {ERC721S} from "src/nft/ERC721S.sol";
+import {ERC721} from "src/nft/ERC721.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
@@ -12,7 +12,7 @@ error OnlyNFTOwner();
 error OnlyFactory();
 error AlreadySetup();
 
-contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
+contract GenesNFT is ERC721("GenesNFT", "GENES"), Initializable, Ownable {
     address public aminalsNFT;
     address public geneFactory;
     uint256 public currentId;
@@ -70,8 +70,8 @@ contract GenesNFT is ERC721S("GenesNFT", "GENES"), Initializable, Ownable {
         _burn(id);
     }
 
-    function tokenURI(uint256 id) public view override returns (string memory) {
-        return string(abi.encodePacked("GENE_SVG_PLACEHOLDER"));
+    function tokenURI(uint256) public pure override returns (string memory) {
+        return "https://aminals.io/gene-metadata/";
     }
 
     /**

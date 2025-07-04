@@ -14,13 +14,11 @@ import {FeedBondingCurve} from "src/utils/FeedBondingCurve.sol";
 import {IAminal} from "src/IAminal.sol";
 import {IProposals} from "src/proposals/IProposals.sol";
 import {ISkill} from "src/skills/ISkills.sol";
-import {VisualsAuction} from "src/utils/VisualsAuction.sol";
 import {GenesNFT} from "src/nft/GenesNFT.sol";
 
 contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializable, Ownable {
     mapping(uint256 aminalId => Aminal aminal) public aminals;
     uint256 public lastAminalId;
-    VisualsAuction public visualsAuction;
     
     error NotEnoughEther();
     error NotEnoughLove();
@@ -69,19 +67,13 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
 
     event SkillVote(uint256 indexed aminalId, address sender, uint256 proposalId, bool yesNo);
 
-    modifier _onlyAuction() {
-        require(msg.sender == address(visualsAuction));
-        _;
-    }
 
     modifier _onlyProposal() {
         require(msg.sender == address(proposals));
         _;
     }
 
-    constructor(address _visualsAuction, address _aminalProposals, address _genesNFT) {
-        visualsAuction = VisualsAuction(_visualsAuction);
-
+    constructor(address _aminalProposals, address _genesNFT) {
         genesNFT = GenesNFT(_genesNFT);
 
         // TODO decide if and how this proposal address could be modified/upgraded
@@ -120,6 +112,7 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
         }
     }
 
+    // TODO: Update access control for Gene NFT auction system
     // Only callable via the auction contract on a successful breeding.
     function spawnAminal(
         uint256 aminalOne,
@@ -132,7 +125,7 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
         uint256 faceId,
         uint256 mouthId,
         uint256 miscId
-    ) public _onlyAuction returns (uint256) {
+    ) public returns (uint256) {
         return
             _spawnAminalInternal(aminalOne, aminalTwo, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
     }
@@ -249,18 +242,19 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
         return delta;
     }
 
-    function setBreeding(uint256 aminalID, bool breeding) public _onlyAuction {
-        Aminal storage aminal = aminals[aminalID];
-        aminal.breeding = breeding;
-    }
+    // TODO: Update breeding system to work with Gene NFT auctions
+    // function setBreeding(uint256 aminalID, bool breeding) public _onlyAuction {
+    //     Aminal storage aminal = aminals[aminalID];
+    //     aminal.breeding = breeding;
+    // }
 
-    function disableBreedable(uint256 aminalIdOne, uint256 aminalIdTwo) public _onlyAuction {
-        Aminal storage aminalOne = aminals[aminalIdOne];
-        Aminal storage aminalTwo = aminals[aminalIdTwo];
+    // function disableBreedable(uint256 aminalIdOne, uint256 aminalIdTwo) public _onlyAuction {
+    //     Aminal storage aminalOne = aminals[aminalIdOne];
+    //     Aminal storage aminalTwo = aminals[aminalIdTwo];
 
-        aminalOne.breedableWith[aminalIdTwo] = false;
-        aminalTwo.breedableWith[aminalIdOne] = false;
-    }
+    //     aminalOne.breedableWith[aminalIdTwo] = false;
+    //     aminalTwo.breedableWith[aminalIdOne] = false;
+    // }
 
     function breedWith(uint256 aminalIdOne, uint256 aminalIdTwo) public payable returns (uint256 ret) {
         require(msg.value >= 0.001 ether, "Not enough ether");
@@ -283,8 +277,8 @@ contract Aminals is ERC721S("Aminals", "AMINALS"), AminalsDescriptor, Initializa
         if (aminalTwo.breedableWith[aminalIdOne]) {
             require(aminalOne.energy >= 10 && aminalTwo.energy >= 10, "Aminal does not have enough energy to breed");
 
-            uint256 auctionId = visualsAuction.startAuction(aminalIdOne, aminalIdTwo); // remember to undo the
-                // breedableWith then auction ends!
+            // TODO: Integration with Gene NFT auction system
+            uint256 auctionId = 1; // Placeholder - integrate with GeneAuction
 
             emit BreedAminal(aminalIdOne, aminalIdTwo, auctionId);
 

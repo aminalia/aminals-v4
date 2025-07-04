@@ -7,7 +7,6 @@ import "forge-std/console.sol";
 import {GenesNFT} from "src/nft/GenesNFT.sol";
 import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
 import {GeneAuction} from "src/utils/GeneAuction.sol";
-import {GeneBasedDescriptor} from "src/nft/GeneBasedDescriptor.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 
 contract GeneNFTSystemTest is Test, IAminalStructs {
