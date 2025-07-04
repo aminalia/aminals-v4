@@ -225,21 +225,25 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalSkillUsageWithUnregisteredSkill() public {
         vm.deal(alice, 1 ether);
 
-        // Deploy an unregistered skill
-        Move2D unregisteredSkill = new Move2D(address(factory));
+        // Deploy another skill (all skills are globally accessible)
+        Move2D anotherSkill = new Move2D(address(factory));
 
         // Feed to get energy
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
-        // Try to use unregistered skill
-        bytes memory skillData = unregisteredSkill.getSkillData(10, 20);
+        // Use the skill (should work since all skills are accessible)
+        bytes memory skillData = anotherSkill.getSkillData(10, 20);
         vm.prank(alice);
-        vm.expectRevert();
         aminal.callSkill{value: 0.001 ether}(
-            address(unregisteredSkill),
+            address(anotherSkill),
             skillData
         );
+        
+        // Check that the skill was executed
+        (uint256 x, uint256 y) = anotherSkill.getCoords(address(aminal));
+        assertEq(x, 10);
+        assertEq(y, 20);
     }
 
     function testAminalLoveDrivenPrice() public {
@@ -294,10 +298,12 @@ contract IndividualAminalTest is Test, IAminalStructs {
     }
 
     function testAminalSkillPropertyStorageUnauthorized() public {
-        // Try to set skill property from unauthorized address
+        // Skills are globally accessible - any address can set properties
         vm.prank(alice);
-        vm.expectRevert("Only registered skills can set properties");
         aminal.setSkillProperty("test_key", bytes32("test_value"));
+        
+        bytes32 value = aminal.getSkillProperty(alice, "test_key");
+        assertEq(value, bytes32("test_value"));
     }
 
     function testAminalReceiveFunction() public {
