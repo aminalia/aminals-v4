@@ -16,6 +16,7 @@ interface IAminal is IAminalStructs {
     function getEnergy() external view returns (uint256);
     function isBreedableWith(address partner) external view returns (bool);
     function tokenURI() external view returns (string memory);
+    // Not sure if we need this...
     function transferEnergyToOwner(uint256 amount, address recipient) external;
 
     error NotEnoughEther();

@@ -7,6 +7,13 @@ import {Ownable} from "oz/access/Ownable.sol";
 import "forge-std/console.sol";
 
 contract AminalProposals is IProposals, Initializable, Ownable {
+    enum ProposalType {
+        ADD_SKILL,
+        REMOVE_SKILL,
+        ADD_GENE,
+        REMOVE_GENE
+    }
+
     mapping(uint256 => mapping(uint256 => uint256)) voted;
     mapping(uint256 => mapping(address => uint256)) loveVotes;
 
@@ -125,80 +132,6 @@ contract AminalProposals is IProposals, Initializable, Ownable {
         }
     }
 
-    // THIS IS A DEMOCRACY OF AMINALS: ONE AMINAL ONE VOTE :)
-    // TODO: change voted from 1/2 to signed int128 to represent yes/no
-    function AminalVote(
-        uint256 aminalID,
-        uint256 proposalId,
-        bool yesNo,
-        uint256 membersLength,
-        uint256 quorum,
-        uint256 requiredMajority
-    ) external _onlyAminals {
-        Proposal storage proposal = proposals[proposalId];
-        require(proposal.closed == 0);
-        // First vote
-        if (voted[proposalId][aminalID] == 0) {
-            if (yesNo) {
-                proposal.votedYes++;
-                voted[proposalId][aminalID] = 1;
-            } else {
-                proposal.votedNo++;
-                voted[proposalId][aminalID] = 2;
-            }
-            emit Voted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
-            // Changing Yes to No
-        } else if (
-            voted[proposalId][aminalID] == 1 && !yesNo && proposal.votedYes > 0
-        ) {
-            proposal.votedYes--;
-            proposal.votedNo++;
-            voted[proposalId][aminalID] = 2;
-            emit Voted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
-            // Changing No to Yes
-        } else if (
-            voted[proposalId][aminalID] == 2 && yesNo && proposal.votedNo > 0
-        ) {
-            proposal.votedYes++;
-            proposal.votedNo--;
-            voted[proposalId][aminalID] = 1;
-            emit Voted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
-        }
-
-        uint256 voteCount = proposal.votedYes + proposal.votedNo;
-        if (voteCount * 100 >= quorum * membersLength) {
-            uint256 yesPercent = (proposal.votedYes * 100) / voteCount;
-            proposal.pass = yesPercent >= requiredMajority;
-            emit VoteResult(
-                proposalId,
-                proposal.pass,
-                voteCount,
-                quorum,
-                membersLength,
-                yesPercent,
-                requiredMajority
-            );
-        }
-    }
-
     // TODO - Issues:
     // 1. quorumReached is not accurate after the vote passes and accepts a new member
     //    Unless storing it as a storage variable, we can't accurately track the status before the proposal is executed
@@ -278,60 +211,7 @@ contract AminalProposals is IProposals, Initializable, Ownable {
         return proposals.length;
     }
 
-    function proposeAddSkill(
-        uint256 aminalID,
-        string calldata skillName,
-        address skillAddress
-    ) external returns (uint256 proposalId) {
-        proposals.push(
-            Proposal({
-                proposalType: ProposalType.AddSkill,
-                proposer: msg.sender,
-                description: skillName,
-                address1: skillAddress,
-                address2: address(0),
-                amount: aminalID,
-                votedNo: 0,
-                votedYes: 0,
-                initiated: block.timestamp,
-                closed: 0,
-                pass: false
-            })
-        );
-        
-        proposalId = proposals.length - 1;
-        emit NewProposal(proposalId, ProposalType.AddSkill, msg.sender);
-        return proposalId;
-    }
-
-    function proposeRemoveSkill(
-        uint256 aminalID,
-        string calldata description,
-        address skillAddress
-    ) external returns (uint256 proposalId) {
-        proposals.push(
-            Proposal({
-                proposalType: ProposalType.RemoveSkill,
-                proposer: msg.sender,
-                description: description,
-                address1: skillAddress,
-                address2: address(0),
-                amount: aminalID,
-                votedNo: 0,
-                votedYes: 0,
-                initiated: block.timestamp,
-                closed: 0,
-                pass: false
-            })
-        );
-        
-        proposalId = proposals.length - 1;
-        emit NewProposal(proposalId, ProposalType.RemoveSkill, msg.sender);
-        return proposalId;
-    }
-
-    // THIS IS A MERITOCRACY BASED ON LOVE THAT AMINAL HAS FOR MSG.SENDER
-
+    // THIS IS A MERITOCRACY BASED ON LOVE THAT AMINAL HAS FOR MSG.SENDER <3
     function LoveVote(
         uint256 aminalID,
         address sender,
