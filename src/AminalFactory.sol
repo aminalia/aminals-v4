@@ -9,8 +9,8 @@ import {Ownable} from "oz/access/Ownable.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {IProposals} from "src/proposals/IProposals.sol";
-import {GeneAuction} from "src/utils/GeneAuction.sol";
-import {GenesNFT} from "src/nft/GenesNFT.sol";
+import {GeneAuction} from "src/genes/GeneAuction.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 
 contract AminalFactory is IAminalStructs, Initializable, Ownable {

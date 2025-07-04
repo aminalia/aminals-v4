@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.20;
 
-import {GenesNFT} from "src/nft/GenesNFT.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 

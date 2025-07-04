@@ -4,9 +4,9 @@ import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {IAminal} from "src/IAminal.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
-import {GeneAuction} from "src/utils/GeneAuction.sol";
+import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
-import {GenesNFT} from "src/nft/GenesNFT.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
 
 /*
 forge script script/AminalScript.s.sol:AminalScript --broadcast --verify -vvvv

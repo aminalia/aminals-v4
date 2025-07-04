@@ -8,10 +8,10 @@ import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
-import {GeneAuction} from "src/utils/GeneAuction.sol";
+import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
-import {GenesNFT} from "src/nft/GenesNFT.sol";
-import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
+import {GenesNFT} from "src/genes/GenesNFT.sol";
+import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 
 contract AminalFactoryTest is Test, IAminalStructs {
     AminalFactory public factory;
