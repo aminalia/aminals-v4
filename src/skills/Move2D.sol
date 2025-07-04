@@ -4,7 +4,7 @@ pragma solidity ^0.8.20;
 import "forge-std/console.sol";
 
 import {AminalFactory} from "src/AminalFactory.sol";
-import {Aminal} from "src/Aminal.sol";
+// import {Aminal} from "src/Aminal.sol"; // Deprecated
 import {ISkill} from "src/skills/ISkills.sol";
 
 contract Move2D is ISkill {

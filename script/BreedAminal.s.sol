@@ -1,30 +1,57 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import {Aminals} from "src/Aminals.sol";
+import {AminalFactory} from "src/AminalFactory.sol";
 import {IAminal} from "src/IAminal.sol";
-import {VisualsAuction} from "src/utils/VisualsAuction.sol";
+import {Aminal} from "src/Aminal.sol";
+import {GeneAuction} from "src/utils/GeneAuction.sol";
 
 contract BreedAminal is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
-        Aminals aminals = Aminals(address(vm.envAddress("AMINALS_CONTRACT")));
+        AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
+        
+        // Get the first two Aminal contract addresses
+        require(factory.totalAminals() >= 2, "Need at least 2 Aminals to breed");
+        
+        address aminal1Address = factory.aminalsByIndex(0);
+        address aminal2Address = factory.aminalsByIndex(1);
+        
+        Aminal aminal1 = Aminal(payable(aminal1Address));
+        Aminal aminal2 = Aminal(payable(aminal2Address));
 
-        for (uint256 i = 1; i <= 2; i++) {
+        // Display info for both Aminals
+        for (uint256 i = 0; i < 2; i++) {
+            address aminalAddress = factory.aminalsByIndex(i);
+            Aminal aminal = Aminal(payable(aminalAddress));
+            
             console.log("~~~~~~~~~~~~~~~");
-            console.log("Aminal ID", i);
+            console.log("Aminal Address:", aminalAddress);
             console.log(
-                "Aminal love by ID by user: ", aminals.getAminalLoveByIdByUser(i, address(vm.envAddress("ADDRESS")))
+                "Aminal love by user:", aminal.getLoveByUser(address(vm.envAddress("ADDRESS")))
             );
-            console.log("Aminal love total : ", aminals.getAminalLoveTotal(i));
-            console.log("Aminal energy total : ", aminals.getEnergy(i));
+            console.log("Aminal total love:", aminal.getTotalLove());
+            console.log("Aminal energy:", aminal.getEnergy());
             console.log("~~~~~~~~~~~~~~~");
         }
 
-        aminals.breedWith{value: 0.001 ether}(1, 2);
-        aminals.breedWith{value: 0.001 ether}(2, 1);
+        // Set breeding permissions
+        aminal1.setBreedableWith(aminal2Address, true);
+        aminal2.setBreedableWith(aminal1Address, true);
+        
+        console.log("Breeding permissions set");
+        console.log("Aminal1 can breed with Aminal2:", aminal1.isBreedableWith(aminal2Address));
+        console.log("Aminal2 can breed with Aminal1:", aminal2.isBreedableWith(aminal1Address));
+        
+        // Initiate breeding through the factory
+        uint256 totalBefore = factory.totalAminals();
+        factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
+        
+        console.log("Breeding initiated");
+        console.log("Total Aminals before:", totalBefore);
+        console.log("Total Aminals after:", factory.totalAminals());
 
         vm.stopBroadcast();
     }

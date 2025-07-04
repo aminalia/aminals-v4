@@ -7,19 +7,17 @@ import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
-import {AminalsDescriptor} from "src/nft/AminalsDescriptor.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {IProposals} from "src/proposals/IProposals.sol";
-import {VisualsAuction} from "src/utils/VisualsAuction.sol";
+import {GeneAuction} from "src/utils/GeneAuction.sol";
 import {GenesNFT} from "src/nft/GenesNFT.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 
 contract AminalFactory is IAminalStructs, Initializable, Ownable {
     uint256 public totalAminals;
-    VisualsAuction public visualsAuction;
+    GeneAuction public geneAuction;
 
     mapping(address => bool) public isAminal;
-    mapping(address => bool) public skills;
     mapping(uint256 => address) public aminalsByIndex;
 
     AminalProposals public proposals;
@@ -67,8 +65,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         address indexed aminalTwo,
         uint256 auctionId
     );
-    event SkillAdded(address skillAddress);
-    event SkillRemoved(address skillAddress);
 
     modifier onlyAminal() {
         require(isAminal[msg.sender], "Only Aminal contracts can call this");
@@ -77,7 +73,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
 
     modifier onlyAuction() {
         require(
-            msg.sender == address(visualsAuction),
+            msg.sender == address(geneAuction),
             "Only auction contract can call this"
         );
         _;
@@ -91,12 +87,14 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         _;
     }
 
-    constructor(
-        address _visualsAuction,
+    constructor() {}
+
+    function initialize(
+        address _geneAuction,
         address _aminalProposals,
         address _genesNFT
-    ) {
-        visualsAuction = VisualsAuction(_visualsAuction);
+    ) external initializer onlyOwner {
+        geneAuction = GeneAuction(_geneAuction);
         genesNFT = GenesNFT(_genesNFT);
         proposals = AminalProposals(_aminalProposals);
     }
@@ -187,6 +185,29 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             );
     }
 
+    function spawnAminalFromAuction(
+        address momAddress,
+        address dadAddress,
+        uint256[8] calldata winningGeneIds
+    ) external onlyAuction returns (address) {
+        // Map winning gene IDs to trait IDs
+        // For now, use gene IDs directly as trait IDs
+        // TODO: Implement proper gene-to-trait mapping when Gene NFT system is complete
+        return
+            _spawnAminal(
+                momAddress,
+                dadAddress,
+                winningGeneIds[0], // BACK
+                winningGeneIds[1], // ARM
+                winningGeneIds[2], // TAIL
+                winningGeneIds[3], // EARS
+                winningGeneIds[4], // BODY
+                winningGeneIds[5], // FACE
+                winningGeneIds[6], // MOUTH
+                winningGeneIds[7] // MISC
+            );
+    }
+
     function _spawnAminal(
         address momAddress,
         address dadAddress,
@@ -245,22 +266,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return aminalAddress;
     }
 
-    function addSkill(address skillAddress) external onlyProposal {
-        skills[skillAddress] = true;
-        emit SkillAdded(skillAddress);
-    }
-
-    function removeSkill(address skillAddress) external onlyProposal {
-        skills[skillAddress] = false;
-        emit SkillRemoved(skillAddress);
-    }
-
-    function isSkillRegistered(
-        address skillAddress
-    ) external view returns (bool) {
-        return skills[skillAddress];
-    }
-
     function getAminalByIndex(uint256 index) external view returns (address) {
         require(index < totalAminals, "Index out of bounds");
         return aminalsByIndex[index];
@@ -271,18 +276,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
     ) external view returns (Visuals memory) {
         require(isAminal[aminalAddress], "Not an Aminal contract");
         return AminalContract(payable(aminalAddress)).getVisuals();
-    }
-
-    // TODO this is not acceptable
-    function dataURI(uint256 tokenId) public view returns (string memory) {
-        // Basic implementation for now - in production this would generate SVG and metadata
-        return
-            string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    "eyJuYW1lIjogIkFtaW5hbCAjIiwgImRlc2NyaXB0aW9uIjogIkEgZGlnaXRhbCBwZXQgTkZUIiwgImltYWdlIjogImRhdGE6aW1hZ2Uvc3ZnK3htbDtiYXNlNjQsUEhOMlp5QjNhV1IwYUQwaU1UQXdJaUJvWldsbmFIUTlJakV3TUNJZy8rIn0="
-                )
-            );
     }
 
     function breedWith(
@@ -307,9 +300,15 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
                 "Not enough energy"
             );
 
-            auctionId = visualsAuction.startAuction(
+            // TODO this seems weird.
+            // Calculate total love for auction
+            uint256 totalLove = aminal1.getLoveByUser(msg.sender) +
+                aminal2.getLoveByUser(msg.sender);
+
+            auctionId = geneAuction.createAuction(
                 aminal1.aminalIndex(),
-                aminal2.aminalIndex()
+                aminal2.aminalIndex(),
+                totalLove
             );
             emit BreedAminal(aminalOne, aminalTwo, auctionId);
 
@@ -334,6 +333,14 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             msg.sender
         );
         return backgrounds.length - 1;
+    }
+
+    // Alias for breedWith for backwards compatibility
+    function breedAminals(
+        address aminalOne,
+        address aminalTwo
+    ) external payable returns (uint256 auctionId) {
+        return this.breedWith{value: msg.value}(aminalOne, aminalTwo);
     }
 
     function addArm(string memory arm) public returns (uint256 id) {
@@ -367,7 +374,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
     function addFace(string memory face) public returns (uint256 id) {
         VisualTrait memory trait = VisualTrait(face, msg.sender);
         faces.push(trait);
-        genesNFT.mint(msg.sender, face, VisualsCat.FACE);
         emit TraitAdded(faces.length - 1, VisualsCat.FACE, face, msg.sender);
         return faces.length - 1;
     }
@@ -384,5 +390,38 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         miscs.push(trait);
         emit TraitAdded(miscs.length - 1, VisualsCat.MISC, misc, msg.sender);
         return miscs.length - 1;
+    }
+
+    // Getter functions for array lengths
+    function getBackgroundsLength() external view returns (uint256) {
+        return backgrounds.length;
+    }
+
+    function getArmsLength() external view returns (uint256) {
+        return arms.length;
+    }
+
+    function getTailsLength() external view returns (uint256) {
+        return tails.length;
+    }
+
+    function getEarsLength() external view returns (uint256) {
+        return ears.length;
+    }
+
+    function getBodiesLength() external view returns (uint256) {
+        return bodies.length;
+    }
+
+    function getFacesLength() external view returns (uint256) {
+        return faces.length;
+    }
+
+    function getMouthsLength() external view returns (uint256) {
+        return mouths.length;
+    }
+
+    function getMiscsLength() external view returns (uint256) {
+        return miscs.length;
     }
 }

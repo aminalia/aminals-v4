@@ -4,15 +4,22 @@
 pragma solidity ^0.8.20;
 
 import {Base64} from "src/utils/Base64.sol";
-import {IAminal} from "src/IAminal.sol";
+// import {IAminal} from "src/IAminal.sol"; // Unused import
 import {IAminalStructs} from "src/IAminalStructs.sol";
-import {NFTDescriptor} from "src/nft/NFTDescriptor.sol";
 import {GenesNFT} from "src/nft/GenesNFT.sol";
 import {GeneNFTFactory} from "src/nft/GeneNFTFactory.sol";
 
-abstract contract GeneBasedDescriptor is IAminalStructs, NFTDescriptor {
+abstract contract GeneBasedDescriptor is IAminalStructs {
     uint8 private constant _ADDRESS_LENGTH = 20;
     bytes16 private constant _SYMBOLS = "0123456789abcdef";
+
+    /// @notice Token URI construction parameters
+    struct TokenURIParams {
+        string name;
+        string description;
+        string image;
+        string attributes;
+    }
 
     /// @notice Gene NFT contracts
     GenesNFT public genesNFT;
@@ -31,7 +38,7 @@ abstract contract GeneBasedDescriptor is IAminalStructs, NFTDescriptor {
     error InvalidGene();
     error OnlyFactory();
 
-    modifier onlyFactory() {
+    modifier onlyFactory() virtual {
         require(msg.sender == address(geneFactory), "Only factory can call");
         _;
     }
@@ -39,6 +46,33 @@ abstract contract GeneBasedDescriptor is IAminalStructs, NFTDescriptor {
     constructor(address _genesNFT, address _geneFactory) {
         genesNFT = GenesNFT(_genesNFT);
         geneFactory = GeneNFTFactory(_geneFactory);
+    }
+
+    /**
+     * @notice Construct an ERC721 token URI
+     * @dev Merged from NFTDescriptor contract
+     */
+    function constructTokenURI(TokenURIParams memory params) public pure returns (string memory) {
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,",
+                Base64.encode(
+                    bytes(
+                        abi.encodePacked(
+                            '{"name":"',
+                            params.name,
+                            '", "description":"',
+                            params.description,
+                            '", "image": "',
+                            params.image,
+                            '", "attributes": [',
+                            params.attributes,
+                            "]}"
+                        )
+                    )
+                )
+            )
+        );
     }
 
     /**
