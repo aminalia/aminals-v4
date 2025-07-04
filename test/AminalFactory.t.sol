@@ -82,7 +82,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Test initial state
         assertEq(aminal.getTotalLove(), 0);
-        assertEq(aminal.getEnergy(), 50 * 10 ** 18);
+        assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
         // Test feeding
@@ -92,7 +92,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         assertTrue(aminal.getLoveByUser(alice) > 0);
         assertTrue(aminal.getTotalLove() > 0);
-        assertTrue(aminal.getEnergy() > 50 * 10 ** 18);
+        assertTrue(aminal.getEnergy() > 50);
     }
 
     function testSkillUsage() public {

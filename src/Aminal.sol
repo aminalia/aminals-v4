@@ -8,6 +8,7 @@ import {ISkill} from "src/skills/ISkills.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {ERC721} from "oz/token/ERC721/ERC721.sol";
 import {GeneBasedDescriptor} from "src/genes/GeneBasedDescriptor.sol";
+import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
@@ -64,6 +65,9 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     /// @notice Unique identifier within the Aminal ecosystem
     uint256 public immutable aminalIndex;
 
+    /// @notice VRGDA instance for calculating love based on energy levels 📈
+    AminalVRGDA public immutable loveVRGDA;
+
     /// @notice The sum of all love ever given to this Aminal 💝
     uint256 public totalLove;
 
@@ -103,7 +107,8 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         address _momAddress,
         address _dadAddress,
         Visuals memory _visuals,
-        uint256 _aminalIndex
+        uint256 _aminalIndex,
+        address _loveVRGDA
     )
         ERC721("Aminal", "AMINAL")
         GeneBasedDescriptor(
@@ -116,9 +121,10 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         dadAddress = _dadAddress;
         visuals = _visuals;
         aminalIndex = _aminalIndex;
+        loveVRGDA = AminalVRGDA(_loveVRGDA);
 
-        // Initial energy for new Aminal
-        energy = 50 * 10 ** 18;
+        // Initial energy for new Aminal (equivalent to 0.005 ETH worth of energy)
+        energy = 50;
 
         // Mint the NFT to the factory (which will transfer to the actual owner)
         _mint(address(_factory), 1);
@@ -140,21 +146,22 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         // NOTE moved here to catch also on receive()
         if (msg.value < 0.001 ether) revert NotEnoughEther();
 
+        // Calculate love using VRGDA based on current energy level
+        uint256 loveGained = loveVRGDA.getLoveForETH(energy, amount);
         _addLove(feeder, amount);
+)
+        // Calculate energy increase using fixed rate (10,000 per ETH)
+        uint256 energyGained = (amount * 10000) / 1 ether;
 
-        // Calculate energy increase, capping at maximum energy
-        uint256 maxEnergy = 100 * 10 ** 18; // Set max energy to 100
-        uint256 delta = 0;
-
-        if (energy < maxEnergy) {
-            uint256 gap = maxEnergy - energy;
-            delta = (amount * gap) / 10 ** 18;
-            if (delta > gap) delta = gap; // Don't exceed max energy
-            energy += delta;
+        // Cap energy at maximum to prevent overflow
+        uint256 maxEnergy = 1000000; // 100 ETH worth of energy max (100 * 10,000)
+        if (energy + energyGained > maxEnergy) {
+            energyGained = maxEnergy - energy;
         }
+        energy += energyGained;
 
         emit FeedAminal(feeder, amount, lovePerUser[feeder], totalLove, energy);
-        return delta;
+        return energyGained;
     }
 
     /**

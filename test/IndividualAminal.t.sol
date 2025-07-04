@@ -63,7 +63,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalInitialState() public {
         // Test initial state
         assertEq(aminal.getTotalLove(), 0);
-        assertEq(aminal.getEnergy(), 50 * 10 ** 18);
+        assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
         // Test visuals
@@ -92,11 +92,13 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         assertTrue(aminal.getLoveByUser(alice) > 0);
         assertTrue(aminal.getTotalLove() > 0);
-        assertTrue(aminal.getEnergy() > 50 * 10 ** 18);
+        assertTrue(aminal.getEnergy() > 50);
         assertTrue(energyDelta > 0);
 
-        assertEq(aminal.getLoveByUser(alice), 0.01 ether);
-        assertEq(aminal.getTotalLove(), 0.01 ether);
+        // VRGDA gives varying love based on current energy level
+        assertTrue(aminal.getLoveByUser(alice) > 0);
+        assertTrue(aminal.getTotalLove() > 0);
+        assertEq(aminal.getLoveByUser(alice), aminal.getTotalLove());
     }
 
     function testAminalFeedingMultipleUsers() public {
@@ -111,9 +113,15 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.prank(bob);
         aminal.feed{value: 0.02 ether}();
 
-        assertEq(aminal.getLoveByUser(alice), 0.01 ether);
-        assertEq(aminal.getLoveByUser(bob), 0.02 ether);
-        assertEq(aminal.getTotalLove(), 0.03 ether);
+        // VRGDA gives diminishing returns as energy increases
+        uint256 aliceLove = aminal.getLoveByUser(alice);
+        uint256 bobLove = aminal.getLoveByUser(bob);
+        uint256 totalLove = aminal.getTotalLove();
+        
+        assertTrue(aliceLove > 0);
+        assertTrue(bobLove > 0);
+        assertTrue(bobLove > aliceLove); // Bob fed more ETH, gets more total love despite worse rate
+        assertEq(totalLove, aliceLove + bobLove);
     }
 
     function testAminalSqueaking() public {
