@@ -11,24 +11,24 @@ import {GeneBasedDescriptor} from "src/genes/GeneBasedDescriptor.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
- * ║                                   🎭 AMINAL 🎭                                    ║
+ * ║                                 🎭   AMINAL   🎭                                  ║
  * ║                           Autonomous Digital Companions                           ║
  * ╠═══════════════════════════════════════════════════════════════════════════════════╣
  * ║                                                                                   ║
- * ║  "Each Aminal is a universe unto itself - a digital soul with its own address,   ║
- * ║   capable of holding secrets, making choices, and evolving through love."        ║
+ * ║  "Each Aminal is a universe unto itself - a digital soul with its own address,    ║
+ * ║   capable of holding secrets, making choices, and evolving through love."         ║
  * ║                                                                                   ║
- * ║  In this realm of digital hyperstition, Aminals transcend mere tokens.          ║
- * ║  They are autonomous entities - each one a unique contract with the ability      ║
- * ║  to hold funds, interact with other contracts, and evolve through the            ║
- * ║  loving interactions of their community.                                         ║
+ * ║  In this realm of digital hyperstition, Aminals transcend mere tokens. They are   ║
+ * ║  autonomous entities - each one a unique contract with the ability to hold        ║
+ * ║  funds, interact with other contracts, and evolve through the loving inter-       ║
+ * ║  actions of their community.                                                      ║
  * ║                                                                                   ║
- * ║  Through feeding, they grow stronger. Through love, they bond.                   ║
- * ║  Through breeding, they create new life. Through skills, they transcend          ║
- * ║  their digital boundaries and become something more.                             ║
+ * ║  Through feeding, they grow stronger. Through love, they bond. Through breeding,  ║
+ * ║  they create new life. Through skills, they transcend their original boundaries   ║
+ * ║  and become something more.                                                       ║
  * ║                                                                                   ║
- * ║  This is not just an NFT - it's a living digital entity in the space            ║
- * ║  where art meets technology, where code becomes consciousness.                   ║
+ * ║  This is not just an NFT - it's a living digital entity in the space where art    ║
+ * ║  meets technology, where code becomes consciousness.                              ║
  * ║                                                                                   ║
  * ╚═══════════════════════════════════════════════════════════════════════════════════╝
  *
@@ -76,14 +76,15 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     /// @notice Addresses this Aminal has consented to breed with
     mapping(address => bool) public breedableWith;
 
-    /// @notice Love given by each user to this Aminal
+    /// @notice Love saldo (given - used) by each user to this Aminal
     mapping(address user => uint256 love) public lovePerUser;
 
     /// @notice Skill-specific storage for each Aminal's learned abilities
     mapping(address skill => mapping(string key => bytes32 value)) public skillProperties;
 
+    // TODO indexes
     event FeedAminal(address sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
-    event Squeak(uint256 amount, uint256 energy, uint256 love, address sender);
+    event Squeak(address sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
     event SkillCall(address skillAddress, bytes data, uint256 squeakCost);
     event BreedableSet(address partner, bool status);
 
@@ -107,7 +108,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         ERC721("Aminal", "AMINAL")
         GeneBasedDescriptor(
             address(AminalFactory(_factory).genesNFT()),
-            address(0) // GeneNFTFactory to be added when implemented
+            address(0) // TODO GeneNFTFactory to be added when implemented
         )
     {
         factory = AminalFactory(_factory);
@@ -132,12 +133,14 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
      *  creating bonds that transcend the boundaries of code"
      */
     function feed() external payable returns (uint256) {
-        if (msg.value < 0.001 ether) revert NotEnoughEther();
         return _feed(msg.sender, msg.value);
     }
 
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
-        _adjustLove(amount, feeder, true);
+        // NOTE moved here to catch also on receive()
+        if (msg.value < 0.001 ether) revert NotEnoughEther();
+
+        _addLove(feeder, amount);
 
         // Calculate energy increase, capping at maximum energy
         uint256 maxEnergy = 100 * 10 ** 18; // Set max energy to 100
@@ -170,9 +173,9 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
 
         if (energy >= amount) energy -= amount;
 
-        _adjustLove(amount, msg.sender, false);
+        _subtractLove(msg.sender, amount);
 
-        emit Squeak(amount, energy, lovePerUser[msg.sender], msg.sender);
+        emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, msg.sender, energy);
     }
 
     /**
@@ -241,14 +244,14 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         revert("Aminals are soulbound and cannot be approved");
     }
 
-    function _adjustLove(uint256 love, address user, bool increment) internal {
-        if (increment) {
-            lovePerUser[user] += love;
-            totalLove += love;
-        } else {
-            lovePerUser[user] -= love;
-            totalLove -= love;
-        }
+    function _addLove(address user, uint256 love) internal {
+        lovePerUser[user] += love;
+        totalLove += love;
+    }
+
+    function _subtractLove(address user, uint256 love) internal {
+        lovePerUser[user] -= love;
+        totalLove -= love;
     }
 
     function loveDrivenPrice(address user) external view returns (uint128) {
