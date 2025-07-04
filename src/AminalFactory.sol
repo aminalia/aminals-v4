@@ -16,6 +16,7 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 contract AminalFactory is IAminalStructs, Initializable, Ownable {
     uint256 public totalAminals;
     GeneAuction public geneAuction;
+    bool public initialAminalSpawned;
 
     mapping(address => bool) public isAminal;
     mapping(uint256 => address) public aminalsByIndex;
@@ -87,7 +88,9 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         _;
     }
 
-    constructor() {}
+    constructor() {
+        _transferOwnership(msg.sender);
+    }
 
     function initialize(
         address _geneAuction,
@@ -113,7 +116,9 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
 
     function spawnInitialAminals(
         Visuals[] calldata _visuals
-    ) external initializer onlyOwner {
+    ) external onlyOwner {
+        require(!initialAminalSpawned, "Initial Aminals already spawned");
+        initialAminalSpawned = true;
         for (uint256 i = 0; i < _visuals.length; i++) {
             _spawnAminal(
                 address(0),
@@ -157,6 +162,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             );
     }
 
+    // TODO remove this, use prank instead to spawn Aminals in tests
     // For testing purposes - allows owner to spawn additional Aminals
     function spawnAminalForTesting(
         address momAddress,
@@ -278,6 +284,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return AminalContract(payable(aminalAddress)).getVisuals();
     }
 
+    // TODO rename to breedAminals
     function breedWith(
         address aminalOne,
         address aminalTwo
@@ -335,6 +342,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return backgrounds.length - 1;
     }
 
+    // TODO breedAminals should replace breedWith, we don't need keep both
     // Alias for breedWith for backwards compatibility
     function breedAminals(
         address aminalOne,
