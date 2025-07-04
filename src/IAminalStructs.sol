@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 pragma solidity ^0.8.20;
 
+// TODO does this need to be separate from IAminal?
 interface IAminalStructs {
     struct Aminal {
         uint256 momId;
