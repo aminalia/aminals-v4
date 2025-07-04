@@ -278,7 +278,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             VisualsCat category = VisualsCat(i);
             CategoryBidding storage categoryBidding = auction.categoryBids[category];
             
-            if (categoryBidding.winningGeneId != 0) {
+            if (categoryBidding.highestBid > 0) {
                 winningGeneIds[i] = categoryBidding.winningGeneId;
                 uint256 winningBid = categoryBidding.geneBids[categoryBidding.winningGeneId];
                 

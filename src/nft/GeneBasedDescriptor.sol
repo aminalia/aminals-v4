@@ -163,7 +163,6 @@ abstract contract GeneBasedDescriptor is IAminalStructs, NFTDescriptor {
             uint256 geneId = getAminalGene(tokenId, category);
             
             if (geneId != 0) {
-                (, , string memory svg) = geneFactory.getGeneInfo(geneId);
                 address creator = genesNFT.ownerOf(geneId);
                 
                 string memory categoryName = _getCategoryName(category);
