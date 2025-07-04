@@ -124,22 +124,6 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         // Currently this is just for compatibility with tests
     }
 
-    // For testing purposes only - allows spawning individual Aminals
-    function spawnAminalForTesting(
-        address momAddress,
-        address dadAddress,
-        uint256 backId,
-        uint256 armId,
-        uint256 tailId,
-        uint256 earsId,
-        uint256 bodyId,
-        uint256 faceId,
-        uint256 mouthId,
-        uint256 miscId
-    ) external onlyOwner returns (address) {
-        return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
-    }
-
     /**
      * @notice Spawn the genesis Aminals to seed the ecosystem 🌱
      * @dev Can only be called once by the owner to create initial population
@@ -167,22 +151,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         }
     }
 
-    function spawnAminal(
-        address momAddress,
-        address dadAddress,
-        uint256 backId,
-        uint256 armId,
-        uint256 tailId,
-        uint256 earsId,
-        uint256 bodyId,
-        uint256 faceId,
-        uint256 mouthId,
-        uint256 miscId
-    ) external onlyAuction returns (address) {
-        return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
-    }
-
-    function spawnAminalFromAuction(address momAddress, address dadAddress, uint256[8] calldata winningGeneIds)
+    function spawnAminal(address momAddress, address dadAddress, uint256[8] calldata winningGeneIds)
         external
         onlyAuction
         returns (address)
