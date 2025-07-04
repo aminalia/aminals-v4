@@ -36,11 +36,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(
-            address(geneAuction),
-            address(proposals),
-            address(genesNFT)
-        );
+        factory.initialize(address(geneAuction), address(proposals), address(genesNFT));
 
         // Setup contracts properly
         genesNFT.setup(address(factory));
@@ -57,16 +53,8 @@ contract SkillComposabilityTest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -85,10 +73,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         // Use the MoveTwice skill which calls Move2D skill twice
         bytes memory skillData = moveTwiceSkill.getSkillData(10, 20, 30, 40);
         vm.prank(alice);
-        aminal.callSkill{value: 0.002 ether}(
-            address(moveTwiceSkill),
-            skillData
-        );
+        aminal.callSkill{value: 0.002 ether}(address(moveTwiceSkill), skillData);
 
         // Check final coordinates (should be at second move position)
         (uint256 x, uint256 y) = move2DSkill.getCoords(address(aminal));
@@ -96,10 +81,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         assertEq(y, 40, "Y coordinate should be 40 after second move");
 
         // Energy should be consumed by the skill calls
-        assertTrue(
-            aminal.getEnergy() < initialEnergy,
-            "Energy should be consumed"
-        );
+        assertTrue(aminal.getEnergy() < initialEnergy, "Energy should be consumed");
     }
 
     function testSkillComposabilityWithMinimalValue() public {
@@ -112,10 +94,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         // Use MoveTwice skill with minimal value (it splits value in half)
         bytes memory skillData = moveTwiceSkill.getSkillData(10, 20, 30, 40);
         vm.prank(alice);
-        aminal.callSkill{value: 0.0001 ether}(
-            address(moveTwiceSkill),
-            skillData
-        );
+        aminal.callSkill{value: 0.0001 ether}(address(moveTwiceSkill), skillData);
 
         // Should still work since MoveTwice splits the value
         (uint256 x, uint256 y) = move2DSkill.getCoords(address(aminal));

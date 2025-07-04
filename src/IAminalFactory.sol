@@ -11,11 +11,9 @@ interface IAminalFactory is IAminalStructs {
      * @param winningGeneIds Array of winning gene IDs for each trait category
      * @return Address of the newly spawned Aminal
      */
-    function spawnAminalFromAuction(
-        address momAddress,
-        address dadAddress,
-        uint256[8] calldata winningGeneIds
-    ) external returns (address);
+    function spawnAminalFromAuction(address momAddress, address dadAddress, uint256[8] calldata winningGeneIds)
+        external
+        returns (address);
 
     /**
      * @notice Check if an address is an Aminal contract
@@ -36,9 +34,7 @@ interface IAminalFactory is IAminalStructs {
      * @param aminalAddress Address of the Aminal
      * @return Visuals struct containing trait IDs
      */
-    function getAminalVisualsByAddress(
-        address aminalAddress
-    ) external view returns (Visuals memory);
+    function getAminalVisualsByAddress(address aminalAddress) external view returns (Visuals memory);
 
     /**
      * @notice Get total number of Aminals

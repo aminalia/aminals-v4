@@ -34,19 +34,14 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
     uint256 public constant MIN_CREATION_FEE = 0.001 ether;
 
     /// @notice Maximum SVG length to prevent bloated storage
-    uint256 public constant MAX_SVG_LENGTH = 50000; // 50KB limit
+    uint256 public constant MAX_SVG_LENGTH = 50_000; // 50KB limit
 
     error InsufficientFee();
     error SVGTooLarge();
     error EmptySVG();
     error InvalidSVG();
 
-    event GeneCreated(
-        uint256 indexed geneId,
-        address indexed creator,
-        VisualsCat indexed category,
-        string svg
-    );
+    event GeneCreated(uint256 indexed geneId, address indexed creator, VisualsCat indexed category, string svg);
 
     constructor(address _geneNFT) {
         geneNFT = GenesNFT(_geneNFT);
@@ -59,10 +54,7 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
      * @param category The visual category for the trait
      * @return geneId The ID of the created Gene NFT
      */
-    function createGene(
-        string calldata svg,
-        VisualsCat category
-    ) external payable returns (uint256 geneId) {
+    function createGene(string calldata svg, VisualsCat category) external payable returns (uint256 geneId) {
         if (msg.value < MIN_CREATION_FEE) revert InsufficientFee();
         if (bytes(svg).length == 0) revert EmptySVG();
         if (bytes(svg).length > MAX_SVG_LENGTH) revert SVGTooLarge();
@@ -105,9 +97,7 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
      * @return category The visual category
      * @return svg The SVG content
      */
-    function getGeneInfo(
-        uint256 geneId
-    )
+    function getGeneInfo(uint256 geneId)
         external
         view
         returns (address creator, VisualsCat category, string memory svg)
@@ -120,15 +110,11 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
      * @param creator The creator address
      * @return geneIds Array of Gene NFT IDs created by the address
      */
-    function getGenesByCreator(
-        address creator
-    ) external view returns (uint256[] memory geneIds) {
+    function getGenesByCreator(address creator) external view returns (uint256[] memory geneIds) {
         // Count genes by creator
         uint256 count = 0;
         for (uint256 i = 0; i < totalGenesCreated; i++) {
-            if (geneCreators[i] == creator) {
-                count++;
-            }
+            if (geneCreators[i] == creator) count++;
         }
 
         // Build array of gene IDs
@@ -147,15 +133,11 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
      * @param category The visual category
      * @return geneIds Array of Gene NFT IDs in the category
      */
-    function getGenesByCategory(
-        VisualsCat category
-    ) external view returns (uint256[] memory geneIds) {
+    function getGenesByCategory(VisualsCat category) external view returns (uint256[] memory geneIds) {
         // Count genes by category
         uint256 count = 0;
         for (uint256 i = 0; i < totalGenesCreated; i++) {
-            if (geneCategories[i] == category) {
-                count++;
-            }
+            if (geneCategories[i] == category) count++;
         }
 
         // Build array of gene IDs
@@ -174,7 +156,7 @@ contract GeneNFTFactory is IAminalStructs, Ownable {
      */
     function withdrawFees() external onlyOwner {
         uint256 balance = address(this).balance;
-        (bool success, ) = payable(owner()).call{value: balance}("");
+        (bool success,) = payable(owner()).call{value: balance}("");
         require(success, "Withdrawal failed");
     }
 
