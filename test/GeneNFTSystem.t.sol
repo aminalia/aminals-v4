@@ -10,14 +10,14 @@ import {GeneAuction} from "src/utils/GeneAuction.sol";
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {IAminalFactory} from "src/IAminalFactory.sol";
-import {MockAminalProposals} from "test/mocks/MockAminalProposals.sol";
+import {AminalProposals} from "src/proposals/AminalProposals.sol";
 
 contract GeneNFTSystemTest is Test, IAminalStructs {
     GenesNFT public genesNFT;
     GeneNFTFactory public geneFactory;
     GeneAuction public geneAuction;
     AminalFactory public aminalFactory;
-    MockAminalProposals public proposals;
+    AminalProposals public proposals;
 
     address public alice = address(0x1);
     address public bob = address(0x2);
@@ -36,7 +36,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         genesNFT = new GenesNFT();
         geneFactory = new GeneNFTFactory(address(genesNFT));
         geneAuction = new GeneAuction(address(genesNFT), address(geneFactory));
-        proposals = new MockAminalProposals();
+        proposals = new AminalProposals();
 
         // Deploy AminalFactory
         aminalFactory = new AminalFactory();
@@ -50,6 +50,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         genesNFT.setup(address(aminalFactory)); // AminalFactory acts as Aminals contract
         genesNFT.setFactory(address(geneFactory));
         geneAuction.setup(address(this), address(aminalFactory)); // This contract acts as Aminals contract for testing
+        proposals.setup(address(aminalFactory));
         aminalFactory.setup();
 
         // Give test accounts some ETH
