@@ -12,6 +12,7 @@ import {IProposals} from "src/proposals/IProposals.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
+import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
@@ -73,6 +74,9 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
     /// @notice Gene NFT system for trait management 🎨
     GenesNFT public genesNFT;
 
+    /// @notice VRGDA for calculating love based on energy levels 📈
+    AminalVRGDA public loveVRGDA;
+
     event AminalSpawned(
         address indexed aminalAddress,
         uint256 indexed aminalIndex,
@@ -120,8 +124,14 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
     }
 
     function setup() external onlyOwner {
-        // Additional setup logic if needed
-        // Currently this is just for compatibility with tests
+        // Deploy VRGDA with optimal parameters for love curves
+        // Parameters: targetPrice, priceDecayPercent, logisticAsymptote, timeScale
+        loveVRGDA = new AminalVRGDA(
+            1 ether,        // 1 ETH base price
+            0.1 ether,      // 10% price decay
+            100 ether,      // Logistic asymptote at 100 units
+            20 ether        // Time scale for curve smoothness
+        );
     }
 
     /**
@@ -194,7 +204,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             miscId: miscId
         });
 
-        AminalContract newAminal = new AminalContract(address(this), momAddress, dadAddress, visuals, totalAminals);
+        AminalContract newAminal = new AminalContract(address(this), momAddress, dadAddress, visuals, totalAminals, address(loveVRGDA));
 
         address aminalAddress = address(newAminal);
         isAminal[aminalAddress] = true;
