@@ -18,7 +18,11 @@ contract MoveTwice is ISkill {
         mover = _mover;
     }
 
-    function useSkill(address sender, address aminalContract, bytes calldata data) public payable returns (uint256 squeak) {
+    function useSkill(address sender, address aminalContract, bytes calldata data)
+        public
+        payable
+        returns (uint256 squeak)
+    {
         require(factory.isAminal(msg.sender), "Only Aminal contracts can call this");
         require(msg.sender == aminalContract, "Aminal contract mismatch");
         (bytes memory data1, bytes memory data2) = abi.decode(data, (bytes, bytes));

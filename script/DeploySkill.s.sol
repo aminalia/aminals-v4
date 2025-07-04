@@ -21,7 +21,7 @@ contract DeploySkill is Script {
 
         // Deploy a Move2D skill
         Move2D move2DSkill = new Move2D(address(factory));
-        
+
         console.log("Move2D skill deployed to:", address(move2DSkill));
         console.log("Factory address:", address(factory));
         console.log("Skills are globally accessible - no registration required");

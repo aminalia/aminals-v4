@@ -21,10 +21,10 @@ contract SpawnAminal is Script {
 
         // Create new Aminal with specified visuals
         newVisuals.push(IAminalStructs.Visuals(1, 2, 1, 2, 1, 2, 1, 2));
-        
+
         // Spawn the new Aminal through factory
         factory.spawnInitialAminals(newVisuals);
-        
+
         console.log("New Aminal spawned through factory");
         console.log("Total Aminals:", factory.totalAminals());
 

@@ -20,7 +20,7 @@ import {IAminalStructs} from "src/IAminalStructs.sol";
  * 3. Gene auction is created with voting and proposals
  * 4. Child is born based on voted genes (or random if no votes)
  * 5. Holders of selected gene NFTs are paid out
- * 
+ *
  * This test uses NO MOCKS and tests the complete real system.
  */
 contract AminalBreedingIntegrationTest is Test, IAminalStructs {
@@ -38,22 +38,16 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     address public eve = address(0x5);
 
     // Sample SVG content for testing
-    string constant SAMPLE_BACKGROUND =
-        '<rect width="1000" height="1000" fill="#87CEEB"/>';
-    string constant SAMPLE_ARMS = 
+    string constant SAMPLE_BACKGROUND = '<rect width="1000" height="1000" fill="#87CEEB"/>';
+    string constant SAMPLE_ARMS =
         '<rect x="200" y="400" width="50" height="200" fill="#FFB6C1"/><rect x="750" y="400" width="50" height="200" fill="#FFB6C1"/>';
-    string constant SAMPLE_TAIL =
-        '<ellipse cx="500" cy="800" rx="30" ry="100" fill="#DDA0DD"/>';
+    string constant SAMPLE_TAIL = '<ellipse cx="500" cy="800" rx="30" ry="100" fill="#DDA0DD"/>';
     string constant SAMPLE_EARS =
         '<ellipse cx="400" cy="200" rx="50" ry="80" fill="#F0E68C"/><ellipse cx="600" cy="200" rx="50" ry="80" fill="#F0E68C"/>';
-    string constant SAMPLE_BODY =
-        '<ellipse cx="500" cy="600" rx="150" ry="200" fill="#DDA0DD"/>';
-    string constant SAMPLE_FACE =
-        '<circle cx="500" cy="400" r="100" fill="#FFB6C1"/>';
-    string constant SAMPLE_MOUTH =
-        '<ellipse cx="500" cy="450" rx="30" ry="15" fill="#FF69B4"/>';
-    string constant SAMPLE_MISC =
-        '<rect x="480" y="350" width="40" height="5" fill="#000"/>';
+    string constant SAMPLE_BODY = '<ellipse cx="500" cy="600" rx="150" ry="200" fill="#DDA0DD"/>';
+    string constant SAMPLE_FACE = '<circle cx="500" cy="400" r="100" fill="#FFB6C1"/>';
+    string constant SAMPLE_MOUTH = '<ellipse cx="500" cy="450" rx="30" ry="15" fill="#FF69B4"/>';
+    string constant SAMPLE_MISC = '<rect x="480" y="350" width="40" height="5" fill="#000"/>';
 
     // Gene NFT IDs that will be created
     uint256 public backgroundGeneId;
@@ -80,11 +74,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Deploy AminalFactory
         factory = new AminalFactory();
-        factory.initialize(
-            address(geneAuction),
-            address(proposals),
-            address(genesNFT)
-        );
+        factory.initialize(address(geneAuction), address(proposals), address(genesNFT));
 
         // Setup contracts
         genesNFT.setup(address(factory));
@@ -109,26 +99,10 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
     function _createParentAminals() internal {
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
-        initialVisuals[1] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+        initialVisuals[1] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
         factory.spawnInitialAminals(initialVisuals);
         aminal1Address = factory.getAminalByIndex(0);
@@ -140,59 +114,35 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function _createGeneNFTs() internal {
         // Alice creates background gene
         vm.prank(alice);
-        backgroundGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        backgroundGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Bob creates arms gene
         vm.prank(bob);
-        armsGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_ARMS,
-            VisualsCat.ARM
-        );
+        armsGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_ARMS, VisualsCat.ARM);
 
         // Charlie creates tail gene
         vm.prank(charlie);
-        tailGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_TAIL,
-            VisualsCat.TAIL
-        );
+        tailGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_TAIL, VisualsCat.TAIL);
 
         // David creates ears gene
         vm.prank(david);
-        earsGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_EARS,
-            VisualsCat.EARS
-        );
+        earsGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_EARS, VisualsCat.EARS);
 
         // Eve creates body gene
         vm.prank(eve);
-        bodyGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BODY,
-            VisualsCat.BODY
-        );
+        bodyGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BODY, VisualsCat.BODY);
 
         // Alice creates face gene
         vm.prank(alice);
-        faceGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_FACE,
-            VisualsCat.FACE
-        );
+        faceGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_FACE, VisualsCat.FACE);
 
         // Bob creates mouth gene
         vm.prank(bob);
-        mouthGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_MOUTH,
-            VisualsCat.MOUTH
-        );
+        mouthGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_MOUTH, VisualsCat.MOUTH);
 
         // Charlie creates misc gene
         vm.prank(charlie);
-        miscGeneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_MISC,
-            VisualsCat.MISC
-        );
+        miscGeneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_MISC, VisualsCat.MISC);
     }
 
     /**
@@ -244,12 +194,12 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.prank(alice);
         aminal1.feed{value: 1 ether}();
         console.log("Fed aminal1, love now:", aminal1.getLoveByUser(alice));
-        
+
         console.log("Feeding aminal2...");
         vm.prank(alice);
         aminal2.feed{value: 1 ether}();
         console.log("Fed aminal2, love now:", aminal2.getLoveByUser(alice));
-        
+
         // Feed more to ensure we have enough love (breeding checks both aminals)
         console.log("Additional feeding to ensure sufficient love...");
         vm.prank(alice);
@@ -273,7 +223,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 aminal2Love = aminal2.getLoveByUser(alice);
         console.log("Checking love requirements - need 10, Aminal1 has:", aminal1Love);
         console.log("Checking love requirements - need 10, Aminal2 has:", aminal2Love);
-        
+
         assertTrue(aminal1Love >= 10, "Aminal 1 needs at least 10 love");
         assertTrue(aminal2Love >= 10, "Aminal 2 needs at least 10 love");
         assertTrue(aminal1.getEnergy() >= 10, "Aminal 1 needs at least 10 energy");
@@ -288,7 +238,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Aminal2 love:", aminal2.getLoveByUser(alice));
 
         console.log("Step 1: Alice sets aminal2 as breedable with aminal1");
-        
+
         // Step 1: Alice sets aminal2 as breedable with aminal1 first
         vm.prank(alice);
         aminal2.setBreedableWith(aminal1Address, true);
@@ -296,18 +246,18 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         console.log("Step 2: Alice calls breedWith to create the auction");
         console.log("This should succeed because aminal2.isBreedableWith(aminal1) = true");
-        
+
         // Step 2: Now call breedWith - this should create an auction because:
         // - aminal1 is NOT breedable with aminal2 (passes the require check)
         // - aminal2 IS breedable with aminal1 (triggers auction creation)
         vm.prank(alice);
-        auctionId = factory.breedWith{value: 0.001 ether}(aminal1Address, aminal2Address);
+        auctionId = factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
 
         console.log("Auction created with ID:", auctionId);
 
         // Verify auction was created
         assertTrue(geneAuction.isVotingActive(auctionId), "Voting should be active");
-        
+
         (
             uint256 aminalOne,
             uint256 aminalTwo,
@@ -328,7 +278,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Auction info verified - Parent indices:", aminalOne, aminalTwo);
         console.log("Total love:", totalLove);
         console.log("Auction duration: 7 days");
-        
+
         return auctionId;
     }
 
@@ -338,25 +288,25 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Propose genes for all categories
         vm.prank(alice);
         geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
-        
+
         vm.prank(bob);
         geneAuction.proposeGene(auctionId, VisualsCat.ARM, armsGeneId);
-        
+
         vm.prank(charlie);
         geneAuction.proposeGene(auctionId, VisualsCat.TAIL, tailGeneId);
-        
+
         vm.prank(david);
         geneAuction.proposeGene(auctionId, VisualsCat.EARS, earsGeneId);
-        
+
         vm.prank(eve);
         geneAuction.proposeGene(auctionId, VisualsCat.BODY, bodyGeneId);
-        
+
         vm.prank(alice);
         geneAuction.proposeGene(auctionId, VisualsCat.FACE, faceGeneId);
-        
+
         vm.prank(bob);
         geneAuction.proposeGene(auctionId, VisualsCat.MOUTH, mouthGeneId);
-        
+
         vm.prank(charlie);
         geneAuction.proposeGene(auctionId, VisualsCat.MISC, miscGeneId);
 
@@ -379,7 +329,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Vote on genes using love-based voting power
         // Each voter uses their love/voting power to vote on genes
-        
+
         // Alice votes on background gene with 10% of her voting power
         vm.prank(alice);
         geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 10);
@@ -441,7 +391,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         geneAuction.settleAuction(auctionId);
 
         // Verify voting is settled
-        (, , , , , bool settled, ) = geneAuction.getAuctionInfo(auctionId);
+        (,,,,, bool settled,) = geneAuction.getAuctionInfo(auctionId);
         assertTrue(settled, "Voting should be settled");
 
         // Verify a new Aminal was created
@@ -450,7 +400,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Verify energy was transferred from parents (10% each)
         uint256 aminal1EnergyAfter = aminal1.getEnergy();
         uint256 aminal2EnergyAfter = aminal2.getEnergy();
-        
+
         assertTrue(aminal1EnergyAfter < aminal1EnergyBefore, "Parent 1 should have lost energy");
         assertTrue(aminal2EnergyAfter < aminal2EnergyBefore, "Parent 2 should have lost energy");
 
@@ -468,10 +418,10 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Verify child exists and is valid
         assertTrue(factory.isAminal(childAddress), "Child should be a valid Aminal");
-        
+
         // Verify child traits match winning genes
         Visuals memory childVisuals = child.getVisuals();
-        
+
         // The child should have the gene IDs from the winning votes
         assertEq(childVisuals.backId, backgroundGeneId, "Child should have winning background gene");
         assertEq(childVisuals.armId, armsGeneId, "Child should have winning arms gene");
@@ -495,7 +445,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Verify gene NFT owners received energy transfers
         // Note: In the new system, gene owners receive energy transfers instead of ETH
         // The settlement should transfer 10% of parent energy to gene NFT owners
-        
+
         console.log("Gene NFT owners should have received energy transfers");
         console.log("Alice owns background and face genes");
         console.log("Bob owns arms and mouth genes");
@@ -534,7 +484,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.prank(alice);
         AminalContract(payable(testAminal2)).setBreedableWith(testAminal1, true);
         vm.prank(alice);
-        uint256 auctionId = factory.breedWith{value: 0.001 ether}(testAminal1, testAminal2);
+        uint256 auctionId = factory.breedAminals{value: 0.001 ether}(testAminal1, testAminal2);
 
         // Don't propose any genes - let it use defaults
 
@@ -566,7 +516,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Get voting powers for each user
         uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
-        
+
         // Multiple people vote on the same gene (alice has voting power from feeding the parents)
         vm.prank(alice);
         geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 4);

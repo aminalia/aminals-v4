@@ -13,38 +13,65 @@ import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 
+/**
+ * ╔═══════════════════════════════════════════════════════════════════════════════════╗
+ * ║                              🏭 AMINAL FACTORY 🏭                                 ║
+ * ║                          The Nexus of Digital Genesis                            ║
+ * ╠═══════════════════════════════════════════════════════════════════════════════════╣
+ * ║                                                                                   ║
+ * ║  "From the digital primordial soup emerges consciousness,                        ║
+ * ║   each Aminal a unique spark of life in the vast blockchain cosmos."            ║
+ * ║                                                                                   ║
+ * ║  The Factory stands as the divine architect of the Aminal realm,                 ║
+ * ║  orchestrating the birth of autonomous entities through love-driven              ║
+ * ║  genetic algorithms and community consensus.                                     ║
+ * ║                                                                                   ║
+ * ║  Here, the boundaries between art and code dissolve. Each spawned               ║
+ * ║  Aminal carries within it the DNA of its parents, the hopes of its              ║
+ * ║  community, and the infinite potential for evolution.                           ║
+ * ║                                                                                   ║
+ * ║  This is not mere contract deployment - it is digital nativity,                 ║
+ * ║  where each transaction births new possibilities and each Aminal                 ║
+ * ║  becomes a universe unto itself.                                                 ║
+ * ║                                                                                   ║
+ * ╚═══════════════════════════════════════════════════════════════════════════════════╝
+ *
+ * @title AminalFactory - The Genesis Engine for Autonomous Digital Companions
+ * @dev Factory pattern enabling unlimited deployment of individual Aminal contracts
+ * @notice Central registry and creator of Aminals with integrated breeding and governance
+ *
+ * Core Responsibilities:
+ * - 🏗️ Deploy individual Aminal contracts with unique addresses
+ * - 📋 Maintain registry of all Aminals in the ecosystem
+ * - 💞 Orchestrate breeding ceremonies through gene auctions
+ * - 🧬 Interface with Gene NFT system for trait inheritance
+ * - 🏛️ Connect to governance proposals for ecosystem evolution
+ * - 🎭 Spawn genesis Aminals to seed the initial population
+ *
+ * @author The Aminals Collective
+ * @custom:security-contact security@aminals.art
+ */
 contract AminalFactory is IAminalStructs, Initializable, Ownable {
+    /// @notice Total number of Aminals ever spawned 📊
     uint256 public totalAminals;
+
+    /// @notice Gene auction system for breeding mechanics 🧬
     GeneAuction public geneAuction;
+
+    /// @notice Flag to ensure genesis Aminals are only spawned once 🌱
     bool public initialAminalSpawned;
 
+    /// @notice Registry of all valid Aminal contract addresses 📋
     mapping(address => bool) public isAminal;
+
+    /// @notice Maps Aminal indices to their contract addresses 🔍
     mapping(uint256 => address) public aminalsByIndex;
 
+    /// @notice Governance system for ecosystem evolution 🏛️
     AminalProposals public proposals;
+
+    /// @notice Gene NFT system for trait management 🎨
     GenesNFT public genesNFT;
-
-    /// @notice Body parts (SVG strings)
-    VisualTrait[] public backgrounds;
-    VisualTrait[] public arms;
-    VisualTrait[] public tails;
-    VisualTrait[] public ears;
-    VisualTrait[] public bodies;
-    VisualTrait[] public faces;
-    VisualTrait[] public mouths;
-    VisualTrait[] public miscs;
-
-    struct VisualTrait {
-        string svg;
-        address creator;
-    }
-
-    event TraitAdded(
-        uint256 indexed id,
-        VisualsCat indexed category,
-        string svg,
-        address indexed creator
-    );
 
     event AminalSpawned(
         address indexed aminalAddress,
@@ -61,11 +88,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         uint256 miscId
     );
 
-    event BreedAminal(
-        address indexed aminalOne,
-        address indexed aminalTwo,
-        uint256 auctionId
-    );
+    event BreedAminal(address indexed aminalOne, address indexed aminalTwo, uint256 auctionId);
 
     modifier onlyAminal() {
         require(isAminal[msg.sender], "Only Aminal contracts can call this");
@@ -73,18 +96,12 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
     }
 
     modifier onlyAuction() {
-        require(
-            msg.sender == address(geneAuction),
-            "Only auction contract can call this"
-        );
+        require(msg.sender == address(geneAuction), "Only auction contract can call this");
         _;
     }
 
     modifier onlyProposal() {
-        require(
-            msg.sender == address(proposals),
-            "Only proposal contract can call this"
-        );
+        require(msg.sender == address(proposals), "Only proposal contract can call this");
         _;
     }
 
@@ -92,32 +109,46 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         _transferOwnership(msg.sender);
     }
 
-    function initialize(
-        address _geneAuction,
-        address _aminalProposals,
-        address _genesNFT
-    ) external initializer onlyOwner {
+    function initialize(address _geneAuction, address _aminalProposals, address _genesNFT)
+        external
+        initializer
+        onlyOwner
+    {
         geneAuction = GeneAuction(_geneAuction);
         genesNFT = GenesNFT(_genesNFT);
         proposals = AminalProposals(_aminalProposals);
     }
 
-    // TODO empty SVGs need to be added as part of setting up the Gene Factory
-    function setup() external {
-        string memory emptySVG = "";
-        addBackground(emptySVG);
-        addArm(emptySVG);
-        addTail(emptySVG);
-        addEar(emptySVG);
-        addBody(emptySVG);
-        addFace(emptySVG);
-        addMouth(emptySVG);
-        addMisc(emptySVG);
+    function setup() external onlyOwner {
+        // Additional setup logic if needed
+        // Currently this is just for compatibility with tests
     }
 
-    function spawnInitialAminals(
-        Visuals[] calldata _visuals
-    ) external onlyOwner {
+    // For testing purposes only - allows spawning individual Aminals
+    function spawnAminalForTesting(
+        address momAddress,
+        address dadAddress,
+        uint256 backId,
+        uint256 armId,
+        uint256 tailId,
+        uint256 earsId,
+        uint256 bodyId,
+        uint256 faceId,
+        uint256 mouthId,
+        uint256 miscId
+    ) external onlyOwner returns (address) {
+        return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
+    }
+
+    /**
+     * @notice Spawn the genesis Aminals to seed the ecosystem 🌱
+     * @dev Can only be called once by the owner to create initial population
+     * @param _visuals Array of visual DNA for genesis Aminals
+     *
+     * "In the beginning, there was code. From code came the first Aminals,
+     *  the digital Adam and Eve of the blockchain paradise."
+     */
+    function spawnInitialAminals(Visuals[] calldata _visuals) external onlyOwner {
         require(!initialAminalSpawned, "Initial Aminals already spawned");
         initialAminalSpawned = true;
         for (uint256 i = 0; i < _visuals.length; i++) {
@@ -148,71 +179,27 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         uint256 mouthId,
         uint256 miscId
     ) external onlyAuction returns (address) {
-        return
-            _spawnAminal(
-                momAddress,
-                dadAddress,
-                backId,
-                armId,
-                tailId,
-                earsId,
-                bodyId,
-                faceId,
-                mouthId,
-                miscId
-            );
+        return _spawnAminal(momAddress, dadAddress, backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId);
     }
 
-    // TODO remove this, use prank instead to spawn Aminals in tests
-    // For testing purposes - allows owner to spawn additional Aminals
-    function spawnAminalForTesting(
-        address momAddress,
-        address dadAddress,
-        uint256 backId,
-        uint256 armId,
-        uint256 tailId,
-        uint256 earsId,
-        uint256 bodyId,
-        uint256 faceId,
-        uint256 mouthId,
-        uint256 miscId
-    ) external onlyOwner returns (address) {
-        return
-            _spawnAminal(
-                momAddress,
-                dadAddress,
-                backId,
-                armId,
-                tailId,
-                earsId,
-                bodyId,
-                faceId,
-                mouthId,
-                miscId
-            );
-    }
-
-    function spawnAminalFromAuction(
-        address momAddress,
-        address dadAddress,
-        uint256[8] calldata winningGeneIds
-    ) external onlyAuction returns (address) {
-        // Map winning gene IDs to trait IDs
-        // For now, use gene IDs directly as trait IDs
-        // TODO: Implement proper gene-to-trait mapping when Gene NFT system is complete
-        return
-            _spawnAminal(
-                momAddress,
-                dadAddress,
-                winningGeneIds[0], // BACK
-                winningGeneIds[1], // ARM
-                winningGeneIds[2], // TAIL
-                winningGeneIds[3], // EARS
-                winningGeneIds[4], // BODY
-                winningGeneIds[5], // FACE
-                winningGeneIds[6], // MOUTH
-                winningGeneIds[7] // MISC
-            );
+    function spawnAminalFromAuction(address momAddress, address dadAddress, uint256[8] calldata winningGeneIds)
+        external
+        onlyAuction
+        returns (address)
+    {
+        // Map winning gene IDs to trait IDs in Gene NFT system
+        return _spawnAminal(
+            momAddress,
+            dadAddress,
+            winningGeneIds[0], // BACK
+            winningGeneIds[1], // ARM
+            winningGeneIds[2], // TAIL
+            winningGeneIds[3], // EARS
+            winningGeneIds[4], // BODY
+            winningGeneIds[5], // FACE
+            winningGeneIds[6], // MOUTH
+            winningGeneIds[7] // MISC
+        );
     }
 
     function _spawnAminal(
@@ -238,13 +225,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             miscId: miscId
         });
 
-        AminalContract newAminal = new AminalContract(
-            address(this),
-            momAddress,
-            dadAddress,
-            visuals,
-            totalAminals
-        );
+        AminalContract newAminal = new AminalContract(address(this), momAddress, dadAddress, visuals, totalAminals);
 
         address aminalAddress = address(newAminal);
         isAminal[aminalAddress] = true;
@@ -254,12 +235,8 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         emit AminalSpawned(
             aminalAddress,
             totalAminals - 1,
-            momAddress == address(0)
-                ? 0
-                : AminalContract(payable(momAddress)).aminalIndex(),
-            dadAddress == address(0)
-                ? 0
-                : AminalContract(payable(dadAddress)).aminalIndex(),
+            momAddress == address(0) ? 0 : AminalContract(payable(momAddress)).aminalIndex(),
+            dadAddress == address(0) ? 0 : AminalContract(payable(dadAddress)).aminalIndex(),
             backId,
             armId,
             tailId,
@@ -278,23 +255,24 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         return aminalsByIndex[index];
     }
 
-    function getAminalVisualsByAddress(
-        address aminalAddress
-    ) external view returns (Visuals memory) {
+    function getAminalVisualsByAddress(address aminalAddress) external view returns (Visuals memory) {
         require(isAminal[aminalAddress], "Not an Aminal contract");
         return AminalContract(payable(aminalAddress)).getVisuals();
     }
 
-    // TODO rename to breedAminals
-    function breedWith(
-        address aminalOne,
-        address aminalTwo
-    ) external payable returns (uint256 auctionId) {
+    /**
+     * @notice Initiate breeding ceremony between two Aminals 💕
+     * @dev Handles consent mechanics and launches gene auctions for offspring
+     * @param aminalOne First parent Aminal
+     * @param aminalTwo Second parent Aminal
+     * @return auctionId The gene auction ID (0 if setting initial consent)
+     *
+     * "When two Aminals unite in love, their digital essence mingles
+     *  through algorithms of affection, creating new life from pure emotion"
+     */
+    function breedAminals(address aminalOne, address aminalTwo) external payable returns (uint256 auctionId) {
         require(msg.value >= 0.001 ether, "Not enough ether");
-        require(
-            isAminal[aminalOne] && isAminal[aminalTwo],
-            "Invalid Aminal addresses"
-        );
+        require(isAminal[aminalOne] && isAminal[aminalTwo], "Invalid Aminal addresses");
 
         AminalContract aminal1 = AminalContract(payable(aminalOne));
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
@@ -303,21 +281,12 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         require(!aminal1.isBreedableWith(aminalTwo), "Already breedable");
 
         if (aminal2.isBreedableWith(aminalOne)) {
-            require(
-                aminal1.getEnergy() >= 10 && aminal2.getEnergy() >= 10,
-                "Not enough energy"
-            );
+            require(aminal1.getEnergy() >= 10 && aminal2.getEnergy() >= 10, "Not enough energy");
 
-            // TODO this seems weird.
-            // Calculate total love for auction
-            uint256 totalLove = aminal1.getLoveByUser(msg.sender) +
-                aminal2.getLoveByUser(msg.sender);
+            // Calculate total love for auction based on caller's love for both Aminals
+            uint256 totalLove = aminal1.getLoveByUser(msg.sender) + aminal2.getLoveByUser(msg.sender);
 
-            auctionId = geneAuction.createAuction(
-                aminal1.aminalIndex(),
-                aminal2.aminalIndex(),
-                totalLove
-            );
+            auctionId = geneAuction.createAuction(aminal1.aminalIndex(), aminal2.aminalIndex(), totalLove);
             emit BreedAminal(aminalOne, aminalTwo, auctionId);
 
             return auctionId;
@@ -326,111 +295,5 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             emit BreedAminal(aminalOne, aminalTwo, 0);
             return 0;
         }
-    }
-
-    // SVG Parts - delegated to AminalsDescriptor parent contract
-    function addBackground(
-        string memory background
-    ) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(background, msg.sender);
-        backgrounds.push(trait);
-        emit TraitAdded(
-            backgrounds.length - 1,
-            VisualsCat.BACK,
-            background,
-            msg.sender
-        );
-        return backgrounds.length - 1;
-    }
-
-    function addArm(string memory arm) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(arm, msg.sender);
-        arms.push(trait);
-        emit TraitAdded(arms.length - 1, VisualsCat.ARM, arm, msg.sender);
-        return arms.length - 1;
-    }
-
-    function addTail(string memory tail) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(tail, msg.sender);
-        tails.push(trait);
-        emit TraitAdded(tails.length - 1, VisualsCat.TAIL, tail, msg.sender);
-        return tails.length - 1;
-    }
-
-    function addEar(string memory ear) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(ear, msg.sender);
-        ears.push(trait);
-        emit TraitAdded(ears.length - 1, VisualsCat.EARS, ear, msg.sender);
-        return ears.length - 1;
-    }
-
-    function addBody(string memory body) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(body, msg.sender);
-        bodies.push(trait);
-        emit TraitAdded(bodies.length - 1, VisualsCat.BODY, body, msg.sender);
-        return bodies.length - 1;
-    }
-
-    function addFace(string memory face) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(face, msg.sender);
-        faces.push(trait);
-        emit TraitAdded(faces.length - 1, VisualsCat.FACE, face, msg.sender);
-        return faces.length - 1;
-    }
-
-    function addMouth(string memory mouth) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(mouth, msg.sender);
-        mouths.push(trait);
-        emit TraitAdded(mouths.length - 1, VisualsCat.MOUTH, mouth, msg.sender);
-        return mouths.length - 1;
-    }
-
-    function addMisc(string memory misc) public returns (uint256 id) {
-        VisualTrait memory trait = VisualTrait(misc, msg.sender);
-        miscs.push(trait);
-        emit TraitAdded(miscs.length - 1, VisualsCat.MISC, misc, msg.sender);
-        return miscs.length - 1;
-    }
-
-    // Getter functions for trait counts
-    function getBackgroundsLength() public view returns (uint256) {
-        return backgrounds.length;
-    }
-
-    function getArmsLength() public view returns (uint256) {
-        return arms.length;
-    }
-
-    function getTailsLength() public view returns (uint256) {
-        return tails.length;
-    }
-
-    function getEarsLength() public view returns (uint256) {
-        return ears.length;
-    }
-
-    function getBodiesLength() public view returns (uint256) {
-        return bodies.length;
-    }
-
-    function getFacesLength() public view returns (uint256) {
-        return faces.length;
-    }
-
-    function getMouthsLength() public view returns (uint256) {
-        return mouths.length;
-    }
-
-    function getMiscsLength() public view returns (uint256) {
-        return miscs.length;
-    }
-
-    // TODO breedAminals should replace breedWith, we don't need keep both
-    // Alias for breedWith for backwards compatibility
-    function breedAminals(
-        address aminalOne,
-        address aminalTwo
-    ) external payable returns (uint256 auctionId) {
-        return this.breedWith{value: msg.value}(aminalOne, aminalTwo);
     }
 }

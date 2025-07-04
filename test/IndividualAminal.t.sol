@@ -36,11 +36,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(
-            address(geneAuction),
-            address(proposals),
-            address(genesNFT)
-        );
+        factory.initialize(address(geneAuction), address(proposals), address(genesNFT));
 
         // Setup contracts properly
         genesNFT.setup(address(factory));
@@ -56,16 +52,8 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -164,7 +152,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
-        // Create another Aminal for breeding partner
+        // Create another Aminal for breeding partner using testing function
         address aminal2Address = factory.spawnAminalForTesting(
             address(0),
             address(0),
@@ -186,7 +174,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
     }
 
     function testAminalBreedingSettingsWithoutLove() public {
-        // Create another Aminal for breeding partner
+        // Create another Aminal for breeding partner using testing function
         address aminal2Address = factory.spawnAminalForTesting(
             address(0),
             address(0),
@@ -242,11 +230,8 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Use the skill (should work since all skills are accessible)
         bytes memory skillData = anotherSkill.getSkillData(10, 20);
         vm.prank(alice);
-        aminal.callSkill{value: 0.001 ether}(
-            address(anotherSkill),
-            skillData
-        );
-        
+        aminal.callSkill{value: 0.001 ether}(address(anotherSkill), skillData);
+
         // Check that the skill was executed
         (uint256 x, uint256 y) = anotherSkill.getCoords(address(aminal));
         assertEq(x, 10);
@@ -297,10 +282,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.prank(address(move2DSkill));
         aminal.setSkillProperty("test_key", bytes32("test_value"));
 
-        bytes32 value = aminal.getSkillProperty(
-            address(move2DSkill),
-            "test_key"
-        );
+        bytes32 value = aminal.getSkillProperty(address(move2DSkill), "test_key");
         assertEq(value, bytes32("test_value"));
     }
 
@@ -308,7 +290,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Skills are globally accessible - any address can set properties
         vm.prank(alice);
         aminal.setSkillProperty("test_key", bytes32("test_value"));
-        
+
         bytes32 value = aminal.getSkillProperty(alice, "test_key");
         assertEq(value, bytes32("test_value"));
     }
@@ -321,7 +303,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Send ETH directly to the contract
         vm.prank(alice);
-        (bool success, ) = address(aminal).call{value: 0.01 ether}("");
+        (bool success,) = address(aminal).call{value: 0.01 ether}("");
         assertTrue(success);
 
         // Should have fed the Aminal

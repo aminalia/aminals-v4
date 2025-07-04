@@ -31,8 +31,7 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
     }
 
     modifier onlyAminalsNFTOrFactory() {
-        if (msg.sender != aminalsNFT && msg.sender != geneFactory)
-            revert OnlyFactory();
+        if (msg.sender != aminalsNFT && msg.sender != geneFactory) revert OnlyFactory();
         _;
     }
 
@@ -52,11 +51,10 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
         emit FactorySet(geneFactory_);
     }
 
-    function mint(
-        address to,
-        string calldata geneSVG,
-        IAminalStructs.VisualsCat visualsCategory
-    ) external onlyAminalsNFTOrFactory {
+    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
+        external
+        onlyAminalsNFTOrFactory
+    {
         uint256 tokenId = currentId;
         geneSVGs[tokenId] = geneSVG;
         geneVisualsCat[tokenId] = visualsCategory;
@@ -73,47 +71,39 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
-        
+
         string memory svg = geneSVGs[tokenId];
         IAminalStructs.VisualsCat category = geneVisualsCat[tokenId];
-        
+
         // Create JSON metadata with the SVG
-        string memory json = string(abi.encodePacked(
-            '{"name": "Aminal Gene #', 
-            _toString(tokenId),
-            '", "description": "A gene NFT representing a trait for Aminals", "category": "',
-            _categoryToString(category),
-            '", "image": "data:image/svg+xml;base64,',
-            Base64.encode(bytes(svg)),
-            '"}'
-        ));
-        
-        return string(abi.encodePacked(
-            "data:application/json;base64,",
-            Base64.encode(bytes(json))
-        ));
+        string memory json = string(
+            abi.encodePacked(
+                '{"name": "Aminal Gene #',
+                _toString(tokenId),
+                '", "description": "A gene NFT representing a trait for Aminals", "category": "',
+                _categoryToString(category),
+                '", "image": "data:image/svg+xml;base64,',
+                Base64.encode(bytes(svg)),
+                '"}'
+            )
+        );
+
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
     }
 
     /**
      * @notice Get Gene NFT information
      */
-    function getGeneInfo(
-        uint256 id
-    )
-        external
-        view
-        returns (string memory svg, IAminalStructs.VisualsCat category)
-    {
+    function getGeneInfo(uint256 id) external view returns (string memory svg, IAminalStructs.VisualsCat category) {
         return (geneSVGs[id], geneVisualsCat[id]);
     }
 
+    // TODO Is there some open zepplin library we should use for this?
     /**
      * @dev Convert number to string
      */
     function _toString(uint256 value) internal pure returns (string memory) {
-        if (value == 0) {
-            return "0";
-        }
+        if (value == 0) return "0";
         uint256 temp = value;
         uint256 digits;
         while (temp != 0) {
@@ -143,5 +133,4 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
         if (category == IAminalStructs.VisualsCat.MISC) return "Miscellaneous";
         return "Unknown";
     }
-
 }

@@ -21,7 +21,11 @@ contract Move2D is ISkill {
         factory = AminalFactory(_factory);
     }
 
-    function useSkill(address sender, address aminalContract, bytes calldata data) public payable returns (uint256 squeak) {
+    function useSkill(address sender, address aminalContract, bytes calldata data)
+        public
+        payable
+        returns (uint256 squeak)
+    {
         require(factory.isAminal(msg.sender), "Only Aminal contracts can call this");
         require(msg.sender == aminalContract, "Aminal contract mismatch");
         (uint256 x, uint256 y) = abi.decode(data, (uint256, uint256));

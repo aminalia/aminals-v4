@@ -58,24 +58,10 @@ contract AminalProposals is IProposals, Initializable, Ownable {
     uint256 public LoveQuorumDecayPerWeek = 10;
     uint256 public LoveRequiredMajority = 50;
 
-    event NewProposal(
-        uint256 indexed proposalId,
-        ProposalType indexed proposalType,
-        address indexed proposer
-    );
-    event RemoveProposal(
-        uint256 indexed proposalId,
-        ProposalType indexed proposalType,
-        address indexed proposer
-    );
+    event NewProposal(uint256 indexed proposalId, ProposalType indexed proposalType, address indexed proposer);
+    event RemoveProposal(uint256 indexed proposalId, ProposalType indexed proposalType, address indexed proposer);
 
-    event Voted(
-        uint256 indexed proposalId,
-        uint256 indexed aminalID,
-        bool vote,
-        uint256 votedYes,
-        uint256 votedNo
-    );
+    event Voted(uint256 indexed proposalId, uint256 indexed aminalID, bool vote, uint256 votedYes, uint256 votedNo);
     event VoteResult(
         uint256 indexed proposalId,
         bool pass,
@@ -86,13 +72,7 @@ contract AminalProposals is IProposals, Initializable, Ownable {
         uint256 requiredMajority
     );
 
-    event LoveVoted(
-        uint256 indexed proposalId,
-        uint256 indexed aminalID,
-        bool vote,
-        uint256 votedYes,
-        uint256 votedNo
-    );
+    event LoveVoted(uint256 indexed proposalId, uint256 indexed aminalID, bool vote, uint256 votedYes, uint256 votedNo);
     event LoveVoteResult(
         uint256 indexed proposalId,
         bool pass,
@@ -116,17 +96,9 @@ contract AminalProposals is IProposals, Initializable, Ownable {
 
     // Check for underflows
     // Needs to be easier to read and easier to test invariants
-    function getQuorum(
-        uint256 proposalTime,
-        uint256 currentTime
-    ) public view returns (uint256) {
-        if (
-            quorum >
-            ((currentTime - proposalTime) * quorumDecayPerWeek) / (1 weeks)
-        ) {
-            return
-                ((quorum - currentTime - proposalTime) * quorumDecayPerWeek) /
-                (1 weeks);
+    function getQuorum(uint256 proposalTime, uint256 currentTime) public view returns (uint256) {
+        if (quorum > ((currentTime - proposalTime) * quorumDecayPerWeek) / (1 weeks)) {
+            return ((quorum - currentTime - proposalTime) * quorumDecayPerWeek) / (1 weeks);
         } else {
             return 0;
         }
@@ -137,44 +109,28 @@ contract AminalProposals is IProposals, Initializable, Ownable {
     //    Unless storing it as a storage variable, we can't accurately track the status before the proposal is executed
     // 2. To calculate required additional votes we need to apply a ceiling function which consumes gas
 
-    function getVotingStatus(
-        uint256 proposalId,
-        uint256 membersLength,
-        uint256 quorum,
-        uint256 requiredMajority
-    )
+    function getVotingStatus(uint256 proposalId, uint256 membersLength, uint256 _quorum, uint256 _requiredMajority)
         public
         view
-        returns (
-            bool isOpen,
-            bool quorumReached,
-            uint256 _requiredMajority,
-            uint256 yesPercent
-        )
+        returns (bool isOpen, bool quorumReached, uint256 requiredMajorityResult, uint256 yesPercent)
     {
         Proposal storage proposal = proposals[proposalId];
         isOpen = (proposal.closed == 0);
         uint256 voteCount = proposal.votedYes + proposal.votedNo;
-        quorumReached = (voteCount * 100 >= quorum * membersLength);
+        quorumReached = (voteCount * 100 >= _quorum * membersLength);
         yesPercent = (proposal.votedYes * 100) / voteCount;
-        _requiredMajority = requiredMajority;
+        requiredMajorityResult = _requiredMajority;
     }
 
-    function getProposal(
-        uint256 proposalId
-    ) public view returns (Proposal memory proposal) {
+    function getProposal(uint256 proposalId) public view returns (Proposal memory proposal) {
         return proposals[proposalId];
     }
 
-    function getProposalType(
-        uint256 proposalId
-    ) public view returns (ProposalType) {
+    function getProposalType(uint256 proposalId) public view returns (ProposalType) {
         return proposals[proposalId].proposalType;
     }
 
-    function getDescription(
-        uint256 proposalId
-    ) public view returns (string memory) {
+    function getDescription(uint256 proposalId) public view returns (string memory) {
         return proposals[proposalId].description;
     }
 
@@ -218,8 +174,8 @@ contract AminalProposals is IProposals, Initializable, Ownable {
         uint256 proposalId,
         bool yesNo,
         uint256 membersLength,
-        uint256 quorum,
-        uint256 requiredMajority
+        uint256 _quorum,
+        uint256 _requiredMajority
     ) external returns (uint256 squeak) {
         // replace with squeak calc based on proposal
         squeak = 2;
@@ -242,60 +198,28 @@ contract AminalProposals is IProposals, Initializable, Ownable {
                 proposal.votedNo += love;
                 loveVotes[proposalId][sender] = 2;
             }
-            emit LoveVoted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
+            emit LoveVoted(proposalId, aminalID, yesNo, proposal.votedYes, proposal.votedNo);
 
             // Changing Yes to No
-        } else if (
-            loveVotes[proposalId][sender] == 1 &&
-            !yesNo &&
-            proposal.votedYes >= love
-        ) {
+        } else if (loveVotes[proposalId][sender] == 1 && !yesNo && proposal.votedYes >= love) {
             proposal.votedYes -= love;
             proposal.votedNo += love;
             loveVotes[proposalId][sender] = 2;
-            emit LoveVoted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
+            emit LoveVoted(proposalId, aminalID, yesNo, proposal.votedYes, proposal.votedNo);
             // Changing No to Yes
-        } else if (
-            loveVotes[proposalId][sender] == 2 &&
-            yesNo &&
-            proposal.votedNo >= love
-        ) {
+        } else if (loveVotes[proposalId][sender] == 2 && yesNo && proposal.votedNo >= love) {
             proposal.votedYes += love;
             proposal.votedNo -= love;
             loveVotes[proposalId][sender] = 1;
-            emit LoveVoted(
-                proposalId,
-                aminalID,
-                yesNo,
-                proposal.votedYes,
-                proposal.votedNo
-            );
+            emit LoveVoted(proposalId, aminalID, yesNo, proposal.votedYes, proposal.votedNo);
         }
 
         uint256 voteCount = proposal.votedYes + proposal.votedNo;
-        if (voteCount * 100 >= quorum * membersLength) {
+        if (voteCount * 100 >= _quorum * membersLength) {
             uint256 yesPercent = (proposal.votedYes * 100) / voteCount;
-            proposal.pass = yesPercent >= requiredMajority;
+            proposal.pass = yesPercent >= _requiredMajority;
             emit LoveVoteResult(
-                proposalId,
-                proposal.pass,
-                voteCount,
-                quorum,
-                membersLength,
-                yesPercent,
-                requiredMajority
+                proposalId, proposal.pass, voteCount, _quorum, membersLength, yesPercent, _requiredMajority
             );
             // TODO: Update to use IAminal interface
             // aminals._vote(aminalID, proposalId, proposal.pass);

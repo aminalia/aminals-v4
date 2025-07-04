@@ -33,11 +33,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(
-            address(geneAuction),
-            address(proposals),
-            address(genesNFT)
-        );
+        factory.initialize(address(geneAuction), address(proposals), address(genesNFT));
 
         // Setup contracts properly
         genesNFT.setup(address(factory));
@@ -53,27 +49,11 @@ contract AminalFactoryTest is Test, IAminalStructs {
     function testSpawnInitialAminals() public {
         Visuals[] memory initialVisuals = new Visuals[](2);
 
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
-        initialVisuals[1] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[1] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
         factory.spawnInitialAminals(initialVisuals);
 
@@ -93,16 +73,8 @@ contract AminalFactoryTest is Test, IAminalStructs {
     function testAminalBasicFunctionality() public {
         // Spawn an Aminal first
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -128,16 +100,8 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Spawn an Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -165,26 +129,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
     function testBreedingSetup() public {
         // Spawn two Aminals
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
-        initialVisuals[1] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+        initialVisuals[1] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminal1Address = factory.getAminalByIndex(0);
@@ -212,16 +160,8 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn multiple Aminals and verify they all have unique addresses
         Visuals[] memory initialVisuals = new Visuals[](5);
         for (uint256 i = 0; i < 5; i++) {
-            initialVisuals[i] = Visuals({
-                backId: 0,
-                armId: 0,
-                tailId: 0,
-                earsId: 0,
-                bodyId: 0,
-                faceId: 0,
-                mouthId: 0,
-                miscId: 0
-            });
+            initialVisuals[i] =
+                Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
         }
 
         factory.spawnInitialAminals(initialVisuals);

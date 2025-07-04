@@ -15,20 +15,20 @@ forge script script/GetAminalInfo.s.sol:GetAminalInfo --rpc-url $RPC_URL
 contract GetAminalInfo is Script {
     function run() external view {
         AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
-        
+
         console.log("=== AMINAL FACTORY INFO ===");
         console.log("Factory address:", address(factory));
         console.log("Total Aminals:", factory.totalAminals());
         console.log("Gene Auction:", address(factory.geneAuction()));
         console.log("Proposals:", address(factory.proposals()));
         console.log("Genes NFT:", address(factory.genesNFT()));
-        
+
         console.log("\n=== INDIVIDUAL AMINALS ===");
-        
+
         for (uint256 i = 0; i < factory.totalAminals(); i++) {
             address aminalAddress = factory.aminalsByIndex(i);
             Aminal aminal = Aminal(payable(aminalAddress));
-            
+
             console.log("\n--- Aminal", i, "---");
             console.log("Address:", aminalAddress);
             console.log("Index:", aminal.aminalIndex());
@@ -37,7 +37,7 @@ contract GetAminalInfo is Script {
             console.log("Total Love:", aminal.getTotalLove());
             console.log("Energy:", aminal.getEnergy());
             console.log("Breeding:", aminal.breeding());
-            
+
             // Get visuals
             IAminalStructs.Visuals memory visuals = aminal.getVisuals();
             console.log("Visuals - Back:", visuals.backId);
@@ -48,19 +48,14 @@ contract GetAminalInfo is Script {
             console.log("Visuals - Face:", visuals.faceId);
             console.log("Visuals - Mouth:", visuals.mouthId);
             console.log("Visuals - Misc:", visuals.miscId);
-            
+
             // Show token URI
             console.log("Token URI available - call tokenURI() to view");
         }
-        
-        console.log("\n=== TRAIT COUNTS ===");
-        console.log("Backgrounds:", factory.getBackgroundsLength());
-        console.log("Arms:", factory.getArmsLength());
-        console.log("Tails:", factory.getTailsLength());
-        console.log("Ears:", factory.getEarsLength());
-        console.log("Bodies:", factory.getBodiesLength());
-        console.log("Faces:", factory.getFacesLength());
-        console.log("Mouths:", factory.getMouthsLength());
-        console.log("Misc:", factory.getMiscsLength());
+
+        console.log("\n=== GENE NFT SYSTEM ===");
+        console.log("Note: Traits are now managed through the Gene NFT system");
+        console.log("Anyone can create Gene NFTs for traits through the GeneNFTFactory");
+        console.log("Traits are selected through love-based voting in gene auctions");
     }
 }

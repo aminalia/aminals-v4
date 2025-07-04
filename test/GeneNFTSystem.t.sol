@@ -25,12 +25,9 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     address public charlie = address(0x3);
 
     // Sample SVG content for testing
-    string constant SAMPLE_BACKGROUND =
-        '<rect width="1000" height="1000" fill="#87CEEB"/>';
-    string constant SAMPLE_FACE =
-        '<circle cx="500" cy="400" r="100" fill="#FFB6C1"/>';
-    string constant SAMPLE_BODY =
-        '<ellipse cx="500" cy="600" rx="150" ry="200" fill="#DDA0DD"/>';
+    string constant SAMPLE_BACKGROUND = '<rect width="1000" height="1000" fill="#87CEEB"/>';
+    string constant SAMPLE_FACE = '<circle cx="500" cy="400" r="100" fill="#FFB6C1"/>';
+    string constant SAMPLE_BODY = '<ellipse cx="500" cy="600" rx="150" ry="200" fill="#DDA0DD"/>';
 
     function setUp() public {
         // Deploy contracts
@@ -41,11 +38,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         // Deploy AminalFactory
         aminalFactory = new AminalFactory();
-        aminalFactory.initialize(
-            address(geneAuction),
-            address(proposals),
-            address(genesNFT)
-        );
+        aminalFactory.initialize(address(geneAuction), address(proposals), address(genesNFT));
 
         // Setup contracts
         genesNFT.setup(address(aminalFactory)); // AminalFactory acts as Aminals contract
@@ -64,10 +57,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.startPrank(alice);
 
         // Create a background gene
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         vm.stopPrank();
 
@@ -76,8 +66,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertEq(genesNFT.ownerOf(geneId), alice, "Alice should own the gene");
 
         // Verify gene info
-        (address creator, VisualsCat category, string memory svg) = geneFactory
-            .getGeneInfo(geneId);
+        (address creator, VisualsCat category, string memory svg) = geneFactory.getGeneInfo(geneId);
         assertEq(creator, alice, "Creator should be Alice");
         assertTrue(category == VisualsCat.BACK, "Category should be BACK");
         assertEq(svg, SAMPLE_BACKGROUND, "SVG should match");
@@ -92,24 +81,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testMultipleGeneCreation() public {
         // Alice creates background gene
         vm.prank(alice);
-        uint256 backgroundGene = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 backgroundGene = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Bob creates face gene
         vm.prank(bob);
-        uint256 faceGene = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_FACE,
-            VisualsCat.FACE
-        );
+        uint256 faceGene = geneFactory.createGene{value: 0.001 ether}(SAMPLE_FACE, VisualsCat.FACE);
 
         // Charlie creates body gene
         vm.prank(charlie);
-        uint256 bodyGene = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BODY,
-            VisualsCat.BODY
-        );
+        uint256 bodyGene = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BODY, VisualsCat.BODY);
 
         // Verify ownership
         assertEq(genesNFT.ownerOf(backgroundGene), alice);
@@ -117,9 +97,9 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertEq(genesNFT.ownerOf(bodyGene), charlie);
 
         // Verify categories
-        (, VisualsCat bgCat, ) = geneFactory.getGeneInfo(backgroundGene);
-        (, VisualsCat faceCat, ) = geneFactory.getGeneInfo(faceGene);
-        (, VisualsCat bodyCat, ) = geneFactory.getGeneInfo(bodyGene);
+        (, VisualsCat bgCat,) = geneFactory.getGeneInfo(backgroundGene);
+        (, VisualsCat faceCat,) = geneFactory.getGeneInfo(faceGene);
+        (, VisualsCat bodyCat,) = geneFactory.getGeneInfo(bodyGene);
 
         assertTrue(bgCat == VisualsCat.BACK);
         assertTrue(faceCat == VisualsCat.FACE);
@@ -128,13 +108,9 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertEq(geneFactory.totalGenesCreated(), 3);
     }
 
-
     function testGeneTransferability() public {
         vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Alice transfers gene to Bob
         vm.prank(alice);
@@ -146,26 +122,10 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testAuctionCreation() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
-        initialVisuals[1] = Visuals({
-            backId: 2,
-            armId: 2,
-            tailId: 2,
-            earsId: 2,
-            bodyId: 2,
-            faceId: 2,
-            mouthId: 2,
-            miscId: 2
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        initialVisuals[1] =
+            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
@@ -194,34 +154,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGeneProposalInAuction() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
-        initialVisuals[1] = Visuals({
-            backId: 2,
-            armId: 2,
-            tailId: 2,
-            earsId: 2,
-            bodyId: 2,
-            faceId: 2,
-            mouthId: 2,
-            miscId: 2
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        initialVisuals[1] =
+            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         // Create a gene
         vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Create auction
         uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
@@ -231,8 +172,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         geneAuction.proposeGene(auctionId, VisualsCat.BACK, geneId);
 
         // Verify gene was proposed
-        GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction
-            .getCategoryVoting(auctionId, VisualsCat.BACK);
+        GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, VisualsCat.BACK);
         assertEq(voteInfo.proposedGenes.length, 1);
         assertEq(voteInfo.proposedGenes[0], geneId);
     }
@@ -240,34 +180,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGeneVotingInAuction() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
-        initialVisuals[1] = Visuals({
-            backId: 2,
-            armId: 2,
-            tailId: 2,
-            earsId: 2,
-            bodyId: 2,
-            faceId: 2,
-            mouthId: 2,
-            miscId: 2
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        initialVisuals[1] =
+            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         // Create a gene
         vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Create voting
         uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
@@ -280,62 +201,29 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // For this test, we'll check that the voting function exists and errors appropriately
         vm.prank(alice);
         vm.expectRevert(); // Should revert due to insufficient love
-        geneAuction.voteOnGene(
-            auctionId,
-            VisualsCat.BACK,
-            geneId,
-            100
-        );
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId, 100);
 
         // Verify vote count (should be 0 since the vote was rejected)
-        uint256 totalVotes = geneAuction.getGeneVotes(
-            auctionId,
-            VisualsCat.BACK,
-            geneId
-        );
+        uint256 totalVotes = geneAuction.getGeneVotes(auctionId, VisualsCat.BACK, geneId);
         assertEq(totalVotes, 0, "Should have no votes due to insufficient love");
 
         // Verify user vote (should be 0)
-        uint256 userVote = geneAuction.getUserVote(
-            auctionId,
-            VisualsCat.BACK,
-            geneId,
-            alice
-        );
+        uint256 userVote = geneAuction.getUserVote(auctionId, VisualsCat.BACK, geneId, alice);
         assertEq(userVote, 0, "User should have no recorded vote");
     }
 
     function testVoteUpdating() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 1,
-            armId: 1,
-            tailId: 1,
-            earsId: 1,
-            bodyId: 1,
-            faceId: 1,
-            mouthId: 1,
-            miscId: 1
-        });
-        initialVisuals[1] = Visuals({
-            backId: 2,
-            armId: 2,
-            tailId: 2,
-            earsId: 2,
-            bodyId: 2,
-            faceId: 2,
-            mouthId: 2,
-            miscId: 2
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        initialVisuals[1] =
+            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         // Create a gene
         vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Create voting
         uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
@@ -347,53 +235,25 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // Test that voting without love fails (this is expected behavior)
         vm.prank(alice);
         vm.expectRevert(); // Should revert due to insufficient love
-        geneAuction.voteOnGene(
-            auctionId,
-            VisualsCat.BACK,
-            geneId,
-            10
-        );
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId, 10);
 
         // Verify that no votes were cast due to insufficient love
-        uint256 totalVotes = geneAuction.getGeneVotes(
-            auctionId,
-            VisualsCat.BACK,
-            geneId
-        );
+        uint256 totalVotes = geneAuction.getGeneVotes(auctionId, VisualsCat.BACK, geneId);
         assertEq(totalVotes, 0, "Should have no votes due to insufficient love");
     }
 
     function testVotingSettlement() public {
         // Create initial Aminals for parents
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
-        initialVisuals[1] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+        initialVisuals[1] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         // Create a gene
         vm.prank(alice);
-        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        uint256 geneId = geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         // Create voting
         uint256 auctionId = geneAuction.createAuction(0, 1, 100 ether);
@@ -416,7 +276,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         geneAuction.settleAuction(auctionId);
 
         // Verify voting is settled
-        (, , , , , bool settled, ) = geneAuction.getAuctionInfo(auctionId);
+        (,,,,, bool settled,) = geneAuction.getAuctionInfo(auctionId);
         assertTrue(settled);
         assertFalse(geneAuction.isVotingActive(auctionId));
 
@@ -431,9 +291,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.prank(alice);
         vm.expectRevert(GeneNFTFactory.InsufficientFee.selector);
         geneFactory.createGene{value: 0.0005 ether}( // Below minimum
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        SAMPLE_BACKGROUND, VisualsCat.BACK);
     }
 
     function testEmptySVGFails() public {
@@ -445,22 +303,13 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGetGenesByCreator() public {
         // Alice creates multiple genes
         vm.startPrank(alice);
-        geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
-        geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_FACE,
-            VisualsCat.FACE
-        );
+        geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        geneFactory.createGene{value: 0.001 ether}(SAMPLE_FACE, VisualsCat.FACE);
         vm.stopPrank();
 
         // Bob creates one gene
         vm.prank(bob);
-        geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BODY,
-            VisualsCat.BODY
-        );
+        geneFactory.createGene{value: 0.001 ether}(SAMPLE_BODY, VisualsCat.BODY);
 
         // Check Alice's genes
         uint256[] memory aliceGenes = geneFactory.getGenesByCreator(alice);
@@ -477,35 +326,22 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGetGenesByCategory() public {
         // Create genes in different categories
         vm.prank(alice);
-        geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_BACKGROUND,
-            VisualsCat.BACK
-        );
+        geneFactory.createGene{value: 0.001 ether}(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
         vm.prank(bob);
-        geneFactory.createGene{value: 0.001 ether}(
-            SAMPLE_FACE,
-            VisualsCat.FACE
-        );
+        geneFactory.createGene{value: 0.001 ether}(SAMPLE_FACE, VisualsCat.FACE);
 
         vm.prank(charlie);
-        geneFactory.createGene{value: 0.001 ether}(
-            '<rect width="1000" height="1000" fill="#00FF00"/>',
-            VisualsCat.BACK
-        );
+        geneFactory.createGene{value: 0.001 ether}('<rect width="1000" height="1000" fill="#00FF00"/>', VisualsCat.BACK);
 
         // Check background genes
-        uint256[] memory backgroundGenes = geneFactory.getGenesByCategory(
-            VisualsCat.BACK
-        );
+        uint256[] memory backgroundGenes = geneFactory.getGenesByCategory(VisualsCat.BACK);
         assertEq(backgroundGenes.length, 2);
         assertEq(backgroundGenes[0], 0);
         assertEq(backgroundGenes[1], 2);
 
         // Check face genes
-        uint256[] memory faceGenes = geneFactory.getGenesByCategory(
-            VisualsCat.FACE
-        );
+        uint256[] memory faceGenes = geneFactory.getGenesByCategory(VisualsCat.FACE);
         assertEq(faceGenes.length, 1);
         assertEq(faceGenes[0], 1);
     }
@@ -516,26 +352,10 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         // Create parent Aminals first
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
-        initialVisuals[1] = Visuals({
-            backId: 0,
-            armId: 0,
-            tailId: 0,
-            earsId: 0,
-            bodyId: 0,
-            faceId: 0,
-            mouthId: 0,
-            miscId: 0
-        });
+        initialVisuals[0] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+        initialVisuals[1] =
+            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         address parent1 = aminalFactory.getAminalByIndex(0);
@@ -543,20 +363,14 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         // Call spawnAminalFromAuction as GeneAuction would
         vm.prank(address(geneAuction));
-        address childAminal = aminalFactory.spawnAminalFromAuction(
-            parent1,
-            parent2,
-            winningGenes
-        );
+        address childAminal = aminalFactory.spawnAminalFromAuction(parent1, parent2, winningGenes);
 
         // Verify child was spawned
         assertTrue(aminalFactory.isAminal(childAminal));
         assertEq(aminalFactory.totalAminals(), 3);
 
         // Verify child has correct traits
-        Visuals memory childVisuals = aminalFactory.getAminalVisualsByAddress(
-            childAminal
-        );
+        Visuals memory childVisuals = aminalFactory.getAminalVisualsByAddress(childAminal);
         assertEq(childVisuals.backId, 1);
         assertEq(childVisuals.armId, 2);
         assertEq(childVisuals.tailId, 3);
