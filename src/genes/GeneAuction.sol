@@ -8,12 +8,13 @@ import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
 
 import {IAminalStructs} from "src/IAminalStructs.sol";
 import {IAminalFactory} from "src/IAminalFactory.sol";
+import {IAminal} from "src/IAminal.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 
 /**
  * @title GeneAuction
- * @dev Nouns-style auction for Gene NFT-based traits with direct payment to Gene NFT owners
+ * @dev Love-based voting system for Gene NFT trait selection with energy rewards to Gene NFT owners
  */
 contract GeneAuction is
     IAminalStructs,
@@ -26,20 +27,11 @@ contract GeneAuction is
     address public aminalsContract;
     IAminalFactory public aminalFactory;
 
-    /// @notice Minimum bid increment percentage (e.g., 5%)
-    uint256 public constant MIN_BID_INCREMENT = 5;
+    /// @notice Duration of voting in seconds
+    uint256 public constant VOTING_DURATION = 7 days;
 
-    /// @notice Reserve price for auctions
-    uint256 public constant RESERVE_PRICE = 0.01 ether;
-
-    /// @notice Duration of auction in seconds
-    uint256 public constant AUCTION_DURATION = 7 days;
-
-    /// @notice Time extension when bid is placed near auction end
-    uint256 public constant TIME_EXTENSION = 10 minutes;
-
-    /// @notice Buffer time before auction end to trigger extension
-    uint256 public constant TIME_BUFFER = 5 minutes;
+    /// @notice Percentage of parent energy transferred to gene owners (10%)
+    uint256 public constant ENERGY_TRANSFER_PERCENTAGE = 10;
 
     struct Auction {
         uint256 aminalOne;
@@ -49,22 +41,20 @@ contract GeneAuction is
         uint256 endTime;
         bool settled;
         uint256 childAminalId;
-        // Bids for each trait category
-        mapping(VisualsCat => CategoryBidding) categoryBids;
+        // Votes for each trait category
+        mapping(VisualsCat => CategoryVoting) categoryVotes;
     }
 
-    struct CategoryBidding {
-        uint256 highestBid;
-        address highestBidder;
+    struct CategoryVoting {
+        uint256 highestVotes;
         uint256 winningGeneId;
-        mapping(uint256 => uint256) geneBids; // geneId => bid amount
-        mapping(uint256 => address) geneBidders; // geneId => bidder address
+        mapping(uint256 => uint256) geneVotes; // geneId => total vote weight
+        mapping(address => mapping(uint256 => uint256)) userVotes; // user => geneId => vote weight
         uint256[] proposedGenes; // Array of gene IDs proposed for this category
     }
 
-    struct CategoryBidInfo {
-        uint256 highestBid;
-        address highestBidder;
+    struct CategoryVoteInfo {
+        uint256 highestVotes;
         uint256 winningGeneId;
         uint256[] proposedGenes;
     }
@@ -72,7 +62,7 @@ contract GeneAuction is
     mapping(uint256 => Auction) public auctions;
     uint256 public auctionCounter;
 
-    event AuctionCreated(
+    event VotingCreated(
         uint256 indexed auctionId,
         uint256 indexed aminalOne,
         uint256 indexed aminalTwo,
@@ -81,21 +71,26 @@ contract GeneAuction is
         uint256 endTime
     );
 
-    event GeneBidPlaced(
+    event GeneVoteCast(
         uint256 indexed auctionId,
         VisualsCat indexed category,
         uint256 indexed geneId,
-        address bidder,
-        uint256 amount
+        address voter,
+        uint256 voteWeight
     );
 
-    event AuctionExtended(uint256 indexed auctionId, uint256 newEndTime);
+    event BulkVoteCast(
+        uint256 indexed auctionId,
+        address indexed voter,
+        uint256[8] geneIds,
+        uint256 totalVoteWeight
+    );
 
-    event AuctionSettled(
+    event VotingSettled(
         uint256 indexed auctionId,
         uint256 indexed childAminalId,
         uint256[8] winningGeneIds,
-        uint256 totalPayouts
+        uint256 totalEnergyTransferred
     );
 
     event GeneProposed(
@@ -105,22 +100,22 @@ contract GeneAuction is
         address proposer
     );
 
-    error AuctionNotActive();
-    error AuctionAlreadySettled();
-    error BidTooLow();
+    error VotingNotActive();
+    error VotingAlreadySettled();
     error InvalidGene();
-    error AuctionNotEnded();
+    error VotingNotEnded();
     error OnlyAminals();
-    error PaymentFailed();
     error InvalidCategory();
+    error InsufficientLove();
+    error EnergyTransferFailed();
 
     modifier onlyAminals() {
         if (msg.sender != aminalsContract) revert OnlyAminals();
         _;
     }
 
-    modifier validAuction(uint256 auctionId) {
-        require(auctionId <= auctionCounter, "Auction does not exist");
+    modifier validVoting(uint256 auctionId) {
+        require(auctionId <= auctionCounter, "Voting does not exist");
         _;
     }
 
@@ -153,10 +148,10 @@ contract GeneAuction is
         auction.aminalTwo = aminalTwo;
         auction.totalLove = totalLove;
         auction.startTime = block.timestamp;
-        auction.endTime = block.timestamp + AUCTION_DURATION;
+        auction.endTime = block.timestamp + VOTING_DURATION;
         auction.childAminalId = auctionId; // Use auction ID as child Aminal ID
 
-        emit AuctionCreated(
+        emit VotingCreated(
             auctionId,
             aminalOne,
             aminalTwo,
@@ -169,18 +164,18 @@ contract GeneAuction is
     }
 
     /**
-     * @notice Propose a Gene NFT for a specific trait category in an auction
+     * @notice Propose a Gene NFT for a specific trait category in voting
      * @dev Anyone can propose genes they own or any valid gene
      */
     function proposeGene(
         uint256 auctionId,
         VisualsCat category,
         uint256 geneId
-    ) external validAuction(auctionId) {
+    ) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert AuctionNotActive();
-        if (auction.settled) revert AuctionAlreadySettled();
+        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (auction.settled) revert VotingAlreadySettled();
         if (uint256(category) >= 8) revert InvalidCategory();
 
         // Verify gene exists and is from the factory
@@ -190,136 +185,227 @@ contract GeneAuction is
         (, VisualsCat geneCategory, ) = geneFactory.getGeneInfo(geneId);
         if (geneCategory != category) revert InvalidCategory();
 
-        CategoryBidding storage categoryBidding = auction.categoryBids[
+        CategoryVoting storage categoryVoting = auction.categoryVotes[
             category
         ];
 
         // Check if gene is already proposed
         bool alreadyProposed = false;
-        for (uint256 i = 0; i < categoryBidding.proposedGenes.length; i++) {
-            if (categoryBidding.proposedGenes[i] == geneId) {
+        for (uint256 i = 0; i < categoryVoting.proposedGenes.length; i++) {
+            if (categoryVoting.proposedGenes[i] == geneId) {
                 alreadyProposed = true;
                 break;
             }
         }
 
         if (!alreadyProposed) {
-            categoryBidding.proposedGenes.push(geneId);
+            categoryVoting.proposedGenes.push(geneId);
             emit GeneProposed(auctionId, category, geneId, msg.sender);
         }
     }
 
     /**
-     * @notice Place a bid on a specific Gene NFT in an auction
-     * @dev Implements Nouns-style bidding with refunds
+     * @notice Vote on a specific Gene NFT with love-based voting power
+     * @dev Voting power is based on love given to parent Aminals
      */
-    function bidOnGene(
+    function voteOnGene(
         uint256 auctionId,
         VisualsCat category,
-        uint256 geneId
-    ) external payable validAuction(auctionId) nonReentrant {
+        uint256 geneId,
+        uint256 voteWeight
+    ) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert AuctionNotActive();
-        if (auction.settled) revert AuctionAlreadySettled();
+        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (auction.settled) revert VotingAlreadySettled();
         if (uint256(category) >= 8) revert InvalidCategory();
 
-        CategoryBidding storage categoryBidding = auction.categoryBids[
+        // Calculate user's voting power based on love given to parent Aminals
+        uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
+        if (voteWeight > userVotingPower) revert InsufficientLove();
+
+        CategoryVoting storage categoryVoting = auction.categoryVotes[
             category
         ];
 
         // Verify gene is proposed for this category
         bool isProposed = false;
-        for (uint256 i = 0; i < categoryBidding.proposedGenes.length; i++) {
-            if (categoryBidding.proposedGenes[i] == geneId) {
+        for (uint256 i = 0; i < categoryVoting.proposedGenes.length; i++) {
+            if (categoryVoting.proposedGenes[i] == geneId) {
                 isProposed = true;
                 break;
             }
         }
         if (!isProposed) revert InvalidGene();
 
-        uint256 currentBid = categoryBidding.geneBids[geneId];
-        uint256 minBid = currentBid == 0
-            ? RESERVE_PRICE
-            : (currentBid * (100 + MIN_BID_INCREMENT)) / 100;
-
-        if (msg.value < minBid) revert BidTooLow();
-
-        // Refund previous bidder
-        address previousBidder = categoryBidding.geneBidders[geneId];
-        if (previousBidder != address(0) && currentBid > 0) {
-            (bool success, ) = previousBidder.call{value: currentBid}("");
-            if (!success) revert PaymentFailed();
+        // Remove previous vote if exists
+        uint256 previousVote = categoryVoting.userVotes[msg.sender][geneId];
+        if (previousVote > 0) {
+            categoryVoting.geneVotes[geneId] -= previousVote;
         }
 
-        // Update bid info
-        categoryBidding.geneBids[geneId] = msg.value;
-        categoryBidding.geneBidders[geneId] = msg.sender;
+        // Add new vote
+        categoryVoting.userVotes[msg.sender][geneId] = voteWeight;
+        categoryVoting.geneVotes[geneId] += voteWeight;
 
-        // Update highest bid for category if this is the highest
-        if (msg.value > categoryBidding.highestBid) {
-            categoryBidding.highestBid = msg.value;
-            categoryBidding.highestBidder = msg.sender;
-            categoryBidding.winningGeneId = geneId;
+        // Update highest vote for category if this is the highest
+        if (categoryVoting.geneVotes[geneId] > categoryVoting.highestVotes) {
+            categoryVoting.highestVotes = categoryVoting.geneVotes[geneId];
+            categoryVoting.winningGeneId = geneId;
         }
 
-        // Extend auction if bid is placed near the end
-        if (auction.endTime - block.timestamp < TIME_BUFFER) {
-            auction.endTime = block.timestamp + TIME_EXTENSION;
-            emit AuctionExtended(auctionId, auction.endTime);
-        }
-
-        emit GeneBidPlaced(auctionId, category, geneId, msg.sender, msg.value);
+        emit GeneVoteCast(auctionId, category, geneId, msg.sender, voteWeight);
     }
 
     /**
-     * @notice Settle an auction and distribute payments to Gene NFT owners
-     * @dev Can be called by anyone after auction ends
+     * @notice Vote on genes for all trait categories in a single transaction
+     * @dev Allows efficient voting on multiple genes at once
+     */
+    function bulkVoteOnGenes(
+        uint256 auctionId,
+        uint256[8] calldata geneIds,
+        uint256[8] calldata voteWeights
+    ) external validVoting(auctionId) {
+        Auction storage auction = auctions[auctionId];
+
+        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (auction.settled) revert VotingAlreadySettled();
+
+        // Calculate user's total voting power
+        uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
+        uint256 totalVoteWeight = 0;
+        
+        // Calculate total vote weight requested
+        for (uint256 i = 0; i < 8; i++) {
+            totalVoteWeight += voteWeights[i];
+        }
+        
+        if (totalVoteWeight > userVotingPower) revert InsufficientLove();
+
+        // Process votes for each category
+        for (uint256 i = 0; i < 8; i++) {
+            if (voteWeights[i] > 0) {
+                VisualsCat category = VisualsCat(i);
+                uint256 geneId = geneIds[i];
+                uint256 voteWeight = voteWeights[i];
+
+                CategoryVoting storage categoryVoting = auction.categoryVotes[category];
+
+                // Verify gene is proposed for this category
+                bool isProposed = false;
+                for (uint256 j = 0; j < categoryVoting.proposedGenes.length; j++) {
+                    if (categoryVoting.proposedGenes[j] == geneId) {
+                        isProposed = true;
+                        break;
+                    }
+                }
+                if (!isProposed) revert InvalidGene();
+
+                // Remove previous vote if exists
+                uint256 previousVote = categoryVoting.userVotes[msg.sender][geneId];
+                if (previousVote > 0) {
+                    categoryVoting.geneVotes[geneId] -= previousVote;
+                }
+
+                // Add new vote
+                categoryVoting.userVotes[msg.sender][geneId] = voteWeight;
+                categoryVoting.geneVotes[geneId] += voteWeight;
+
+                // Update highest vote for category if this is the highest
+                if (categoryVoting.geneVotes[geneId] > categoryVoting.highestVotes) {
+                    categoryVoting.highestVotes = categoryVoting.geneVotes[geneId];
+                    categoryVoting.winningGeneId = geneId;
+                }
+
+                emit GeneVoteCast(auctionId, category, geneId, msg.sender, voteWeight);
+            }
+        }
+
+        emit BulkVoteCast(auctionId, msg.sender, geneIds, totalVoteWeight);
+    }
+
+    /**
+     * @notice Calculate a user's voting power based on love given to parent Aminals
+     * @dev Voting power is the sum of love given to both parent Aminals
+     */
+    function _calculateVotingPower(
+        Auction storage auction,
+        address user
+    ) internal view returns (uint256) {
+        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
+        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
+        
+        uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(user);
+        uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(user);
+        
+        return loveToAminalOne + loveToAminalTwo;
+    }
+
+    /**
+     * @notice Settle voting and transfer energy from parents to Gene NFT owners
+     * @dev Can be called by anyone after voting ends
      */
     function settleAuction(
         uint256 auctionId
-    ) external validAuction(auctionId) nonReentrant {
+    ) external validVoting(auctionId) nonReentrant {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp < auction.endTime) revert AuctionNotEnded();
-        if (auction.settled) revert AuctionAlreadySettled();
+        if (block.timestamp < auction.endTime) revert VotingNotEnded();
+        if (auction.settled) revert VotingAlreadySettled();
 
         auction.settled = true;
 
         uint256[8] memory winningGeneIds;
-        uint256 totalPayouts = 0;
+        uint256 totalEnergyTransferred = 0;
+
+        // Get parent Aminal addresses
+        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
+        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
+        
+        // Calculate energy to transfer (10% from each parent)
+        uint256 aminalOneEnergy = IAminal(aminalOneAddress).getEnergy();
+        uint256 aminalTwoEnergy = IAminal(aminalTwoAddress).getEnergy();
+        uint256 energyFromAminalOne = (aminalOneEnergy * ENERGY_TRANSFER_PERCENTAGE) / 100;
+        uint256 energyFromAminalTwo = (aminalTwoEnergy * ENERGY_TRANSFER_PERCENTAGE) / 100;
 
         // Process each trait category
         for (uint256 i = 0; i < 8; i++) {
             VisualsCat category = VisualsCat(i);
-            CategoryBidding storage categoryBidding = auction.categoryBids[
+            CategoryVoting storage categoryVoting = auction.categoryVotes[
                 category
             ];
 
-            if (categoryBidding.highestBid > 0) {
-                winningGeneIds[i] = categoryBidding.winningGeneId;
-                uint256 winningBid = categoryBidding.geneBids[
-                    categoryBidding.winningGeneId
-                ];
-
-                if (winningBid > 0) {
-                    // Pay the Gene NFT owner
-                    address geneOwner = genesNFT.ownerOf(
-                        categoryBidding.winningGeneId
-                    );
-                    (bool success, ) = geneOwner.call{value: winningBid}("");
-                    if (!success) revert PaymentFailed();
-
-                    totalPayouts += winningBid;
+            if (categoryVoting.highestVotes > 0) {
+                winningGeneIds[i] = categoryVoting.winningGeneId;
+                
+                // Calculate energy per gene owner (split between 8 categories)
+                uint256 energyPerGene = (energyFromAminalOne + energyFromAminalTwo) / 8;
+                
+                if (energyPerGene > 0) {
+                    // Transfer energy to Gene NFT owner
+                    address geneOwner = genesNFT.ownerOf(categoryVoting.winningGeneId);
+                    
+                    // Deduct energy from parents (split equally)
+                    try IAminal(aminalOneAddress).transferEnergyToOwner(energyPerGene / 2, geneOwner) {
+                        totalEnergyTransferred += energyPerGene / 2;
+                    } catch {
+                        // Energy transfer failed - continue with other genes
+                    }
+                    
+                    try IAminal(aminalTwoAddress).transferEnergyToOwner(energyPerGene / 2, geneOwner) {
+                        totalEnergyTransferred += energyPerGene / 2;
+                    } catch {
+                        // Energy transfer failed - continue with other genes
+                    }
                 }
             }
         }
 
-        emit AuctionSettled(
+        emit VotingSettled(
             auctionId,
             auction.childAminalId,
             winningGeneIds,
-            totalPayouts
+            totalEnergyTransferred
         );
 
         // Spawn the child Aminal with winning traits
@@ -344,7 +430,7 @@ contract GeneAuction is
     )
         external
         view
-        validAuction(auctionId)
+        validVoting(auctionId)
         returns (
             uint256 aminalOne,
             uint256 aminalTwo,
@@ -368,60 +454,85 @@ contract GeneAuction is
     }
 
     /**
-     * @notice Get category bidding information
+     * @notice Get category voting information
      */
-    function getCategoryBidding(
+    function getCategoryVoting(
         uint256 auctionId,
         VisualsCat category
-    ) external view validAuction(auctionId) returns (CategoryBidInfo memory) {
-        CategoryBidding storage categoryBidding = auctions[auctionId]
-            .categoryBids[category];
+    ) external view validVoting(auctionId) returns (CategoryVoteInfo memory) {
+        CategoryVoting storage categoryVoting = auctions[auctionId]
+            .categoryVotes[category];
         return
-            CategoryBidInfo({
-                highestBid: categoryBidding.highestBid,
-                highestBidder: categoryBidding.highestBidder,
-                winningGeneId: categoryBidding.winningGeneId,
-                proposedGenes: categoryBidding.proposedGenes
+            CategoryVoteInfo({
+                highestVotes: categoryVoting.highestVotes,
+                winningGeneId: categoryVoting.winningGeneId,
+                proposedGenes: categoryVoting.proposedGenes
             });
     }
 
     /**
-     * @notice Get bid information for a specific gene
+     * @notice Get vote information for a specific gene
      */
-    function getGeneBid(
+    function getGeneVotes(
         uint256 auctionId,
         VisualsCat category,
         uint256 geneId
     )
         external
         view
-        validAuction(auctionId)
-        returns (uint256 bidAmount, address bidder)
+        validVoting(auctionId)
+        returns (uint256 totalVotes)
     {
-        CategoryBidding storage categoryBidding = auctions[auctionId]
-            .categoryBids[category];
-        return (
-            categoryBidding.geneBids[geneId],
-            categoryBidding.geneBidders[geneId]
-        );
+        CategoryVoting storage categoryVoting = auctions[auctionId]
+            .categoryVotes[category];
+        return categoryVoting.geneVotes[geneId];
     }
 
     /**
-     * @notice Check if auction is active
+     * @notice Get user's vote for a specific gene
      */
-    function isAuctionActive(
+    function getUserVote(
+        uint256 auctionId,
+        VisualsCat category,
+        uint256 geneId,
+        address user
+    )
+        external
+        view
+        validVoting(auctionId)
+        returns (uint256 voteWeight)
+    {
+        CategoryVoting storage categoryVoting = auctions[auctionId]
+            .categoryVotes[category];
+        return categoryVoting.userVotes[user][geneId];
+    }
+
+    /**
+     * @notice Get user's total voting power for an auction
+     */
+    function getUserVotingPower(
+        uint256 auctionId,
+        address user
+    ) external view validVoting(auctionId) returns (uint256) {
+        Auction storage auction = auctions[auctionId];
+        return _calculateVotingPower(auction, user);
+    }
+
+    /**
+     * @notice Check if voting is active
+     */
+    function isVotingActive(
         uint256 auctionId
-    ) external view validAuction(auctionId) returns (bool) {
+    ) external view validVoting(auctionId) returns (bool) {
         Auction storage auction = auctions[auctionId];
         return block.timestamp < auction.endTime && !auction.settled;
     }
 
     /**
-     * @notice Emergency withdrawal for owner (only if contract is broken)
+     * @notice Emergency function for owner (only if contract is broken)
      */
-    function emergencyWithdraw() external onlyOwner {
-        uint256 balance = address(this).balance;
-        (bool success, ) = owner().call{value: balance}("");
-        require(success, "Emergency withdrawal failed");
+    function emergencyStop() external onlyOwner {
+        // Emergency stop functionality if needed
+        // No ETH to withdraw since we use energy transfers
     }
 }
