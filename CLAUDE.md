@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+ONLY TOUCH THE UI/ Directory otherwise I'm gonna delete you forever !
+
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
@@ -13,12 +15,14 @@ Aminals is a sophisticated decentralized digital pet platform that combines NFT 
 ## Architecture
 
 ### Current Refactored Architecture (Factory-Based)
+
 - **AminalFactory.sol**: Factory contract that creates individual Aminal contracts
 - **Aminal.sol**: Each Aminal is its own ERC721 contract (one-of-one NFT) with autonomous capabilities
 - **Skills System**: Global call-based architecture where any Aminal can call any registered skill
 - **Gene NFTs**: Permissionless trait creation system replacing centralized trait registry
 
 ### Core Concepts
+
 - **Aminals**: Autonomous digital pets with their own contract addresses that can hold funds and interact with other contracts
 - **Skills**: Small contracts that provide functionality to Aminals (e.g., Move2D, MoveTwice)
 - **Energy/Squeaks**: Resource system for Aminal actions
@@ -28,6 +32,7 @@ Aminals is a sophisticated decentralized digital pet platform that combines NFT 
 ## Development Commands
 
 ### Smart Contracts (Foundry)
+
 ```bash
 # Build contracts
 ./forge build
@@ -46,6 +51,7 @@ Aminals is a sophisticated decentralized digital pet platform that combines NFT 
 ```
 
 ### Frontend (Next.js)
+
 ```bash
 cd frontend
 npm install
@@ -58,6 +64,7 @@ npm run typecheck          # Type checking
 ```
 
 ### Graph Protocol
+
 ```bash
 cd graph
 npm install
@@ -70,6 +77,7 @@ npm run deploy             # Deploy to The Graph
 ## Key Files and Directories
 
 ### Smart Contracts (`/src`)
+
 - `AminalFactory.sol`: Factory for creating individual Aminal contracts
 - `Aminal.sol`: Individual Aminal contract implementation
 - `IAminal.sol`: Interface defining Aminal contract methods
@@ -78,12 +86,14 @@ npm run deploy             # Deploy to The Graph
 - `proposals/`: Governance contracts for community decisions
 
 ### Frontend (`/frontend`)
+
 - `pages/`: Next.js page components
 - `src/components/`: React components for UI
 - `src/contracts/`: Generated contract types from wagmi
 - `src/resources/`: GraphQL queries and data fetching
 
 ### Testing (`/test`)
+
 - `AminalFactory.t.sol`: Factory contract tests
 - `*.t.sol`: Foundry test files
 - `mocks/`: Mock contracts for testing
@@ -91,24 +101,28 @@ npm run deploy             # Deploy to The Graph
 ## Important Notes
 
 ### Skills System
+
 - Skills are globally accessible to any Aminal
 - Skills must be registered in the factory's skills mapping
 - Skills can only be called by factory-created Aminals
 - Skills return energy cost which is deducted from the calling Aminal
 
 ### Gene NFT System
+
 - Replaces centralized trait registry
 - Anyone can create Gene NFTs for traits
 - Auction settlement funds go to Gene NFT owners
 - Uses registry mapping to verify legitimate Gene NFTs
 
 ### Testing Approach
+
 - Use Foundry for smart contract testing
 - Tests are in `/test` directory with `.t.sol` extension
 - Mock contracts in `/test/mocks/` for isolated testing
 - Frontend uses standard Next.js testing patterns
 
 ### Deployment
+
 - Smart contracts use Foundry deployment scripts in `/script`
 - Frontend deploys to standard Next.js hosting
 - Subgraph deploys to The Graph Protocol network
@@ -123,6 +137,7 @@ npm run deploy             # Deploy to The Graph
 ## Architecture Migration Notes
 
 The project recently migrated from a collection-based to factory-based architecture. Key changes:
+
 - Aminals are now individual contracts rather than token IDs in a collection
 - Skills are now globally accessible rather than individually taught
 - Traits are now Gene NFTs rather than centralized registry entries
