@@ -66,13 +66,27 @@ export const useTraits = (
                     id
                     address
                   }
-                  aminalsUsingGene {
+                  proposalsUsingGene {
                     id
-                    aminalIndex
-                    contractAddress
-                    tokenURI
-                    energy
-                    totalLove
+                    auction {
+                      id
+                      aminalOne {
+                        id
+                        aminalIndex
+                        contractAddress
+                        tokenURI
+                        energy
+                        totalLove
+                      }
+                      aminalTwo {
+                        id
+                        aminalIndex
+                        contractAddress
+                        tokenURI
+                        energy
+                        totalLove
+                      }
+                    }
                   }
                   blockTimestamp
                 }
@@ -126,8 +140,20 @@ export const useTraits = (
       // Apply sort
       if (sort === 'aminals-count') {
         geneNFTs.sort(
-          (a: GeneNFT, b: GeneNFT) =>
-            (b.aminalsUsingGene?.length || 0) - (a.aminalsUsingGene?.length || 0)
+          (a: GeneNFT, b: GeneNFT) => {
+            // Calculate unique Aminals count from proposals
+            const aCount = a.proposalsUsingGene ? 
+              new Set([
+                ...a.proposalsUsingGene.map(p => p.auction.aminalOne.id),
+                ...a.proposalsUsingGene.map(p => p.auction.aminalTwo.id)
+              ]).size : 0;
+            const bCount = b.proposalsUsingGene ? 
+              new Set([
+                ...b.proposalsUsingGene.map(p => p.auction.aminalOne.id),
+                ...b.proposalsUsingGene.map(p => p.auction.aminalTwo.id)
+              ]).size : 0;
+            return bCount - aCount;
+          }
         );
         console.log('Sorted by aminals count');
       } else if (sort === 'created-at') {

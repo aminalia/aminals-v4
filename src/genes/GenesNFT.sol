@@ -31,7 +31,8 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
     }
 
     modifier onlyAminalsNFTOrFactory() {
-        if (msg.sender != aminalsNFT && msg.sender != geneFactory) revert OnlyFactory();
+        if (msg.sender != aminalsNFT && msg.sender != geneFactory)
+            revert OnlyFactory();
         _;
     }
 
@@ -46,15 +47,17 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
         emit Setup(aminalsNFT_);
     }
 
+    // TODO not good, maybe use an initializer pattern?
     function setFactory(address geneFactory_) external onlyOwner {
         geneFactory = geneFactory_;
         emit FactorySet(geneFactory_);
     }
 
-    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
-        external
-        onlyAminalsNFTOrFactory
-    {
+    function mint(
+        address to,
+        string calldata geneSVG,
+        IAminalStructs.VisualsCat visualsCategory
+    ) external onlyAminalsNFTOrFactory {
         uint256 tokenId = currentId;
         geneSVGs[tokenId] = geneSVG;
         geneVisualsCat[tokenId] = visualsCategory;
@@ -69,7 +72,9 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
         _burn(id);
     }
 
-    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
 
         string memory svg = geneSVGs[tokenId];
@@ -88,13 +93,25 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
             )
         );
 
-        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    Base64.encode(bytes(json))
+                )
+            );
     }
 
     /**
      * @notice Get Gene NFT information
      */
-    function getGeneInfo(uint256 id) external view returns (string memory svg, IAminalStructs.VisualsCat category) {
+    function getGeneInfo(
+        uint256 id
+    )
+        external
+        view
+        returns (string memory svg, IAminalStructs.VisualsCat category)
+    {
         return (geneSVGs[id], geneVisualsCat[id]);
     }
 
@@ -122,7 +139,9 @@ contract GenesNFT is ERC721("Aminal Genes", "GENES"), Initializable, Ownable {
     /**
      * @dev Convert VisualsCat enum to string
      */
-    function _categoryToString(IAminalStructs.VisualsCat category) internal pure returns (string memory) {
+    function _categoryToString(
+        IAminalStructs.VisualsCat category
+    ) internal pure returns (string memory) {
         if (category == IAminalStructs.VisualsCat.BACK) return "Background";
         if (category == IAminalStructs.VisualsCat.ARM) return "Arms";
         if (category == IAminalStructs.VisualsCat.TAIL) return "Tail";

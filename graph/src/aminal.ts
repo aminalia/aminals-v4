@@ -40,9 +40,9 @@ export function handleFeedAminal(event: FeedAminalEvent): void {
   );
   feedEvent.aminal = aminal.id;
   feedEvent.sender = user.id;
-  feedEvent.amount = event.params.amount;
+  feedEvent.amount = BigInt.fromI32(0); // ETH amount (not in event params)
   feedEvent.love = event.params.love;
-  feedEvent.totalLove = event.params.totalLove;
+  feedEvent.totalLove = event.params.totalLove; 
   feedEvent.energy = event.params.energy;
   feedEvent.blockNumber = event.block.number;
   feedEvent.blockTimestamp = event.block.timestamp;
@@ -169,13 +169,14 @@ export function handleSkillCall(event: SkillCallEvent): void {
   globalSkill.totalSqueakCost = globalSkill.totalSqueakCost.plus(event.params.squeakCost);
   globalSkill.save();
   
-  // Update Aminal energy if needed
-  let aminalContract = AminalContract.bind(event.address);
-  let energyResult = aminalContract.try_getEnergy();
-  if (!energyResult.reverted) {
-    aminal.energy = energyResult.value;
-    aminal.save();
-  }
+  // Energy is likely updated by the skill call cost, avoid extra contract call
+  // The energy change will be reflected in subsequent Feed or Squeak events
+  // let aminalContract = AminalContract.bind(event.address);
+  // let energyResult = aminalContract.try_getEnergy();
+  // if (!energyResult.reverted) {
+  //   aminal.energy = energyResult.value;
+  //   aminal.save();
+  // }
   
   log.info("Skill call for Aminal {} using skill {} with cost {}", [
     event.address.toHexString(),

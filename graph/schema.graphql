@@ -209,8 +209,8 @@ type GeneNFT @entity(immutable: false) {
   name: String
   description: String
   
-  # Usage in Aminals
-  aminalsUsingGene: [Aminal!]! # Aminals that have this gene
+  # Usage in Aminals - removed for performance as this can be expensive
+  # aminalsUsingGene: [Aminal!]! # Aminals that have this gene
   
   # Auction usage
   proposalsUsingGene: [GeneProposal!]! @derivedFrom(field: "geneNFT")
