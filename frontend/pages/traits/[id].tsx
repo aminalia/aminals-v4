@@ -8,8 +8,9 @@ import Layout from '../_layout';
 
 interface AminalWithDetails {
   id: string;
-  aminalId: string;
-  tokenUri: string;
+  aminalIndex: string;
+  contractAddress: string;
+  tokenURI: string;
   totalLove: string;
   energy: string;
 }
@@ -44,8 +45,8 @@ const TraitDetailPage: NextPage = () => {
   }
 
   const category =
-    TRAIT_CATEGORIES[trait.catEnum as keyof typeof TRAIT_CATEGORIES];
-  const aminalCount = trait.aminals?.length || 0;
+    TRAIT_CATEGORIES[trait.traitType as keyof typeof TRAIT_CATEGORIES];
+  const aminalCount = trait.aminalsUsingGene?.length || 0;
 
   return (
     <Layout>
@@ -56,7 +57,7 @@ const TraitDetailPage: NextPage = () => {
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold flex items-center gap-2">
                 <span className="text-3xl">{category.emoji}</span>
-                Trait #{trait.visualId}
+                Trait #{trait.tokenId}
               </h1>
               <span className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-full font-medium">
                 {category.name}
@@ -78,7 +79,7 @@ const TraitDetailPage: NextPage = () => {
                 viewBox="0 0 1000 1000"
                 className="w-full h-full"
                 dangerouslySetInnerHTML={{
-                  __html: trait.svg,
+                  __html: trait.svg || '',
                 }}
               />
             </div>
@@ -132,7 +133,7 @@ const TraitDetailPage: NextPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trait.aminals.map((aminal) => {
+                {trait.aminalsUsingGene.map((aminal: any) => {
                   const aminalWithDetails =
                     aminal as unknown as AminalWithDetails;
                   return (
@@ -141,19 +142,19 @@ const TraitDetailPage: NextPage = () => {
                       className="rounded-xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow"
                     >
                       <div className="aspect-square bg-indigo-50 relative">
-                        {aminalWithDetails.tokenUri && (
+                        {aminalWithDetails.tokenURI && (
                           <TokenUriImage
-                            tokenUri={aminalWithDetails.tokenUri}
-                            aminalId={aminalWithDetails.aminalId}
+                            tokenUri={aminalWithDetails.tokenURI}
+                            aminalId={aminalWithDetails.aminalIndex}
                           />
                         )}
                       </div>
                       <div className="p-4">
                         <Link
-                          href={`/aminals/${aminalWithDetails.aminalId}`}
+                          href={`/aminals/${aminalWithDetails.contractAddress || aminalWithDetails.aminalIndex}`}
                           className="text-xl font-bold hover:text-blue-600 transition-colors"
                         >
-                          Aminal #{aminalWithDetails.aminalId}
+                          Aminal #{aminalWithDetails.aminalIndex}
                         </Link>
 
                         <div className="grid grid-cols-2 gap-2 mt-3">
@@ -179,7 +180,7 @@ const TraitDetailPage: NextPage = () => {
 
                         <div className="mt-4">
                           <Link
-                            href={`/aminals/${aminalWithDetails.aminalId}`}
+                            href={`/aminals/${aminalWithDetails.aminalIndex}`}
                             className="w-full inline-block text-center px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
                           >
                             View Details

@@ -6,17 +6,19 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardMedia,
+  CardSection,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Auction } from '../../.graphclient';
+import { GeneAuction } from '../../.graphclient';
 import EndAuctionButton from './actions/endauction-button';
 import ProposeButton from './actions/propose-button';
 
 import '../../styles/index.module.css';
 
-export default function AuctionCard({ auction }: { auction: Auction }) {
+export default function AuctionCard({ auction }: { auction: GeneAuction }) {
   const { aminalOne, aminalTwo } = auction;
 
   return (
@@ -27,20 +29,20 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
         <div className="flex w-full md:w-1/2">
           <div className="w-1/2 relative group/image aspect-square">
             <div className="h-full">
-              <TokenUriImage tokenUri={aminalOne.tokenUri} />
+              <TokenUriImage tokenUri={aminalOne.tokenURI} />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-sm bg-white/95 backdrop-blur-sm shadow-lg px-4 py-1.5 rounded-full font-medium">
-              <span className="hidden md:inline">✨ </span>#{aminalOne.aminalId}
+              <span className="hidden md:inline">✨ </span>#{aminalOne.aminalIndex}
             </div>
           </div>
           <div className="w-1/2 relative group/image aspect-square">
             <div className="h-full">
-              <TokenUriImage tokenUri={aminalTwo.tokenUri} />
+              <TokenUriImage tokenUri={aminalTwo.tokenURI} />
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-sm bg-white/95 backdrop-blur-sm shadow-lg px-4 py-1.5 rounded-full font-medium">
-              <span className="hidden md:inline">✨ </span>#{aminalTwo.aminalId}
+              <span className="hidden md:inline">✨ </span>#{aminalTwo.aminalIndex}
             </div>
           </div>
         </div>
@@ -51,8 +53,8 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
             <div className="flex items-center gap-3">
               <Link href={`/breeding/${auction.auctionId}`}>
                 <h2 className="text-xl font-bold hover:text-primary transition-colors">
-                  <span className="text-xl">💕</span> #{aminalOne.aminalId} × #
-                  {aminalTwo.aminalId}
+                  <span className="text-xl">💕</span> #{aminalOne.aminalIndex} × #
+                  {aminalTwo.aminalIndex}
                 </h2>
               </Link>
             </div>
@@ -75,7 +77,7 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
                 <span className="text-xl">👶</span> Child
               </span>
               <span className="font-semibold text-lg">
-                #{auction.childAminalId}
+                #{auction.childAminal?.aminalIndex}
               </span>
             </div>
 
@@ -100,17 +102,17 @@ export default function AuctionCard({ auction }: { auction: Auction }) {
   );
 }
 
-export function AuctionCardActive({ auction }: { auction: Auction }) {
+export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
   let { aminalOne, aminalTwo } = auction;
 
   return (
     <>
       <Card>
         <CardMedia>
-          <TokenUriImage tokenUri={aminalOne.tokenUri} />
+          <TokenUriImage tokenUri={aminalOne.tokenURI} />
         </CardMedia>
         <CardMedia>
-          <TokenUriImage tokenUri={aminalTwo.tokenUri} />
+          <TokenUriImage tokenUri={aminalTwo.tokenURI} />
         </CardMedia>
         <CardSection>
           <CardHeader>
@@ -118,14 +120,14 @@ export function AuctionCardActive({ auction }: { auction: Auction }) {
               <CardTitle>Auction #{auction.auctionId}</CardTitle>
             </Link>
             <CardDescription>
-              Between {aminalOne.aminalId} and {aminalTwo.aminalId}
+              Between {aminalOne.aminalIndex} and {aminalTwo.aminalIndex}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <table>
               <td>
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
-                <tr>Child ID: #{auction.childAminalId}</tr>
+                <tr>Child ID: #{auction.childAminal?.aminalIndex}</tr>
               </td>
               <td>
                 <EndAuctionButton auctionId={auction.auctionId} />
@@ -142,17 +144,17 @@ export function AuctionCardActive({ auction }: { auction: Auction }) {
   );
 }
 
-export function AuctionCardInActive({ auction }: { auction: Auction }) {
+export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
   let { aminalOne, aminalTwo } = auction;
 
   return (
     <>
       <Card>
         <CardMedia>
-          <TokenUriImage tokenUri={aminalOne.tokenUri} />
+          <TokenUriImage tokenUri={aminalOne.tokenURI} />
         </CardMedia>
         <CardMedia>
-          <TokenUriImage tokenUri={aminalTwo.tokenUri} />
+          <TokenUriImage tokenUri={aminalTwo.tokenURI} />
         </CardMedia>
         <CardSection>
           <CardHeader>
@@ -160,14 +162,14 @@ export function AuctionCardInActive({ auction }: { auction: Auction }) {
               <CardTitle>Auction #{auction.auctionId}</CardTitle>
             </Link>
             <CardDescription>
-              Between {aminalOne.aminalId} and {aminalTwo.aminalId}
+              Between {aminalOne.aminalIndex} and {aminalTwo.aminalIndex}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <table>
               <td>
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
-                <tr>Child ID: #{auction.childAminalId}</tr>
+                <tr>Child ID: #{auction.childAminal?.aminalIndex}</tr>
               </td>
               <td>
                 u
@@ -185,16 +187,21 @@ export function AuctionCardInActive({ auction }: { auction: Auction }) {
   );
 }
 
-function TokenUriImage({ tokenUri }: { tokenUri: string }) {
+function TokenUriImage({ tokenUri }: { tokenUri?: string | null }) {
   let image,
     error = null;
-  try {
-    const base64Payload = tokenUri.split(',')[1];
-    const decodedJsonString = atob(base64Payload);
-    const json = JSON.parse(decodedJsonString);
-    image = json.image;
-  } catch (e) {
-    error = e;
+  
+  if (!tokenUri) {
+    error = new Error('No token URI provided');
+  } else {
+    try {
+      const base64Payload = tokenUri.split(',')[1];
+      const decodedJsonString = atob(base64Payload);
+      const json = JSON.parse(decodedJsonString);
+      image = json.image;
+    } catch (e) {
+      error = e;
+    }
   }
 
   if (error || !image) {

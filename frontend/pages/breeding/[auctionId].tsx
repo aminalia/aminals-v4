@@ -17,7 +17,7 @@ const AuctionPage: NextPage = () => {
   const router = useRouter();
   const auctionId = router.query.auctionId as string;
 
-  const { data: auctions, isLoading: isLoadingAuction } = useAuction(auctionId);
+  const { data: auction, isLoading: isLoadingAuction } = useAuction(auctionId);
   const { data: proposeVisuals, isLoading: isLoadingProposeVisuals } =
     useAuctionProposeVisuals(auctionId);
 
@@ -35,39 +35,39 @@ const AuctionPage: NextPage = () => {
 
   // Define the trait parts from the auction data
   const parts: TraitParts =
-    auctions && auctions[0]
+    auction
       ? {
           background: [
-            auctions[0].aminalOne.traits[0],
-            auctions[0].aminalTwo.traits[0],
+            auction.aminalOne.backId,
+            auction.aminalTwo.backId,
           ],
           body: [
-            auctions[0].aminalOne.traits[4],
-            auctions[0].aminalTwo.traits[4],
+            auction.aminalOne.bodyId,
+            auction.aminalTwo.bodyId,
           ],
           face: [
-            auctions[0].aminalOne.traits[5],
-            auctions[0].aminalTwo.traits[5],
+            auction.aminalOne.faceId,
+            auction.aminalTwo.faceId,
           ],
           mouth: [
-            auctions[0].aminalOne.traits[6],
-            auctions[0].aminalTwo.traits[6],
+            auction.aminalOne.mouthId,
+            auction.aminalTwo.mouthId,
           ],
           ears: [
-            auctions[0].aminalOne.traits[3],
-            auctions[0].aminalTwo.traits[3],
+            auction.aminalOne.earsId,
+            auction.aminalTwo.earsId,
           ],
           arm: [
-            auctions[0].aminalOne.traits[1],
-            auctions[0].aminalTwo.traits[1],
+            auction.aminalOne.armId,
+            auction.aminalTwo.armId,
           ],
           tail: [
-            auctions[0].aminalOne.traits[2],
-            auctions[0].aminalTwo.traits[2],
+            auction.aminalOne.tailId,
+            auction.aminalTwo.tailId,
           ],
           misc: [
-            auctions[0].aminalOne.traits[7],
-            auctions[0].aminalTwo.traits[7],
+            auction.aminalOne.miscId,
+            auction.aminalTwo.miscId,
           ],
         }
       : {
@@ -89,16 +89,16 @@ const AuctionPage: NextPage = () => {
     }));
   };
 
-  // Function to get parent Aminals IDs
-  const getParentIds = () => {
-    if (!auctions || !auctions[0]) return { mom: '?', dad: '?' };
+  // Function to get parent Aminal contract addresses
+  const getParentAddresses = () => {
+    if (!auction) return { mom: '?', dad: '?' };
     return {
-      mom: auctions[0].aminalOne.aminalId,
-      dad: auctions[0].aminalTwo.aminalId,
+      mom: auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
+      dad: auction.aminalTwo.contractAddress || auction.aminalTwo.aminalIndex,
     };
   };
 
-  const { mom, dad } = getParentIds();
+  const { mom, dad } = getParentAddresses();
 
   return (
     <Layout>
@@ -133,7 +133,7 @@ const AuctionPage: NextPage = () => {
                   <div>
                     <div className="text-sm text-gray-500">Parents</div>
                     <div className="font-medium">
-                      Aminal #{mom} + Aminal #{dad}
+                      Aminal #{auction?.aminalOne?.aminalIndex || '?'} + Aminal #{auction?.aminalTwo?.aminalIndex || '?'}
                     </div>
                   </div>
                 </div>

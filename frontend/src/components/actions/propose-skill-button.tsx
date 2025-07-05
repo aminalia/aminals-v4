@@ -1,8 +1,10 @@
-import { useWriteAminalsProposeAddSkill } from '@/contracts/generated';
 import { useState } from 'react';
-import { useAccount } from 'wagmi';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+const aminalFactoryAbi = require('../../../deployments/AminalFactory.json').abi;
+
+const AMINAL_FACTORY_ADDRESS = '0x89b5F7b73217698247AC32c77417a39AbE04bdE0' as const;
 
 interface ProposeSkillButtonProps {
   id: string;
@@ -11,7 +13,7 @@ interface ProposeSkillButtonProps {
 export default function ProposeSkillButton({ id }: ProposeSkillButtonProps) {
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
-  const proposeSkill = useWriteAminalsProposeAddSkill();
+  const { writeContractAsync } = useWriteContract();
 
   const [skillName, setSkillName] = useState('');
   const [skillAddress, setSkillAddress] = useState('');
@@ -22,8 +24,11 @@ export default function ProposeSkillButton({ id }: ProposeSkillButtonProps) {
 
     try {
       setIsProposing(true);
-      await proposeSkill.writeContractAsync({
-        args: [BigInt(id), skillName, skillAddress],
+      await writeContractAsync({
+        abi: aminalFactoryAbi,
+        address: AMINAL_FACTORY_ADDRESS,
+        functionName: 'proposeAddSkill',
+        args: [BigInt(id), skillName, skillAddress as `0x${string}`],
         value: BigInt(10000000000000000), // 0.01 ETH in wei
       });
     } catch (error) {

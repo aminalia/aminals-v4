@@ -142,11 +142,11 @@ const TraitsPage: NextPage = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {traits.map((trait) => (
+              {traits.map((trait: any) => (
                 <TraitCard
                   key={trait.id}
                   trait={trait}
-                  aminalCount={trait.aminals?.length || 0}
+                  aminalCount={trait.aminalsUsingGene?.length || 0}
                 />
               ))}
             </div>

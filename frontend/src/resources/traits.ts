@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import {
-  TraitByIdDocument,
-  TraitByIdQuery,
-  TraitsListDocument,
-  TraitsListQuery,
+  GeneNFTByIdDocument,
+  GeneNFTByIdQuery,
+  GeneNFTsListDocument,
+  GeneNFTsListQuery,
+  GenesByTraitTypeDocument,
+  GenesByTraitTypeQuery,
   execute,
 } from '../../.graphclient';
 
@@ -23,7 +25,7 @@ export type CategoryFilter =
   | '6'
   | '7';
 
-type Trait = TraitsListQuery['traits'][number];
+type GeneNFT = GeneNFTsListQuery['geneNFTs'][number];
 
 export const useTraits = (
   filter: TraitFilter = 'all',
@@ -32,55 +34,54 @@ export const useTraits = (
 ) => {
   const { address } = useAccount();
 
-  return useQuery<TraitsListQuery['traits']>({
+  return useQuery<GeneNFTsListQuery['geneNFTs']>({
     queryKey: [BASE_KEY, filter, sort, category, address],
     queryFn: async () => {
-      const response = await execute(TraitsListDocument, {});
+      const response = await execute(GeneNFTsListDocument, {});
       if (response.errors) throw new Error(response.errors[0].message);
 
-      let traits = response.data.traits;
+      let geneNFTs = response.data.geneNFTs;
 
       // Apply owner filter
       if (filter === 'yours' && address) {
-        traits = traits.filter(
-          (trait: Trait) =>
-            trait.creator?.address?.toLowerCase() === address?.toLowerCase()
+        geneNFTs = geneNFTs.filter(
+          (gene: GeneNFT) =>
+            gene.creator?.address?.toLowerCase() === address?.toLowerCase()
         );
       }
 
       // Apply category filter
       if (category !== 'all') {
-        traits = traits.filter(
-          (trait: Trait) => trait.catEnum === Number(category)
+        geneNFTs = geneNFTs.filter(
+          (gene: GeneNFT) => gene.traitType === Number(category)
         );
       }
 
       // Apply sort
       if (sort === 'aminals-count') {
-        traits.sort(
-          (a: Trait, b: Trait) =>
-            (b.aminals?.length || 0) - (a.aminals?.length || 0)
+        geneNFTs.sort(
+          (a: GeneNFT, b: GeneNFT) =>
+            (b.aminalsUsingGene?.length || 0) - (a.aminalsUsingGene?.length || 0)
         );
       } else if (sort === 'created-at') {
-        // Since we don't have a created timestamp in the current data,
-        // we can sort by visualId as a proxy for creation time
-        traits.sort(
-          (a: Trait, b: Trait) => Number(b.visualId) - Number(a.visualId)
+        // Sort by tokenId as a proxy for creation time
+        geneNFTs.sort(
+          (a: GeneNFT, b: GeneNFT) => Number(b.tokenId) - Number(a.tokenId)
         );
       }
 
-      return traits;
+      return geneNFTs;
     },
   });
 };
 
 export const useTrait = (id: string) => {
-  return useQuery<TraitByIdQuery['trait']>({
+  return useQuery<GeneNFTByIdQuery['geneNFT']>({
     queryKey: [BASE_KEY, id],
     queryFn: async () => {
-      console.log('Fetching trait with ID:', id);
+      console.log('Fetching gene NFT with ID:', id);
 
-      const response = await execute(TraitByIdDocument, {
+      const response = await execute(GeneNFTByIdDocument, {
         id: id,
       });
 
@@ -91,7 +92,7 @@ export const useTrait = (id: string) => {
         throw new Error(response.errors[0].message);
       }
 
-      return response.data.trait;
+      return response.data.geneNFT;
     },
     enabled: !!id,
   });

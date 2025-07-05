@@ -4,6 +4,7 @@ import {
   AminalSpawned as AminalSpawnedEvent,
   BreedAminal as BreedAminalEvent
 } from "../generated/AminalFactory/AminalFactory";
+import { Aminal as AminalContract } from "../generated/templates/Aminal/Aminal";
 import { Aminal as AminalTemplate } from "../generated/templates";
 import {
   AminalFactory,
@@ -12,6 +13,19 @@ import {
   GeneAuction,
   User
 } from "../generated/schema";
+
+// Helper function to fetch tokenURI for an Aminal
+function fetchTokenURI(aminalAddress: Address): string | null {
+  let aminalContract = AminalContract.bind(aminalAddress);
+  let tokenURIResult = aminalContract.try_tokenURI(BigInt.fromI32(1)); // Aminals use token ID 1
+  
+  if (!tokenURIResult.reverted) {
+    return tokenURIResult.value;
+  } else {
+    log.warning("Failed to fetch tokenURI for Aminal {}", [aminalAddress.toHexString()]);
+    return null;
+  }
+}
 
 export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   // Create or load factory entity
@@ -93,6 +107,12 @@ export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   aminal.faceId = event.params.faceId;
   aminal.mouthId = event.params.mouthId;
   aminal.miscId = event.params.miscId;
+  
+  // Fetch tokenURI metadata
+  let tokenURI = fetchTokenURI(event.params.aminalAddress);
+  if (tokenURI) {
+    aminal.tokenURI = tokenURI;
+  }
   
   // Initialize state
   aminal.energy = BigInt.fromI32(50); // Default starting energy

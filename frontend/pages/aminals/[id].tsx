@@ -1,21 +1,119 @@
 import BreedButton from '@/components/actions/breed-button';
 import FeedButton from '@/components/actions/feed-button';
-import ProposeSkillButton from '@/components/actions/propose-skill-button';
-import { TokenUriImage } from '@/components/aminal-card';
-import SkillCard from '@/components/skill-card';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { useAminal } from '@/resources/aminals';
+import CallSkillButton from '@/components/actions/call-skill-button';
+import { AminalVisualImage } from '@/components/aminal-card';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
 import Layout from '../_layout';
+
+import { useQuery } from '@tanstack/react-query';
+
+// Direct fetch for individual Aminal by contract address
+const useAminalByAddress = (contractAddress: string) => {
+  return useQuery({
+    queryKey: ['aminal-by-address', contractAddress],
+    queryFn: async () => {
+      if (!contractAddress || contractAddress === 'undefined') {
+        return null;
+      }
+
+      const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
+      
+      const query = `
+        query AminalByAddress($contractAddress: Bytes) {
+          aminals(where: { contractAddress: $contractAddress }) {
+            id
+            contractAddress
+            aminalIndex
+            momAddress
+            dadAddress
+            energy
+            totalLove
+            breeding
+            blockTimestamp
+            tokenURI
+            backId
+            armId
+            tailId
+            earsId
+            bodyId
+            faceId
+            mouthId
+            miscId
+            feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+              id
+              sender {
+                address
+              }
+              amount
+              love
+              blockTimestamp
+            }
+            squeaks(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+              id
+              sender {
+                address
+              }
+              amount
+              love
+              blockTimestamp
+            }
+            skillCalls(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+              id
+              caller {
+                address
+              }
+              skillAddress
+              squeakCost
+              blockTimestamp
+            }
+          }
+        }
+      `;
+
+      const response = await fetch(SUBGRAPH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query,
+          variables: { contractAddress }
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.errors) {
+        console.error('Aminal fetch errors:', data.errors);
+        throw new Error(data.errors[0].message);
+      }
+
+      const aminals = data.data?.aminals || [];
+      return aminals.length > 0 ? aminals[0] : null;
+    },
+    enabled: !!contractAddress && contractAddress !== 'undefined'
+  });
+};
 
 const AminalPage: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
-  const { data: aminal, isLoading } = useAminal(id as string);
-  const [showSkillForm, setShowSkillForm] = useState(false);
+  const { id } = router.query; // This is now a contract address
+  const contractAddress = id as string;
+  const { data: aminal, isLoading } = useAminalByAddress(contractAddress);
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-[50vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!aminal) {
     return (
@@ -29,23 +127,15 @@ const AminalPage: NextPage = () => {
     );
   }
 
-  // For TypeScript, we need to ensure the component accepts the aminal prop
-  const aminalData = aminal as any;
-
   return (
     <Layout>
       <div className="container max-w-5xl mx-auto px-4 py-8">
-        {isLoading ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <h1 className="text-3xl font-bold">
-                  Aminal #{aminalData.aminalId}
+                  Aminal #{aminal.aminalIndex}
                 </h1>
               </div>
               <Link
@@ -60,7 +150,7 @@ const AminalPage: NextPage = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Column - Image */}
               <div className="aspect-square rounded-xl overflow-hidden bg-indigo-50 flex items-center justify-center border border-gray-200">
-                <TokenUriImage aminal={aminalData} />
+                <AminalVisualImage aminal={aminal} />
               </div>
 
               {/* Right Column - Details */}
@@ -74,30 +164,32 @@ const AminalPage: NextPage = () => {
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <div className="text-sm text-gray-500">Energy</div>
                       <div className="text-xl font-semibold text-purple-600">
-                        {(aminalData.energy / 1e18).toFixed(2)} ⚡
+                        {(Number(aminal.energy) / 1e18).toFixed(2)} ⚡
                       </div>
                     </div>
                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
                       <div className="text-sm text-gray-500">Total Love</div>
                       <div className="text-xl font-semibold text-pink-600">
-                        {(aminalData.totalLove / 1e18).toFixed(2)} ❤️
+                        {(Number(aminal.totalLove) / 1e18).toFixed(2)} ❤️
                       </div>
                     </div>
                   </div>
 
-                  {/* Your Love - Show if the user has given love to this Aminal */}
-                  {aminalData.lovers && aminalData.lovers[0] && (
-                    <div className="p-4 bg-pink-50 rounded-lg border border-pink-100">
-                      <div className="text-sm text-gray-500">Your Love</div>
-                      <div className="text-xl font-semibold text-pink-600">
-                        {(aminalData.lovers[0].love / 1e18).toFixed(2)} ❤️
-                      </div>
+                  {/* Contract Address */}
+                  <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                    <div className="text-sm text-gray-500">Contract Address</div>
+                    <div className="text-sm font-mono text-blue-600">
+                      {aminal.contractAddress}
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                {/* Feed Button */}
-                <FeedButton id={aminalData.aminalId} />
+                {/* Actions */}
+                <div className="space-y-3">
+                  <FeedButton contractAddress={aminal.contractAddress as `0x${string}`} />
+                  <BreedButton contractAddress={aminal.contractAddress as `0x${string}`} />
+                  <CallSkillButton aminalContractAddress={aminal.contractAddress as `0x${string}`} />
+                </div>
               </div>
             </div>
 
@@ -117,11 +209,19 @@ const AminalPage: NextPage = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <div className="text-sm text-gray-500">Mom</div>
-                        <div className="font-medium">#{aminalData.mom}</div>
+                        <div className="font-medium text-xs">
+                          {!aminal.momAddress || aminal.momAddress === '0x0000000000000000000000000000000000000000' 
+                            ? 'Genesis' 
+                            : `${aminal.momAddress.slice(0, 8)}...`}
+                        </div>
                       </div>
                       <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
                         <div className="text-sm text-gray-500">Dad</div>
-                        <div className="font-medium">#{aminalData.dad}</div>
+                        <div className="font-medium text-xs">
+                          {!aminal.dadAddress || aminal.dadAddress === '0x0000000000000000000000000000000000000000' 
+                            ? 'Genesis' 
+                            : `${aminal.dadAddress.slice(0, 8)}...`}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -132,198 +232,94 @@ const AminalPage: NextPage = () => {
                       <span className="text-blue-600 text-lg">🧬</span>
                       Breeding
                     </h3>
-                    {aminalData.breedableWith &&
-                    aminalData.breedableWith.length > 0 ? (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600 px-3">
-                          This Aminal can breed with:
-                        </p>
-                        <div className="flex flex-wrap gap-2 px-3">
-                          {aminalData.breedableWith.map(
-                            (buddy: any) =>
-                              buddy && (
-                                <Link
-                                  key={buddy.aminalTwo.aminalId}
-                                  href={`/aminals/${buddy.aminalTwo.aminalId}`}
-                                  className="px-3 py-1.5 text-sm bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition-colors"
-                                >
-                                  Aminal #{buddy.aminalTwo.aminalId}
-                                </Link>
-                              )
-                          )}
-                        </div>
-                        <div className="mt-3 px-3">
-                          <BreedButton id={aminalData.aminalId} />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <p className="text-sm text-gray-600 px-3">
-                          This Aminal cannot breed with any of your other
-                          Aminals at the moment.
-                        </p>
-                        <div className="mt-3 px-3">
-                          <BreedButton id={aminalData.aminalId} />
-                        </div>
-                      </div>
-                    )}
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600 px-3">
+                        Breeding Status: {aminal.breeding ? 'Available' : 'Not Available'}
+                      </p>
+                      <p className="text-xs text-gray-500 px-3">
+                        In the new system, breeding requires consent from both parties and community voting via Gene Auctions.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Column - Traits */}
+                {/* Right Column - Gene IDs */}
                 <div>
-                  {aminalData.traits && aminalData.traits.length > 0 && (
-                    <div className="space-y-2">
-                      <h3 className="font-medium flex items-center gap-2 px-3">
-                        <span className="text-blue-600 text-lg">🎭</span>
-                        Traits
-                      </h3>
-                      <div className="grid grid-cols-2 gap-3">
-                        {Array.from({ length: 8 }).map((_, i) => {
-                          const trait = aminalData.traits.find(
-                            (t: any) => Number(t.catEnum) === i
-                          );
-                          return (
-                            <div
-                              key={i}
-                              className={`p-3 rounded-lg border ${
-                                trait
-                                  ? 'bg-blue-50 border-blue-100'
-                                  : 'bg-white border-gray-200'
-                              }`}
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="text-lg">
-                                  {
-                                    TRAIT_CATEGORIES[
-                                      i as keyof typeof TRAIT_CATEGORIES
-                                    ].emoji
-                                  }
-                                </span>
-                                <div>
-                                  <div className="text-sm font-medium">
-                                    {
-                                      TRAIT_CATEGORIES[
-                                        i as keyof typeof TRAIT_CATEGORIES
-                                      ].name
-                                    }
-                                  </div>
-                                  {trait ? (
-                                    <Link
-                                      href={`/traits/${trait.id}`}
-                                      className="text-xs text-blue-700 font-medium hover:underline"
-                                    >
-                                      #{trait.visualId}
-                                    </Link>
-                                  ) : (
-                                    <div className="text-xs text-gray-500">
-                                      None
-                                    </div>
-                                  )}
-                                </div>
+                  <div className="space-y-2">
+                    <h3 className="font-medium flex items-center gap-2 px-3">
+                      <span className="text-blue-600 text-lg">🧬</span>
+                      Gene IDs
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { name: 'Back', emoji: '🎒', id: aminal.backId },
+                        { name: 'Arms', emoji: '💪', id: aminal.armId },
+                        { name: 'Tail', emoji: '🐾', id: aminal.tailId },
+                        { name: 'Ears', emoji: '👂', id: aminal.earsId },
+                        { name: 'Body', emoji: '👤', id: aminal.bodyId },
+                        { name: 'Face', emoji: '😊', id: aminal.faceId },
+                        { name: 'Mouth', emoji: '👄', id: aminal.mouthId },
+                        { name: 'Misc', emoji: '✨', id: aminal.miscId },
+                      ].map((gene, i) => (
+                        <div
+                          key={i}
+                          className="p-3 rounded-lg border bg-blue-50 border-blue-100"
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">{gene.emoji}</span>
+                            <div>
+                              <div className="text-sm font-medium">{gene.name}</div>
+                              <div className="text-xs text-blue-700 font-medium">
+                                Gene #{gene.id}
                               </div>
                             </div>
-                          );
-                        })}
-                      </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Skills Section */}
+            {/* Global Skills Section */}
             <div className="mt-4 p-6 bg-gray-50 rounded-xl border border-gray-100">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                <h2 className="text-2xl font-bold">Skills</h2>
-                <div className="flex items-center gap-3">
-                  <div className="text-sm text-gray-500">
-                    {aminalData.skills
-                      ? aminalData.skills.filter((s: any) => s && !s.removed)
-                          .length
-                      : 0}{' '}
-                    Active Skills
-                  </div>
-                  <button
-                    onClick={() => setShowSkillForm(!showSkillForm)}
-                    className={`px-4 py-1.5 text-sm rounded-full transition-colors flex items-center gap-1.5 ${
-                      showSkillForm
-                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        : 'bg-blue-600 text-white hover:bg-blue-700'
-                    }`}
-                  >
-                    {showSkillForm ? (
-                      <>
-                        <span>✕</span>
-                        <span>Cancel</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>🎯</span>
-                        <span>Propose Skill</span>
-                      </>
-                    )}
-                  </button>
+                <h2 className="text-2xl font-bold">Global Skills</h2>
+                <div className="text-sm text-gray-500">
+                  Any Aminal can call any registered skill
                 </div>
               </div>
 
-              {showSkillForm && (
-                <div className="bg-blue-50 p-5 rounded-lg mb-6 border border-blue-100">
-                  <div className="mb-3">
-                    <h3 className="text-lg font-medium text-blue-800 mb-1">
-                      Add a new skill
-                    </h3>
-                    <p className="text-sm text-blue-600">
-                      Skills enable your Aminal to perform special actions
-                      on-chain
-                    </p>
-                  </div>
-                  <ProposeSkillButton id={aminalData.aminalId} />
-                </div>
-              )}
-
-              {!aminalData.skills?.length ? (
-                <div className="flex flex-col items-center justify-center bg-white rounded-xl p-10 text-gray-500 border border-gray-100">
-                  <div className="text-5xl mb-4">🧠</div>
-                  <h3 className="text-xl font-medium text-gray-700 mb-2">
-                    No Skills Yet
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <h3 className="text-lg font-medium text-blue-800 mb-2">
+                    🔮 Call a Global Skill
                   </h3>
-                  <p className="text-center max-w-md">
-                    This Aminal doesn't have any skills yet. Skills give your
-                    Aminal special abilities!
+                  <p className="text-sm text-blue-600 mb-4">
+                    In the new architecture, skills are globally available to any Aminal. No need to learn them individually!
                   </p>
-                  {!showSkillForm && (
-                    <button
-                      onClick={() => setShowSkillForm(true)}
-                      className="mt-6 px-5 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                    >
-                      🎯 Propose First Skill
-                    </button>
-                  )}
+                  <CallSkillButton aminalContractAddress={aminal.contractAddress as `0x${string}`} />
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {aminalData.skills.map((skill: any) => {
-                    if (!skill) return null;
-                    return (
-                      <SkillCard
-                        key={skill.id}
-                        skill={{
-                          id: skill.id,
-                          skillAddress: skill.skillAddress,
-                          removed: skill.removed,
-                          blockTimestamp: String(Date.now()),
-                          skillName: skill.skillName || '',
-                        }}
-                        compact
-                      />
-                    );
-                  })}
+
+                <div className="bg-white p-4 rounded-lg border border-gray-100">
+                  <h4 className="font-medium mb-2">Available Global Skills:</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-600">🏃</span>
+                      <span className="font-medium">Move2D</span>
+                      <span className="text-gray-500">- Move your Aminal in 2D space</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-blue-600">🏃‍♀️</span>
+                      <span className="font-medium">MoveTwice</span>
+                      <span className="text-gray-500">- Move your Aminal twice in one action</span>
+                    </div>
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           </div>
-        )}
       </div>
     </Layout>
   );
