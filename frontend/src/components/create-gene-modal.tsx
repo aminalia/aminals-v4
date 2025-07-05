@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -9,6 +9,7 @@ import { Card } from './ui/card';
 import { SimpleSVGBuilder } from './simple-svg-builder';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { geneNftFactoryAbi, geneNftFactoryAddress } from '@/contracts/generated';
+import toast from 'react-hot-toast';
 
 interface CreateGeneModalProps {
   isOpen: boolean;
@@ -26,72 +27,85 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
 
   const { writeContract, data: hash, isPending, error: writeError } = useWriteContract();
   
-  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } = useWaitForTransactionReceipt({
     hash,
   });
 
-  // Log wagmi errors
-  if (writeError) {
-    console.error('Write contract error:', writeError);
-  }
+  // Handle transaction success
+  useEffect(() => {
+    if (isConfirmed && isCreating) {
+      toast.success('🧬 Gene NFT created successfully!', { 
+        id: 'create-gene-tx',
+        duration: 5000,
+      });
+      
+      setIsCreating(false);
+      // Reset form
+      setName('');
+      setDescription('');
+      setCategory(0);
+      setSvg('<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">\n  <circle cx="100" cy="100" r="50" fill="#ff6b6b"/>\n</svg>');
+      onSuccess?.();
+      onClose();
+    }
+  }, [isConfirmed, isCreating, onSuccess, onClose]);
 
-  const handleCreate = async () => {
-    console.log('Create button clicked');
-    console.log('Address:', address);
-    console.log('Name:', name);
-    console.log('SVG:', svg);
-    console.log('Category:', category);
-    console.log('GeneNFTFactory address:', geneNftFactoryAddress);
-    
+  // Handle transaction errors
+  useEffect(() => {
+    if (writeError) {
+      console.error('Write contract error:', writeError);
+      toast.error('Failed to create gene. Please try again.', { id: 'create-gene-tx' });
+      setIsCreating(false);
+    }
+  }, [writeError]);
+
+  // Handle receipt errors
+  useEffect(() => {
+    if (receiptError) {
+      console.error('Transaction receipt error:', receiptError);
+      toast.error('Transaction failed. Please try again.', { id: 'create-gene-tx' });
+      setIsCreating(false);
+    }
+  }, [receiptError]);
+
+  // Handle pending transaction
+  useEffect(() => {
+    if (isPending) {
+      toast.loading('Preparing transaction...', { id: 'create-gene-tx' });
+    } else if (isConfirming && hash) {
+      toast.loading('Transaction submitted, waiting for confirmation...', { id: 'create-gene-tx' });
+    }
+  }, [isPending, isConfirming, hash]);
+
+  const handleCreate = () => {
     if (!address) {
-      alert('Please connect your wallet first');
+      toast.error('Please connect your wallet first');
       return;
     }
     
     if (!name.trim()) {
-      alert('Please enter a name for your gene');
+      toast.error('Please enter a name for your gene');
       return;
     }
     
     if (!svg.trim() || svg.includes('<!-- Your SVG content here -->')) {
-      alert('Please create or paste an SVG design');
+      toast.error('Please create or paste an SVG design');
       return;
     }
 
-    try {
-      setIsCreating(true);
-      console.log('Calling writeContract...');
-      
-      writeContract({
-        address: geneNftFactoryAddress,
-        abi: geneNftFactoryAbi,
-        functionName: 'createGene',
-        args: [
-          svg, // svg
-          category, // category (0-7)
-        ],
-        value: BigInt('1000000000000000'), // 0.001 ETH in wei
-      });
-      
-      console.log('writeContract called successfully');
-    } catch (error) {
-      console.error('Error creating gene:', error);
-      alert('Failed to create gene. Check console for details.');
-      setIsCreating(false);
-    }
+    setIsCreating(true);
+    
+    writeContract({
+      address: geneNftFactoryAddress,
+      abi: geneNftFactoryAbi,
+      functionName: 'createGene',
+      args: [
+        svg, // svg
+        category, // category (0-7)
+      ],
+      value: BigInt('1000000000000000'), // 0.001 ETH in wei
+    });
   };
-
-  // Handle successful transaction
-  if (isConfirmed && isCreating) {
-    setIsCreating(false);
-    // Reset form
-    setName('');
-    setDescription('');
-    setCategory(0);
-    setSvg('<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">\n  <!-- Your SVG content here -->\n</svg>');
-    onSuccess?.();
-    onClose();
-  }
 
   if (!isOpen) return null;
 
@@ -193,10 +207,7 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                 <div className="pt-4 border-t">
                   <div className="flex gap-3">
                     <Button
-                      onClick={() => {
-                        console.log('Button clicked - starting handleCreate');
-                        handleCreate();
-                      }}
+                      onClick={handleCreate}
                       disabled={!address || !svg.trim() || !name.trim() || isPending || isConfirming}
                       className="flex-1"
                     >

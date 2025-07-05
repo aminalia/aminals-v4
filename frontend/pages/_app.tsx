@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
 import { holesky } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
+import { Toaster } from 'react-hot-toast';
 import '../styles/globals.css';
 
 const wagmiConfig = getDefaultConfig({
@@ -29,6 +30,20 @@ function AminalsApp({ Component, pageProps }: AppProps) {
       <QueryClientProvider client={queryClient}>
         <RainbowKitProvider theme={rainbowTheme}>
           <Component {...pageProps} />
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              className: 'toast-custom',
+              style: {
+                background: '#fff',
+                color: '#333',
+                border: '1px solid #e5e7eb',
+                borderRadius: '8px',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+              },
+            }}
+          />
         </RainbowKitProvider>
       </QueryClientProvider>
     </WagmiProvider>
