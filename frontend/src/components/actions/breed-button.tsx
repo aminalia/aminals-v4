@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { parseEther, isAddress } from 'viem';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import toast from 'react-hot-toast';
 const aminalAbi = require('../../../deployments/Aminal.json').abi;
 const geneAuctionAbi = require('../../../deployments/GeneAuction.json').abi;
 
@@ -13,30 +15,86 @@ export default function BreedButton({ contractAddress }: { contractAddress: `0x$
   const enabled = isConnected && chain;
   const [partnerAddress, setPartnerAddress] = useState<string>('');
   const [step, setStep] = useState<'consent' | 'auction'>('consent');
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { writeContract, isPending, data: hash, error } = useWriteContract();
+  const queryClient = useQueryClient();
+  
+  const { isLoading: isConfirming, isSuccess: isConfirmed, error: receiptError } = useWaitForTransactionReceipt({
+    hash,
+  });
 
-  async function giveConsent() {
-    if (enabled && isAddress(partnerAddress)) {
-      await writeContractAsync({
-        abi: aminalAbi,
-        address: contractAddress,
-        functionName: 'setBreedableWith',
-        args: [partnerAddress as `0x${string}`, true],
+  // Handle transaction success
+  useEffect(() => {
+    if (isConfirmed && step === 'consent') {
+      toast.success('💕 Breeding consent given successfully!', { 
+        id: 'breed-tx',
+        duration: 5000,
       });
       setStep('auction');
+      queryClient.invalidateQueries({ queryKey: ['aminal-by-address', contractAddress] });
+    } else if (isConfirmed && step === 'auction') {
+      toast.success('🍼 Gene auction started! Community can now vote on offspring traits.', { 
+        id: 'breed-tx',
+        duration: 6000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['aminal-by-address', contractAddress] });
     }
+  }, [isConfirmed, step, queryClient, contractAddress]);
+
+  // Handle transaction errors
+  useEffect(() => {
+    if (error) {
+      console.error('Breed transaction failed:', error);
+      toast.error('Transaction failed. Please try again.', { id: 'breed-tx' });
+    }
+  }, [error]);
+
+  // Handle receipt errors
+  useEffect(() => {
+    if (receiptError) {
+      console.error('Transaction receipt error:', receiptError);
+      toast.error('Transaction failed. Please try again.', { id: 'breed-tx' });
+    }
+  }, [receiptError]);
+
+  // Handle pending transaction
+  useEffect(() => {
+    if (isPending) {
+      toast.loading('Preparing transaction...', { id: 'breed-tx' });
+    } else if (isConfirming && hash) {
+      const message = step === 'consent' 
+        ? 'Giving breeding consent...' 
+        : 'Starting gene auction...';
+      toast.loading(message, { id: 'breed-tx' });
+    }
+  }, [isPending, isConfirming, hash, step]);
+
+  function giveConsent() {
+    if (!enabled || !isAddress(partnerAddress)) {
+      toast.error('Please enter a valid partner contract address');
+      return;
+    }
+
+    writeContract({
+      abi: aminalAbi,
+      address: contractAddress,
+      functionName: 'setBreedableWith',
+      args: [partnerAddress as `0x${string}`, true],
+    });
   }
 
-  async function startAuction() {
-    if (enabled && isAddress(partnerAddress)) {
-      await writeContractAsync({
-        abi: geneAuctionAbi,
-        address: GENE_AUCTION_ADDRESS,
-        functionName: 'createVoting',
-        args: [contractAddress, partnerAddress as `0x${string}`],
-        value: parseEther('0.001'),
-      });
+  function startAuction() {
+    if (!enabled || !isAddress(partnerAddress)) {
+      toast.error('Please enter a valid partner contract address');
+      return;
     }
+
+    writeContract({
+      abi: geneAuctionAbi,
+      address: GENE_AUCTION_ADDRESS,
+      functionName: 'createVoting',
+      args: [contractAddress, partnerAddress as `0x${string}`],
+      value: parseEther('0.001'),
+    });
   }
 
   return (
