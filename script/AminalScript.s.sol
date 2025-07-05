@@ -95,21 +95,21 @@ contract AminalScript is Script {
 
     function deployInitialGenes() public {
         GenesNFT genesNFT = GenesNFT(vm.envAddress("GENES_NFT_CONTRACT"));
-        
+
         // Deploy temporary minter contract
         InitialGenesMinter minter = new InitialGenesMinter();
         console.log("InitialGenesMinter deployed to:", address(minter));
-        
+
         // Set minter as temporary gene factory
         genesNFT.setFactory(address(minter));
         console.log("Set minter as temporary gene factory");
-        
+
         // Mint initial genes
         minter.mintInitialGenes(genesNFT, msg.sender);
         console.log("Initial genes minted to:", msg.sender);
         console.log("Gene IDs 0-7: Blue/Purple theme");
         console.log("Gene IDs 8-15: Red/Orange theme");
-        
+
         // Reset gene factory to address(0) for security
         genesNFT.setFactory(address(0));
         console.log("Gene factory reset to address(0)");

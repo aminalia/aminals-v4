@@ -127,13 +127,12 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         // Deploy VRGDA with optimal parameters for love curves
         // Parameters: targetPrice, priceDecayPercent, logisticAsymptote, timeScale
         loveVRGDA = new AminalVRGDA(
-            1 ether,        // 1 ETH base price
-            0.1 ether,      // 10% price decay
-            100 ether,      // Logistic asymptote at 100 units
-            20 ether        // Time scale for curve smoothness
+            1 ether, // 1 ETH base price
+            0.1 ether, // 10% price decay
+            100 ether, // Logistic asymptote at 100 units
+            20 ether // Time scale for curve smoothness
         );
     }
-
 
     /**
      * @notice Spawn the genesis Aminals to seed the ecosystem 🌱
@@ -205,7 +204,8 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
             miscId: miscId
         });
 
-        AminalContract newAminal = new AminalContract(address(this), momAddress, dadAddress, visuals, totalAminals, address(loveVRGDA));
+        AminalContract newAminal =
+            new AminalContract(address(this), momAddress, dadAddress, visuals, totalAminals, address(loveVRGDA));
 
         address aminalAddress = address(newAminal);
         isAminal[aminalAddress] = true;

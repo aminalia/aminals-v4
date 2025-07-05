@@ -46,10 +46,8 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = Visuals({
-            backId: 1, armId: 1, tailId: 1, earsId: 1, 
-            bodyId: 1, faceId: 1, mouthId: 1, miscId: 1
-        });
+        initialVisuals[0] =
+            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -81,7 +79,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         // At low energy (50), should get good love multiplier
         uint256 feedAmount1 = 0.1 ether;
         uint256 initialEnergy = aminal.getEnergy(); // 50
-        
+
         // Calculate expected love using VRGDA directly
         uint256 expectedLove1 = vrgda.getLoveForETH(initialEnergy, feedAmount1);
 
@@ -110,7 +108,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         // Love gained should match VRGDA calculation
         assertEq(loveGained, expectedLove2);
         assertEq(aminal.getLoveByUser(user2), expectedLove2);
-        
+
         // Love per ETH should be less at higher energy
         uint256 lovePerETH1 = (expectedLove1 * 1e18) / feedAmount1;
         uint256 lovePerETH2 = (expectedLove2 * 1e18) / feedAmount2;
@@ -127,7 +125,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         uint256 initialMultiplier = vrgda.getLoveMultiplier(initialEnergy);
 
         // At low energy (50), love multiplier should be high
-        assertGt(initialMultiplier, 50000); // Should be > 5x multiplier
+        assertGt(initialMultiplier, 50_000); // Should be > 5x multiplier
 
         // Feed small amount to increase energy
         vm.prank(user1);
@@ -135,7 +133,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         uint256 newEnergy = aminal.getEnergy();
         uint256 newMultiplier = vrgda.getLoveMultiplier(newEnergy);
-        
+
         // Love multiplier should decrease as energy increases
         assertLt(newMultiplier, initialMultiplier);
 
@@ -146,7 +144,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         // At very high energy, multiplier should be much lower
         uint256 highEnergy = aminal.getEnergy();
         uint256 highEnergyMultiplier = vrgda.getLoveMultiplier(highEnergy);
-        
+
         // Should be significantly less than initial
         assertLt(highEnergyMultiplier, initialMultiplier / 2);
         assertLt(highEnergyMultiplier, newMultiplier);
@@ -162,7 +160,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         assertEq(lowEnergyLove, expectedMaxLove); // Should be 100,000
 
         // Very high energy should give minimum love (0.1x base units)
-        uint256 highEnergyLove = vrgda.getLoveMultiplier(2000000);
+        uint256 highEnergyLove = vrgda.getLoveMultiplier(2_000_000);
         uint256 expectedMinLove = (1 ether * vrgda.ENERGY_PER_ETH() * vrgda.MIN_LOVE_MULTIPLIER()) / (1 ether * 1 ether);
         assertEq(highEnergyLove, expectedMinLove); // Should be 1,000
 
@@ -184,10 +182,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         assertEq(aminal.getEnergy(), initialEnergy + expectedEnergyGain);
     }
 
-    function testFuzz_LoveDiminishingReturns(
-        uint96 firstAmount,
-        uint96 secondAmount
-    ) public {
+    function testFuzz_LoveDiminishingReturns(uint96 firstAmount, uint96 secondAmount) public {
         vm.assume(firstAmount > 0.01 ether && firstAmount < 10 ether);
         vm.assume(secondAmount > 0.01 ether && secondAmount < 10 ether);
 
@@ -253,10 +248,11 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         // Should gain some love (at least minimum multiplier)
         assertGt(aminal.getTotalLove(), loveBefore);
-        
+
         // Check that we get at least the minimum love multiplier
         uint256 loveGained = aminal.getTotalLove() - loveBefore;
-        uint256 expectedMinLove = (0.1 ether * vrgda.ENERGY_PER_ETH() * vrgda.MIN_LOVE_MULTIPLIER()) / (1 ether * 1 ether);
+        uint256 expectedMinLove =
+            (0.1 ether * vrgda.ENERGY_PER_ETH() * vrgda.MIN_LOVE_MULTIPLIER()) / (1 ether * 1 ether);
         assertGe(loveGained, expectedMinLove);
 
         // Energy gain should be fixed
@@ -285,15 +281,15 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
     function test_EnergyCapBehavior() public {
         // Test that we can approach the energy cap
-        uint256 maxEnergy = 1000000; // 100 ETH worth
-        
+        uint256 maxEnergy = 1_000_000; // 100 ETH worth
+
         // Feed a large amount to test energy capping (use user2 who has more ETH)
         vm.prank(user2);
         aminal.feed{value: 150 ether}(); // More than the cap
 
         // Energy should be capped
         assertLe(aminal.getEnergy(), maxEnergy);
-        
+
         // Should still gain love even when energy is capped
         assertGt(aminal.getTotalLove(), 0);
     }

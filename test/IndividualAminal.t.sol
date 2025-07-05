@@ -117,7 +117,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         uint256 aliceLove = aminal.getLoveByUser(alice);
         uint256 bobLove = aminal.getLoveByUser(bob);
         uint256 totalLove = aminal.getTotalLove();
-        
+
         assertTrue(aliceLove > 0);
         assertTrue(bobLove > 0);
         assertTrue(bobLove > aliceLove); // Bob fed more ETH, gets more total love despite worse rate
