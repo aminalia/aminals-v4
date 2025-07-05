@@ -126,12 +126,11 @@ export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   // ];
   // batchUpdateGeneNFTUsage(genesNFTAddress, allGeneIds, event.params.aminalAddress);
   
-  // Defer tokenURI fetch to avoid blocking indexing - only fetch when needed
-  // This can be done lazily on frontend or in a separate background process
-  // let tokenURI = fetchTokenURI(event.params.aminalAddress);
-  // if (tokenURI) {
-  //   aminal.tokenURI = tokenURI;
-  // }
+  // Fetch tokenURI for the Aminal
+  let tokenURI = fetchTokenURI(event.params.aminalAddress);
+  if (tokenURI) {
+    aminal.tokenURI = tokenURI;
+  }
   
   // Initialize state
   aminal.energy = BigInt.fromI32(50); // Default starting energy

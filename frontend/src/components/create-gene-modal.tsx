@@ -8,7 +8,7 @@ import { Label } from './ui/label';
 import { Card } from './ui/card';
 import { SimpleSVGBuilder } from './simple-svg-builder';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { geneNftFactoryAbi, geneNftFactoryAddress } from '@/contracts/generated';
+// import { geneNftFactoryAbi, geneNftFactoryAddress } from '@/contracts/generated'; // Commented out - GeneNFTFactory not deployed to Sepolia
 import toast from 'react-hot-toast';
 
 interface CreateGeneModalProps {
@@ -78,33 +78,38 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
   }, [isPending, isConfirming, hash]);
 
   const handleCreate = () => {
-    if (!address) {
-      toast.error('Please connect your wallet first');
-      return;
-    }
+    // GeneNFTFactory not deployed to Sepolia yet
+    toast.error('Gene creation is not available yet on Sepolia. GeneNFTFactory contract needs to be deployed.');
+    setIsCreating(false);
     
-    if (!name.trim()) {
-      toast.error('Please enter a name for your gene');
-      return;
-    }
-    
-    if (!svg.trim() || svg.includes('<!-- Your SVG content here -->')) {
-      toast.error('Please create or paste an SVG design');
-      return;
-    }
-
-    setIsCreating(true);
-    
-    writeContract({
-      address: geneNftFactoryAddress,
-      abi: geneNftFactoryAbi,
-      functionName: 'createGene',
-      args: [
-        svg, // svg
-        category, // category (0-7)
-      ],
-      value: BigInt('1000000000000000'), // 0.001 ETH in wei
-    });
+    // TODO: Uncomment when GeneNFTFactory is deployed to Sepolia
+    // if (!address) {
+    //   toast.error('Please connect your wallet first');
+    //   return;
+    // }
+    // 
+    // if (!name.trim()) {
+    //   toast.error('Please enter a name for your gene');
+    //   return;
+    // }
+    // 
+    // if (!svg.trim() || svg.includes('<!-- Your SVG content here -->')) {
+    //   toast.error('Please create or paste an SVG design');
+    //   return;
+    // }
+    //
+    // setIsCreating(true);
+    // 
+    // writeContract({
+    //   address: geneNftFactoryAddress,
+    //   abi: geneNftFactoryAbi,
+    //   functionName: 'createGene',
+    //   args: [
+    //     svg, // svg
+    //     category, // category (0-7)
+    //   ],
+    //   value: BigInt('1000000000000000'), // 0.001 ETH in wei
+    // });
   };
 
   if (!isOpen) return null;
