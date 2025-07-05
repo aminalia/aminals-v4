@@ -34,41 +34,39 @@ This guide provides instructions for deploying the Aminals ecosystem to testnet 
 
 ### Step 1: Deploy Core Contracts
 
-Deploy the core contracts in the correct order:
+Deploy the core contracts using the existing deployment script:
 
 ```bash
 # Deploy to Sepolia testnet
-forge script script/Deploy.s.sol:DeployScript --rpc-url sepolia --broadcast --verify
+forge script script/AminalScript.s.sol:AminalScript --chain-id 11155111 --rpc-url "https://ethereum-sepolia.publicnode.com" --broadcast --verify
 
 # Deploy to Base Sepolia
-forge script script/Deploy.s.sol:DeployScript --rpc-url base-sepolia --broadcast --verify
+forge script script/AminalScript.s.sol:AminalScript --chain-id 84532 --rpc-url "https://sepolia.base.org" --broadcast --verify
 
 # Deploy to Goerli (if needed)
-forge script script/Deploy.s.sol:DeployScript --rpc-url goerli --broadcast --verify
+forge script script/AminalScript.s.sol:AminalScript --chain-id 5 --rpc-url "https://goerli.blockpi.network/v1/rpc/public" --broadcast --verify
+
+# Deploy to Holesky (alternative testnet)
+forge script script/AminalScript.s.sol:AminalScript --chain-id 17000 --rpc-url "https://ethereum-holesky.publicnode.com" --broadcast --verify
 ```
 
 ### Step 2: Verify Contract Deployment
 
-After deployment, verify all contracts are properly deployed:
+After deployment, check the contract addresses from the deployment logs. The AminalScript automatically:
+- Deploys all core contracts (Factory, GenesNFT, GeneAuction, Proposals, VRGDA)
+- Initializes all contracts with proper configuration
+- Deploys sample skills (Move2D, MoveTwice)
+- Spawns initial test Aminals
 
 ```bash
-# Check deployment addresses
-forge script script/Deploy.s.sol:DeployScript --rpc-url sepolia --broadcast --resume
-
-# Verify contracts on Etherscan
-forge verify-contract <CONTRACT_ADDRESS> <CONTRACT_NAME> --chain sepolia
+# Check deployment addresses from environment variables set by the script
+echo "Factory: $AMINAL_FACTORY_CONTRACT"
+echo "GenesNFT: $GENES_NFT_CONTRACT"
+echo "GeneAuction: $GENE_AUCTION_CONTRACT"
+echo "Proposals: $AMINAL_PROPOSALS_CONTRACT"
 ```
 
-### Step 3: Initialize Contracts
-
-Initialize the deployed contracts with proper configuration:
-
-```bash
-# Run initialization script
-forge script script/Initialize.s.sol:InitializeScript --rpc-url sepolia --broadcast
-```
-
-### Step 4: Test Deployment
+### Step 3: Test Deployment
 
 Verify the deployment by running integration tests:
 
@@ -105,15 +103,31 @@ Add these networks to your foundry.toml:
 
 ```toml
 [rpc_endpoints]
-sepolia = "https://rpc.sepolia.org"
+sepolia = "https://ethereum-sepolia.publicnode.com"
 base-sepolia = "https://sepolia.base.org"
-goerli = "https://goerli.infura.io/v3/${INFURA_API_KEY}"
+goerli = "https://goerli.blockpi.network/v1/rpc/public"
+holesky = "https://ethereum-holesky.publicnode.com"
 
 [etherscan]
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
 base-sepolia = { key = "${BASESCAN_API_KEY}" }
 goerli = { key = "${ETHERSCAN_API_KEY}" }
+holesky = { key = "${ETHERSCAN_API_KEY}" }
 ```
+
+### Available Scripts
+
+The following scripts are available in the `script/` directory:
+
+- `AminalScript.s.sol`: Main deployment script - deploys all contracts and initializes the system
+- `SpawnAminal.s.sol`: Spawns additional Aminals with custom visuals
+- `FeedAminal.s.sol`: Feeds existing Aminals to test the love/energy system
+- `DeploySkill.s.sol`: Deploys new skill contracts
+- `CallSkill.s.sol`: Calls skills from Aminals
+- `BreedAminal.s.sol`: Initiates breeding between two Aminals
+- `GetAminalInfo.s.sol`: Retrieves information about deployed Aminals
+- `AddTrait.s.sol`: Adds traits to the gene system
+- `EndAuction.s.sol`: Ends gene auctions for testing
 
 ### VRGDA Parameters
 
@@ -133,18 +147,19 @@ This creates:
 
 ### Basic Flow Test
 
-1. **Spawn Initial Aminals**
+1. **Spawn Additional Aminals**
    ```bash
-   # Call spawnInitialAminals with test visuals
-   cast send $FACTORY_ADDRESS "spawnInitialAminals((uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint256)[])" "[(1,1,1,1,1,1,1,1)]" --rpc-url sepolia --private-key $PRIVATE_KEY
+   # Use the existing spawn script
+   AMINAL_FACTORY_CONTRACT=$FACTORY_ADDRESS forge script script/SpawnAminal.s.sol:SpawnAminal --rpc-url sepolia --broadcast
    ```
 
 2. **Feed an Aminal**
    ```bash
-   # Get first Aminal address
-   AMINAL_ADDRESS=$(cast call $FACTORY_ADDRESS "getAminalByIndex(uint256)" 0 --rpc-url sepolia)
+   # Use the existing feed script
+   AMINAL_FACTORY_CONTRACT=$FACTORY_ADDRESS forge script script/FeedAminal.s.sol:FeedAminal --rpc-url sepolia --broadcast
    
-   # Feed the Aminal
+   # Or manually feed with cast
+   AMINAL_ADDRESS=$(cast call $FACTORY_ADDRESS "getAminalByIndex(uint256)" 0 --rpc-url sepolia)
    cast send $AMINAL_ADDRESS "feed()" --value 0.01ether --rpc-url sepolia --private-key $PRIVATE_KEY
    ```
 
@@ -176,10 +191,13 @@ This creates:
 
 6. **Use Skills**
    ```bash
-   # Deploy a skill contract
-   forge create src/skills/Move2D.sol:Move2D --constructor-args $FACTORY_ADDRESS --rpc-url sepolia --private-key $PRIVATE_KEY
+   # Deploy a skill contract using the existing script
+   AMINAL_FACTORY_CONTRACT=$FACTORY_ADDRESS forge script script/DeploySkill.s.sol:DeploySkill --rpc-url sepolia --broadcast
    
-   # Use the skill
+   # Use the skill with call skill script
+   AMINAL_FACTORY_CONTRACT=$FACTORY_ADDRESS forge script script/CallSkill.s.sol:CallSkill --rpc-url sepolia --broadcast
+   
+   # Or manually use cast
    cast send $AMINAL_ADDRESS "callSkill(address,bytes)" $SKILL_ADDRESS "0x..." --value 0.001ether --rpc-url sepolia --private-key $PRIVATE_KEY
    ```
 
