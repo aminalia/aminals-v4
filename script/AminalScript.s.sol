@@ -78,8 +78,14 @@ contract AminalScript is Script {
     }
 
     function spawnInitialAminals(AminalFactory factoryInstance) public {
-        initialVisuals.push(IAminalStructs.Visuals(1, 1, 1, 1, 1, 1, 1, 1));
-        initialVisuals.push(IAminalStructs.Visuals(2, 2, 2, 2, 2, 2, 2, 2));
+        // First Aminal with blue/purple theme (genes 0-7)
+        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
+        initialVisuals.push(IAminalStructs.Visuals(0, 2, 1, 3, 4, 5, 6, 7));
+        
+        // Second Aminal with red/orange theme (genes 8-15)
+        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
+        initialVisuals.push(IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15));
+        
         factoryInstance.spawnInitialAminals(initialVisuals);
     }
 
@@ -119,6 +125,9 @@ contract AminalScript is Script {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
         factory = AminalFactory(deployAminalFactory());
+
+        // Setup the factory to deploy loveVRGDA
+        factory.setup();
 
         // Deploy and register skills
         deploySkills(factory);

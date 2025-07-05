@@ -11,6 +11,7 @@ import {
   Aminal,
   BreedAminalEvent as BreedAminal,
   GeneAuction,
+  GeneNFT,
   User
 } from "../generated/schema";
 
@@ -24,6 +25,55 @@ function fetchTokenURI(aminalAddress: Address): string | null {
   } else {
     log.warning("Failed to fetch tokenURI for Aminal {}", [aminalAddress.toHexString()]);
     return null;
+  }
+}
+
+// Helper function to update Gene NFT relationships
+function updateGeneNFTUsage(geneNFTContractAddress: Address, geneId: BigInt, aminalAddress: Address): void {
+  log.info("Attempting to update Gene NFT usage for geneId: {}, aminalAddress: {}, contractAddress: {}", [
+    geneId.toString(),
+    aminalAddress.toHexString(),
+    geneNFTContractAddress.toHexString()
+  ]);
+  
+  if (geneId.gt(BigInt.fromI32(0))) {
+    let geneNFTId = geneNFTContractAddress.concat(Bytes.fromI32(geneId.toI32()));
+    log.info("Looking for Gene NFT with ID: {}", [geneNFTId.toHexString()]);
+    
+    let geneNFT = GeneNFT.load(geneNFTId);
+    
+    if (geneNFT) {
+      log.info("Found Gene NFT {}, current usage count: {}", [
+        geneId.toString(),
+        geneNFT.aminalsUsingGene.length.toString()
+      ]);
+      
+      // Add this Aminal to the gene's usage list
+      let aminals = geneNFT.aminalsUsingGene;
+      if (aminals.indexOf(aminalAddress) == -1) {
+        aminals.push(aminalAddress);
+        geneNFT.aminalsUsingGene = aminals;
+        geneNFT.save();
+        
+        log.info("Updated Gene NFT {} to include Aminal {}, new usage count: {}", [
+          geneId.toString(),
+          aminalAddress.toHexString(),
+          aminals.length.toString()
+        ]);
+      } else {
+        log.info("Gene NFT {} already includes Aminal {}", [
+          geneId.toString(),
+          aminalAddress.toHexString()
+        ]);
+      }
+    } else {
+      log.warning("Gene NFT not found for ID {} (composite ID: {})", [
+        geneId.toString(),
+        geneNFTId.toHexString()
+      ]);
+    }
+  } else {
+    log.info("Skipping gene ID {} because it's zero", [geneId.toString()]);
   }
 }
 
@@ -107,6 +157,17 @@ export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   aminal.faceId = event.params.faceId;
   aminal.mouthId = event.params.mouthId;
   aminal.miscId = event.params.miscId;
+  
+  // Update Gene NFT usage relationships
+  let genesNFTAddress = Address.fromBytes(factory.genesNFT);
+  updateGeneNFTUsage(genesNFTAddress, event.params.backId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.armId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.tailId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.earsId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.bodyId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.faceId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.mouthId, event.params.aminalAddress);
+  updateGeneNFTUsage(genesNFTAddress, event.params.miscId, event.params.aminalAddress);
   
   // Fetch tokenURI metadata
   let tokenURI = fetchTokenURI(event.params.aminalAddress);

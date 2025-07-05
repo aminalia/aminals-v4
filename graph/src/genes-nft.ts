@@ -9,12 +9,20 @@ import {
 } from "../generated/schema";
 
 export function handleTransfer(event: TransferEvent): void {
+  log.info("Gene NFT Transfer event - from: {}, to: {}, tokenId: {}, contract: {}", [
+    event.params.from.toHexString(),
+    event.params.to.toHexString(),
+    event.params.tokenId.toString(),
+    event.address.toHexString()
+  ]);
+  
   // Skip mint events where from is zero address
   if (event.params.from.equals(Address.zero())) {
     // This is a mint event - create new GeneNFT entity
-    let geneNFT = new GeneNFT(
-      event.address.concat(Bytes.fromI32(event.params.tokenId.toI32()))
-    );
+    let geneNFTId = event.address.concat(Bytes.fromI32(event.params.tokenId.toI32()));
+    log.info("Creating new Gene NFT with composite ID: {}", [geneNFTId.toHexString()]);
+    
+    let geneNFT = new GeneNFT(geneNFTId);
     geneNFT.tokenId = event.params.tokenId;
     
     // Get contract to read metadata
@@ -25,9 +33,14 @@ export function handleTransfer(event: TransferEvent): void {
     if (!geneInfoResult.reverted) {
       geneNFT.traitType = geneInfoResult.value.value1; // category
       geneNFT.svg = geneInfoResult.value.value0; // svg
+      log.info("Gene NFT metadata loaded - traitType: {}, svg length: {}", [
+        geneInfoResult.value.value1.toString(),
+        geneInfoResult.value.value0.length.toString()
+      ]);
     } else {
       geneNFT.traitType = 0; // Default to BACK trait
       geneNFT.svg = "";
+      log.warning("Failed to load gene info for token ID {}", [event.params.tokenId.toString()]);
     }
     
     // Set default metadata (tokenURI contains base64 encoded JSON)
@@ -56,8 +69,9 @@ export function handleTransfer(event: TransferEvent): void {
     
     geneNFT.save();
     
-    log.info("Gene NFT minted: token ID {} to {}", [
+    log.info("Gene NFT created and saved: token ID {} with composite ID {} to {}", [
       event.params.tokenId.toString(),
+      geneNFTId.toHexString(),
       event.params.to.toHexString()
     ]);
   } else {
