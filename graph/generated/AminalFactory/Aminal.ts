@@ -84,28 +84,6 @@ export class BreedableSet__Params {
   }
 }
 
-export class DefaultGeneSet extends ethereum.Event {
-  get params(): DefaultGeneSet__Params {
-    return new DefaultGeneSet__Params(this);
-  }
-}
-
-export class DefaultGeneSet__Params {
-  _event: DefaultGeneSet;
-
-  constructor(event: DefaultGeneSet) {
-    this._event = event;
-  }
-
-  get category(): i32 {
-    return this._event.parameters[0].value.toI32();
-  }
-
-  get geneId(): BigInt {
-    return this._event.parameters[1].value.toBigInt();
-  }
-}
-
 export class EnergyTransferred extends ethereum.Event {
   get params(): EnergyTransferred__Params {
     return new EnergyTransferred__Params(this);
@@ -223,32 +201,6 @@ export class Squeak__Params {
 
   get energy(): BigInt {
     return this._event.parameters[4].value.toBigInt();
-  }
-}
-
-export class TraitAdded extends ethereum.Event {
-  get params(): TraitAdded__Params {
-    return new TraitAdded__Params(this);
-  }
-}
-
-export class TraitAdded__Params {
-  _event: TraitAdded;
-
-  constructor(event: TraitAdded) {
-    this._event = event;
-  }
-
-  get aminalId(): BigInt {
-    return this._event.parameters[0].value.toBigInt();
-  }
-
-  get category(): i32 {
-    return this._event.parameters[1].value.toI32();
-  }
-
-  get geneId(): BigInt {
-    return this._event.parameters[2].value.toBigInt();
   }
 }
 
@@ -470,35 +422,6 @@ export class Aminal extends ethereum.SmartContract {
     return new Aminal("Aminal", address);
   }
 
-  aminalGenes(param0: BigInt, param1: i32): BigInt {
-    let result = super.call(
-      "aminalGenes",
-      "aminalGenes(uint256,uint8):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(param0),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param1)),
-      ],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_aminalGenes(param0: BigInt, param1: i32): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "aminalGenes",
-      "aminalGenes(uint256,uint8):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(param0),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param1)),
-      ],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   aminalIndex(): BigInt {
     let result = super.call("aminalIndex", "aminalIndex():(uint256)", []);
 
@@ -630,27 +553,6 @@ export class Aminal extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
-  defaultGenes(param0: i32): BigInt {
-    let result = super.call("defaultGenes", "defaultGenes(uint8):(uint256)", [
-      ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0)),
-    ]);
-
-    return result[0].toBigInt();
-  }
-
-  try_defaultGenes(param0: i32): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "defaultGenes",
-      "defaultGenes(uint8):(uint256)",
-      [ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(param0))],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   energy(): BigInt {
     let result = super.call("energy", "energy():(uint256)", []);
 
@@ -696,21 +598,21 @@ export class Aminal extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toAddress());
   }
 
-  generateAttributesList(tokenId: BigInt): string {
+  generateAttributesList(aminalId: BigInt): string {
     let result = super.call(
       "generateAttributesList",
       "generateAttributesList(uint256):(string)",
-      [ethereum.Value.fromUnsignedBigInt(tokenId)],
+      [ethereum.Value.fromUnsignedBigInt(aminalId)],
     );
 
     return result[0].toString();
   }
 
-  try_generateAttributesList(tokenId: BigInt): ethereum.CallResult<string> {
+  try_generateAttributesList(aminalId: BigInt): ethereum.CallResult<string> {
     let result = super.tryCall(
       "generateAttributesList",
       "generateAttributesList(uint256):(string)",
-      [ethereum.Value.fromUnsignedBigInt(tokenId)],
+      [ethereum.Value.fromUnsignedBigInt(aminalId)],
     );
     if (result.reverted) {
       return new ethereum.CallResult();
@@ -732,38 +634,6 @@ export class Aminal extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toAddress());
-  }
-
-  getAminalGene(aminalId: BigInt, category: i32): BigInt {
-    let result = super.call(
-      "getAminalGene",
-      "getAminalGene(uint256,uint8):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(aminalId),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(category)),
-      ],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_getAminalGene(
-    aminalId: BigInt,
-    category: i32,
-  ): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "getAminalGene",
-      "getAminalGene(uint256,uint8):(uint256)",
-      [
-        ethereum.Value.fromUnsignedBigInt(aminalId),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(category)),
-      ],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   getAminalVisualsByID(
@@ -921,38 +791,6 @@ export class Aminal extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
-  getTraitSVG(aminalId: BigInt, category: i32): string {
-    let result = super.call(
-      "getTraitSVG",
-      "getTraitSVG(uint256,uint8):(string)",
-      [
-        ethereum.Value.fromUnsignedBigInt(aminalId),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(category)),
-      ],
-    );
-
-    return result[0].toString();
-  }
-
-  try_getTraitSVG(
-    aminalId: BigInt,
-    category: i32,
-  ): ethereum.CallResult<string> {
-    let result = super.tryCall(
-      "getTraitSVG",
-      "getTraitSVG(uint256,uint8):(string)",
-      [
-        ethereum.Value.fromUnsignedBigInt(aminalId),
-        ethereum.Value.fromUnsignedBigInt(BigInt.fromI32(category)),
-      ],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toString());
   }
 
   getVisuals(): Aminal__getVisualsResultValue0Struct {
@@ -1458,40 +1296,6 @@ export class FeedCall__Outputs {
   }
 }
 
-export class SetAminalGenesCall extends ethereum.Call {
-  get inputs(): SetAminalGenesCall__Inputs {
-    return new SetAminalGenesCall__Inputs(this);
-  }
-
-  get outputs(): SetAminalGenesCall__Outputs {
-    return new SetAminalGenesCall__Outputs(this);
-  }
-}
-
-export class SetAminalGenesCall__Inputs {
-  _call: SetAminalGenesCall;
-
-  constructor(call: SetAminalGenesCall) {
-    this._call = call;
-  }
-
-  get aminalId(): BigInt {
-    return this._call.inputValues[0].value.toBigInt();
-  }
-
-  get geneIds(): Array<BigInt> {
-    return this._call.inputValues[1].value.toBigIntArray();
-  }
-}
-
-export class SetAminalGenesCall__Outputs {
-  _call: SetAminalGenesCall;
-
-  constructor(call: SetAminalGenesCall) {
-    this._call = call;
-  }
-}
-
 export class SetBreedableWithCall extends ethereum.Call {
   get inputs(): SetBreedableWithCall__Inputs {
     return new SetBreedableWithCall__Inputs(this);
@@ -1552,40 +1356,6 @@ export class SetBreedingCall__Outputs {
   _call: SetBreedingCall;
 
   constructor(call: SetBreedingCall) {
-    this._call = call;
-  }
-}
-
-export class SetDefaultGeneCall extends ethereum.Call {
-  get inputs(): SetDefaultGeneCall__Inputs {
-    return new SetDefaultGeneCall__Inputs(this);
-  }
-
-  get outputs(): SetDefaultGeneCall__Outputs {
-    return new SetDefaultGeneCall__Outputs(this);
-  }
-}
-
-export class SetDefaultGeneCall__Inputs {
-  _call: SetDefaultGeneCall;
-
-  constructor(call: SetDefaultGeneCall) {
-    this._call = call;
-  }
-
-  get category(): i32 {
-    return this._call.inputValues[0].value.toI32();
-  }
-
-  get geneId(): BigInt {
-    return this._call.inputValues[1].value.toBigInt();
-  }
-}
-
-export class SetDefaultGeneCall__Outputs {
-  _call: SetDefaultGeneCall;
-
-  constructor(call: SetDefaultGeneCall) {
     this._call = call;
   }
 }

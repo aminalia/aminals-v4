@@ -140,23 +140,6 @@ The scripts support multiple networks. Update the RPC URL and ensure you have th
 # Holesky Testnet
 forge script script/AminalScript.s.sol --chain-id 17000 --rpc-url "https://ethereum-holesky.publicnode.com" --broadcast
 
-# Sepolia Testnet  
+# Sepolia Testnet
 forge script script/AminalScript.s.sol --chain-id 11155111 --rpc-url "https://ethereum-sepolia.publicnode.com" --broadcast
 ```
-
-## TODO Items
-
-### UI TODO:
-- UI to create new trait
-- Only show end auction button if auction is endable
-- Add traits to a breeding aminal
-- Update values after a successful tx
-- Toast for TXs
-- Show zero traits on breeding?
-- Aminal filtering (most loved, newest)
-- Trait filtering (most reproduced)
-
-### Graph TODO
-- After successful breeding, remove BreedableWith
-- Not sure if new visual proposals are fully working...
-- Figure out what we need to index to make an MVP leaderboard (most love given, most loved, most successful traits)

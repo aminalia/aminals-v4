@@ -53,9 +53,10 @@ forge script script/AminalScript.s.sol:AminalScript --chain-id 17000 --rpc-url "
 ### Step 2: Verify Contract Deployment
 
 After deployment, check the contract addresses from the deployment logs. The AminalScript automatically:
-- Deploys all core contracts (Factory, GenesNFT, GeneAuction, Proposals, VRGDA)
+- Deploys all core contracts (Factory, GenesNFT, GeneAuction, Proposals)
 - Initializes all contracts with proper configuration
 - Deploys sample skills (Move2D, MoveTwice)
+- Mints initial Gene NFTs using InitialGenesMinter
 - Spawns initial test Aminals
 
 ```bash
@@ -82,18 +83,14 @@ After deployment, update this section with the deployed contract addresses:
 ### Sepolia Testnet
 - **AminalFactory**: `0x...`
 - **GenesNFT**: `0x...`
-- **GeneNFTFactory**: `0x...`
 - **GeneAuction**: `0x...`
 - **AminalProposals**: `0x...`
-- **AminalVRGDA**: `0x...`
 
 ### Base Sepolia
 - **AminalFactory**: `0x...`
 - **GenesNFT**: `0x...`
-- **GeneNFTFactory**: `0x...`
 - **GeneAuction**: `0x...`
 - **AminalProposals**: `0x...`
-- **AminalVRGDA**: `0x...`
 
 ## Testnet Configuration
 
@@ -126,22 +123,33 @@ The following scripts are available in the `script/` directory:
 - `CallSkill.s.sol`: Calls skills from Aminals
 - `BreedAminal.s.sol`: Initiates breeding between two Aminals
 - `GetAminalInfo.s.sol`: Retrieves information about deployed Aminals
-- `AddTrait.s.sol`: Adds traits to the gene system
+- `AddTrait.s.sol`: References the Gene NFT system for trait creation
 - `EndAuction.s.sol`: Ends gene auctions for testing
+- `InitialGenesMinter.sol`: Temporary contract for minting initial Gene NFTs
 
-### VRGDA Parameters
+### Initial Gene NFTs
 
-The VRGDA is configured with these parameters for optimal love curves:
+The deployment script creates 16 initial Gene NFTs with these themes:
 
-- **Target Price**: 1 ETH (base unit for calculations)
-- **Price Decay**: -0.5 (50% decay when behind target)
-- **Logistic Asymptote**: 100 (maximum units for S-curve)
-- **Time Scale**: 20 (controls curve transition speed)
+**Blue/Purple Theme (IDs 0-7):**
+- BACK: Purple gradient background
+- TAIL: Blue flowing tail design
+- ARM: Blue wing-like arms
+- EARS: Blue pointed ears
+- BODY: Blue circular body
+- FACE: Teal face with gray eyes
+- MOUTH: Small dark mouth
+- MISC: White accessories
 
-This creates:
-- 10x love multiplier for hungry Aminals (<10 energy)
-- Smooth diminishing returns as energy increases
-- 0.1x love multiplier for overfed Aminals (>1M energy)
+**Red/Orange Theme (IDs 8-15):**
+- BACK: Teal gradient background
+- TAIL: Red flame-like tail
+- ARM: Red flowing arms
+- EARS: Red pointed ears
+- BODY: Red circular body with flame details
+- FACE: Orange face with red and yellow eyes
+- MOUTH: Large dark mouth with teeth
+- MISC: Orange star accessories
 
 ## Testing on Testnet
 
@@ -176,8 +184,13 @@ This creates:
 
 4. **Create Gene NFTs**
    ```bash
-   # Create a gene NFT for a trait
-   cast send $GENE_FACTORY_ADDRESS "createGeneNFT(string,string,uint256)" "Eyes" "Blue Eyes" 1 --rpc-url sepolia --private-key $PRIVATE_KEY
+   # The deployment script automatically creates initial Gene NFTs (IDs 0-15)
+   # To create additional Gene NFTs, you need to deploy GeneNFTFactory first
+   # For now, initial genes are created via InitialGenesMinter during deployment
+   
+   # Check existing Gene NFTs
+   cast call $GENES_NFT_CONTRACT "totalSupply()" --rpc-url sepolia
+   cast call $GENES_NFT_CONTRACT "tokenURI(uint256)" 0 --rpc-url sepolia
    ```
 
 5. **Test Breeding**
@@ -286,8 +299,11 @@ Regular health checks to ensure system stability:
 # Check factory state
 cast call $FACTORY_ADDRESS "aminalCount()" --rpc-url sepolia
 
-# Check VRGDA parameters
-cast call $VRGDA_ADDRESS "MAX_LOVE_MULTIPLIER()" --rpc-url sepolia
+# Check Gene NFT supply
+cast call $GENES_NFT_CONTRACT "totalSupply()" --rpc-url sepolia
+
+# Check specific Gene NFT
+cast call $GENES_NFT_CONTRACT "tokenURI(uint256)" 0 --rpc-url sepolia
 ```
 
 ## Security Considerations
@@ -297,6 +313,28 @@ cast call $VRGDA_ADDRESS "MAX_LOVE_MULTIPLIER()" --rpc-url sepolia
 3. **Monitor Contracts**: Set up monitoring for unusual activity
 4. **Regular Updates**: Keep deployment scripts updated with latest contract versions
 
+## Advanced Gene NFT System
+
+The current deployment uses `InitialGenesMinter` for initial Gene NFTs. For a full permissionless trait system, you can deploy the `GeneNFTFactory`:
+
+```bash
+# Deploy GeneNFTFactory (optional - for permissionless trait creation)
+forge script script/DeployGeneFactory.s.sol:DeployGeneFactory --rpc-url sepolia --broadcast
+```
+
+Once deployed, users can create their own Gene NFTs:
+
+```bash
+# Create a custom gene NFT (requires 0.001 ETH fee)
+cast send $GENE_FACTORY_ADDRESS "createGene(string,uint8)" "<svg>...</svg>" 5 --value 0.001ether --rpc-url sepolia --private-key $PRIVATE_KEY
+```
+
+The GeneNFTFactory provides:
+- **Permissionless Trait Creation**: Anyone can create Gene NFTs for traits
+- **Registry System**: Tracks which Gene NFTs came from the factory
+- **Fee Protection**: Prevents spam with minimum creation fee
+- **SVG Validation**: Basic validation of trait SVG content
+
 ## Next Steps
 
 After successful testnet deployment:
@@ -304,7 +342,8 @@ After successful testnet deployment:
 1. **Conduct User Testing**: Invite community to test on testnet
 2. **Performance Testing**: Monitor gas usage and optimization opportunities
 3. **Security Audit**: Prepare for security audit of deployed contracts
-4. **Mainnet Preparation**: Create mainnet deployment scripts and checklist
+4. **Deploy GeneNFTFactory**: Enable permissionless trait creation
+5. **Mainnet Preparation**: Create mainnet deployment scripts and checklist
 
 ---
 
