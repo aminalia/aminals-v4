@@ -191,7 +191,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
      * "When an Aminal squeaks, it speaks with the voice of its community,
      *  channeling love into sound, energy into expression"
      */
-    function squeak(uint256 amount) external {
+    function squeak(uint256 amount) external payable {
         // Users need sufficient love to squeak
         if (lovePerUser[msg.sender] < amount) revert NotEnoughLove();
         if (energy < amount) revert NotEnoughEnergy();
