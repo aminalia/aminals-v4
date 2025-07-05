@@ -177,8 +177,8 @@ const TraitsPage: NextPage = () => {
                   aminalCount={trait.proposalsUsingGene ? 
                     // Extract unique Aminals from proposals (each proposal has 2 Aminals)
                     new Set([
-                      ...trait.proposalsUsingGene.map(p => p.auction.aminalOne.id),
-                      ...trait.proposalsUsingGene.map(p => p.auction.aminalTwo.id)
+                      ...trait.proposalsUsingGene.map((p: any) => p.auction.aminalOne.id),
+                      ...trait.proposalsUsingGene.map((p: any) => p.auction.aminalTwo.id)
                     ]).size : 0
                   }
                 />

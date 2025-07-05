@@ -49,10 +49,10 @@ const TraitDetailPage: NextPage = () => {
   // Extract unique Aminals from proposals (each proposal has 2 Aminals)
   const uniqueAminals = trait.proposalsUsingGene ? 
     Array.from(new Set([
-      ...trait.proposalsUsingGene.map(p => p.auction.aminalOne),
-      ...trait.proposalsUsingGene.map(p => p.auction.aminalTwo)
+      ...trait.proposalsUsingGene.map((p: any) => p.auction.aminalOne),
+      ...trait.proposalsUsingGene.map((p: any) => p.auction.aminalTwo)
     ].map(a => a.id))).map(id => 
-      [...trait.proposalsUsingGene.map(p => p.auction.aminalOne), ...trait.proposalsUsingGene.map(p => p.auction.aminalTwo)]
+      [...trait.proposalsUsingGene.map((p: any) => p.auction.aminalOne), ...trait.proposalsUsingGene.map((p: any) => p.auction.aminalTwo)]
         .find(a => a.id === id)
     ) : [];
   const aminalCount = uniqueAminals.length;

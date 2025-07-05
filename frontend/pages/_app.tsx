@@ -6,7 +6,7 @@ import {
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
-import { holesky } from 'viem/chains';
+import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 import { Toaster } from 'react-hot-toast';
 import '../styles/globals.css';
@@ -14,7 +14,7 @@ import '../styles/globals.css';
 const wagmiConfig = getDefaultConfig({
   appName: 'Aminals',
   projectId: 'a8bd6a09bfba4f70a0b02ee66e844702',
-  chains: [holesky],
+  chains: [sepolia],
 });
 
 const rainbowTheme = lightTheme({

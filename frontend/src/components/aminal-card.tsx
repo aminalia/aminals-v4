@@ -102,7 +102,17 @@ interface AminalVisualImageProps {
 }
 
 export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
+  // Debug logging
+  console.log('AminalVisualImage Debug:', {
+    aminal,
+    hasAminal: !!aminal,
+    hasTokenURI: !!aminal?.tokenURI,
+    tokenURI: aminal?.tokenURI?.substring(0, 100) + '...',
+    aminalIndex: aminal?.aminalIndex
+  });
+
   if (!aminal) {
+    console.log('AminalVisualImage: No aminal provided');
     return (
       <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-50 to-gray-100 text-gray-400">
         <div className="text-center">
@@ -115,10 +125,24 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
 
   // If we have tokenURI, try to use it for the actual image
   if (aminal.tokenURI) {
+    console.log('AminalVisualImage: Using TokenUriImage with tokenURI');
     return <TokenUriImage tokenUri={aminal.tokenURI} aminalId={aminal.aminalIndex} />;
   }
 
-  // Fallback to gene information display
+  console.log('AminalVisualImage: No tokenURI, showing fallback');
+
+  // Try to create a composed visual from gene IDs
+  return <ComposedAminalImage aminal={aminal} />;
+}
+
+// New component to compose Aminal image from gene traits
+interface ComposedAminalImageProps {
+  aminal: NewAminal;
+}
+
+function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
+  // For now, show a more informative fallback
+  // TODO: In the future, this could fetch and compose individual gene SVGs
   return (
     <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 text-gray-600">
       <div className="text-center space-y-2">
@@ -128,6 +152,12 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
           <div>Back: {aminal.backId || '?'}</div>
           <div>Body: {aminal.bodyId || '?'}</div>
           <div>Face: {aminal.faceId || '?'}</div>
+          <div>Arms: {aminal.armId || '?'}</div>
+          <div>Tail: {aminal.tailId || '?'}</div>
+          <div>Ears: {aminal.earsId || '?'}</div>
+        </div>
+        <div className="text-xs text-blue-600 mt-2">
+          🔧 Visual composition in development
         </div>
       </div>
     </div>
@@ -149,15 +179,47 @@ export function TokenUriImage({
   const finalTokenUri = tokenUri || (aminal && aminal.tokenUri);
   const finalAminalId = aminalId || (aminal && aminal.aminalId);
 
+  // Debug logging
+  console.log('TokenUriImage Debug:', {
+    tokenUri,
+    finalTokenUri,
+    aminalId: finalAminalId,
+    hasTokenUri: !!finalTokenUri
+  });
+
   let image,
-    error = null;
+    error: Error | null = null;
   try {
+    if (!finalTokenUri) {
+      throw new Error('No tokenURI provided');
+    }
+
+    // Check if it's a data URI
+    if (!finalTokenUri.startsWith('data:')) {
+      throw new Error(`Invalid tokenURI format: ${finalTokenUri.substring(0, 100)}...`);
+    }
+
     const base64Payload = finalTokenUri.split(',')[1];
+    if (!base64Payload) {
+      throw new Error('No base64 payload found in tokenURI');
+    }
+
     const decodedJsonString = atob(base64Payload);
+    console.log('Decoded JSON:', decodedJsonString.substring(0, 200) + '...');
+    
     const json = JSON.parse(decodedJsonString);
+    console.log('Parsed JSON keys:', Object.keys(json));
+    
     image = json.image;
+    if (!image) {
+      throw new Error('No image field found in decoded JSON');
+    }
+    
+    console.log('Image found:', image.substring(0, 100) + '...');
   } catch (e) {
-    error = e;
+    error = e as Error;
+    console.error('TokenUriImage Error:', e);
+    console.error('TokenURI that failed:', finalTokenUri?.substring(0, 200));
   }
 
   if (error || !image) {
@@ -166,6 +228,9 @@ export function TokenUriImage({
         <div className="text-center">
           <div className="text-4xl mb-2">🖼️</div>
           <div className="text-sm">Unable to load image</div>
+          <div className="text-xs mt-1 text-red-500">
+            {error?.message || 'Unknown error'}
+          </div>
         </div>
       </div>
     );
