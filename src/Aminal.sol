@@ -148,8 +148,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
 
         // Calculate love using VRGDA based on current energy level
         uint256 loveGained = loveVRGDA.getLoveForETH(energy, amount);
-        _addLove(feeder, amount);
-)
+        _addLove(feeder, loveGained);
         // Calculate energy increase using fixed rate (10,000 per ETH)
         uint256 energyGained = (amount * 10000) / 1 ether;
 
@@ -182,7 +181,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
 
         _subtractLove(msg.sender, amount);
 
-        emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, msg.sender, energy);
+        emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
     }
 
     /**
