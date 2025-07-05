@@ -60,11 +60,13 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
             </CardTitle>
             <span className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">
               <span>⚡</span>
-              {(Number(aminal.energy || 0) / 1e18).toFixed(2)} Energy
+              {Number(aminal.energy || 0).toFixed(2)} Energy
             </span>
           </div>
           <div className="text-xs text-gray-500 font-mono">
-            {aminal.contractAddress ? `${aminal.contractAddress.slice(0, 10)}...` : 'No address'}
+            {aminal.contractAddress
+              ? `${aminal.contractAddress.slice(0, 10)}...`
+              : 'No address'}
           </div>
         </CardHeader>
 
@@ -74,21 +76,29 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
             <div>
               <div className="text-sm text-gray-500">Total Love</div>
               <div className="text-lg font-semibold text-pink-600">
-                ❤️ {(Number(aminal.totalLove || 0) / 1e18).toFixed(2)}
+                ❤️ {Number(aminal.totalLove || 0).toFixed(2)}
               </div>
             </div>
           </div>
 
           {/* Gene Info */}
           <div className="text-xs text-gray-500 space-y-1">
-            <div>🎨 Traits: B{aminal.backId || '?'} A{aminal.armId || '?'} T{aminal.tailId || '?'}</div>
-            <div>👂 E{aminal.earsId || '?'} 👤 B{aminal.bodyId || '?'} 😊 F{aminal.faceId || '?'}</div>
+            <div>
+              🎨 Traits: B{aminal.backId || '?'} A{aminal.armId || '?'} T
+              {aminal.tailId || '?'}
+            </div>
+            <div>
+              👂 E{aminal.earsId || '?'} 👤 B{aminal.bodyId || '?'} 😊 F
+              {aminal.faceId || '?'}
+            </div>
           </div>
 
           {/* Actions */}
           <div className="flex flex-col gap-2 mt-auto pt-2">
             {aminal.contractAddress && (
-              <FeedButton contractAddress={aminal.contractAddress as `0x${string}`} />
+              <FeedButton
+                contractAddress={aminal.contractAddress as `0x${string}`}
+              />
             )}
           </div>
         </CardContent>
@@ -108,7 +118,7 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
     hasAminal: !!aminal,
     hasTokenURI: !!aminal?.tokenURI,
     tokenURI: aminal?.tokenURI?.substring(0, 100) + '...',
-    aminalIndex: aminal?.aminalIndex
+    aminalIndex: aminal?.aminalIndex,
   });
 
   if (!aminal) {
@@ -126,7 +136,9 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
   // If we have tokenURI, try to use it for the actual image
   if (aminal.tokenURI) {
     console.log('AminalVisualImage: Using TokenUriImage with tokenURI');
-    return <TokenUriImage tokenUri={aminal.tokenURI} aminalId={aminal.aminalIndex} />;
+    return (
+      <TokenUriImage tokenUri={aminal.tokenURI} aminalId={aminal.aminalIndex} />
+    );
   }
 
   console.log('AminalVisualImage: No tokenURI, showing fallback');
@@ -147,7 +159,9 @@ function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
     <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 text-gray-600">
       <div className="text-center space-y-2">
         <div className="text-6xl mb-4">🐾</div>
-        <div className="text-sm font-medium">Aminal #{aminal.aminalIndex || 'Unknown'}</div>
+        <div className="text-sm font-medium">
+          Aminal #{aminal.aminalIndex || 'Unknown'}
+        </div>
         <div className="text-xs text-gray-500 space-y-1">
           <div>Back: {aminal.backId || '?'}</div>
           <div>Body: {aminal.bodyId || '?'}</div>
@@ -184,7 +198,7 @@ export function TokenUriImage({
     tokenUri,
     finalTokenUri,
     aminalId: finalAminalId,
-    hasTokenUri: !!finalTokenUri
+    hasTokenUri: !!finalTokenUri,
   });
 
   let image,
@@ -196,7 +210,9 @@ export function TokenUriImage({
 
     // Check if it's a data URI
     if (!finalTokenUri.startsWith('data:')) {
-      throw new Error(`Invalid tokenURI format: ${finalTokenUri.substring(0, 100)}...`);
+      throw new Error(
+        `Invalid tokenURI format: ${finalTokenUri.substring(0, 100)}...`
+      );
     }
 
     const base64Payload = finalTokenUri.split(',')[1];
@@ -206,15 +222,15 @@ export function TokenUriImage({
 
     const decodedJsonString = atob(base64Payload);
     console.log('Decoded JSON:', decodedJsonString.substring(0, 200) + '...');
-    
+
     const json = JSON.parse(decodedJsonString);
     console.log('Parsed JSON keys:', Object.keys(json));
-    
+
     image = json.image;
     if (!image) {
       throw new Error('No image field found in decoded JSON');
     }
-    
+
     console.log('Image found:', image.substring(0, 100) + '...');
   } catch (e) {
     error = e as Error;
