@@ -37,24 +37,90 @@ export const useTraits = (
   return useQuery<GeneNFTsListQuery['geneNFTs']>({
     queryKey: [BASE_KEY, filter, sort, category, address],
     queryFn: async () => {
-      const response = await execute(GeneNFTsListDocument, {});
-      if (response.errors) throw new Error(response.errors[0].message);
+      console.log('Fetching traits with params:', { filter, sort, category, address });
+      
+      try {
+        console.log('About to execute GraphQL query...');
+        
+        // Direct HTTP fetch as workaround for GraphQL client bug
+        const response = await fetch('https://api.studio.thegraph.com/query/57078/aminals-3/version/latest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: `
+              query GeneNFTsList {
+                geneNFTs(orderBy: tokenId, orderDirection: asc) {
+                  id
+                  tokenId
+                  traitType
+                  name
+                  description
+                  svg
+                  owner {
+                    id
+                    address
+                  }
+                  creator {
+                    id
+                    address
+                  }
+                  aminalsUsingGene {
+                    id
+                    aminalIndex
+                    contractAddress
+                    tokenURI
+                    energy
+                    totalLove
+                  }
+                  blockTimestamp
+                }
+              }
+            `
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        console.log('Raw GraphQL Response:', data);
+        
+        if (data.errors) {
+          console.error('GraphQL errors:', data.errors);
+          throw new Error(data.errors[0].message);
+        }
 
-      let geneNFTs = response.data.geneNFTs;
+        if (!data.data) {
+          console.error('No data in response:', data);
+          throw new Error('No data returned from GraphQL query');
+        }
+
+        let geneNFTs = data.data?.geneNFTs || [];
+      
+      console.log('Initial Gene NFTs count:', geneNFTs.length);
+      console.log('Sample Gene NFT:', geneNFTs[0]);
 
       // Apply owner filter
       if (filter === 'yours' && address) {
+        const beforeFilter = geneNFTs.length;
         geneNFTs = geneNFTs.filter(
           (gene: GeneNFT) =>
             gene.creator?.address?.toLowerCase() === address?.toLowerCase()
         );
+        console.log(`Owner filter: ${beforeFilter} -> ${geneNFTs.length}`);
       }
 
       // Apply category filter
       if (category !== 'all') {
+        const beforeFilter = geneNFTs.length;
         geneNFTs = geneNFTs.filter(
           (gene: GeneNFT) => gene.traitType === Number(category)
         );
+        console.log(`Category filter (${category}): ${beforeFilter} -> ${geneNFTs.length}`);
       }
 
       // Apply sort
@@ -63,14 +129,22 @@ export const useTraits = (
           (a: GeneNFT, b: GeneNFT) =>
             (b.aminalsUsingGene?.length || 0) - (a.aminalsUsingGene?.length || 0)
         );
+        console.log('Sorted by aminals count');
       } else if (sort === 'created-at') {
         // Sort by tokenId as a proxy for creation time
         geneNFTs.sort(
           (a: GeneNFT, b: GeneNFT) => Number(b.tokenId) - Number(a.tokenId)
         );
+        console.log('Sorted by creation time');
       }
 
+      console.log('Final Gene NFTs count:', geneNFTs.length);
+      
       return geneNFTs;
+      } catch (error) {
+        console.error('Error in traits query:', error);
+        throw error;
+      }
     },
   });
 };
@@ -81,18 +155,62 @@ export const useTrait = (id: string) => {
     queryFn: async () => {
       console.log('Fetching gene NFT with ID:', id);
 
-      const response = await execute(GeneNFTByIdDocument, {
-        id: id,
+      // Direct HTTP fetch as workaround for GraphQL client bug
+      const response = await fetch('https://api.studio.thegraph.com/query/57078/aminals-3/version/latest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `
+            query GeneNFTById($id: ID!) {
+              geneNFT(id: $id) {
+                id
+                tokenId
+                traitType
+                name
+                description
+                svg
+                owner {
+                  id
+                  address
+                }
+                creator {
+                  id
+                  address
+                }
+                aminalsUsingGene {
+                  id
+                  aminalIndex
+                  contractAddress
+                  tokenURI
+                  energy
+                  totalLove
+                }
+                blockTimestamp
+              }
+            }
+          `,
+          variables: {
+            id: id
+          }
+        })
       });
 
-      console.log('GraphQL Response:', response);
-
-      if (response.errors) {
-        console.error('GraphQL Errors:', response.errors);
-        throw new Error(response.errors[0].message);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return response.data.geneNFT;
+      const data = await response.json();
+
+      console.log('GraphQL Response:', data);
+
+      if (data.errors) {
+        console.error('GraphQL Errors:', data.errors);
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data?.geneNFT;
     },
     enabled: !!id,
   });
