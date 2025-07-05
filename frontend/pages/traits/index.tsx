@@ -10,10 +10,15 @@ import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import { Button } from '@/components/ui/button';
 import Layout from '../_layout';
 
 // Import dynamically to avoid module resolution issues
 const TraitCard = dynamic(() => import('../../src/components/trait-card'), {
+  ssr: false,
+});
+
+const CreateGeneModal = dynamic(() => import('../../src/components/create-gene-modal').then(mod => ({ default: mod.default })), {
   ssr: false,
 });
 
@@ -22,6 +27,7 @@ const TraitsPage: NextPage = () => {
   const [filter, setFilter] = useState<TraitFilter>('all');
   const [sort, setSort] = useState<TraitSort>('aminals-count');
   const [category, setCategory] = useState<CategoryFilter>('all');
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const { data: traits, isLoading: isLoadingTraits, error: traitsError, isError: isTraitsError } = useTraits(
     filter,
@@ -39,11 +45,19 @@ const TraitsPage: NextPage = () => {
       <div className="container max-w-5xl mx-auto px-4 py-8">
         <div className="flex flex-col gap-6">
           {/* Header Section */}
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-bold">Traits Gallery</h1>
-            <p className="text-gray-600">
-              Browse and discover unique traits for Aminals
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold">Traits Gallery</h1>
+              <p className="text-gray-600">
+                Browse and discover unique traits for Aminals
+              </p>
+            </div>
+            <Button
+              onClick={() => setIsCreateModalOpen(true)}
+              className="self-start sm:self-auto"
+            >
+              ✨ Create New Gene
+            </Button>
           </div>
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 flex-wrap">
@@ -167,6 +181,16 @@ const TraitsPage: NextPage = () => {
           )}
         </div>
       </div>
+
+      {/* Create Gene Modal */}
+      <CreateGeneModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => {
+          // Refresh the traits list after successful creation
+          window.location.reload();
+        }}
+      />
     </Layout>
   );
 };
