@@ -22,10 +22,7 @@ interface IProposals {
         uint256 requiredMajority
     ) external returns (uint256 squeak);
 
-    function getQuorum(
-        uint256 proposalTime,
-        uint256 currentTime
-    ) external view returns (uint256);
+    function getQuorum(uint256 proposalTime, uint256 currentTime) external view returns (uint256);
 
     // Memories <3 <3 <3
     // function getAddress1(uint256 proposalId) external view returns (address);

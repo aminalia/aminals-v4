@@ -29,7 +29,7 @@ import {FixedPointMathLib} from "lib/VRGDAs/lib/solmate/src/utils/FixedPointMath
  */
 contract AminalVRGDA is LogisticVRGDA {
     /// @notice Fixed rate of energy gained per ETH (not affected by VRGDA)
-    uint256 public constant ENERGY_PER_ETH = 10000; // 1 ETH = 10,000 energy units
+    uint256 public constant ENERGY_PER_ETH = 10_000; // 1 ETH = 10,000 energy units
 
     /// @notice Maximum love multiplier (10x ETH sent)
     uint256 public constant MAX_LOVE_MULTIPLIER = 10 ether;
@@ -43,18 +43,8 @@ contract AminalVRGDA is LogisticVRGDA {
     /// @param _priceDecayPercent Price decay when below target (scaled by 1e18) - affects curve steepness
     /// @param _logisticAsymptote Maximum units for S-curve (scaled by 1e18) - controls curve shape
     /// @param _timeScale Controls S-curve transition speed (scaled by 1e18) - affects smoothness
-    constructor(
-        int256 _targetPrice,
-        int256 _priceDecayPercent,
-        int256 _logisticAsymptote,
-        int256 _timeScale
-    )
-        LogisticVRGDA(
-            _targetPrice,
-            _priceDecayPercent,
-            _logisticAsymptote,
-            _timeScale
-        )
+    constructor(int256 _targetPrice, int256 _priceDecayPercent, int256 _logisticAsymptote, int256 _timeScale)
+        LogisticVRGDA(_targetPrice, _priceDecayPercent, _logisticAsymptote, _timeScale)
     {}
 
     /**
@@ -65,10 +55,7 @@ contract AminalVRGDA is LogisticVRGDA {
      * @param ethAmount Amount of ETH being sent (in wei)
      * @return loveGained Amount of love that will be gained (in energy units)
      */
-    function getLoveForETH(
-        uint256 currentEnergy,
-        uint256 ethAmount
-    ) public view returns (uint256 loveGained) {
+    function getLoveForETH(uint256 currentEnergy, uint256 ethAmount) public view returns (uint256 loveGained) {
         if (ethAmount == 0) return 0;
 
         uint256 loveMultiplier;
@@ -77,7 +64,7 @@ contract AminalVRGDA is LogisticVRGDA {
         if (currentEnergy < 10) {
             // Very low energy - give maximum love
             loveMultiplier = MAX_LOVE_MULTIPLIER;
-        } else if (currentEnergy > 1000000) {
+        } else if (currentEnergy > 1_000_000) {
             // High energy - give minimum love
             loveMultiplier = MIN_LOVE_MULTIPLIER;
         } else {
@@ -91,23 +78,20 @@ contract AminalVRGDA is LogisticVRGDA {
             } else if (currentEnergy < 1000) {
                 // Low energy: very gradual scaling
                 scaledEnergy = 1 + (currentEnergy - 50) / 200; // 1 to ~5.75
-            } else if (currentEnergy < 10000) {
+            } else if (currentEnergy < 10_000) {
                 // Low to medium energy: gradual scaling
                 scaledEnergy = 6 + (currentEnergy - 1000) / 1500; // 6 to ~12
-            } else if (currentEnergy < 100000) {
+            } else if (currentEnergy < 100_000) {
                 // Medium energy: moderate scaling
-                scaledEnergy = 12 + (currentEnergy - 10000) / 10000; // 12 to ~21
+                scaledEnergy = 12 + (currentEnergy - 10_000) / 10_000; // 12 to ~21
             } else {
                 // High energy: slower scaling to avoid overflow
-                scaledEnergy = 21 + (currentEnergy - 100000) / 50000; // 21 to ~39
+                scaledEnergy = 21 + (currentEnergy - 100_000) / 50_000; // 21 to ~39
             }
 
             // Get VRGDA price for current energy level
             // For Logistic VRGDA: price starts low and increases with "time" (energy)
-            uint256 vrgdaPrice = getVRGDAPrice(
-                toWadUnsafe(scaledEnergy),
-                scaledEnergy
-            );
+            uint256 vrgdaPrice = getVRGDAPrice(toWadUnsafe(scaledEnergy), scaledEnergy);
 
             // Map VRGDA price to love multiplier with inverse relationship
             // As VRGDA price increases (energy increases), love multiplier decreases
@@ -127,22 +111,16 @@ contract AminalVRGDA is LogisticVRGDA {
                 // Map price range [0 to targetPrice] to multiplier range [MIN to MAX]
                 // As price goes from targetPrice to 0, multiplier goes from MAX to MIN
 
-                uint256 progress = (vrgdaPrice * 1 ether) /
-                    uint256(targetPrice);
+                uint256 progress = (vrgdaPrice * 1 ether) / uint256(targetPrice);
                 uint256 range = MAX_LOVE_MULTIPLIER - MIN_LOVE_MULTIPLIER;
 
                 // Linear interpolation: high price (near target) = high multiplier
-                loveMultiplier =
-                    MIN_LOVE_MULTIPLIER +
-                    ((range * progress) / 1 ether);
+                loveMultiplier = MIN_LOVE_MULTIPLIER + ((range * progress) / 1 ether);
             }
 
             // Apply bounds to keep multiplier reasonable
-            if (loveMultiplier > MAX_LOVE_MULTIPLIER) {
-                loveMultiplier = MAX_LOVE_MULTIPLIER;
-            } else if (loveMultiplier < MIN_LOVE_MULTIPLIER) {
-                loveMultiplier = MIN_LOVE_MULTIPLIER;
-            }
+            if (loveMultiplier > MAX_LOVE_MULTIPLIER) loveMultiplier = MAX_LOVE_MULTIPLIER;
+            else if (loveMultiplier < MIN_LOVE_MULTIPLIER) loveMultiplier = MIN_LOVE_MULTIPLIER;
         }
 
         // Calculate love gained in same units as energy (10,000 per ETH)
@@ -170,9 +148,7 @@ contract AminalVRGDA is LogisticVRGDA {
      * @param currentEnergy Current energy level
      * @return The love amount gained per 1 ETH (in energy units, where 10,000 = 1 ETH)
      */
-    function getLoveMultiplier(
-        uint256 currentEnergy
-    ) public view returns (uint256) {
+    function getLoveMultiplier(uint256 currentEnergy) public view returns (uint256) {
         return getLoveForETH(currentEnergy, 1 ether);
     }
 }

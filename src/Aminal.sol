@@ -84,11 +84,25 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     mapping(address user => uint256 love) public lovePerUser;
 
     /// @notice Skill-specific storage for each Aminal's learned abilities
-    mapping(address skill => mapping(string key => bytes32 value)) public skillProperties;
+    mapping(address skill => mapping(string key => bytes32 value))
+        public skillProperties;
 
     // TODO indexes
-    event FeedAminal(address sender, uint256 loveGained, uint256 love, uint256 totalLove, uint256 energyGained, uint256 energy);
-    event Squeak(address sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
+    event FeedAminal(
+        address sender,
+        uint256 loveGained,
+        uint256 love,
+        uint256 totalLove,
+        uint256 energyGained,
+        uint256 energy
+    );
+    event Squeak(
+        address sender,
+        uint256 amount,
+        uint256 love,
+        uint256 totalLove,
+        uint256 energy
+    );
     event SkillCall(address skillAddress, bytes data, uint256 squeakCost);
     event BreedableSet(address partner, bool status);
 
@@ -97,7 +111,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     error NotEnoughEnergy();
     error NotRegisteredSkill();
 
-    modifier onlyFactory() override {
+    modifier onlyFactory() {
         require(msg.sender == address(factory), "Only factory can call this");
         _;
     }
@@ -149,14 +163,23 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         // Calculate love using VRGDA based on current energy level
         uint256 loveGained = loveVRGDA.getLoveForETH(energy, amount);
         _addLove(feeder, loveGained);
+        // Calculate energy increase using fixed rate (10,000 per ETH)
+        uint256 energyGained = (amount * 10_000) / 1 ether;
 
-        // Calculate energy increase (using fixed rate 10,000 per ETH)
-        // NOTE overflowing energy at this cost is unfeasible
-        uint256 energyGained = loveVRGDA.getEnergyForETH(amount);
+        // Cap energy at maximum to prevent overflow
+        uint256 maxEnergy = 1_000_000; // 100 ETH worth of energy max (100 * 10,000)
+        if (energy + energyGained > maxEnergy)
+            energyGained = maxEnergy - energy;
         energy += energyGained;
 
-        emit FeedAminal(feeder, loveGained, lovePerUser[feeder], totalLove, 
-                energyGained, energy);
+        emit FeedAminal(
+            feeder,
+            loveGained,
+            lovePerUser[feeder],
+            totalLove,
+            energyGained,
+            energy
+        );
         return energyGained;
     }
 
@@ -169,15 +192,20 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
      *  channeling love into sound, energy into expression"
      */
     function squeak(uint256 amount) external {
-
         // Users need sufficient love to squeak
         if (lovePerUser[msg.sender] < amount) revert NotEnoughLove();
         if (energy < amount) revert NotEnoughEnergy();
 
-	energy -= amount;
+        energy -= amount;
         _subtractLove(msg.sender, amount);
 
-        emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
+        emit Squeak(
+            msg.sender,
+            amount,
+            lovePerUser[msg.sender],
+            totalLove,
+            energy
+        );
     }
 
     /**
@@ -189,12 +217,20 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
      * "Skills are the magic that transforms static digital beings
      *  into dynamic entities capable of growth and evolution"
      */
-    function callSkill(address skillAddress, bytes calldata data) external payable {
+    function callSkill(
+        address skillAddress,
+        bytes calldata data
+    ) external payable {
         // Skills are globally accessible - no registration check needed
 
-        uint256 squeakCost = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, address(this), data);
+        uint256 squeakCost = ISkill(skillAddress).useSkill{value: msg.value}(
+            msg.sender,
+            address(this),
+            data
+        );
 
-        if (squeakCost > 0) if (energy >= squeakCost) energy -= squeakCost;
+        if (squeakCost > 0)
+            if (energy >= squeakCost) energy -= squeakCost;
 
         emit SkillCall(skillAddress, data, squeakCost);
     }
@@ -234,7 +270,12 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         revert("Aminals are soulbound and cannot be transferred");
     }
 
-    function safeTransferFrom(address, address, uint256, bytes memory) public pure override {
+    function safeTransferFrom(
+        address,
+        address,
+        uint256,
+        bytes memory
+    ) public pure override {
         revert("Aminals are soulbound and cannot be transferred");
     }
 
@@ -277,7 +318,10 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         skillProperties[msg.sender][key] = value;
     }
 
-    function getSkillProperty(address skill, string calldata key) external view returns (bytes32) {
+    function getSkillProperty(
+        address skill,
+        string calldata key
+    ) external view returns (bytes32) {
         return skillProperties[skill][key];
     }
 
@@ -309,7 +353,8 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     function transferEnergyToOwner(uint256 amount, address recipient) external {
         // Only factory or gene auction can call this function
         require(
-            msg.sender == address(factory) || msg.sender == address(factory.geneAuction()),
+            msg.sender == address(factory) ||
+                msg.sender == address(factory.geneAuction()),
             "Only factory or gene auction can transfer energy"
         );
         if (energy < amount) revert NotEnoughEnergy();
@@ -325,10 +370,16 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
         emit EnergyTransferred(recipient, amount, energy);
     }
 
-    event EnergyTransferred(address indexed recipient, uint256 amount, uint256 remainingEnergy);
+    event EnergyTransferred(
+        address indexed recipient,
+        uint256 amount,
+        uint256 remainingEnergy
+    );
 
     // Implementation of abstract function from GeneBasedDescriptor
-    function getAminalVisualsByID(uint256 aminalID) public view virtual override returns (Visuals memory) {
+    function getAminalVisualsByID(
+        uint256 aminalID
+    ) public view virtual override returns (Visuals memory) {
         require(aminalID == aminalIndex, "Invalid aminal ID");
         return visuals;
     }

@@ -24,28 +24,6 @@ abstract contract GeneBasedDescriptor is IAminalStructs {
     GenesNFT public genesNFT;
     GeneNFTFactory public geneFactory;
 
-    /// @notice Mapping from Aminal to Gene NFT IDs for each trait category
-    /// aminalId => category => geneId
-    mapping(uint256 => mapping(VisualsCat => uint256)) public aminalGenes;
-
-    /// @notice Default Gene NFT IDs for each category (fallback traits)
-    mapping(VisualsCat => uint256) public defaultGenes;
-
-    event TraitAdded(
-        uint256 indexed aminalId,
-        VisualsCat indexed category,
-        uint256 indexed geneId
-    );
-    event DefaultGeneSet(VisualsCat indexed category, uint256 indexed geneId);
-
-    error InvalidGene();
-    error OnlyFactory();
-
-    modifier onlyFactory() virtual {
-        require(msg.sender == address(geneFactory), "Only factory can call");
-        _;
-    }
-
     constructor(address _genesNFT, address _geneFactory) {
         genesNFT = GenesNFT(_genesNFT);
         geneFactory = GeneNFTFactory(_geneFactory);
@@ -55,203 +33,132 @@ abstract contract GeneBasedDescriptor is IAminalStructs {
      * @notice Construct an ERC721 token URI
      * @dev Merged from NFTDescriptor contract
      */
-    function constructTokenURI(
-        TokenURIParams memory params
-    ) public pure returns (string memory) {
-        return
-            string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    Base64.encode(
-                        bytes(
-                            abi.encodePacked(
-                                '{"name":"',
-                                params.name,
-                                '", "description":"',
-                                params.description,
-                                '", "image": "',
-                                params.image,
-                                '", "attributes": [',
-                                params.attributes,
-                                "]}"
-                            )
+    function constructTokenURI(TokenURIParams memory params) public pure returns (string memory) {
+        return string(
+            abi.encodePacked(
+                "data:application/json;base64,",
+                Base64.encode(
+                    bytes(
+                        abi.encodePacked(
+                            '{"name":"',
+                            params.name,
+                            '", "description":"',
+                            params.description,
+                            '", "image": "',
+                            params.image,
+                            '", "attributes": [',
+                            params.attributes,
+                            "]}"
                         )
                     )
                 )
-            );
-    }
-
-    /**
-     * @notice Set genes for an Aminal
-     * @dev Called when spawning new Aminals with specific traits
-     */
-    function setAminalGenes(
-        uint256 aminalId,
-        uint256[8] calldata geneIds
-    ) external onlyFactory {
-        for (uint256 i = 0; i < 8; i++) {
-            VisualsCat category = VisualsCat(i);
-            if (geneIds[i] != 0) {
-                // Verify gene exists and is in correct category
-                if (!geneFactory.isValidGene(geneIds[i])) revert InvalidGene();
-                (, VisualsCat geneCategory, ) = geneFactory.getGeneInfo(
-                    geneIds[i]
-                );
-                if (geneCategory != category) revert InvalidGene();
-
-                aminalGenes[aminalId][category] = geneIds[i];
-                emit TraitAdded(aminalId, category, geneIds[i]);
-            }
-        }
-    }
-
-    /**
-     * @notice Set default Gene NFT for a category
-     * @dev Used as fallback when Aminals don't have specific genes set
-     */
-    function setDefaultGene(
-        VisualsCat category,
-        uint256 geneId
-    ) external onlyFactory {
-        if (!geneFactory.isValidGene(geneId)) revert InvalidGene();
-        (, VisualsCat geneCategory, ) = geneFactory.getGeneInfo(geneId);
-        if (geneCategory != category) revert InvalidGene();
-
-        defaultGenes[category] = geneId;
-        emit DefaultGeneSet(category, geneId);
-    }
-
-    /**
-     * @notice Get Gene NFT ID for an Aminal's trait category
-     */
-    function getAminalGene(
-        uint256 aminalId,
-        VisualsCat category
-    ) public view returns (uint256) {
-        uint256 geneId = aminalGenes[aminalId][category];
-        if (geneId == 0) return defaultGenes[category];
-        return geneId;
-    }
-
-    /**
-     * @notice Get SVG for a specific trait category
-     */
-    function getTraitSVG(
-        uint256 aminalId,
-        VisualsCat category
-    ) public view returns (string memory) {
-        uint256 geneId = getAminalGene(aminalId, category);
-        if (geneId == 0) return ""; // No trait set
-
-        (string memory svg, ) = genesNFT.getGeneInfo(geneId);
-        return svg;
+            )
+        );
     }
 
     /**
      * @notice Given a token ID and seed, construct a base64 encoded data URI for an NFT.
      */
     function dataURI(uint256 tokenId) public view returns (string memory) {
-        string memory name = string(
-            abi.encodePacked("Aminal #", _toString(tokenId))
-        );
+        string memory name = string(abi.encodePacked("Aminal #", _toString(tokenId)));
 
-        string memory image = string(
-            abi.encodePacked(
-                "data:image/svg+xml;base64,",
-                Base64.encode(bytes(_aminalImage(tokenId)))
-            )
-        );
-        string memory description = string(
-            abi.encodePacked(
-                "This NFT represents a digital pet. This NFT cannot be transfered."
-            )
-        );
+        string memory image =
+            string(abi.encodePacked("data:image/svg+xml;base64,", Base64.encode(bytes(_aminalImage(tokenId)))));
+        string memory description =
+            string(abi.encodePacked("This NFT represents a digital pet. This NFT cannot be transfered."));
         string memory attributes = generateAttributesList(tokenId);
 
-        return
-            constructTokenURI(
-                TokenURIParams({
-                    name: name,
-                    description: description,
-                    image: image,
-                    attributes: attributes
-                })
-            );
+        return constructTokenURI(
+            TokenURIParams({name: name, description: description, image: image, attributes: attributes})
+        );
     }
 
-    // TODO This should get the genes of an aminal and render them
     /**
-     * @notice Given a token ID, construct a base64 encoded SVG.
+     * @notice Given an aminal ID, construct a base64 encoded SVG.
      */
-    function _aminalImage(
-        uint256 _tokenId
-    ) internal view returns (string memory output) {
+    function _aminalImage(uint256 aminalId) internal view returns (string memory output) {
+        // Get the visuals for this Aminal
+        Visuals memory visuals = getAminalVisualsByID(aminalId);
+
         // Aminal Base - for all Aminals
         output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1000 1000">';
 
         // Add background
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.BACK))
-        );
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.backId)));
 
         // Add shadow
         output = string(
             abi.encodePacked(
-                output,
-                '<g id="shadow"><ellipse fill="#3c3d55" opacity="0.5"  cx="505" cy="971" rx="163" ry="12"/></g>'
+                output, '<g id="shadow"><ellipse fill="#3c3d55" opacity="0.5"  cx="505" cy="971" rx="163" ry="12"/></g>'
             )
         );
 
         // Add traits in rendering order
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.TAIL))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.ARM))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.EARS))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.BODY))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.FACE))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.MOUTH))
-        );
-        output = string(
-            abi.encodePacked(output, getTraitSVG(_tokenId, VisualsCat.MISC))
-        );
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.tailId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.armId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.earsId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.bodyId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.faceId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.mouthId)));
+        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.miscId)));
 
         // end of svg
         output = string(abi.encodePacked(output, "</svg>"));
     }
 
-    function getAminalVisualsByID(
-        uint256 aminalID
-    ) public view virtual returns (Visuals memory);
+    /**
+     * @notice Get SVG content for a specific Gene NFT ID
+     */
+    function _getGeneNFTSVG(uint256 geneId) internal view returns (string memory) {
+        if (geneId == 0) return ""; // No trait set
+
+        // Try to get gene info, but handle case where Gene NFT doesn't exist
+        try genesNFT.getGeneInfo(geneId) returns (string memory svg, VisualsCat) {
+            return svg;
+        } catch {
+            // Gene NFT doesn't exist, return empty string
+            return "";
+        }
+    }
+
+    function getAminalVisualsByID(uint256 aminalID) public view virtual returns (Visuals memory);
 
     /**
      * @notice Generate attributes list for NFT metadata
      */
-    function generateAttributesList(
-        uint256 tokenId
-    ) public view returns (string memory) {
-        string memory attributes = "[";
+    function generateAttributesList(uint256 aminalId) public view returns (string memory) {
+        Visuals memory visuals = getAminalVisualsByID(aminalId);
+        string memory attributes = "";
+        bool firstAttribute = true;
+
+        uint256[8] memory geneIds = [
+            visuals.backId,
+            visuals.armId,
+            visuals.tailId,
+            visuals.earsId,
+            visuals.bodyId,
+            visuals.faceId,
+            visuals.mouthId,
+            visuals.miscId
+        ];
 
         for (uint256 i = 0; i < 8; i++) {
-            VisualsCat category = VisualsCat(i);
-            uint256 geneId = getAminalGene(tokenId, category);
+            uint256 geneId = geneIds[i];
 
             if (geneId != 0) {
-                address creator = genesNFT.ownerOf(geneId);
-
+                VisualsCat category = VisualsCat(i);
                 string memory categoryName = _getCategoryName(category);
 
-                if (i > 0)
-                    attributes = string(abi.encodePacked(attributes, ","));
+                if (!firstAttribute) attributes = string(abi.encodePacked(attributes, ","));
+                else firstAttribute = false;
+
+                // Try to get creator address, but handle case where Gene NFT doesn't exist
+                address creator = address(0);
+                try genesNFT.ownerOf(geneId) returns (address owner) {
+                    creator = owner;
+                } catch {
+                    // Gene NFT doesn't exist, use zero address
+                }
 
                 attributes = string(
                     abi.encodePacked(
@@ -271,13 +178,10 @@ abstract contract GeneBasedDescriptor is IAminalStructs {
             }
         }
 
-        attributes = string(abi.encodePacked(attributes, "]"));
         return attributes;
     }
 
-    function _getCategoryName(
-        VisualsCat category
-    ) internal pure returns (string memory) {
+    function _getCategoryName(VisualsCat category) internal pure returns (string memory) {
         if (category == VisualsCat.BACK) return "Background";
         if (category == VisualsCat.ARM) return "Arms";
         if (category == VisualsCat.TAIL) return "Tail";
@@ -312,10 +216,7 @@ abstract contract GeneBasedDescriptor is IAminalStructs {
     /**
      * @notice Converts a `uint160` to its ASCII `string` hexadecimal representation with fixed length.
      */
-    function _toHexString(
-        uint160 value,
-        uint256 length
-    ) internal pure returns (string memory) {
+    function _toHexString(uint160 value, uint256 length) internal pure returns (string memory) {
         bytes memory buffer = new bytes(2 * length + 2);
         buffer[0] = "0";
         buffer[1] = "x";
