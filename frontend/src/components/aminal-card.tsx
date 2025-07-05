@@ -26,6 +26,7 @@ interface NewAminal {
   faceId: string;
   mouthId: string;
   miscId: string;
+  lovers?: { love: string }[];
 }
 
 export default function AminalCard({ aminal }: { aminal: NewAminal }) {
@@ -79,6 +80,14 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
                 ❤️ {Number(aminal.totalLove || 0).toFixed(2)}
               </div>
             </div>
+            {aminal.lovers && aminal.lovers.length > 0 && (
+              <div>
+                <div className="text-sm text-gray-500">Love 4 U</div>
+                <div className="text-lg font-semibold text-purple-600">
+                  💜 {Number(aminal.lovers[0].love || 0).toFixed(2)}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Gene Info */}

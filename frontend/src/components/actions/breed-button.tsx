@@ -31,12 +31,16 @@ export default function BreedButton({ contractAddress }: { contractAddress: `0x$
       });
       setStep('auction');
       queryClient.invalidateQueries({ queryKey: ['aminal-by-address', contractAddress] });
+      queryClient.invalidateQueries({ queryKey: ['aminals-direct'] });
+      queryClient.invalidateQueries({ queryKey: ['aminals'] });
     } else if (isConfirmed && step === 'auction') {
       toast.success('🍼 Gene auction started! Community can now vote on offspring traits.', { 
         id: 'breed-tx',
         duration: 6000,
       });
       queryClient.invalidateQueries({ queryKey: ['aminal-by-address', contractAddress] });
+      queryClient.invalidateQueries({ queryKey: ['aminals-direct'] });
+      queryClient.invalidateQueries({ queryKey: ['aminals'] });
     }
   }, [isConfirmed, step, queryClient, contractAddress]);
 
