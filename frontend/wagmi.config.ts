@@ -5,6 +5,7 @@ const ABI = {
   Aminal: require('./deployments/Aminal.json'),
   GeneAuction: require('./deployments/GeneAuction.json'),
   GenesNFT: require('./deployments/GenesNFT.json'),
+  GeneNFTFactory: require('./deployments/GeneNFTFactory.json'),
 };
 
 export default defineConfig({
@@ -30,6 +31,11 @@ export default defineConfig({
       abi: ABI.GenesNFT.abi,
       name: 'GenesNFT',
       address: '0x5443F5010a68a3f65E0C3b51Dd264037dabD244c',
+    },
+    {
+      abi: ABI.GeneNFTFactory.abi,
+      name: 'GeneNFTFactory',
+      address: '0x41063967Aa8337Ab89a2F69cA8FF54BA13Ce1f06',
     },
   ],
 });
