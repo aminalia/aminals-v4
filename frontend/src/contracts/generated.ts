@@ -32,20 +32,6 @@ export const aminalAbi = [
   { type: 'receive', stateMutability: 'payable' },
   {
     type: 'function',
-    inputs: [
-      { name: '', internalType: 'uint256', type: 'uint256' },
-      {
-        name: '',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-      },
-    ],
-    name: 'aminalGenes',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
     inputs: [],
     name: 'aminalIndex',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
@@ -127,19 +113,6 @@ export const aminalAbi = [
   },
   {
     type: 'function',
-    inputs: [
-      {
-        name: '',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-      },
-    ],
-    name: 'defaultGenes',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
     inputs: [{ name: 'partner', internalType: 'address', type: 'address' }],
     name: 'disableBreedableWith',
     outputs: [],
@@ -179,7 +152,7 @@ export const aminalAbi = [
   },
   {
     type: 'function',
-    inputs: [{ name: 'tokenId', internalType: 'uint256', type: 'uint256' }],
+    inputs: [{ name: 'aminalId', internalType: 'uint256', type: 'uint256' }],
     name: 'generateAttributesList',
     outputs: [{ name: '', internalType: 'string', type: 'string' }],
     stateMutability: 'view',
@@ -189,20 +162,6 @@ export const aminalAbi = [
     inputs: [],
     name: 'genesNFT',
     outputs: [{ name: '', internalType: 'contract GenesNFT', type: 'address' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [
-      { name: 'aminalId', internalType: 'uint256', type: 'uint256' },
-      {
-        name: 'category',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-      },
-    ],
-    name: 'getAminalGene',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
   {
@@ -274,20 +233,6 @@ export const aminalAbi = [
     inputs: [],
     name: 'getTotalLove',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [
-      { name: 'aminalId', internalType: 'uint256', type: 'uint256' },
-      {
-        name: 'category',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-      },
-    ],
-    name: 'getTraitSVG',
-    outputs: [{ name: '', internalType: 'string', type: 'string' }],
     stateMutability: 'view',
   },
   {
@@ -400,16 +345,6 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'aminalId', internalType: 'uint256', type: 'uint256' },
-      { name: 'geneIds', internalType: 'uint256[8]', type: 'uint256[8]' },
-    ],
-    name: 'setAminalGenes',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [
       { name: '', internalType: 'address', type: 'address' },
       { name: '', internalType: 'bool', type: 'bool' },
     ],
@@ -431,20 +366,6 @@ export const aminalAbi = [
     type: 'function',
     inputs: [{ name: '_breeding', internalType: 'bool', type: 'bool' }],
     name: 'setBreeding',
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    inputs: [
-      {
-        name: 'category',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-      },
-      { name: 'geneId', internalType: 'uint256', type: 'uint256' },
-    ],
-    name: 'setDefaultGene',
     outputs: [],
     stateMutability: 'nonpayable',
   },
@@ -604,25 +525,6 @@ export const aminalAbi = [
     anonymous: false,
     inputs: [
       {
-        name: 'category',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-        indexed: true,
-      },
-      {
-        name: 'geneId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: true,
-      },
-    ],
-    name: 'DefaultGeneSet',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
         name: 'recipient',
         internalType: 'address',
         type: 'address',
@@ -741,31 +643,6 @@ export const aminalAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
-      {
-        name: 'aminalId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: true,
-      },
-      {
-        name: 'category',
-        internalType: 'enum IAminalStructs.VisualsCat',
-        type: 'uint8',
-        indexed: true,
-      },
-      {
-        name: 'geneId',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: true,
-      },
-    ],
-    name: 'TraitAdded',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
       { name: 'from', internalType: 'address', type: 'address', indexed: true },
       { name: 'to', internalType: 'address', type: 'address', indexed: true },
       {
@@ -777,12 +654,10 @@ export const aminalAbi = [
     ],
     name: 'Transfer',
   },
-  { type: 'error', inputs: [], name: 'InvalidGene' },
   { type: 'error', inputs: [], name: 'NotEnoughEnergy' },
   { type: 'error', inputs: [], name: 'NotEnoughEther' },
   { type: 'error', inputs: [], name: 'NotEnoughLove' },
   { type: 'error', inputs: [], name: 'NotRegisteredSkill' },
-  { type: 'error', inputs: [], name: 'OnlyFactory' },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

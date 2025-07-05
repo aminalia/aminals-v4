@@ -23,11 +23,16 @@ const TraitsPage: NextPage = () => {
   const [sort, setSort] = useState<TraitSort>('aminals-count');
   const [category, setCategory] = useState<CategoryFilter>('all');
 
-  const { data: traits, isLoading: isLoadingTraits } = useTraits(
+  const { data: traits, isLoading: isLoadingTraits, error: traitsError, isError: isTraitsError } = useTraits(
     filter,
     sort,
     category
   );
+
+  console.log('Traits data:', traits);
+  console.log('Traits loading:', isLoadingTraits);
+  console.log('Traits error:', traitsError);
+  console.log('Is traits error:', isTraitsError);
 
   return (
     <Layout>
@@ -133,6 +138,15 @@ const TraitsPage: NextPage = () => {
           {isLoadingTraits ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          ) : isTraitsError ? (
+            <div className="text-center py-12 bg-red-50 rounded-lg">
+              <p className="text-red-600">
+                Error loading traits: {traitsError?.message || 'Unknown error'}
+              </p>
+              <p className="text-sm text-red-500 mt-2">
+                Check the console for more details.
+              </p>
             </div>
           ) : !traits || traits.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-lg">

@@ -23,6 +23,8 @@ const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
   const category =
     TRAIT_CATEGORIES[trait.traitType as keyof typeof TRAIT_CATEGORIES];
 
+  console.log('TraitCard - trait.id:', trait.id, 'tokenId:', trait.tokenId);
+
   return (
     <Link href={`/traits/${trait.id}`} className="block">
       <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden transition-all hover:shadow-lg">
