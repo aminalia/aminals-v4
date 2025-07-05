@@ -1,36 +1,83 @@
-query TraitsList {
-  traits(where: { visualId_not: "0" }) {
+query GeneNFTsList {
+  geneNFTs(orderBy: tokenId, orderDirection: asc) {
     id
-    visualId
-    catEnum
+    tokenId
+    traitType
+    name
+    description
     svg
+    owner {
+      id
+      address
+    }
     creator {
       id
       address
     }
-    aminals {
+    aminalsUsingGene {
       id
-      aminalId
+      aminalIndex
+      contractAddress
+      tokenURI
+      energy
+      totalLove
     }
+    blockTimestamp
   }
 }
 
-query TraitById($id: ID!) {
-  trait(id: $id) {
+query GeneNFTById($id: ID!) {
+  geneNFT(id: $id) {
     id
-    visualId
-    catEnum
+    tokenId
+    traitType
+    name
+    description
     svg
+    owner {
+      id
+      address
+    }
     creator {
       id
       address
     }
-    aminals {
+    aminalsUsingGene {
       id
-      aminalId
-      tokenUri
-      totalLove
+      aminalIndex
+      contractAddress
+      tokenURI
       energy
+      totalLove
     }
+    blockTimestamp
+  }
+}
+
+query GenesByTraitType($traitType: Int!) {
+  geneNFTs(where: { traitType: $traitType }, orderBy: tokenId, orderDirection: asc) {
+    id
+    tokenId
+    traitType
+    name
+    description
+    svg
+    owner {
+      id
+      address
+    }
+    creator {
+      id
+      address
+    }
+    aminalsUsingGene {
+      id
+      aminalIndex
+      contractAddress
+      tokenURI
+      energy
+      totalLove
+    }
+    blockTimestamp
   }
 }

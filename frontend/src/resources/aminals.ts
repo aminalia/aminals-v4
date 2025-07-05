@@ -21,13 +21,16 @@ export const useAminals = (
     queryKey: [BASE_KEY, filter, sort],
     queryFn: async () => {
       const response = await execute(AminalsListDocument, {
-        first: 100, // Increase to get more aminals
+        first: 100,
         skip: 0,
-        address: userAddress,
       });
-      if (response.errors) throw new Error(response.errors[0].message);
+      
+      if (response.errors) {
+        console.error('GraphQL errors:', response.errors);
+        throw new Error(response.errors[0].message);
+      }
 
-      let aminals = response.data.aminals;
+      let aminals = response.data?.aminals || [];
 
       // Apply filter
       if (filter === 'loved') {

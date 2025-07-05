@@ -1,9 +1,9 @@
-import { useWriteVisualsAuctionProposeVisual } from '@/contracts/generated';
 import { useState } from 'react';
 import { parseEther } from 'viem';
+import { useAccount, useWriteContract } from 'wagmi';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { useAccount } from 'wagmi';
+const geneAuctionAbi = require('../../../deployments/GeneAuction.json').abi;
 
 interface ProposeButtonProps {
   auctionId: bigint | string;
@@ -27,17 +27,21 @@ const CATEGORIES: CategoryOption[] = [
 ];
 
 const PROPOSE_COST = '0.05';
+const GENE_AUCTION_ADDRESS = '0x30484F8a6CEC8Fc02EFEA2320e3E3A5f710B7605' as const;
 
 export default function ProposeButton({ auctionId, className }: ProposeButtonProps) {
   const [catId, setCatId] = useState<number>(0);
   const [vizId, setVizId] = useState<number>(0);
-  const proposeVisual = useWriteVisualsAuctionProposeVisual();
+  const { writeContractAsync } = useWriteContract();
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
 
   const handlePropose = async () => {
     if (!enabled) return;
-    await proposeVisual.writeContractAsync({
+    await writeContractAsync({
+      abi: geneAuctionAbi,
+      address: GENE_AUCTION_ADDRESS,
+      functionName: 'proposeVisual',
       args: [BigInt(auctionId), catId, BigInt(vizId)],
       value: BigInt(parseEther(PROPOSE_COST)),
     });

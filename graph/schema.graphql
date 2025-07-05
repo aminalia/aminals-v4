@@ -38,6 +38,9 @@ type Aminal @entity(immutable: false) {
   mouthId: BigInt!
   miscId: BigInt!
   
+  # Metadata
+  tokenURI: String # TokenURI with base64 encoded JSON metadata
+  
   # State
   energy: BigInt!
   totalLove: BigInt!

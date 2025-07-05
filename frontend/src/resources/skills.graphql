@@ -1,29 +1,79 @@
-query SkillsList {
-  skills {
+query SkillCallsList($first: Int = 100, $skip: Int = 0) {
+  skillCalls(
+    first: $first
+    skip: $skip
+    orderBy: blockTimestamp
+    orderDirection: desc
+  ) {
     id
     aminal {
       id
-      aminalId
+      contractAddress
+      aminalIndex
+    }
+    caller {
+      id
+      address
     }
     skillAddress
-    removed
-    blockNumber
+    data
+    squeakCost
     blockTimestamp
-    transactionHash
   }
 }
 
-query SkillById($id: ID!) {
-  skill(id: $id) {
+query SkillCallsByAminal($contractAddress: String!) {
+  skillCalls(
+    where: { aminal: $contractAddress }
+    orderBy: blockTimestamp
+    orderDirection: desc
+  ) {
+    id
+    caller {
+      id
+      address
+    }
+    skillAddress
+    data
+    squeakCost
+    blockTimestamp
+  }
+}
+
+query SkillCallsBySkill($skillAddress: Bytes!) {
+  skillCalls(
+    where: { skillAddress: $skillAddress }
+    orderBy: blockTimestamp
+    orderDirection: desc
+  ) {
     id
     aminal {
       id
-      aminalId
+      contractAddress
+      aminalIndex
     }
-    skillAddress
-    removed
-    blockNumber
+    caller {
+      id
+      address
+    }
+    data
+    squeakCost
     blockTimestamp
-    transactionHash
+  }
+}
+
+query GlobalSkillsList($first: Int = 100, $skip: Int = 0) {
+  globalSkills(
+    first: $first
+    skip: $skip
+    orderBy: callCount
+    orderDirection: desc
+  ) {
+    id
+    skillAddress
+    name
+    callCount
+    totalSqueakCost
+    blockTimestamp
   }
 }

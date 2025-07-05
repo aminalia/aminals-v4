@@ -41,9 +41,9 @@ dataSources:
     name: AminalFactory
     network: holesky
     source:
-      address: "0x421a9568b51aa4ca588e993fc2b482a24fd5354e"
+      address: "0x89b5F7b73217698247AC32c77417a39AbE04bdE0"
       abi: AminalFactory
-      startBlock: 4111558
+      startBlock: 4114600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -68,9 +68,9 @@ dataSources:
     name: GeneAuction
     network: holesky
     source:
-      address: "0x58b2a2f0e2fb2b280325c8b58e3164c28768bb9c"
+      address: "0x30484F8a6CEC8Fc02EFEA2320e3E3A5f710B7605"
       abi: GeneAuction
-      startBlock: 4111558
+      startBlock: 4114600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -108,9 +108,9 @@ dataSources:
     name: GenesNFT
     network: holesky
     source:
-      address: "0xd5bb61310193a528e794c7302533df65283223b2"
+      address: "0x5443F5010a68a3f65E0C3b51Dd264037dabD244c"
       abi: GenesNFT
-      startBlock: 4111558
+      startBlock: 4114600
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

@@ -134,6 +134,7 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         );
     }
 
+
     /**
      * @notice Spawn the genesis Aminals to seed the ecosystem 🌱
      * @dev Can only be called once by the owner to create initial population

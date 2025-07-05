@@ -1,39 +1,34 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   execute,
-  VisualListDocument,
-  VisualProposal,
-  VisualProposalListByAuctionIdDocument,
+  VisualGeneProposalsListDocument,
+  GeneProposal,
+  GeneProposalsByAuctionDocument,
 } from '../../.graphclient';
 
 const BASE_KEY = 'visuals';
 
 export const useVisualsProposals = () => {
-  return useQuery<VisualProposal[]>({
+  return useQuery<GeneProposal[]>({
     queryKey: [BASE_KEY],
     queryFn: async () => {
-      const response = await execute(VisualListDocument, {
-        first: 10,
-        skip: 0,
-      });
+      const response = await execute(VisualGeneProposalsListDocument, {});
       if (response.errors) throw new Error(response.errors[0].message);
-      console.log('response.... visuals == ', response.data.visualProposals);
-      return response.data.visualProposals;
+      console.log('response.... gene proposals == ', response.data.geneProposals);
+      return response.data.geneProposals;
     },
   });
 };
 
 export const useVisualProposalsByAuctionId = (auctionId: string) => {
-  return useQuery<VisualProposal[]>({
+  return useQuery<GeneProposal[]>({
     queryKey: [BASE_KEY, 'auction', auctionId],
     queryFn: async () => {
-      const response = await execute(VisualProposalListByAuctionIdDocument, {
+      const response = await execute(GeneProposalsByAuctionDocument, {
         auctionId,
-        first: 100,
-        skip: 0,
       });
       if (response.errors) throw new Error(response.errors[0].message);
-      return response.data.visualProposals;
+      return response.data.geneProposals;
     },
   });
 };

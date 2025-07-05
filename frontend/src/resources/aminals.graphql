@@ -1,58 +1,109 @@
 query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
   aminals(first: $first, skip: $skip) {
-    aminalId
-    mom
-    dad
-    tokenUri
+    id
+    contractAddress
+    aminalIndex
+    momAddress
+    dadAddress
     energy
-    lovers(where: { user_: { address: $address } }) {
-      love
-    }
     totalLove
     blockTimestamp
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
     breedableWith {
-      aminalTwo {
-        aminalId
+      partner {
+        id
+        contractAddress
+        aminalIndex
       }
     }
   }
 }
 
-query AminalById($aminalId: BigInt) {
-  aminals(where: { aminalId: $aminalId }) {
+query AminalById($contractAddress: Bytes) {
+  aminals(where: { contractAddress: $contractAddress }) {
     id
-    aminalId
-    mom
-    dad
-    tokenUri
+    contractAddress
+    aminalIndex
+    momAddress
+    dadAddress
     energy
     totalLove
     breeding
     blockTimestamp
-    lovers {
-      id
-      love
-      user {
-        address
-      }
-    }
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
     breedableWith {
       id
-      aminalTwo {
+      partner {
         id
-        aminalId
+        contractAddress
+        aminalIndex
       }
     }
-    skills {
+    feeds {
       id
-      skillAddress
-      removed
+      sender {
+        id
+        address
+      }
+      amount
+      love
+      totalLove
+      energy
+      blockTimestamp
     }
-    traits {
+    squeaks {
       id
-      visualId
-      catEnum
-      svg
+      sender {
+        id
+        address
+      }
+      amount
+      love
+      totalLove
+      energy
+      blockTimestamp
+    }
+    skillCalls {
+      id
+      caller {
+        id
+        address
+      }
+      skillAddress
+      data
+      squeakCost
+      blockTimestamp
+    }
+  }
+}
+
+query AminalFactory {
+  aminalFactories(first: 1) {
+    id
+    totalAminals
+    aminals {
+      id
+      contractAddress
+      aminalIndex
+      energy
+      totalLove
+      tokenURI
     }
   }
 }
