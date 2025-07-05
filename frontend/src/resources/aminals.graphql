@@ -24,10 +24,13 @@ query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
         aminalIndex
       }
     }
+    lovers(where: { user_: { address: $address } }) {
+      love
+    }
   }
 }
 
-query AminalById($contractAddress: Bytes) {
+query AminalById($contractAddress: Bytes, $address: Bytes = "") {
   aminals(where: { contractAddress: $contractAddress }) {
     id
     contractAddress
@@ -54,6 +57,9 @@ query AminalById($contractAddress: Bytes) {
         contractAddress
         aminalIndex
       }
+    }
+    lovers(where: { user_: { address: $address } }) {
+      love
     }
     feeds {
       id

@@ -24,9 +24,10 @@ export default function FeedButton({ contractAddress }: { contractAddress: `0x${
         duration: 5000,
       });
       
-      // Refresh the data
+      // Refresh the data - invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['aminal-by-address', contractAddress] });
       queryClient.invalidateQueries({ queryKey: ['aminals-direct'] });
+      queryClient.invalidateQueries({ queryKey: ['aminals'] });
     }
   }, [isConfirmed, queryClient, contractAddress]);
 

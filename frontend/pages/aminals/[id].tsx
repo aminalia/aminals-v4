@@ -6,13 +6,14 @@ import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Layout from '../_layout';
+import { useAccount } from 'wagmi';
 
 import { useQuery } from '@tanstack/react-query';
 
 // Direct fetch for individual Aminal by contract address
-const useAminalByAddress = (contractAddress: string) => {
+const useAminalByAddress = (contractAddress: string, userAddress: string) => {
   return useQuery({
-    queryKey: ['aminal-by-address', contractAddress],
+    queryKey: ['aminal-by-address', contractAddress, userAddress],
     queryFn: async () => {
       if (!contractAddress || contractAddress === 'undefined') {
         return null;
@@ -22,7 +23,7 @@ const useAminalByAddress = (contractAddress: string) => {
         'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
 
       const query = `
-        query AminalByAddress($contractAddress: Bytes) {
+        query AminalByAddress($contractAddress: Bytes, $address: Bytes) {
           aminals(where: { contractAddress: $contractAddress }) {
             id
             contractAddress
@@ -42,6 +43,9 @@ const useAminalByAddress = (contractAddress: string) => {
             faceId
             mouthId
             miscId
+            lovers(where: { user_: { address: $address } }) {
+              love
+            }
             feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
               id
               sender {
@@ -80,7 +84,7 @@ const useAminalByAddress = (contractAddress: string) => {
         },
         body: JSON.stringify({
           query,
-          variables: { contractAddress },
+          variables: { contractAddress, address: userAddress },
         }),
       });
 
@@ -104,7 +108,8 @@ const AminalPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query; // This is now a contract address
   const contractAddress = id as string;
-  const { data: aminal, isLoading } = useAminalByAddress(contractAddress);
+  const { address } = useAccount();
+  const { data: aminal, isLoading } = useAminalByAddress(contractAddress, address || '');
 
   if (isLoading) {
     return (
@@ -177,6 +182,19 @@ const AminalPage: NextPage = () => {
                     </div>
                   </div>
                 </div>
+
+                {/* Love 4 U section */}
+                {aminal.lovers && aminal.lovers.length > 0 && (
+                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                    <div className="text-sm text-gray-500">Love 4 U</div>
+                    <div className="text-xl font-semibold text-purple-600">
+                      💜 {Number(aminal.lovers[0].love).toFixed(2)}
+                    </div>
+                    <div className="text-xs text-purple-500 mt-1">
+                      Your love relationship with this Aminal
+                    </div>
+                  </div>
+                )}
 
                 {/* Contract Address */}
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">

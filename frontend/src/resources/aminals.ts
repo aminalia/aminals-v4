@@ -18,11 +18,12 @@ export const useAminals = (
   sort: AminalSort = 'most-loved'
 ) => {
   return useQuery<Aminal[]>({
-    queryKey: [BASE_KEY, filter, sort],
+    queryKey: [BASE_KEY, filter, sort, userAddress],
     queryFn: async () => {
       const response = await execute(AminalsListDocument, {
         first: 100,
         skip: 0,
+        address: userAddress,
       });
       
       if (response.errors) {

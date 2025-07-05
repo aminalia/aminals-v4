@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 const SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
 
 const AMINALS_QUERY = `
-  query AminalsList($first: Int = 100, $skip: Int = 0) {
+  query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
     aminals(first: $first, skip: $skip) {
       id
       contractAddress
@@ -23,6 +23,9 @@ const AMINALS_QUERY = `
       faceId
       mouthId
       miscId
+      lovers(where: { user_: { address: $address } }) {
+        love
+      }
     }
   }
 `;
@@ -36,7 +39,7 @@ export const useAminalsDirect = (
   sort: AminalSort = 'most-loved'
 ) => {
   return useQuery({
-    queryKey: ['aminals-direct', filter, sort], // Remove Date.now() to enable proper caching
+    queryKey: ['aminals-direct', filter, sort, userAddress], // Remove Date.now() to enable proper caching
     queryFn: async () => {
       const response = await fetch(SUBGRAPH_URL, {
         method: 'POST',
@@ -45,7 +48,7 @@ export const useAminalsDirect = (
         },
         body: JSON.stringify({
           query: AMINALS_QUERY,
-          variables: { first: 100, skip: 0 }
+          variables: { first: 100, skip: 0, address: userAddress }
         })
       });
 
@@ -61,7 +64,7 @@ export const useAminalsDirect = (
       // Apply filter (simplified)
       if (filter === 'loved') {
         aminals = aminals.filter((aminal: any) => 
-          aminal.totalLove && Number(aminal.totalLove) > 0
+          aminal.lovers && aminal.lovers.length > 0 && Number(aminal.lovers[0].love) > 0
         );
       }
 
