@@ -68,11 +68,11 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     /// @notice VRGDA instance for calculating love based on energy levels 📈
     AminalVRGDA public immutable loveVRGDA;
 
-    /// @notice The sum of all love ever given to this Aminal 💝
-    uint256 public totalLove;
+    /// @notice The current sum of all love of all users to this Aminal 💝
+    uint256 private totalLove;
 
     /// @notice Current energy level - the life force for actions ⚡
-    uint256 public energy;
+    uint256 private energy;
 
     /// @notice Whether this Aminal is currently in breeding mode 🧬
     bool public breeding;
@@ -87,7 +87,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     mapping(address skill => mapping(string key => bytes32 value)) public skillProperties;
 
     // TODO indexes
-    event FeedAminal(address sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
+    event FeedAminal(address sender, uint256 loveGained, uint256 love, uint256 totalLove, uint256 energyGained, uint256 energy);
     event Squeak(address sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
     event SkillCall(address skillAddress, bytes data, uint256 squeakCost);
     event BreedableSet(address partner, bool status);
@@ -144,22 +144,19 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
 
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
         // NOTE moved here to catch also on receive()
-        if (msg.value < 0.001 ether) revert NotEnoughEther();
+        if (amount < 0.001 ether) revert NotEnoughEther();
 
         // Calculate love using VRGDA based on current energy level
         uint256 loveGained = loveVRGDA.getLoveForETH(energy, amount);
         _addLove(feeder, loveGained);
-        // Calculate energy increase using fixed rate (10,000 per ETH)
-        uint256 energyGained = (amount * 10000) / 1 ether;
 
-        // Cap energy at maximum to prevent overflow
-        uint256 maxEnergy = 1000000; // 100 ETH worth of energy max (100 * 10,000)
-        if (energy + energyGained > maxEnergy) {
-            energyGained = maxEnergy - energy;
-        }
+        // Calculate energy increase (using fixed rate 10,000 per ETH)
+        // NOTE overflowing energy at this cost is unfeasible
+        uint256 energyGained = loveVRGDA.getEnergyForETH(amount);
         energy += energyGained;
 
-        emit FeedAminal(feeder, amount, lovePerUser[feeder], totalLove, energy);
+        emit FeedAminal(feeder, loveGained, lovePerUser[feeder], totalLove, 
+                energyGained, energy);
         return energyGained;
     }
 
@@ -171,14 +168,13 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
      * "When an Aminal squeaks, it speaks with the voice of its community,
      *  channeling love into sound, energy into expression"
      */
-    function squeak(uint256 amount) external payable {
-        if (msg.value < 0.001 ether) revert NotEnoughEther();
+    function squeak(uint256 amount) external {
 
         // Users need sufficient love to squeak
         if (lovePerUser[msg.sender] < amount) revert NotEnoughLove();
+        if (energy < amount) revert NotEnoughEnergy();
 
-        if (energy >= amount) energy -= amount;
-
+	energy -= amount;
         _subtractLove(msg.sender, amount);
 
         emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
