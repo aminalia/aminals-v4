@@ -13,3 +13,6 @@ UI / Graph:
 Contracts:
 - GeneNFTFactory -> GeneRegistry
 - Move smart contract interfaces to a dedicated folder
+- setFactory in genesNft is not good... maybe use an initializer? Owner can set factory whenever
+- User JSON files for storing variables in script
+- Sync env variables between graph, frontend, and contracts

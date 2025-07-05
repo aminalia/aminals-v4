@@ -127,7 +127,7 @@ export class FeedAminal__Params {
     return this._event.parameters[0].value.toAddress();
   }
 
-  get amount(): BigInt {
+  get loveGained(): BigInt {
     return this._event.parameters[1].value.toBigInt();
   }
 
@@ -139,8 +139,12 @@ export class FeedAminal__Params {
     return this._event.parameters[3].value.toBigInt();
   }
 
-  get energy(): BigInt {
+  get energyGained(): BigInt {
     return this._event.parameters[4].value.toBigInt();
+  }
+
+  get energy(): BigInt {
+    return this._event.parameters[5].value.toBigInt();
   }
 }
 
@@ -551,21 +555,6 @@ export class Aminal extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  energy(): BigInt {
-    let result = super.call("energy", "energy():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_energy(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("energy", "energy():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   factory(): Address {
@@ -1055,21 +1044,6 @@ export class Aminal extends ethereum.SmartContract {
     }
     let value = result.value;
     return ethereum.CallResult.fromValue(value[0].toString());
-  }
-
-  totalLove(): BigInt {
-    let result = super.call("totalLove", "totalLove():(uint256)", []);
-
-    return result[0].toBigInt();
-  }
-
-  try_totalLove(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall("totalLove", "totalLove():(uint256)", []);
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
   visuals(): Aminal__visualsResult {

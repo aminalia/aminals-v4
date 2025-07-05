@@ -59,8 +59,7 @@ export function handleTransfer(event: TransferEvent): void {
     // Set initial owner
     geneNFT.owner = creator.id;
     
-    // Initialize empty arrays
-    geneNFT.aminalsUsingGene = [];
+    // aminalsUsingGene field removed for performance optimization
     
     // Creation info
     geneNFT.blockNumber = event.block.number;

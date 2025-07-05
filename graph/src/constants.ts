@@ -1,8 +1,9 @@
 // Deployed contract addresses on Holesky testnet (chain ID: 17000)
-export const AMINAL_FACTORY_ADDRESS = "0x421a9568b51aa4ca588e993fc2b482a24fd5354e";
-export const GENE_AUCTION_ADDRESS = "0x58b2a2f0e2fb2b280325c8b58e3164c28768bb9c";
-export const GENES_NFT_ADDRESS = "0xd5bb61310193a528e794c7302533df65283223b2";
-export const AMINAL_PROPOSALS_ADDRESS = "0xce3eae1324a9970c776cd1c6dc501e6fa1e161a0";
+export const AMINAL_FACTORY_ADDRESS = "0x12ab74042d20e7f28b324d00055c239c740d4c3d";
+export const GENE_AUCTION_ADDRESS = "0x0b7d125d966f58115433574cf037611321d64a7f";
+export const GENES_NFT_ADDRESS = "0x4c7fba8cc9555abb6f51b7da33c82c0eee8c6485";
+export const GENE_NFT_FACTORY_ADDRESS = "0x41063967aa8337ab89a2f69ca8ff54ba13ce1f06";
+export const ADDRESS_ZERO = '0x0000000000000000000000000000000000000000';
 
 // Deployed skill contract addresses (for reference)
 export const MOVE_2D_SKILL_ADDRESS = "0x96f1597fc84c69aef97a8af274b7709a0f38d84a";

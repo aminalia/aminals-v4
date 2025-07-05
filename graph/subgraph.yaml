@@ -25,7 +25,7 @@ templates:
         - name: AminalFactory
           file: ../out/AminalFactory.sol/AminalFactory.json
       eventHandlers:
-        - event: FeedAminal(address,uint256,uint256,uint256,uint256)
+        - event: FeedAminal(address,uint256,uint256,uint256,uint256,uint256)
           handler: handleFeedAminal
         - event: Squeak(address,uint256,uint256,uint256,uint256)
           handler: handleSqueak
@@ -125,3 +125,26 @@ dataSources:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/genes-nft.ts
+  - kind: ethereum
+    name: GeneNFTFactory
+    network: holesky
+    source:
+      address: "0x41063967aa8337ab89a2f69ca8ff54ba13ce1f06"
+      abi: GeneNFTFactory
+      startBlock: 4115154
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.9
+      language: wasm/assemblyscript
+      entities:
+        - GeneNFT
+        - User
+      abis:
+        - name: GeneNFTFactory
+          file: ../out/GeneNFTFactory.sol/GeneNFTFactory.json
+        - name: GenesNFT
+          file: ../out/GenesNFT.sol/GenesNFT.json
+      eventHandlers:
+        - event: GeneCreated(indexed uint256,indexed address,indexed uint8,string)
+          handler: handleGeneCreated
+      file: ./src/gene-nft-factory.ts

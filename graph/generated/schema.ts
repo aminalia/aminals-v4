@@ -2027,19 +2027,6 @@ export class GeneNFT extends Entity {
     }
   }
 
-  get aminalsUsingGene(): Array<Bytes> {
-    let value = this.get("aminalsUsingGene");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytesArray();
-    }
-  }
-
-  set aminalsUsingGene(value: Array<Bytes>) {
-    this.set("aminalsUsingGene", Value.fromBytesArray(value));
-  }
-
   get proposalsUsingGene(): GeneProposalLoader {
     return new GeneProposalLoader(
       "GeneNFT",

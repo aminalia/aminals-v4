@@ -46,7 +46,16 @@ const TraitDetailPage: NextPage = () => {
 
   const category =
     TRAIT_CATEGORIES[trait.traitType as keyof typeof TRAIT_CATEGORIES];
-  const aminalCount = trait.aminalsUsingGene?.length || 0;
+  // Extract unique Aminals from proposals (each proposal has 2 Aminals)
+  const uniqueAminals = trait.proposalsUsingGene ? 
+    Array.from(new Set([
+      ...trait.proposalsUsingGene.map(p => p.auction.aminalOne),
+      ...trait.proposalsUsingGene.map(p => p.auction.aminalTwo)
+    ].map(a => a.id))).map(id => 
+      [...trait.proposalsUsingGene.map(p => p.auction.aminalOne), ...trait.proposalsUsingGene.map(p => p.auction.aminalTwo)]
+        .find(a => a.id === id)
+    ) : [];
+  const aminalCount = uniqueAminals.length;
 
   return (
     <Layout>
@@ -133,7 +142,7 @@ const TraitDetailPage: NextPage = () => {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {trait.aminalsUsingGene.map((aminal: any) => {
+                {uniqueAminals.map((aminal: any) => {
                   const aminalWithDetails =
                     aminal as unknown as AminalWithDetails;
                   return (

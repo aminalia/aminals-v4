@@ -14,13 +14,27 @@ query GeneNFTsList {
       id
       address
     }
-    aminalsUsingGene {
+    proposalsUsingGene {
       id
-      aminalIndex
-      contractAddress
-      tokenURI
-      energy
-      totalLove
+      auction {
+        id
+        aminalOne {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+        aminalTwo {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+      }
     }
     blockTimestamp
   }
@@ -42,13 +56,27 @@ query GeneNFTById($id: ID!) {
       id
       address
     }
-    aminalsUsingGene {
+    proposalsUsingGene {
       id
-      aminalIndex
-      contractAddress
-      tokenURI
-      energy
-      totalLove
+      auction {
+        id
+        aminalOne {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+        aminalTwo {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+      }
     }
     blockTimestamp
   }
@@ -70,13 +98,27 @@ query GenesByTraitType($traitType: Int!) {
       id
       address
     }
-    aminalsUsingGene {
+    proposalsUsingGene {
       id
-      aminalIndex
-      contractAddress
-      tokenURI
-      energy
-      totalLove
+      auction {
+        id
+        aminalOne {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+        aminalTwo {
+          id
+          aminalIndex
+          contractAddress
+          tokenURI
+          energy
+          totalLove
+        }
+      }
     }
     blockTimestamp
   }
