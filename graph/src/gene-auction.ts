@@ -7,51 +7,88 @@ import {
   GeneVoteCast as GeneVoteCastEvent,
   GeneRemovalVote as GeneRemovalVoteEvent,
   GeneRemoved as GeneRemovedEvent,
-  BulkVoteCast as BulkVoteCastEvent
+  BulkVoteCast as BulkVoteCastEvent,
 } from "../generated/GeneAuction/GeneAuction";
+import { AminalFactory as AminalFactoryContract } from "../generated/AminalFactory/AminalFactory";
 import {
   GeneAuction,
   GeneProposal,
   GeneVote,
   GeneNFT,
   Aminal,
-  User
+  User,
 } from "../generated/schema";
 
 export function handleVotingCreated(event: VotingCreatedEvent): void {
-  // Load parent Aminals by index (need to get addresses from factory)
+  // Get factory address from event address (the gene auction contract knows the factory)
+  // For now, we'll use a known factory address - in production this should be configurable
+  let factoryAddress = Address.fromString(
+    "0x82583ad09b5f685f927e490f13a65e6627dd59b0",
+  );
+
+  // Load parent Aminals by index using factory contract
   let aminalOneIndex = event.params.aminalOne;
   let aminalTwoIndex = event.params.aminalTwo;
-  
+
+  // Import and use factory contract to resolve indices to addresses
+  let factoryContract = AminalFactoryContract.bind(factoryAddress);
+
+  let aminalOneAddressResult =
+    factoryContract.try_aminalsByIndex(aminalOneIndex);
+  let aminalTwoAddressResult =
+    factoryContract.try_aminalsByIndex(aminalTwoIndex);
+
+  if (aminalOneAddressResult.reverted || aminalTwoAddressResult.reverted) {
+    log.error(
+      "Failed to resolve Aminal addresses for auction {}: indices {} and {}",
+      [
+        event.params.auctionId.toString(),
+        aminalOneIndex.toString(),
+        aminalTwoIndex.toString(),
+      ],
+    );
+    return;
+  }
+
+  let aminalOneAddress = aminalOneAddressResult.value;
+  let aminalTwoAddress = aminalTwoAddressResult.value;
+
   // Create auction entity
   let auction = new GeneAuction(Bytes.fromI32(event.params.auctionId.toI32()));
   auction.auctionId = event.params.auctionId;
-  // Store parent indices for now - we'll resolve to addresses in settlement
-  auction.aminalOne = Bytes.fromI32(aminalOneIndex.toI32());
-  auction.aminalTwo = Bytes.fromI32(aminalTwoIndex.toI32());
+  // Reference Aminal entities by their addresses
+  auction.aminalOne = aminalOneAddress;
+  auction.aminalTwo = aminalTwoAddress;
   auction.totalLove = event.params.totalLove;
   auction.finished = false;
   auction.blockNumber = event.block.number;
   auction.blockTimestamp = event.block.timestamp;
   auction.transactionHash = event.transaction.hash;
   auction.save();
-  
-  log.info("Gene auction created: {} for Aminals {} and {} with love {}", [
-    event.params.auctionId.toString(),
-    aminalOneIndex.toString(),
-    aminalTwoIndex.toString(),
-    event.params.totalLove.toString()
-  ]);
+
+  log.info(
+    "Gene auction created: {} for Aminals {} ({}) and {} ({}) with love {}",
+    [
+      event.params.auctionId.toString(),
+      aminalOneIndex.toString(),
+      aminalOneAddress.toHexString(),
+      aminalTwoIndex.toString(),
+      aminalTwoAddress.toHexString(),
+      event.params.totalLove.toString(),
+    ],
+  );
 }
 
 export function handleVotingSettled(event: VotingSettledEvent): void {
   // Load auction entity
   let auction = GeneAuction.load(Bytes.fromI32(event.params.auctionId.toI32()));
   if (!auction) {
-    log.error("Auction not found for settlement: {}", [event.params.auctionId.toString()]);
+    log.error("Auction not found for settlement: {}", [
+      event.params.auctionId.toString(),
+    ]);
     return;
   }
-  
+
   // Update auction with settlement data
   auction.finished = true;
   auction.winningGeneIds = event.params.winningGeneIds;
@@ -60,10 +97,10 @@ export function handleVotingSettled(event: VotingSettledEvent): void {
   auction.endBlockTimestamp = event.block.timestamp;
   auction.endTransactionHash = event.transaction.hash;
   auction.save();
-  
+
   log.info("Gene auction settled: {} with child Aminal index {}", [
     event.params.auctionId.toString(),
-    event.params.childAminalId.toString()
+    event.params.childAminalId.toString(),
   ]);
 }
 
@@ -71,10 +108,12 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
   // Load auction entity
   let auction = GeneAuction.load(Bytes.fromI32(event.params.auctionId.toI32()));
   if (!auction) {
-    log.error("Auction not found for gene proposal: {}", [event.params.auctionId.toString()]);
+    log.error("Auction not found for gene proposal: {}", [
+      event.params.auctionId.toString(),
+    ]);
     return;
   }
-  
+
   // Create or load user
   let user = User.load(event.params.proposer);
   if (!user) {
@@ -82,7 +121,7 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
     user.address = event.params.proposer;
     user.save();
   }
-  
+
   // Create gene proposal entity (gene NFT might not exist yet in subgraph)
   let proposalId = Bytes.fromI32(event.params.auctionId.toI32())
     .concatI32(event.params.category)
@@ -90,7 +129,9 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
   let proposal = new GeneProposal(proposalId);
   proposal.auction = auction.id;
   // Store gene NFT reference (will be resolved later)
-  proposal.geneNFT = event.address.concat(Bytes.fromI32(event.params.geneId.toI32()));
+  proposal.geneNFT = event.address.concat(
+    Bytes.fromI32(event.params.geneId.toI32()),
+  );
   proposal.traitType = event.params.category;
   proposal.proposer = user.id;
   proposal.loveVotes = BigInt.fromI32(0);
@@ -100,12 +141,12 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
   proposal.blockTimestamp = event.block.timestamp;
   proposal.transactionHash = event.transaction.hash;
   proposal.save();
-  
+
   log.info("Gene proposed for auction {}: gene ID {} trait type {} by {}", [
     event.params.auctionId.toString(),
     event.params.geneId.toString(),
     event.params.category.toString(),
-    event.params.proposer.toHexString()
+    event.params.proposer.toHexString(),
   ]);
 }
 
@@ -113,10 +154,12 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
   // Load auction entity
   let auction = GeneAuction.load(Bytes.fromI32(event.params.auctionId.toI32()));
   if (!auction) {
-    log.error("Auction not found for gene vote: {}", [event.params.auctionId.toString()]);
+    log.error("Auction not found for gene vote: {}", [
+      event.params.auctionId.toString(),
+    ]);
     return;
   }
-  
+
   // Load gene proposal
   let proposalId = Bytes.fromI32(event.params.auctionId.toI32())
     .concatI32(event.params.category)
@@ -126,11 +169,11 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
     log.error("Gene proposal not found for vote: auction {} gene {} trait {}", [
       event.params.auctionId.toString(),
       event.params.geneId.toString(),
-      event.params.category.toString()
+      event.params.category.toString(),
     ]);
     return;
   }
-  
+
   // Create or load user
   let user = User.load(event.params.voter);
   if (!user) {
@@ -138,7 +181,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
     user.address = event.params.voter;
     user.save();
   }
-  
+
   // Create gene vote entity
   let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
   let vote = new GeneVote(voteId);
@@ -151,42 +194,50 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
   vote.blockTimestamp = event.block.timestamp;
   vote.transactionHash = event.transaction.hash;
   vote.save();
-  
+
   // Update proposal vote counts
   proposal.loveVotes = proposal.loveVotes.plus(event.params.voteWeight);
   proposal.save();
-  
-  log.info("Gene vote cast for auction {}: gene {} trait {} by {} with love {}", [
-    event.params.auctionId.toString(),
-    event.params.geneId.toString(),
-    event.params.category.toString(),
-    event.params.voter.toHexString(),
-    event.params.voteWeight.toString()
-  ]);
+
+  log.info(
+    "Gene vote cast for auction {}: gene {} trait {} by {} with love {}",
+    [
+      event.params.auctionId.toString(),
+      event.params.geneId.toString(),
+      event.params.category.toString(),
+      event.params.voter.toHexString(),
+      event.params.voteWeight.toString(),
+    ],
+  );
 }
 
 export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
   // Load auction entity
   let auction = GeneAuction.load(Bytes.fromI32(event.params.auctionId.toI32()));
   if (!auction) {
-    log.error("Auction not found for gene removal vote: {}", [event.params.auctionId.toString()]);
+    log.error("Auction not found for gene removal vote: {}", [
+      event.params.auctionId.toString(),
+    ]);
     return;
   }
-  
+
   // Load gene proposal
   let proposalId = Bytes.fromI32(event.params.auctionId.toI32())
     .concatI32(event.params.category)
     .concat(Bytes.fromI32(event.params.geneId.toI32()));
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
-    log.error("Gene proposal not found for removal vote: auction {} gene {} trait {}", [
-      event.params.auctionId.toString(),
-      event.params.geneId.toString(),
-      event.params.category.toString()
-    ]);
+    log.error(
+      "Gene proposal not found for removal vote: auction {} gene {} trait {}",
+      [
+        event.params.auctionId.toString(),
+        event.params.geneId.toString(),
+        event.params.category.toString(),
+      ],
+    );
     return;
   }
-  
+
   // Create or load user
   let user = User.load(event.params.voter);
   if (!user) {
@@ -194,7 +245,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
     user.address = event.params.voter;
     user.save();
   }
-  
+
   // Create gene vote entity for removal
   let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
   let vote = new GeneVote(voteId);
@@ -207,18 +258,21 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
   vote.blockTimestamp = event.block.timestamp;
   vote.transactionHash = event.transaction.hash;
   vote.save();
-  
+
   // Update proposal removal vote counts
   proposal.removeVotes = proposal.removeVotes.plus(event.params.voteWeight);
   proposal.save();
-  
-  log.info("Gene removal vote cast for auction {}: gene {} trait {} by {} with love {}", [
-    event.params.auctionId.toString(),
-    event.params.geneId.toString(),
-    event.params.category.toString(),
-    event.params.voter.toHexString(),
-    event.params.voteWeight.toString()
-  ]);
+
+  log.info(
+    "Gene removal vote cast for auction {}: gene {} trait {} by {} with love {}",
+    [
+      event.params.auctionId.toString(),
+      event.params.geneId.toString(),
+      event.params.category.toString(),
+      event.params.voter.toHexString(),
+      event.params.voteWeight.toString(),
+    ],
+  );
 }
 
 export function handleGeneRemoved(event: GeneRemovedEvent): void {
@@ -228,22 +282,25 @@ export function handleGeneRemoved(event: GeneRemovedEvent): void {
     .concat(Bytes.fromI32(event.params.geneId.toI32()));
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
-    log.error("Gene proposal not found for removal: auction {} gene {} trait {}", [
-      event.params.auctionId.toString(),
-      event.params.geneId.toString(),
-      event.params.category.toString()
-    ]);
+    log.error(
+      "Gene proposal not found for removal: auction {} gene {} trait {}",
+      [
+        event.params.auctionId.toString(),
+        event.params.geneId.toString(),
+        event.params.category.toString(),
+      ],
+    );
     return;
   }
-  
+
   // Mark proposal as removed
   proposal.removed = true;
   proposal.save();
-  
+
   log.info("Gene removed from auction {}: gene {} trait {}", [
     event.params.auctionId.toString(),
     event.params.geneId.toString(),
-    event.params.category.toString()
+    event.params.category.toString(),
   ]);
 }
 
@@ -251,10 +308,12 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
   // Load auction entity
   let auction = GeneAuction.load(Bytes.fromI32(event.params.auctionId.toI32()));
   if (!auction) {
-    log.error("Auction not found for bulk vote: {}", [event.params.auctionId.toString()]);
+    log.error("Auction not found for bulk vote: {}", [
+      event.params.auctionId.toString(),
+    ]);
     return;
   }
-  
+
   // Create or load user
   let user = User.load(event.params.voter);
   if (!user) {
@@ -262,13 +321,13 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
     user.address = event.params.voter;
     user.save();
   }
-  
+
   log.info("Bulk vote cast for auction {} by {} with total vote weight {}", [
     event.params.auctionId.toString(),
     event.params.voter.toHexString(),
-    event.params.totalVoteWeight.toString()
+    event.params.totalVoteWeight.toString(),
   ]);
-  
+
   // Note: Individual gene votes will be handled by handleGeneVoteCast events
   // This event is mainly for tracking bulk operations
 }
