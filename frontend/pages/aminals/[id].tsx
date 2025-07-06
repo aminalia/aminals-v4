@@ -1,13 +1,13 @@
-import BreedButton from '@/components/actions/breed-button';
 import CallSkillButton from '@/components/actions/call-skill-button';
 import FeedButton from '@/components/actions/feed-button';
 import { AminalVisualImage } from '@/components/aminal-card';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import Layout from '../_layout';
 import { useAccount } from 'wagmi';
+import Layout from '../_layout';
 
+import BreedButton from '@/components/actions/breed-button';
 import { useQuery } from '@tanstack/react-query';
 
 // Direct fetch for individual Aminal by contract address
@@ -45,6 +45,18 @@ const useAminalByAddress = (contractAddress: string, userAddress: string) => {
             miscId
             lovers(where: { user_: { address: $address } }) {
               love
+            }
+            breedableWith {
+              id
+              partner {
+                id
+                contractAddress
+                aminalIndex
+                energy
+                totalLove
+                tokenURI
+              }
+              consented
             }
             feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
               id
@@ -109,7 +121,10 @@ const AminalPage: NextPage = () => {
   const { id } = router.query; // This is now a contract address
   const contractAddress = id as string;
   const { address } = useAccount();
-  const { data: aminal, isLoading } = useAminalByAddress(contractAddress, address || '');
+  const { data: aminal, isLoading } = useAminalByAddress(
+    contractAddress,
+    address || ''
+  );
 
   if (isLoading) {
     return (
@@ -210,14 +225,6 @@ const AminalPage: NextPage = () => {
                 <FeedButton
                   contractAddress={aminal.contractAddress as `0x${string}`}
                 />
-                <BreedButton
-                  contractAddress={aminal.contractAddress as `0x${string}`}
-                />
-                <CallSkillButton
-                  aminalContractAddress={
-                    aminal.contractAddress as `0x${string}`
-                  }
-                />
               </div>
             </div>
           </div>
@@ -241,9 +248,16 @@ const AminalPage: NextPage = () => {
                       <div className="font-medium text-xs">
                         {!aminal.momAddress ||
                         aminal.momAddress ===
-                          '0x0000000000000000000000000000000000000000'
-                          ? 'Genesis'
-                          : `${aminal.momAddress.slice(0, 8)}...`}
+                          '0x0000000000000000000000000000000000000000' ? (
+                          <span className="text-gray-400">Genesis</span>
+                        ) : (
+                          <Link
+                            href={`/aminals/${aminal.momAddress}`}
+                            className="text-blue-600 hover:text-blue-800 transition-colors underline"
+                          >
+                            {aminal.momAddress.slice(0, 8)}...
+                          </Link>
+                        )}
                       </div>
                     </div>
                     <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
@@ -251,29 +265,80 @@ const AminalPage: NextPage = () => {
                       <div className="font-medium text-xs">
                         {!aminal.dadAddress ||
                         aminal.dadAddress ===
-                          '0x0000000000000000000000000000000000000000'
-                          ? 'Genesis'
-                          : `${aminal.dadAddress.slice(0, 8)}...`}
+                          '0x0000000000000000000000000000000000000000' ? (
+                          <span className="text-gray-400">Genesis</span>
+                        ) : (
+                          <Link
+                            href={`/aminals/${aminal.dadAddress}`}
+                            className="text-blue-600 hover:text-blue-800 transition-colors underline"
+                          >
+                            {aminal.dadAddress.slice(0, 8)}...
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Breeding */}
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <h3 className="font-medium flex items-center gap-2 px-3">
                     <span className="text-blue-600 text-lg">🧬</span>
                     Breeding
                   </h3>
-                  <div className="space-y-2">
-                    <p className="text-sm text-gray-600 px-3">
-                      Breeding Status:{' '}
-                      {aminal.breeding ? 'Available' : 'Not Available'}
+                  
+                  {/* Breeding Status */}
+                  <div className="px-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-sm text-gray-500">Status:</span>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        aminal.breeding 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        {aminal.breeding ? '✅ Available' : '❌ Not Available'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Breeding Partners */}
+                  {aminal.breedableWith && aminal.breedableWith.length > 0 && (
+                    <div className="px-3">
+                      <div className="text-sm text-gray-500 mb-2">Can breed with:</div>
+                      <div className="space-y-2">
+                        {aminal.breedableWith.map((consent: any) => (
+                          <div key={consent.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
+                            <Link
+                              href={`/aminals/${consent.partner.contractAddress}`}
+                              className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors"
+                            >
+                              <span className="text-sm font-medium">
+                                Aminal #{consent.partner.aminalIndex}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {consent.partner.contractAddress.slice(0, 8)}...
+                              </span>
+                            </Link>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              consent.consented 
+                                ? 'bg-green-100 text-green-700' 
+                                : 'bg-yellow-100 text-yellow-700'
+                            }`}>
+                              {consent.consented ? '✅ Consented' : '⏳ Pending'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="px-3">
+                    <p className="text-xs text-gray-500 mb-3">
+                      Breeding requires mutual consent and community voting via Gene Auctions.
                     </p>
-                    <p className="text-xs text-gray-500 px-3">
-                      In the new system, breeding requires consent from both
-                      parties and community voting via Gene Auctions.
-                    </p>
+                    <BreedButton
+                      contractAddress={aminal.contractAddress as `0x${string}`}
+                    />
                   </div>
                 </div>
               </div>
@@ -287,18 +352,19 @@ const AminalPage: NextPage = () => {
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { name: 'Back', emoji: '🎒', id: aminal.backId },
-                      { name: 'Arms', emoji: '💪', id: aminal.armId },
-                      { name: 'Tail', emoji: '🐾', id: aminal.tailId },
-                      { name: 'Ears', emoji: '👂', id: aminal.earsId },
-                      { name: 'Body', emoji: '👤', id: aminal.bodyId },
-                      { name: 'Face', emoji: '😊', id: aminal.faceId },
-                      { name: 'Mouth', emoji: '👄', id: aminal.mouthId },
-                      { name: 'Misc', emoji: '✨', id: aminal.miscId },
+                      { name: 'Back', emoji: '🎒', id: aminal.backId, traitType: 0 },
+                      { name: 'Arms', emoji: '💪', id: aminal.armId, traitType: 1 },
+                      { name: 'Tail', emoji: '🐾', id: aminal.tailId, traitType: 2 },
+                      { name: 'Ears', emoji: '👂', id: aminal.earsId, traitType: 3 },
+                      { name: 'Body', emoji: '👤', id: aminal.bodyId, traitType: 4 },
+                      { name: 'Face', emoji: '😊', id: aminal.faceId, traitType: 5 },
+                      { name: 'Mouth', emoji: '👄', id: aminal.mouthId, traitType: 6 },
+                      { name: 'Misc', emoji: '✨', id: aminal.miscId, traitType: 7 },
                     ].map((gene, i) => (
-                      <div
+                      <Link
                         key={i}
-                        className="p-3 rounded-lg border bg-blue-50 border-blue-100"
+                        href={`/traits?category=${gene.traitType}&search=${gene.id}`}
+                        className="p-3 rounded-lg border bg-blue-50 border-blue-100 hover:bg-blue-100 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <span className="text-lg">{gene.emoji}</span>
@@ -306,12 +372,12 @@ const AminalPage: NextPage = () => {
                             <div className="text-sm font-medium">
                               {gene.name}
                             </div>
-                            <div className="text-xs text-blue-700 font-medium">
-                              Gene #{gene.id}
+                            <div className="text-xs text-blue-700 font-medium hover:text-blue-800">
+                              Gene #{gene.id} →
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 </div>
