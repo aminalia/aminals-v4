@@ -38,7 +38,7 @@ contract StartFight is Script {
 
         AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
 
-        FightSkill fight = new FightSkill();
+        FightSkill fight = new FightSkill(address(factory));
 
         console.log("Fighting !");
     }

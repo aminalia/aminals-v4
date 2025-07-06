@@ -20,9 +20,9 @@ contract FightSkill is ISkill {
 
     event FightEnded(address indexed winner, address indexed looser);
 
-    // constructor(address _factory) {
-    //     factory = AminalFactory(_factory);
-    // }
+    constructor(address _factory) {
+        factory = AminalFactory(_factory);
+    }
 
     function useSkill(address sender, address aminalContract, bytes calldata data)
         public
