@@ -5,15 +5,14 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
   CardMedia,
   CardSection,
+  CardTitle,
 } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { GeneAuction } from '../../.graphclient';
-import EndAuctionButton from './actions/endauction-button';
 import ProposeButton from './actions/propose-button';
 
 import '../../styles/index.module.css';
@@ -33,7 +32,8 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-sm bg-white/95 backdrop-blur-sm shadow-lg px-4 py-1.5 rounded-full font-medium">
-              <span className="hidden md:inline">✨ </span>#{aminalOne.aminalIndex}
+              <span className="hidden md:inline">✨ </span>#
+              {aminalOne.aminalIndex}
             </div>
           </div>
           <div className="w-1/2 relative group/image aspect-square">
@@ -42,7 +42,8 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
             <div className="absolute bottom-3 left-1/2 -translate-x-1/2 text-sm bg-white/95 backdrop-blur-sm shadow-lg px-4 py-1.5 rounded-full font-medium">
-              <span className="hidden md:inline">✨ </span>#{aminalTwo.aminalIndex}
+              <span className="hidden md:inline">✨ </span>#
+              {aminalTwo.aminalIndex}
             </div>
           </div>
         </div>
@@ -53,8 +54,8 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
             <div className="flex items-center gap-3">
               <Link href={`/breeding/${auction.auctionId}`}>
                 <h2 className="text-xl font-bold hover:text-primary transition-colors">
-                  <span className="text-xl">💕</span> #{aminalOne.aminalIndex} × #
-                  {aminalTwo.aminalIndex}
+                  <span className="text-xl">💕</span> #{aminalOne.aminalIndex} ×
+                  #{aminalTwo.aminalIndex}
                 </h2>
               </Link>
             </div>
@@ -90,12 +91,6 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
               </span>
             </div>
           </div>
-
-          {!auction.finished && (
-            <div className="flex flex-col sm:flex-row gap-2 mt-4">
-              <EndAuctionButton auctionId={auction.auctionId} />
-            </div>
-          )}
         </div>
       </div>
     </Card>
@@ -128,9 +123,6 @@ export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
               <td>
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
                 <tr>Child ID: #{auction.childAminal?.aminalIndex}</tr>
-              </td>
-              <td>
-                <EndAuctionButton auctionId={auction.auctionId} />
               </td>
             </table>
             <table>
@@ -171,10 +163,6 @@ export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
                 <tr>Child ID: #{auction.childAminal?.aminalIndex}</tr>
               </td>
-              <td>
-                u
-                <EndAuctionButton auctionId={auction.auctionId} />
-              </td>
             </table>
             <table>
               <ProposeButton auctionId={auction.auctionId} />
@@ -190,7 +178,7 @@ export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
 function TokenUriImage({ tokenUri }: { tokenUri?: string | null }) {
   let image,
     error = null;
-  
+
   if (!tokenUri) {
     error = new Error('No token URI provided');
   } else {
