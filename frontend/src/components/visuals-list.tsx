@@ -19,13 +19,25 @@ const VisualsList = ({ auctionId }: VisualsListProps) => {
   }
 
   if (error) {
+    console.error('Visuals loading error:', error);
     return (
-      <div className="text-center py-8 text-red-500">Error loading visuals</div>
+      <div className="text-center py-8 text-red-500">
+        <div>Error loading visuals</div>
+        <div className="text-sm mt-2">{error.message}</div>
+      </div>
     );
   }
 
   if (!visuals || visuals.length === 0) {
-    return <div className="text-center py-8">No visuals proposed yet</div>;
+    return (
+      <div className="text-center py-8 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-gray-600">
+          <div className="text-lg mb-2">🎨</div>
+          <div className="font-medium">No community proposals yet</div>
+          <div className="text-sm mt-1">Be the first to propose a gene for this breeding!</div>
+        </div>
+      </div>
+    );
   }
 
   return (
