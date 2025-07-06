@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { parseEther } from 'viem';
 import { useAccount, useWriteContract } from 'wagmi';
 import { Button } from '../ui/button';
 const aminalFactoryAbi = require('../../../deployments/AminalFactory.json').abi;
 
-const AMINAL_FACTORY_ADDRESS = '0x9b89ac50cc02496d71c659dc765478e66017e521' as const;
+const AMINAL_FACTORY_ADDRESS =
+  '0x82583ad09b5f685f927e490f13a65e6627dd59b0' as const;
 
 export default function SpawnAminalButton() {
   const { isConnected, chain } = useAccount();
