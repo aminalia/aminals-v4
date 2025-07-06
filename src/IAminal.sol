@@ -8,7 +8,7 @@ interface IAminal is IAminalStructs {
     function feed() external payable returns (uint256);
     function squeak(uint256 amount) external payable;
     // TODO rename to something cuter
-    function setBreedableWith(address partner, bool status) external;
+    function setBreedableWith(address user, address partner, bool status) external;
     // TODO rename to get genes
     function getVisuals() external view returns (Visuals memory);
     function getLoveByUser(address user) external view returns (uint256);

@@ -6,9 +6,9 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import toast from 'react-hot-toast';
 const aminalAbi = require('../../../deployments/Aminal.json').abi;
-const geneAuctionAbi = require('../../../deployments/GeneAuction.json').abi;
+const aminalFactoryAbi = require('../../../deployments/AminalFactory.json').abi;
 
-const GENE_AUCTION_ADDRESS = '0x30484F8a6CEC8Fc02EFEA2320e3E3A5f710B7605' as const;
+const AMINAL_FACTORY_ADDRESS = '0x42fa457B1a742C5D7330F24916C60985448B8E8f' as const;
 
 export default function BreedButton({ contractAddress }: { contractAddress: `0x${string}` }) {
   const { isConnected, chain } = useAccount();
@@ -93,9 +93,9 @@ export default function BreedButton({ contractAddress }: { contractAddress: `0x$
     }
 
     writeContract({
-      abi: geneAuctionAbi,
-      address: GENE_AUCTION_ADDRESS,
-      functionName: 'createVoting',
+      abi: aminalFactoryAbi,
+      address: AMINAL_FACTORY_ADDRESS,
+      functionName: 'breedAminals',
       args: [contractAddress, partnerAddress as `0x${string}`],
       value: parseEther('0.001'),
     });

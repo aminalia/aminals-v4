@@ -237,19 +237,28 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Aminal1 love:", aminal1.getLoveByUser(alice));
         console.log("Aminal2 love:", aminal2.getLoveByUser(alice));
 
-        console.log("Step 1: Alice sets aminal2 as breedable with aminal1");
+        console.log("Step 1: Establish mutual breeding consent");
 
-        // Step 1: Alice sets aminal2 as breedable with aminal1 first
+        // Step 1: Set consent in both directions through factory breeding calls
+        console.log("Setting consent aminal1 -> aminal2");
         vm.prank(alice);
-        aminal2.setBreedableWith(aminal1Address, true);
+        uint256 result1 = factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
+        assertEq(result1, 0, "First call should set consent and return 0");
+        console.log("Aminal1 now breedable with Aminal2:", aminal1.isBreedableWith(aminal2Address));
+        
+        console.log("Setting consent aminal2 -> aminal1");
+        vm.prank(alice);
+        uint256 result2 = factory.breedAminals{value: 0.001 ether}(aminal2Address, aminal1Address);
+        assertEq(result2, 0, "Second call should set consent and return 0");
         console.log("Aminal2 now breedable with Aminal1:", aminal2.isBreedableWith(aminal1Address));
 
-        console.log("Step 2: Alice calls breedWith to create the auction");
-        console.log("This should succeed because aminal2.isBreedableWith(aminal1) = true");
+        console.log("Step 2: Alice calls breedAminals to create the auction");
+        console.log("This should succeed because mutual consent exists");
 
-        // Step 2: Now call breedWith - this should create an auction because:
-        // - aminal1 is NOT breedable with aminal2 (passes the require check)
-        // - aminal2 IS breedable with aminal1 (triggers auction creation)
+        // Step 2: Now call breedAminals - this should create an auction because:
+        // - aminal1 IS breedable with aminal2 (true)  
+        // - aminal2 IS breedable with aminal1 (true)
+        // - Both conditions = mutual consent = auction creation
         vm.prank(alice);
         auctionId = factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
 
@@ -480,11 +489,23 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.prank(alice);
         AminalContract(payable(testAminal2)).feed{value: 1 ether}();
 
-        // Initiate breeding using proper flow (set one direction, then breed)
+        // Initiate breeding using proper flow (set mutual consent through factory)
+        console.log("Setting up mutual consent through factory calls...");
+        
+        // First call to set consent
         vm.prank(alice);
-        AminalContract(payable(testAminal2)).setBreedableWith(testAminal1, true);
+        uint256 consentResult = factory.breedAminals{value: 0.001 ether}(testAminal1, testAminal2);
+        assertEq(consentResult, 0, "First call should set consent");
+        
+        // Second call to set mutual consent
+        vm.prank(alice);
+        uint256 consentResult2 = factory.breedAminals{value: 0.001 ether}(testAminal2, testAminal1);
+        assertEq(consentResult2, 0, "Second call should set mutual consent");
+        
+        // Third call to create auction with mutual consent
         vm.prank(alice);
         uint256 auctionId = factory.breedAminals{value: 0.001 ether}(testAminal1, testAminal2);
+        assertTrue(auctionId > 0, "Third call should create auction");
 
         // Don't propose any genes - let it use defaults
 

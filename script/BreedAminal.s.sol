@@ -35,21 +35,23 @@ contract BreedAminal is Script {
             console.log("~~~~~~~~~~~~~~~");
         }
 
-        // Set breeding permissions
-        aminal1.setBreedableWith(aminal2Address, true);
-        aminal2.setBreedableWith(aminal1Address, true);
-
-        console.log("Breeding permissions set");
+        // First call to breedAminals - this will set initial consent
+        console.log("Making first breedAminals call to set initial consent...");
+        uint256 totalBefore = factory.totalAminals();
+        factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
+        
+        console.log("Initial consent set");
         console.log("Aminal1 can breed with Aminal2:", aminal1.isBreedableWith(aminal2Address));
         console.log("Aminal2 can breed with Aminal1:", aminal2.isBreedableWith(aminal1Address));
 
-        // Initiate breeding through the factory
-        uint256 totalBefore = factory.totalAminals();
-        factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
+        // Second call to breedAminals - this will set mutual consent and create auction
+        console.log("Making second breedAminals call to establish mutual consent...");
+        uint256 auctionId = factory.breedAminals{value: 0.001 ether}(aminal2Address, aminal1Address);
 
-        console.log("Breeding initiated");
+        console.log("Breeding flow completed");
         console.log("Total Aminals before:", totalBefore);
         console.log("Total Aminals after:", factory.totalAminals());
+        console.log("Auction ID:", auctionId);
 
         vm.stopBroadcast();
     }

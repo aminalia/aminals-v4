@@ -204,14 +204,15 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     /**
      * @notice Set breeding consent with another Aminal 💕
      * @dev Requires sufficient love to establish breeding consent
+     * @param user The user address requesting breeding
      * @param partner The Aminal address to set breeding consent with
      * @param status True to allow breeding, false to revoke consent
      *
      * "Love is the foundation of creation - only through mutual affection
      *  can new digital life be brought into existence"
      */
-    function setBreedableWith(address partner, bool status) external {
-        require(lovePerUser[msg.sender] >= 10, "Not enough love");
+    function setBreedableWith(address user, address partner, bool status) public onlyFactory {
+        require(lovePerUser[user] >= 10, "Not enough love");
         breedableWith[partner] = status;
         emit BreedableSet(partner, status);
     }
@@ -223,6 +224,7 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     function disableBreedableWith(address partner) external onlyFactory {
         breedableWith[partner] = false;
     }
+
 
     // Note: Aminals are soulbound NFTs and cannot be transferred
     // The NFT remains owned by the factory for identification purposes

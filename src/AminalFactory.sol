@@ -258,9 +258,9 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
         require(aminal1.getLoveByUser(msg.sender) >= 10, "Not enough love");
-        require(!aminal1.isBreedableWith(aminalTwo), "Already breedable");
 
-        if (aminal2.isBreedableWith(aminalOne)) {
+        // Check if mutual consent exists - if so, create auction
+        if (aminal1.isBreedableWith(aminalTwo) && aminal2.isBreedableWith(aminalOne)) {
             require(aminal1.getEnergy() >= 10 && aminal2.getEnergy() >= 10, "Not enough energy");
 
             // Calculate total love for auction based on caller's love for both Aminals
@@ -271,7 +271,9 @@ contract AminalFactory is IAminalStructs, Initializable, Ownable {
 
             return auctionId;
         } else {
-            aminal1.setBreedableWith(aminalTwo, true);
+            // Set consent if not already set
+            require(!aminal1.isBreedableWith(aminalTwo), "Already breedable");
+            aminal1.setBreedableWith(msg.sender, aminalTwo, true);
             emit BreedAminal(aminalOne, aminalTwo, 0);
             return 0;
         }
