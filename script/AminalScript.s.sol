@@ -63,19 +63,12 @@ contract AminalScript is Script {
 
         // Set environment variables for contracts
         vm.setEnv("AMINAL_FACTORY_CONTRACT", vm.toString(address(_factory)));
-        vm.setEnv(
-            "AMINAL_PROPOSALS_CONTRACT",
-            vm.toString(address(_proposals))
-        );
+        vm.setEnv("AMINAL_PROPOSALS_CONTRACT", vm.toString(address(_proposals)));
         vm.setEnv("GENE_AUCTION_CONTRACT", vm.toString(address(_geneAuction)));
         vm.setEnv("GENES_NFT_CONTRACT", vm.toString(address(_genesNFT)));
 
         // Initialize the factory
-        _factory.initialize(
-            address(_geneAuction),
-            address(_proposals),
-            address(_genesNFT)
-        );
+        _factory.initialize(address(_geneAuction), address(_proposals), address(_genesNFT));
 
         // Setup dependencies
         _geneAuction.setup(address(_factory), address(_factory));
@@ -92,21 +85,15 @@ contract AminalScript is Script {
 
         // Second Aminal with 3 eyed monster theme (genes 8-15)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(
-            IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15)
-        );
+        initialVisuals.push(IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15));
 
         // Third Aminal with blue/moon theme (genes 16-23)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(
-            IAminalStructs.Visuals(16, 18, 17, 19, 20, 21, 22, 23)
-        );
+        initialVisuals.push(IAminalStructs.Visuals(16, 18, 17, 19, 20, 21, 22, 23));
 
         // Fourth Aminal with blue/moon theme (genes 25-31)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(
-            IAminalStructs.Visuals(24, 26, 25, 27, 28, 29, 30, 31)
-        );
+        initialVisuals.push(IAminalStructs.Visuals(24, 26, 25, 27, 28, 29, 30, 31));
 
         factoryInstance.spawnInitialAminals(initialVisuals);
     }
@@ -114,16 +101,13 @@ contract AminalScript is Script {
     function deploySkills(AminalFactory factoryInstance) public {
         // Deploy skills - no registration needed in new architecture
         Move2D move2DSkill = new Move2D(address(factoryInstance));
-        MoveTwice moveTwiceSkill = new MoveTwice(
-            address(factoryInstance),
-            address(move2DSkill)
-        );
+        MoveTwice moveTwiceSkill = new MoveTwice(address(factoryInstance), address(move2DSkill));
+        FightSkill fightSkiller = new FightSkill(address(factoryInstance));
 
         console.log("Move2D skill deployed to:", address(move2DSkill));
         console.log("MoveTwice skill deployed to:", address(moveTwiceSkill));
-        console.log(
-            "Skills are globally accessible - no registration required"
-        );
+        console.log("Fightinngi skill deployed to: ", address(fightSkiller));
+        console.log("Skills are globally accessible - no registration required");
     }
 
     function deployInitialGenes() public {
