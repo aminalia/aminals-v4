@@ -4,6 +4,7 @@ import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {MoveTwice} from "src/skills/MoveTwice.sol";
+import {FightSkill} from "src/skills/FightSkill.sol";
 
 /*
 Deploy and register a new skill with the AminalFactory
@@ -30,11 +31,15 @@ contract DeploySkill is Script {
     }
 }
 
-contract FightSkill is Script {
+contract StartFight is Script {
     function run() external {
         uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
         vm.startBroadcast(deployerPrivateKey);
 
         AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
+
+        FightSkill fight = new FightSkill();
+
+        console.log("Fighting !");
     }
 }
