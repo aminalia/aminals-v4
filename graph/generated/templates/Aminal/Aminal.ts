@@ -1287,12 +1287,16 @@ export class SetBreedableWithCall__Inputs {
     this._call = call;
   }
 
-  get partner(): Address {
+  get user(): Address {
     return this._call.inputValues[0].value.toAddress();
   }
 
+  get partner(): Address {
+    return this._call.inputValues[1].value.toAddress();
+  }
+
   get status(): boolean {
-    return this._call.inputValues[1].value.toBoolean();
+    return this._call.inputValues[2].value.toBoolean();
   }
 }
 

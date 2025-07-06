@@ -41,9 +41,9 @@ dataSources:
     name: AminalFactory
     network: sepolia
     source:
-      address: "0x42fa457b1a742c5d7330f24916c60985448b8e8f"
+      address: "0x9b89ac50cc02496d71c659dc765478e66017e521"
       abi: AminalFactory
-      startBlock: 8700538
+      startBlock: 8701485
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -68,9 +68,9 @@ dataSources:
     name: GeneAuction
     network: sepolia
     source:
-      address: "0x9c0ad5e98b4a3dcdaef1a2162172c9ac4391ac1f"
+      address: "0x99ca199a32502e94b1ca879edd264082ba4efaf3"
       abi: GeneAuction
-      startBlock: 8700538
+      startBlock: 8701485
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -108,9 +108,9 @@ dataSources:
     name: GenesNFT
     network: sepolia
     source:
-      address: "0xbddca7fae18cba8fc457a8b69338d404d443cb0d"
+      address: "0x5ad73ca80684d75b2f10bf0d8844de9420d728ad"
       abi: GenesNFT
-      startBlock: 8700538
+      startBlock: 8701485
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9

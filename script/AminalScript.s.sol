@@ -10,6 +10,7 @@ import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {MoveTwice} from "src/skills/MoveTwice.sol";
 import {InitialGenesMinter} from "script/InitialGenesMinter.sol";
+import {InitialGenesMinter2} from "script/InitialGenesMinter2.sol";
 
 /*
 // Mainnet
@@ -62,12 +63,19 @@ contract AminalScript is Script {
 
         // Set environment variables for contracts
         vm.setEnv("AMINAL_FACTORY_CONTRACT", vm.toString(address(_factory)));
-        vm.setEnv("AMINAL_PROPOSALS_CONTRACT", vm.toString(address(_proposals)));
+        vm.setEnv(
+            "AMINAL_PROPOSALS_CONTRACT",
+            vm.toString(address(_proposals))
+        );
         vm.setEnv("GENE_AUCTION_CONTRACT", vm.toString(address(_geneAuction)));
         vm.setEnv("GENES_NFT_CONTRACT", vm.toString(address(_genesNFT)));
 
         // Initialize the factory
-        _factory.initialize(address(_geneAuction), address(_proposals), address(_genesNFT));
+        _factory.initialize(
+            address(_geneAuction),
+            address(_proposals),
+            address(_genesNFT)
+        );
 
         // Setup dependencies
         _geneAuction.setup(address(_factory), address(_factory));
@@ -84,15 +92,21 @@ contract AminalScript is Script {
 
         // Second Aminal with 3 eyed monster theme (genes 8-15)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15));
+        initialVisuals.push(
+            IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15)
+        );
 
         // Third Aminal with blue/moon theme (genes 16-23)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(16, 18, 17, 19, 20, 21, 22, 23));
+        initialVisuals.push(
+            IAminalStructs.Visuals(16, 18, 17, 19, 20, 21, 22, 23)
+        );
 
         // Fourth Aminal with blue/moon theme (genes 25-31)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(24, 26, 25, 27, 28, 29, 30, 31));
+        initialVisuals.push(
+            IAminalStructs.Visuals(24, 26, 25, 27, 28, 29, 30, 31)
+        );
 
         factoryInstance.spawnInitialAminals(initialVisuals);
     }
@@ -100,19 +114,26 @@ contract AminalScript is Script {
     function deploySkills(AminalFactory factoryInstance) public {
         // Deploy skills - no registration needed in new architecture
         Move2D move2DSkill = new Move2D(address(factoryInstance));
-        MoveTwice moveTwiceSkill = new MoveTwice(address(factoryInstance), address(move2DSkill));
+        MoveTwice moveTwiceSkill = new MoveTwice(
+            address(factoryInstance),
+            address(move2DSkill)
+        );
 
         console.log("Move2D skill deployed to:", address(move2DSkill));
         console.log("MoveTwice skill deployed to:", address(moveTwiceSkill));
-        console.log("Skills are globally accessible - no registration required");
+        console.log(
+            "Skills are globally accessible - no registration required"
+        );
     }
 
     function deployInitialGenes() public {
         GenesNFT genesNFT = GenesNFT(vm.envAddress("GENES_NFT_CONTRACT"));
 
-        // Deploy temporary minter contract
+        // Deploy temporary minter contracts
         InitialGenesMinter minter = new InitialGenesMinter();
         console.log("InitialGenesMinter deployed to:", address(minter));
+        InitialGenesMinter2 minter2 = new InitialGenesMinter2();
+        console.log("InitialGenesMinter2 deployed to:", address(minter2));
 
         // Set minter as temporary gene factory
         genesNFT.setFactory(address(minter));
@@ -121,8 +142,13 @@ contract AminalScript is Script {
         // Mint initial genes
         minter.mintInitialGenesAnimated(genesNFT, msg.sender);
         console.log("Initial genes minted to:", msg.sender);
-        console.log("Gene IDs 0-7: Blue/Purple theme");
-        console.log("Gene IDs 8-15: Red/Orange theme");
+
+        // Set minter as temporary gene factory
+        genesNFT.setFactory(address(minter2));
+        console.log("Set minter2 as temporary gene factory");
+
+        minter2.mintInitialGenesAnimated(genesNFT, msg.sender);
+        console.log("Initial genes minted to:", msg.sender);
 
         // Reset gene factory to address(0) for security
         genesNFT.setFactory(address(0));
