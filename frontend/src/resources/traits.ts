@@ -205,13 +205,27 @@ export const useTrait = (id: string) => {
                   id
                   address
                 }
-                aminalsUsingGene {
+                proposalsUsingGene {
                   id
-                  aminalIndex
-                  contractAddress
-                  tokenURI
-                  energy
-                  totalLove
+                  auction {
+                    id
+                    aminalOne {
+                      id
+                      aminalIndex
+                      contractAddress
+                      tokenURI
+                      energy
+                      totalLove
+                    }
+                    aminalTwo {
+                      id
+                      aminalIndex
+                      contractAddress
+                      tokenURI
+                      energy
+                      totalLove
+                    }
+                  }
                 }
                 blockTimestamp
               }
