@@ -210,7 +210,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Use the skill
         bytes memory skillData = move2DSkill.getSkillData(10, 20);
         vm.prank(alice);
-        aminal.callSkill{value: 0.001 ether}(address(move2DSkill), skillData);
+        aminal.useSkill(address(move2DSkill), skillData);
 
         // Check that the skill was executed
         (uint256 x, uint256 y) = move2DSkill.getCoords(address(aminal));
@@ -234,7 +234,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Use the skill (should work since all skills are accessible)
         bytes memory skillData = anotherSkill.getSkillData(10, 20);
         vm.prank(alice);
-        aminal.callSkill{value: 0.001 ether}(address(anotherSkill), skillData);
+        aminal.useSkill(address(anotherSkill), skillData);
 
         // Check that the skill was executed
         (uint256 x, uint256 y) = anotherSkill.getCoords(address(aminal));

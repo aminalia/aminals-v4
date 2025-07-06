@@ -7,7 +7,6 @@ interface IAminalStructs {
         uint256 momId;
         uint256 dadId;
         uint256 totalLove;
-        // TODO: Check whether gas usage is the same for a uint128
         uint256 energy;
         bool breeding;
         bool exists;
@@ -39,7 +38,7 @@ interface IAminalStructs {
         MISC
     }
 
-    // TODO: Migrate to SkillsRegistry?
+    // TODO: Migrate to SkillsRegistry? Kill?
     struct Skills {
         string name;
         address contractAddress;
