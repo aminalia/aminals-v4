@@ -2,8 +2,8 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
-import {IAminal} from "src/IAminal.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminal} from "src/interfaces/IAminal.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";

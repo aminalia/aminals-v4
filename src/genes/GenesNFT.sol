@@ -5,7 +5,7 @@ import {ERC721} from "oz/token/ERC721/ERC721.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Base64} from "src/utils/Base64.sol";
 
 error OnlyAminalsNFT();

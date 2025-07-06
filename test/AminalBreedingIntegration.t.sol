@@ -10,7 +10,7 @@ import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
 /**
  * @title AminalBreedingIntegration

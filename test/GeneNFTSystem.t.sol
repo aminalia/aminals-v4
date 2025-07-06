@@ -7,9 +7,9 @@ import "forge-std/console.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
-import {IAminalFactory} from "src/IAminalFactory.sol";
+import {IAminalFactory} from "src/interfaces/IAminalFactory.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 
