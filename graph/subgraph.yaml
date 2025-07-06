@@ -41,9 +41,9 @@ dataSources:
     name: AminalFactory
     network: sepolia
     source:
-      address: "0x82583ad09b5f685f927e490f13a65e6627dd59b0"
+      address: "0x5dcda867599155a796ff92b39b07fc9f6febe208"
       abi: AminalFactory
-      startBlock: 8701485
+      startBlock: 8705720
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -68,9 +68,9 @@ dataSources:
     name: GeneAuction
     network: sepolia
     source:
-      address: "0xb32868a1ccd5b4541a1751251c3663127908e460"
+      address: "0x3730be2175f4e9cace752305b37891ec8cca5734"
       abi: GeneAuction
-      startBlock: 8701485
+      startBlock: 8705720
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -86,8 +86,8 @@ dataSources:
           file: ../out/GeneAuction.sol/GeneAuction.json
         - name: AminalFactory
           file: ../out/AminalFactory.sol/AminalFactory.json
-        - name: GenesNFT
-          file: ../out/GenesNFT.sol/GenesNFT.json
+        - name: Genes
+          file: ../out/Genes.sol/Genes.json
       eventHandlers:
         - event: VotingCreated(indexed uint256,indexed uint256,indexed uint256,uint256,uint256,uint256)
           handler: handleVotingCreated
@@ -95,22 +95,22 @@ dataSources:
           handler: handleVotingSettled
         - event: GeneProposed(indexed uint256,indexed uint8,indexed uint256,address)
           handler: handleGeneProposed
-        - event: GeneVoteCast(indexed uint256,indexed uint8,indexed uint256,address,uint256)
+        - event: GeneVoteCast(indexed uint256,indexed uint8,indexed uint256,address)
           handler: handleGeneVoteCast
         - event: GeneRemovalVote(indexed uint256,indexed uint8,indexed uint256,address,uint256)
           handler: handleGeneRemovalVote
         - event: GeneRemoved(indexed uint256,indexed uint8,indexed uint256)
           handler: handleGeneRemoved
-        - event: BulkVoteCast(indexed uint256,indexed address,uint256[8],uint256)
+        - event: BulkVoteCast(indexed uint256,indexed address,uint256[8])
           handler: handleBulkVoteCast
       file: ./src/gene-auction.ts
   - kind: ethereum
-    name: GenesNFT
+    name: Genes
     network: sepolia
     source:
-      address: "0x4a1c11060bde95b957b852c81b4453a35470912b"
-      abi: GenesNFT
-      startBlock: 8701485
+      address: "0x463ea6dcbc54c5ed7d704332562187a30276e9b7"
+      abi: Genes
+      startBlock: 8705720
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -119,19 +119,19 @@ dataSources:
         - GeneNFT
         - User
       abis:
-        - name: GenesNFT
-          file: ../out/GenesNFT.sol/GenesNFT.json
+        - name: Genes
+          file: ../out/Genes.sol/Genes.json
       eventHandlers:
         - event: Transfer(indexed address,indexed address,indexed uint256)
           handler: handleTransfer
       file: ./src/genes-nft.ts
-# GeneNFTFactory not deployed yet - uncomment when available
+# GeneRegistry not deployed yet - uncomment when available
 #  - kind: ethereum
-#    name: GeneNFTFactory
+#    name: GeneRegistry
 #    network: sepolia
 #    source:
 #      address: "0x41063967aa8337ab89a2f69ca8ff54ba13ce1f06"
-#      abi: GeneNFTFactory
+#      abi: GeneRegistry
 #      startBlock: 8700538
 #    mapping:
 #      kind: ethereum/events
@@ -141,10 +141,10 @@ dataSources:
 #        - GeneNFT
 #        - User
 #      abis:
-#        - name: GeneNFTFactory
-#          file: ../out/GeneNFTFactory.sol/GeneNFTFactory.json
-#        - name: GenesNFT
-#          file: ../out/GenesNFT.sol/GenesNFT.json
+#        - name: GeneRegistry
+#          file: ../out/GeneRegistry.sol/GeneRegistry.json
+#        - name: Genes
+#          file: ../out/Genes.sol/Genes.json
 #      eventHandlers:
 #        - event: GeneCreated(indexed uint256,indexed address,indexed uint8,string)
 #          handler: handleGeneCreated
