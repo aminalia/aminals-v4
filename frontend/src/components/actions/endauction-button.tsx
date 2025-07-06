@@ -16,7 +16,7 @@ export default function EndAuctionButton({ auctionId, className }: EndAuctionBut
     await writeContractAsync({
       abi: geneAuctionAbi,
       address: GENE_AUCTION_ADDRESS,
-      functionName: 'endAuction',
+      functionName: 'settleAuction',
       args: [BigInt(auctionId)] 
     });
   };

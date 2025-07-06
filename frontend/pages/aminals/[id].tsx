@@ -1,4 +1,5 @@
 import CallSkillButton from '@/components/actions/call-skill-button';
+import EndAuctionButton from '@/components/actions/endauction-button';
 import FeedButton from '@/components/actions/feed-button';
 import { AminalVisualImage } from '@/components/aminal-card';
 import type { NextPage } from 'next';
@@ -45,6 +46,14 @@ const useAminalByAddress = (contractAddress: string, userAddress: string) => {
             miscId
             lovers(where: { user_: { address: $address } }) {
               love
+            }
+            auctions(where: { finished: false }, first: 1, orderBy: blockTimestamp, orderDirection: desc) {
+              id
+              auctionId
+              finished
+              totalLove
+              blockTimestamp
+              endBlockTimestamp
             }
             breedableWith {
               id
@@ -225,6 +234,29 @@ const AminalPage: NextPage = () => {
                 <FeedButton
                   contractAddress={aminal.contractAddress as `0x${string}`}
                 />
+                
+                {/* End Auction Button - show if there's an active auction that has ended */}
+                {aminal.auctions && aminal.auctions.length > 0 && (() => {
+                  const auction = aminal.auctions[0]; // Get the most recent active auction
+                  const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+                  const auctionEndTime = auction.endBlockTimestamp ? Number(auction.endBlockTimestamp) : 0;
+                  const hasEnded = auctionEndTime > 0 && currentTime > auctionEndTime;
+                  
+                  if (hasEnded && !auction.finished) {
+                    return (
+                      <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="text-sm text-yellow-700 mb-2">
+                          🔔 Auction #{auction.auctionId.toString()} has ended and can be settled
+                        </div>
+                        <EndAuctionButton 
+                          auctionId={auction.auctionId.toString()}
+                          className="w-full"
+                        />
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
               </div>
             </div>
           </div>
