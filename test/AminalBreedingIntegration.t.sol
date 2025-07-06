@@ -245,7 +245,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 result1 = factory.breedAminals{value: 0.001 ether}(aminal1Address, aminal2Address);
         assertEq(result1, 0, "First call should set consent and return 0");
         console.log("Aminal1 now breedable with Aminal2:", aminal1.isBreedableWith(aminal2Address));
-        
+
         console.log("Setting consent aminal2 -> aminal1");
         vm.prank(alice);
         uint256 result2 = factory.breedAminals{value: 0.001 ether}(aminal2Address, aminal1Address);
@@ -256,7 +256,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("This should succeed because mutual consent exists");
 
         // Step 2: Now call breedAminals - this should create an auction because:
-        // - aminal1 IS breedable with aminal2 (true)  
+        // - aminal1 IS breedable with aminal2 (true)
         // - aminal2 IS breedable with aminal1 (true)
         // - Both conditions = mutual consent = auction creation
         vm.prank(alice);
@@ -337,39 +337,39 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Alice's voting power:", aliceVotingPower);
 
         // Vote on genes using love-based voting power
-        // Each voter uses their love/voting power to vote on genes
+        // Each voter uses their full voting power automatically - no need to specify amounts
 
-        // Alice votes on background gene with 10% of her voting power
+        // Alice votes on background gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
         // Alice votes on arms gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.ARM, armsGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.ARM, armsGeneId);
 
         // Alice votes on tail gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.TAIL, tailGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.TAIL, tailGeneId);
 
         // Alice votes on ears gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.EARS, earsGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.EARS, earsGeneId);
 
         // Alice votes on body gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BODY, bodyGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BODY, bodyGeneId);
 
         // Alice votes on face gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.FACE, faceGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.FACE, faceGeneId);
 
         // Alice votes on mouth gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.MOUTH, mouthGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.MOUTH, mouthGeneId);
 
         // Alice votes on misc gene
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.MISC, miscGeneId, aliceVotingPower / 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.MISC, miscGeneId);
 
         // Verify votes were placed
         for (uint8 i = 0; i < 8; i++) {
@@ -491,17 +491,17 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Initiate breeding using proper flow (set mutual consent through factory)
         console.log("Setting up mutual consent through factory calls...");
-        
+
         // First call to set consent
         vm.prank(alice);
         uint256 consentResult = factory.breedAminals{value: 0.001 ether}(testAminal1, testAminal2);
         assertEq(consentResult, 0, "First call should set consent");
-        
+
         // Second call to set mutual consent
         vm.prank(alice);
         uint256 consentResult2 = factory.breedAminals{value: 0.001 ether}(testAminal2, testAminal1);
         assertEq(consentResult2, 0, "Second call should set mutual consent");
-        
+
         // Third call to create auction with mutual consent
         vm.prank(alice);
         uint256 auctionId = factory.breedAminals{value: 0.001 ether}(testAminal1, testAminal2);
@@ -540,7 +540,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Multiple people vote on the same gene (alice has voting power from feeding the parents)
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 4);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
         // Verify votes were cast
         GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, VisualsCat.BACK);
@@ -567,19 +567,19 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Alice votes with some of her power
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 4);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
         // Check initial vote
         uint256 initialVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
-        assertEq(initialVotes, aliceVotingPower / 4, "Initial vote should be recorded");
+        assertEq(initialVotes, aliceVotingPower, "Initial vote should be recorded");
 
         // Alice updates her vote
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId, aliceVotingPower / 2);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
 
         // Check updated vote
         uint256 updatedVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
-        assertEq(updatedVotes, aliceVotingPower / 2, "Vote should be updated");
+        assertEq(updatedVotes, aliceVotingPower, "Vote should be updated");
 
         console.log("Vote updating system working correctly");
     }

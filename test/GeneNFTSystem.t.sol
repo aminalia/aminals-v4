@@ -201,7 +201,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // For this test, we'll check that the voting function exists and errors appropriately
         vm.prank(alice);
         vm.expectRevert(); // Should revert due to insufficient love
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId, 100);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId);
 
         // Verify vote count (should be 0 since the vote was rejected)
         uint256 totalVotes = geneAuction.getGeneVotes(auctionId, VisualsCat.BACK, geneId);
@@ -235,7 +235,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // Test that voting without love fails (this is expected behavior)
         vm.prank(alice);
         vm.expectRevert(); // Should revert due to insufficient love
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId, 10);
+        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId);
 
         // Verify that no votes were cast due to insufficient love
         uint256 totalVotes = geneAuction.getGeneVotes(auctionId, VisualsCat.BACK, geneId);
