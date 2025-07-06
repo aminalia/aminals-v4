@@ -1,10 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
 import {
-  GeneNFTByIdDocument,
-  GeneNFTByIdQuery,
-  GeneNFTsListDocument,
-  GeneNFTsListQuery,
+  GeneNftByIdDocument,
+  GeneNftByIdQuery,
+  GeneNftsListDocument,
+  GeneNftsListQuery,
   GenesByTraitTypeDocument,
   GenesByTraitTypeQuery,
   execute,
@@ -25,7 +25,7 @@ export type CategoryFilter =
   | '6'
   | '7';
 
-type GeneNFT = GeneNFTsListQuery['geneNFTs'][number];
+type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
 
 export const useTraits = (
   filter: TraitFilter = 'all',
@@ -34,7 +34,7 @@ export const useTraits = (
 ) => {
   const { address } = useAccount();
 
-  return useQuery<GeneNFTsListQuery['geneNFTs']>({
+  return useQuery<GeneNftsListQuery['geneNFTs']>({
     queryKey: [BASE_KEY, filter, sort, category, address],
     queryFn: async () => {
       console.log('Fetching traits with params:', { filter, sort, category, address });
@@ -144,13 +144,13 @@ export const useTraits = (
             // Calculate unique Aminals count from proposals
             const aCount = a.proposalsUsingGene ? 
               new Set([
-                ...a.proposalsUsingGene.map(p => p.auction.aminalOne.id),
-                ...a.proposalsUsingGene.map(p => p.auction.aminalTwo.id)
+                ...a.proposalsUsingGene.map((p: any) => p.auction.aminalOne.id),
+                ...a.proposalsUsingGene.map((p: any) => p.auction.aminalTwo.id)
               ]).size : 0;
             const bCount = b.proposalsUsingGene ? 
               new Set([
-                ...b.proposalsUsingGene.map(p => p.auction.aminalOne.id),
-                ...b.proposalsUsingGene.map(p => p.auction.aminalTwo.id)
+                ...b.proposalsUsingGene.map((p: any) => p.auction.aminalOne.id),
+                ...b.proposalsUsingGene.map((p: any) => p.auction.aminalTwo.id)
               ]).size : 0;
             return bCount - aCount;
           }
@@ -176,7 +176,7 @@ export const useTraits = (
 };
 
 export const useTrait = (id: string) => {
-  return useQuery<GeneNFTByIdQuery['geneNFT']>({
+  return useQuery<GeneNftByIdQuery['geneNFT']>({
     queryKey: [BASE_KEY, id],
     queryFn: async () => {
       console.log('Fetching gene NFT with ID:', id);
@@ -253,5 +253,66 @@ export const useTrait = (id: string) => {
       return data.data?.geneNFT;
     },
     enabled: !!id,
+  });
+};
+
+export const useTraitsByIds = (ids: string[]) => {
+  return useQuery<GeneNftByIdQuery['geneNFT'][]>({
+    queryKey: [BASE_KEY, 'multiple', ids.sort()],
+    queryFn: async () => {
+      if (ids.length === 0) return [];
+      
+      console.log('Fetching gene NFTs with IDs:', ids);
+
+      // Direct HTTP fetch as workaround for GraphQL client bug
+      const response = await fetch('https://api.studio.thegraph.com/query/57078/aminals-3/version/latest', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          query: `
+            query GeneNFTsById($ids: [String!]!) {
+              geneNFTs(where: { tokenId_in: $ids }) {
+                id
+                tokenId
+                traitType
+                name
+                description
+                svg
+                owner {
+                  id
+                  address
+                }
+                creator {
+                  id
+                  address
+                }
+                blockTimestamp
+              }
+            }
+          `,
+          variables: {
+            ids: ids
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      console.log('GraphQL Response for multiple traits:', data);
+
+      if (data.errors) {
+        console.error('GraphQL Errors:', data.errors);
+        throw new Error(data.errors[0].message);
+      }
+
+      return data.data?.geneNFTs || [];
+    },
+    enabled: ids.length > 0,
   });
 };

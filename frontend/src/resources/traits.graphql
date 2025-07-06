@@ -1,4 +1,4 @@
-query GeneNFTsList {
+query GeneNftsList {
   geneNFTs(orderBy: tokenId, orderDirection: asc) {
     id
     tokenId
@@ -40,7 +40,7 @@ query GeneNFTsList {
   }
 }
 
-query GeneNFTById($id: ID!) {
+query GeneNftById($id: ID!) {
   geneNFT(id: $id) {
     id
     tokenId

@@ -25,7 +25,7 @@ export default function BulkVoteButton({
   mouthId: any;
   miscId: any;
 }) {
-  console.log([backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]);
+  const traitIds = [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId];
 
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
@@ -39,7 +39,7 @@ export default function BulkVoteButton({
         functionName: 'bulkVote',
         args: [
           auctionId,
-          [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId],
+          traitIds,
         ],
       });
     }

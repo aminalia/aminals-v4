@@ -12,12 +12,28 @@ query GeneAuctionsList($first: Int = 100, $skip: Int = 0) {
       contractAddress
       aminalIndex
       tokenURI
+      backId
+      armId
+      tailId
+      earsId
+      bodyId
+      faceId
+      mouthId
+      miscId
     }
     aminalTwo {
       id
       contractAddress
       aminalIndex
       tokenURI
+      backId
+      armId
+      tailId
+      earsId
+      bodyId
+      faceId
+      mouthId
+      miscId
     }
     childAminal {
       id
@@ -39,12 +55,28 @@ query GeneAuction($id: ID!) {
       contractAddress
       aminalIndex
       tokenURI
+      backId
+      armId
+      tailId
+      earsId
+      bodyId
+      faceId
+      mouthId
+      miscId
     }
     aminalTwo {
       id
       contractAddress
       aminalIndex
       tokenURI
+      backId
+      armId
+      tailId
+      earsId
+      bodyId
+      faceId
+      mouthId
+      miscId
     }
     childAminal {
       id
@@ -135,6 +167,33 @@ query GeneVotesList($auctionId: String!, $traitType: Int!) {
       geneNFT {
         id
         tokenId
+      }
+      traitType
+    }
+    voter {
+      id
+      address
+    }
+    isRemoveVote
+    loveAmount
+    blockTimestamp
+  }
+}
+
+query GeneVotesByAuction($auctionId: String!) {
+  geneVotes(
+    where: { auction: $auctionId }
+    orderBy: loveAmount
+    orderDirection: desc
+  ) {
+    id
+    proposal {
+      id
+      geneNFT {
+        id
+        tokenId
+        name
+        svg
       }
       traitType
     }
