@@ -32,11 +32,12 @@ contract CallSkill is Script {
         address skillAddress = address(vm.envAddress("MOVE2D_SKILL_CONTRACT"));
         console.log("Using skill at address:", skillAddress);
 
-        // Prepare skill data (x, y coordinates for Move2D)
-        bytes memory skillData = abi.encode(int256(5), int256(10));
+        // Prepare skill data using the new Move2D format
+        Move2D move2DSkill = Move2D(skillAddress);
+        bytes memory skillData = move2DSkill.getSkillData(5, 10);
 
-        // Call the skill
-        aminal.callSkill(skillAddress, skillData);
+        // Call the skill using the new method
+        aminal.useSkill(skillAddress, skillData);
 
         console.log("Skill called successfully");
         console.log("Aminal energy after:", aminal.getEnergy());

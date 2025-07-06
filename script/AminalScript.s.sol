@@ -8,7 +8,7 @@ import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {Move2D} from "src/skills/Move2D.sol";
-import {MoveTwice} from "src/skills/MoveTwice.sol";
+import {FightSkill} from "src/skills/FightSkill.sol";
 import {InitialGenesMinter} from "script/InitialGenesMinter.sol";
 import {InitialGenesMinter2} from "script/InitialGenesMinter2.sol";
 
@@ -81,19 +81,19 @@ contract AminalScript is Script {
     function spawnInitialAminals(AminalFactory factoryInstance) public {
         // First Aminal with cute orangey theme (genes 0-7)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(0, 2, 1, 3, 4, 5, 6, 7));
+        initialVisuals.push(IAminalStructs.Visuals(0, 1, 2, 3, 4, 5, 6, 7));
 
         // Second Aminal with 3 eyed monster theme (genes 8-15)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(8, 10, 9, 11, 12, 13, 14, 15));
+        initialVisuals.push(IAminalStructs.Visuals(8, 9, 10, 11, 12, 13, 14, 15));
 
         // Third Aminal with blue/moon theme (genes 16-23)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(16, 18, 17, 19, 20, 21, 22, 23));
+        initialVisuals.push(IAminalStructs.Visuals(16, 17, 18, 19, 20, 21, 22, 23));
 
         // Fourth Aminal with blue/moon theme (genes 25-31)
         // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(24, 26, 25, 27, 28, 29, 30, 31));
+        initialVisuals.push(IAminalStructs.Visuals(24, 25, 26, 27, 28, 29, 30, 31));
 
         factoryInstance.spawnInitialAminals(initialVisuals);
     }
@@ -101,12 +101,10 @@ contract AminalScript is Script {
     function deploySkills(AminalFactory factoryInstance) public {
         // Deploy skills - no registration needed in new architecture
         Move2D move2DSkill = new Move2D(address(factoryInstance));
-        MoveTwice moveTwiceSkill = new MoveTwice(address(factoryInstance), address(move2DSkill));
         FightSkill fightSkiller = new FightSkill(address(factoryInstance));
 
         console.log("Move2D skill deployed to:", address(move2DSkill));
-        console.log("MoveTwice skill deployed to:", address(moveTwiceSkill));
-        console.log("Fightinngi skill deployed to: ", address(fightSkiller));
+        console.log("FightSkill deployed to:", address(fightSkiller));
         console.log("Skills are globally accessible - no registration required");
     }
 

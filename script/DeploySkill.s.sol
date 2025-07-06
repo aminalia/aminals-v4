@@ -3,7 +3,6 @@ pragma solidity ^0.8.20;
 import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Move2D} from "src/skills/Move2D.sol";
-import {MoveTwice} from "src/skills/MoveTwice.sol";
 import {FightSkill} from "src/skills/FightSkill.sol";
 
 /*

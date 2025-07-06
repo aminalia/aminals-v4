@@ -4,9 +4,10 @@ pragma solidity ^0.8.20;
 import "forge-std/console.sol";
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
-import {ISkill} from "src/interfaces/ISkills.sol";
+import {ISkill} from "src/interfaces/ISkill.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {ERC721} from "oz/token/ERC721/ERC721.sol";
+import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
 import {GeneBasedDescriptor} from "src/genes/GeneBasedDescriptor.sol";
 import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
 
@@ -49,7 +50,7 @@ import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
  * @author The Aminals Collective
  * @custom:security-contact security@aminals.art
  */
-contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
+contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneBasedDescriptor {
     /// @notice The factory that birthed this Aminal into existence
     AminalFactory public immutable factory;
 
@@ -98,6 +99,15 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     error NotEnoughLove();
     error NotEnoughEnergy();
     error NotRegisteredSkill();
+    error SkillNotSupported();
+    error InsufficientEnergy();
+    error InsufficientLove();
+    error SkillCallFailed();
+
+    // Additional events for skill usage
+    event EnergyLost(address indexed user, uint256 amount, uint256 remainingEnergy);
+    event LoveConsumed(address indexed user, uint256 amount, uint256 remainingLove);
+    event SkillUsed(address indexed user, uint256 cost, address indexed target, bytes4 indexed selector);
 
     modifier onlyFactory() {
         require(msg.sender == address(factory), "Only factory can call this");
@@ -183,22 +193,59 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     }
 
     /**
-     * @notice Execute a skill through this Aminal's abilities 🛠️
-     * @dev Calls external skill contracts that can modify this Aminal's state
-     * @param skillAddress The address of the skill contract to execute
-     * @param data Encoded parameters for the skill execution
-     *
-     * "Skills are the magic that transforms static digital beings
-     *  into dynamic entities capable of growth and evolution"
+     * @notice Use a skill by calling an external function and consuming energy/love
+     * @dev Only works with contracts implementing the ISkill interface
+     * @dev Consumes resources equally based on the cost:
+     *      - Energy: Deducted from global pool (per Aminal, shared by all users)
+     *      - Love: Deducted from caller's personal love balance (per user per Aminal)
+     * @dev Protected against reentrancy attacks with nonReentrant modifier
+     * @dev SECURITY: Always calls with 0 ETH value to prevent draining funds through skills
+     * @param target The contract address to call
+     * @param data The raw ABI-encoded calldata for the skill
      */
-    function callSkill(address skillAddress, bytes calldata data) external payable {
-        // Skills are globally accessible - no registration check needed
+    function useSkill(address target, bytes calldata data) external nonReentrant {
+        // Check if the target implements ISkill interface
+        try ISkill(target).supportsInterface(type(ISkill).interfaceId) returns (bool supported) {
+            if (!supported) revert SkillNotSupported();
+        } catch {
+            revert SkillNotSupported();
+        }
 
-        uint256 squeakCost = ISkill(skillAddress).useSkill{value: msg.value}(msg.sender, address(this), data);
+        // Extract function selector for event
+        bytes4 selector = bytes4(data);
 
-        if (squeakCost > 0) if (energy >= squeakCost) energy -= squeakCost;
+        // Get the cost from the skill contract
+        uint256 energyCost;
+        try ISkill(target).skillCost(data) returns (uint256 cost) {
+            energyCost = cost;
+        } catch {
+            // If cost query fails, default to 1
+            energyCost = 1;
+        }
 
-        emit SkillCall(skillAddress, data, squeakCost);
+        // Cap at a reasonable maximum to prevent accidental huge costs
+        if (energyCost > 10_000) energyCost = energy > 10_000 ? 10_000 : energy;
+
+        // Ensure minimum cost of 1
+        if (energyCost == 0) energyCost = 1;
+
+        // Check resources before execution
+        if (energy < energyCost) revert InsufficientEnergy();
+        if (lovePerUser[msg.sender] < energyCost) revert InsufficientLove();
+
+        // Execute the skill first (before consuming resources)
+        // CRITICAL: Use call with 0 value to prevent spending ETH
+        (bool success,) = target.call{value: 0}(data);
+        if (!success) revert SkillCallFailed();
+
+        // Only consume resources after successful execution
+        energy -= energyCost;
+        lovePerUser[msg.sender] -= energyCost;
+        totalLove -= energyCost;
+
+        emit EnergyLost(msg.sender, energyCost, energy);
+        emit LoveConsumed(msg.sender, energyCost, lovePerUser[msg.sender]);
+        emit SkillUsed(msg.sender, energyCost, target, selector);
     }
 
     /**
@@ -224,7 +271,6 @@ contract Aminal is IAminalStructs, ERC721, GeneBasedDescriptor {
     function disableBreedableWith(address partner) external onlyFactory {
         breedableWith[partner] = false;
     }
-
 
     // Note: Aminals are soulbound NFTs and cannot be transferred
     // The NFT remains owned by the factory for identification purposes

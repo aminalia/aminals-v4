@@ -3,11 +3,12 @@ pragma solidity ^0.8.20;
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
+// TODO add documentation
 interface IAminal is IAminalStructs {
-    function callSkill(address skillAddress, bytes calldata data) external payable;
+    function useSkill(address target, bytes calldata data) external;
     function feed() external payable returns (uint256);
     function squeak(uint256 amount) external payable;
-    // TODO rename to something cuter
+    // TODO rename to something cuter, also do we need this?
     function setBreedableWith(address user, address partner, bool status) external;
     // TODO rename to get genes
     function getVisuals() external view returns (Visuals memory);
