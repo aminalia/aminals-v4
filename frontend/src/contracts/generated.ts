@@ -71,19 +71,9 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [
-      { name: 'skillAddress', internalType: 'address', type: 'address' },
-      { name: 'data', internalType: 'bytes', type: 'bytes' },
-    ],
-    name: 'callSkill',
-    outputs: [],
-    stateMutability: 'payable',
-  },
-  {
-    type: 'function',
-    inputs: [
       {
         name: 'params',
-        internalType: 'struct GeneBasedDescriptor.TokenURIParams',
+        internalType: 'struct GeneRenderer.TokenURIParams',
         type: 'tuple',
         components: [
           { name: 'name', internalType: 'string', type: 'string' },
@@ -121,13 +111,6 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'energy',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
     name: 'factory',
     outputs: [
       { name: '', internalType: 'contract AminalFactory', type: 'address' },
@@ -146,7 +129,7 @@ export const aminalAbi = [
     inputs: [],
     name: 'geneFactory',
     outputs: [
-      { name: '', internalType: 'contract GeneNFTFactory', type: 'address' },
+      { name: '', internalType: 'contract GeneRegistry', type: 'address' },
     ],
     stateMutability: 'view',
   },
@@ -160,8 +143,8 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'genesNFT',
-    outputs: [{ name: '', internalType: 'contract GenesNFT', type: 'address' }],
+    name: 'genes',
+    outputs: [{ name: '', internalType: 'contract Genes', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -355,6 +338,7 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [
+      { name: 'user', internalType: 'address', type: 'address' },
       { name: 'partner', internalType: 'address', type: 'address' },
       { name: 'status', internalType: 'bool', type: 'bool' },
     ],
@@ -419,13 +403,6 @@ export const aminalAbi = [
   },
   {
     type: 'function',
-    inputs: [],
-    name: 'totalLove',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
     inputs: [
       { name: 'amount', internalType: 'uint256', type: 'uint256' },
       { name: 'recipient', internalType: 'address', type: 'address' },
@@ -444,6 +421,16 @@ export const aminalAbi = [
     name: 'transferFrom',
     outputs: [],
     stateMutability: 'pure',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'target', internalType: 'address', type: 'address' },
+      { name: 'data', internalType: 'bytes', type: 'bytes' },
+    ],
+    name: 'useSkill',
+    outputs: [],
+    stateMutability: 'nonpayable',
   },
   {
     type: 'function',
@@ -524,6 +511,26 @@ export const aminalAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
+      { name: 'user', internalType: 'address', type: 'address', indexed: true },
+      {
+        name: 'amount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      {
+        name: 'remainingEnergy',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'EnergyLost',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
       {
         name: 'recipient',
         internalType: 'address',
@@ -556,7 +563,7 @@ export const aminalAbi = [
         indexed: false,
       },
       {
-        name: 'amount',
+        name: 'loveGained',
         internalType: 'uint256',
         type: 'uint256',
         indexed: false,
@@ -574,6 +581,12 @@ export const aminalAbi = [
         indexed: false,
       },
       {
+        name: 'energyGained',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      {
         name: 'energy',
         internalType: 'uint256',
         type: 'uint256',
@@ -581,6 +594,26 @@ export const aminalAbi = [
       },
     ],
     name: 'FeedAminal',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      { name: 'user', internalType: 'address', type: 'address', indexed: true },
+      {
+        name: 'amount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      {
+        name: 'remainingLove',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'LoveConsumed',
   },
   {
     type: 'event',
@@ -601,6 +634,32 @@ export const aminalAbi = [
       },
     ],
     name: 'SkillCall',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      { name: 'user', internalType: 'address', type: 'address', indexed: true },
+      {
+        name: 'cost',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      {
+        name: 'target',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'selector',
+        internalType: 'bytes4',
+        type: 'bytes4',
+        indexed: true,
+      },
+    ],
+    name: 'SkillUsed',
   },
   {
     type: 'event',
@@ -654,10 +713,14 @@ export const aminalAbi = [
     ],
     name: 'Transfer',
   },
+  { type: 'error', inputs: [], name: 'InsufficientEnergy' },
+  { type: 'error', inputs: [], name: 'InsufficientLove' },
   { type: 'error', inputs: [], name: 'NotEnoughEnergy' },
   { type: 'error', inputs: [], name: 'NotEnoughEther' },
   { type: 'error', inputs: [], name: 'NotEnoughLove' },
   { type: 'error', inputs: [], name: 'NotRegisteredSkill' },
+  { type: 'error', inputs: [], name: 'SkillCallFailed' },
+  { type: 'error', inputs: [], name: 'SkillNotSupported' },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -695,8 +758,8 @@ export const aminalFactoryAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'genesNFT',
-    outputs: [{ name: '', internalType: 'contract GenesNFT', type: 'address' }],
+    name: 'genes',
+    outputs: [{ name: '', internalType: 'contract Genes', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -743,7 +806,7 @@ export const aminalFactoryAbi = [
     inputs: [
       { name: '_geneAuction', internalType: 'address', type: 'address' },
       { name: '_aminalProposals', internalType: 'address', type: 'address' },
-      { name: '_genesNFT', internalType: 'address', type: 'address' },
+      { name: '_Genes', internalType: 'address', type: 'address' },
     ],
     name: 'initialize',
     outputs: [],
@@ -971,7 +1034,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0x82583ad09b5F685F927E490f13a65e6627DD59b0' as const
+  '0x5dcDA867599155a796Ff92b39B07fc9f6fEBe208' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -986,7 +1049,7 @@ export const geneAuctionAbi = [
   {
     type: 'constructor',
     inputs: [
-      { name: '_genesNFT', internalType: 'address', type: 'address' },
+      { name: '_Genes', internalType: 'address', type: 'address' },
       { name: '_geneFactory', internalType: 'address', type: 'address' },
     ],
     stateMutability: 'nonpayable',
@@ -1048,7 +1111,6 @@ export const geneAuctionAbi = [
     inputs: [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
       { name: 'geneIds', internalType: 'uint256[8]', type: 'uint256[8]' },
-      { name: 'voteWeights', internalType: 'uint256[8]', type: 'uint256[8]' },
     ],
     name: 'bulkVoteOnGenes',
     outputs: [],
@@ -1077,15 +1139,15 @@ export const geneAuctionAbi = [
     inputs: [],
     name: 'geneFactory',
     outputs: [
-      { name: '', internalType: 'contract GeneNFTFactory', type: 'address' },
+      { name: '', internalType: 'contract GeneRegistry', type: 'address' },
     ],
     stateMutability: 'view',
   },
   {
     type: 'function',
     inputs: [],
-    name: 'genesNFT',
-    outputs: [{ name: '', internalType: 'contract GenesNFT', type: 'address' }],
+    name: 'genes',
+    outputs: [{ name: '', internalType: 'contract Genes', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -1203,6 +1265,21 @@ export const geneAuctionAbi = [
     type: 'function',
     inputs: [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
+      {
+        name: 'category',
+        internalType: 'enum IAminalStructs.VisualsCat',
+        type: 'uint8',
+      },
+      { name: 'user', internalType: 'address', type: 'address' },
+    ],
+    name: 'getUserVotedGene',
+    outputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
       { name: 'user', internalType: 'address', type: 'address' },
     ],
     name: 'getUserVotingPower',
@@ -1279,7 +1356,6 @@ export const geneAuctionAbi = [
         type: 'uint8',
       },
       { name: 'geneId', internalType: 'uint256', type: 'uint256' },
-      { name: 'voteWeight', internalType: 'uint256', type: 'uint256' },
     ],
     name: 'voteOnGene',
     outputs: [],
@@ -1321,12 +1397,6 @@ export const geneAuctionAbi = [
         name: 'geneIds',
         internalType: 'uint256[8]',
         type: 'uint256[8]',
-        indexed: false,
-      },
-      {
-        name: 'totalVoteWeight',
-        internalType: 'uint256',
-        type: 'uint256',
         indexed: false,
       },
     ],
@@ -1453,12 +1523,6 @@ export const geneAuctionAbi = [
         type: 'address',
         indexed: false,
       },
-      {
-        name: 'voteWeight',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
     ],
     name: 'GeneVoteCast',
   },
@@ -1568,6 +1632,7 @@ export const geneAuctionAbi = [
   { type: 'error', inputs: [], name: 'InsufficientLove' },
   { type: 'error', inputs: [], name: 'InvalidCategory' },
   { type: 'error', inputs: [], name: 'InvalidGene' },
+  { type: 'error', inputs: [], name: 'NoVotingPower' },
   { type: 'error', inputs: [], name: 'OnlyAminals' },
   { type: 'error', inputs: [], name: 'VotingAlreadySettled' },
   { type: 'error', inputs: [], name: 'VotingNotActive' },
@@ -1575,7 +1640,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0xB32868A1Ccd5B4541A1751251C3663127908E460' as const
+  '0x3730bE2175f4E9CACe752305B37891ec8cca5734' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1583,10 +1648,10 @@ export const geneAuctionConfig = {
 } as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// GenesNFT
+// Genes
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export const genesNftAbi = [
+export const genesAbi = [
   { type: 'constructor', inputs: [], stateMutability: 'nonpayable' },
   {
     type: 'function',
@@ -1932,10 +1997,7 @@ export const genesNftAbi = [
   { type: 'error', inputs: [], name: 'OnlyNFTOwner' },
 ] as const
 
-export const genesNftAddress =
-  '0x4a1C11060Bde95b957b852c81B4453a35470912B' as const
+export const genesAddress =
+  '0x463EA6DCbC54C5Ed7d704332562187A30276e9b7' as const
 
-export const genesNftConfig = {
-  address: genesNftAddress,
-  abi: genesNftAbi,
-} as const
+export const genesConfig = { address: genesAddress, abi: genesAbi } as const
