@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal} from "src/Aminal.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
 /*
 Get information about all Aminals in the factory

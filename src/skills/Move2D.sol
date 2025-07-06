@@ -5,7 +5,7 @@ import "forge-std/console.sol";
 
 import {AminalFactory} from "src/AminalFactory.sol";
 // import {Aminal} from "src/Aminal.sol"; // Deprecated
-import {ISkill} from "src/skills/ISkills.sol";
+import {ISkill} from "src/interfaces/ISkills.sol";
 
 contract Move2D is ISkill {
     AminalFactory public factory;

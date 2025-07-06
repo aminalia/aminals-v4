@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 import {GenesNFT} from "src/genes/GenesNFT.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
 // TODO rename to registry? Merge with GenesNFT?

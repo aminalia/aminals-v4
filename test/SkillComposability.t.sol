@@ -6,7 +6,7 @@ import "forge-std/console.sol";
 
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {MoveTwice} from "src/skills/MoveTwice.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";

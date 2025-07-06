@@ -4,7 +4,7 @@
 pragma solidity ^0.8.20;
 
 import {Base64} from "src/utils/Base64.sol";
-import {IAminalStructs} from "src/IAminalStructs.sol";
+import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GenesNFT} from "src/genes/GenesNFT.sol";
 import {GeneNFTFactory} from "src/genes/GeneNFTFactory.sol";
 

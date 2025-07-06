@@ -6,7 +6,7 @@ import "forge-std/Test.sol";
 
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
-import {ISkill} from "src/skills/ISkills.sol";
+import {ISkill} from "src/interfaces/ISkills.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 
 contract MoveTwice is ISkill {
