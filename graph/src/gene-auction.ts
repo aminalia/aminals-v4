@@ -10,6 +10,9 @@ import {
   BulkVoteCast as BulkVoteCastEvent
 } from "../generated/GeneAuction/GeneAuction";
 import {
+  AminalFactory as AminalFactoryContract
+} from "../generated/AminalFactory/AminalFactory";
+import {
   GeneAuction,
   GeneProposal,
   GeneVote,
@@ -19,16 +22,38 @@ import {
 } from "../generated/schema";
 
 export function handleVotingCreated(event: VotingCreatedEvent): void {
-  // Load parent Aminals by index (need to get addresses from factory)
+  // Get factory address from event address (the gene auction contract knows the factory)
+  // For now, we'll use a known factory address - in production this should be configurable
+  let factoryAddress = Address.fromString("0x9b89ac50cc02496d71c659dc765478e66017e521");
+  
+  // Load parent Aminals by index using factory contract
   let aminalOneIndex = event.params.aminalOne;
   let aminalTwoIndex = event.params.aminalTwo;
+  
+  // Import and use factory contract to resolve indices to addresses
+  let factoryContract = AminalFactoryContract.bind(factoryAddress);
+  
+  let aminalOneAddressResult = factoryContract.try_aminalsByIndex(aminalOneIndex);
+  let aminalTwoAddressResult = factoryContract.try_aminalsByIndex(aminalTwoIndex);
+  
+  if (aminalOneAddressResult.reverted || aminalTwoAddressResult.reverted) {
+    log.error("Failed to resolve Aminal addresses for auction {}: indices {} and {}", [
+      event.params.auctionId.toString(),
+      aminalOneIndex.toString(), 
+      aminalTwoIndex.toString()
+    ]);
+    return;
+  }
+  
+  let aminalOneAddress = aminalOneAddressResult.value;
+  let aminalTwoAddress = aminalTwoAddressResult.value;
   
   // Create auction entity
   let auction = new GeneAuction(Bytes.fromI32(event.params.auctionId.toI32()));
   auction.auctionId = event.params.auctionId;
-  // Store parent indices for now - we'll resolve to addresses in settlement
-  auction.aminalOne = Bytes.fromI32(aminalOneIndex.toI32());
-  auction.aminalTwo = Bytes.fromI32(aminalTwoIndex.toI32());
+  // Reference Aminal entities by their addresses
+  auction.aminalOne = aminalOneAddress;
+  auction.aminalTwo = aminalTwoAddress;
   auction.totalLove = event.params.totalLove;
   auction.finished = false;
   auction.blockNumber = event.block.number;
@@ -36,10 +61,12 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
   auction.transactionHash = event.transaction.hash;
   auction.save();
   
-  log.info("Gene auction created: {} for Aminals {} and {} with love {}", [
+  log.info("Gene auction created: {} for Aminals {} ({}) and {} ({}) with love {}", [
     event.params.auctionId.toString(),
     aminalOneIndex.toString(),
-    aminalTwoIndex.toString(),
+    aminalOneAddress.toHexString(),
+    aminalTwoIndex.toString(), 
+    aminalTwoAddress.toHexString(),
     event.params.totalLove.toString()
   ]);
 }
