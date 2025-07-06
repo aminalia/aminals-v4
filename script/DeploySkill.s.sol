@@ -29,3 +29,12 @@ contract DeploySkill is Script {
         vm.stopBroadcast();
     }
 }
+
+contract FightSkill is Script {
+    function run() external {
+        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
+        vm.startBroadcast(deployerPrivateKey);
+
+        AminalFactory factory = AminalFactory(address(vm.envAddress("AMINAL_FACTORY_CONTRACT")));
+    }
+}
