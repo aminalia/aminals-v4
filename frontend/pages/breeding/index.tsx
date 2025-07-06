@@ -7,7 +7,12 @@ import { useState } from 'react';
 import Layout from '../_layout';
 
 const AuctionsPage: NextPage = () => {
-  const { data: auctions, isLoading: isLoadingAuctions } = useAuctions();
+  const { data: auctions, isLoading: isLoadingAuctions, error } = useAuctions();
+  
+  // Debug logging
+  console.log('Auctions data:', auctions);
+  console.log('Auctions loading:', isLoadingAuctions);
+  console.log('Auctions error:', error);
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
   const filteredAuctions =
