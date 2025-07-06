@@ -41,6 +41,8 @@ export const useAminalsDirect = (
   return useQuery({
     queryKey: ['aminals-direct', filter, sort, userAddress], // Remove Date.now() to enable proper caching
     queryFn: async () => {
+      console.log('useAminalsDirect - Fetching with userAddress:', userAddress);
+      
       const response = await fetch(SUBGRAPH_URL, {
         method: 'POST',
         headers: {
@@ -53,6 +55,8 @@ export const useAminalsDirect = (
       });
 
       const data = await response.json();
+      
+      console.log('useAminalsDirect - Raw response:', data);
 
       if (data.errors) {
         console.error('Aminals fetch errors:', data.errors);
@@ -60,6 +64,16 @@ export const useAminalsDirect = (
       }
 
       let aminals = data.data?.aminals || [];
+      
+      console.log('useAminalsDirect - Before filtering, sample aminal lovers data:');
+      aminals.slice(0, 3).forEach((a: any) => {
+        console.log(`  Aminal #${a.aminalIndex}:`, {
+          lovers: a.lovers,
+          hasLovers: !!a.lovers,
+          loversLength: a.lovers?.length || 0,
+          fullAminal: a
+        });
+      });
 
       // Apply filter (simplified)
       if (filter === 'loved') {
@@ -78,6 +92,17 @@ export const useAminalsDirect = (
       } else if (sort === 'youngest') {
         aminals.sort((a: any, b: any) => Number(b.blockTimestamp) - Number(a.blockTimestamp));
       }
+
+      console.log('useAminalsDirect - Final aminals count:', aminals.length);
+      console.log('useAminalsDirect - Sample final data:');
+      aminals.slice(0, 2).forEach((a: any) => {
+        console.log(`  Final Aminal #${a.aminalIndex}:`, {
+          lovers: a.lovers,
+          hasLovers: !!a.lovers,
+          loversLength: a.lovers?.length || 0,
+          totalLove: a.totalLove
+        });
+      });
 
       return aminals;
     },

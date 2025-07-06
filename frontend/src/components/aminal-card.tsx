@@ -64,43 +64,42 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
               {Number(aminal.energy || 0).toFixed(2)} Energy
             </span>
           </div>
-          <div className="text-xs text-gray-500 font-mono">
-            {aminal.contractAddress
-              ? `${aminal.contractAddress.slice(0, 10)}...`
-              : 'No address'}
-          </div>
         </CardHeader>
 
         <CardContent className="p-4 space-y-4 flex-1 flex flex-col">
           {/* Stats */}
-          <div className="grid grid-cols-1 gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
+          <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-gray-50 border border-gray-100">
             <div>
               <div className="text-sm text-gray-500">Total Love</div>
               <div className="text-lg font-semibold text-pink-600">
                 ❤️ {Number(aminal.totalLove || 0).toFixed(2)}
               </div>
             </div>
-            {aminal.lovers && aminal.lovers.length > 0 && (
-              <div>
-                <div className="text-sm text-gray-500">Love 4 U</div>
-                <div className="text-lg font-semibold text-purple-600">
-                  💜 {Number(aminal.lovers[0].love || 0).toFixed(2)}
-                </div>
+            {(() => {
+              console.log(
+                `AminalCard #${aminal.aminalIndex} - Love 4 U Debug:`,
+                {
+                  hasLovers: !!aminal.lovers,
+                  loversLength: aminal.lovers?.length || 0,
+                  lovers: aminal.lovers,
+                  firstLoverLove: aminal.lovers?.[0]?.love,
+                  shouldShow: aminal.lovers && aminal.lovers.length > 0,
+                }
+              );
+              return null;
+            })()}
+            <div>
+              <div className="text-sm text-gray-500">Love 4 U</div>
+              <div className="text-lg font-semibold text-purple-600">
+                {aminal.lovers && aminal.lovers.length > 0 ? (
+                  <>💜 {Number(aminal.lovers[0].love || 0).toFixed(2)}</>
+                ) : (
+                  <span className="text-gray-400">—</span>
+                )}
               </div>
-            )}
+            </div>
           </div>
 
-          {/* Gene Info */}
-          <div className="text-xs text-gray-500 space-y-1">
-            <div>
-              🎨 Traits: B{aminal.backId || '?'} A{aminal.armId || '?'} T
-              {aminal.tailId || '?'}
-            </div>
-            <div>
-              👂 E{aminal.earsId || '?'} 👤 B{aminal.bodyId || '?'} 😊 F
-              {aminal.faceId || '?'}
-            </div>
-          </div>
 
           {/* Actions */}
           <div className="flex flex-col gap-2 mt-auto pt-2">
@@ -121,15 +120,6 @@ interface AminalVisualImageProps {
 }
 
 export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
-  // Debug logging
-  console.log('AminalVisualImage Debug:', {
-    aminal,
-    hasAminal: !!aminal,
-    hasTokenURI: !!aminal?.tokenURI,
-    tokenURI: aminal?.tokenURI?.substring(0, 100) + '...',
-    aminalIndex: aminal?.aminalIndex,
-  });
-
   if (!aminal) {
     console.log('AminalVisualImage: No aminal provided');
     return (
@@ -144,13 +134,10 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
 
   // If we have tokenURI, try to use it for the actual image
   if (aminal.tokenURI) {
-    console.log('AminalVisualImage: Using TokenUriImage with tokenURI');
     return (
       <TokenUriImage tokenUri={aminal.tokenURI} aminalId={aminal.aminalIndex} />
     );
   }
-
-  console.log('AminalVisualImage: No tokenURI, showing fallback');
 
   // Try to create a composed visual from gene IDs
   return <ComposedAminalImage aminal={aminal} />;
@@ -202,14 +189,6 @@ export function TokenUriImage({
   const finalTokenUri = tokenUri || (aminal && aminal.tokenUri);
   const finalAminalId = aminalId || (aminal && aminal.aminalId);
 
-  // Debug logging
-  console.log('TokenUriImage Debug:', {
-    tokenUri,
-    finalTokenUri,
-    aminalId: finalAminalId,
-    hasTokenUri: !!finalTokenUri,
-  });
-
   let image,
     error: Error | null = null;
   try {
@@ -230,17 +209,12 @@ export function TokenUriImage({
     }
 
     const decodedJsonString = atob(base64Payload);
-    console.log('Decoded JSON:', decodedJsonString.substring(0, 200) + '...');
-
     const json = JSON.parse(decodedJsonString);
-    console.log('Parsed JSON keys:', Object.keys(json));
 
     image = json.image;
     if (!image) {
       throw new Error('No image field found in decoded JSON');
     }
-
-    console.log('Image found:', image.substring(0, 100) + '...');
   } catch (e) {
     error = e as Error;
     console.error('TokenUriImage Error:', e);
