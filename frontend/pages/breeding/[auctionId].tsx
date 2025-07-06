@@ -1,5 +1,5 @@
 import BulkVoteButton from '@/components/actions/bulk-vote-button';
-import ProposeButton from '@/components/actions/propose-button';
+import ProposeVisualModal from '@/components/propose-visual-modal';
 import TraitSelector, {
   SelectedParts,
   TraitParts,
@@ -12,7 +12,7 @@ import { useTraitsByIds } from '@/resources/traits';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Layout from '../_layout';
 
 const AuctionPage: NextPage = () => {
@@ -74,6 +74,9 @@ const AuctionPage: NextPage = () => {
     mouth: 0,
     misc: 0,
   });
+
+  // State for propose modal
+  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 
   // Create a lookup map for trait data
   const traitMap = useMemo(() => {
@@ -149,6 +152,15 @@ const AuctionPage: NextPage = () => {
     return result;
   }, [auction, traitMap]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Selected Parts:', selectedParts);
+    console.log('Trait Data Count:', traitData?.length || 0);
+    console.log('Available traits:', Object.keys(traitMap).join(', '));
+    console.log('Background parts:', parts.background.length);
+    console.log('Arm parts:', parts.arm.length);
+  }, [selectedParts, traitData, traitMap, parts]);
+
   // Handler for trait selection
   const handlePartSelection = (part: string, index: number) => {
     setSelectedParts((prev) => ({
@@ -159,14 +171,14 @@ const AuctionPage: NextPage = () => {
 
   // Function to get parent Aminal contract addresses
   const getParentAddresses = () => {
-    if (!auction) return { mom: '?', dad: '?' };
+    if (!auction) return { parentOne: '?', parentTwo: '?' };
     return {
-      mom: auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
-      dad: auction.aminalTwo.contractAddress || auction.aminalTwo.aminalIndex,
+      parentOne: auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
+      parentTwo: auction.aminalTwo.contractAddress || auction.aminalTwo.aminalIndex,
     };
   };
 
-  const { mom, dad } = getParentAddresses();
+  const { parentOne, parentTwo } = getParentAddresses();
 
   return (
     <Layout>
@@ -207,22 +219,22 @@ const AuctionPage: NextPage = () => {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Link href={`/aminals/${mom}`}>
+                  <Link href={`/aminals/${parentOne}`}>
                     <Button
                       variant="outline"
                       size="sm"
                       className="rounded-full"
                     >
-                      View Mom
+                      View Parent #1
                     </Button>
                   </Link>
-                  <Link href={`/aminals/${dad}`}>
+                  <Link href={`/aminals/${parentTwo}`}>
                     <Button
                       variant="outline"
                       size="sm"
                       className="rounded-full"
                     >
-                      View Dad
+                      View Parent #2
                     </Button>
                   </Link>
                 </div>
@@ -247,44 +259,59 @@ const AuctionPage: NextPage = () => {
                         className="w-full h-full"
                         dangerouslySetInnerHTML={{
                           __html: Object.entries(selectedParts)
-                            .map(([part, index]) => parts[part][index]?.svg)
+                            .map(([part, index]) => {
+                              // Handle empty gene selection (index -1)
+                              if (index === -1) return '';
+                              return parts[part][index]?.svg || '';
+                            })
                             .join(''),
                         }}
                       />
                     </div>
                     <div className="mt-6 space-y-4">
-                      {/* Debug info */}
-                      {process.env.NODE_ENV === 'development' && (
-                        <div className="text-xs text-gray-500 bg-gray-100 p-2 rounded">
-                          <div>
-                            Selected Parts: {JSON.stringify(selectedParts)}
-                          </div>
-                          <div>Trait Data Count: {traitData?.length || 0}</div>
-                          <div>
-                            Available traits: {Object.keys(traitMap).join(', ')}
-                          </div>
-                          <div>Background parts: {parts.background.length}</div>
-                          <div>Arm parts: {parts.arm.length}</div>
-                        </div>
-                      )}
 
                       <BulkVoteButton
                         auctionId={auctionId}
                         backId={
+                          selectedParts.background === -1 ? '0' :
                           parts.background[selectedParts.background]
                             ?.visualId || '0'
                         }
-                        armId={parts.arm[selectedParts.arm]?.visualId || '0'}
-                        tailId={parts.tail[selectedParts.tail]?.visualId || '0'}
-                        earsId={parts.ears[selectedParts.ears]?.visualId || '0'}
-                        bodyId={parts.body[selectedParts.body]?.visualId || '0'}
-                        faceId={parts.face[selectedParts.face]?.visualId || '0'}
+                        armId={
+                          selectedParts.arm === -1 ? '0' :
+                          parts.arm[selectedParts.arm]?.visualId || '0'
+                        }
+                        tailId={
+                          selectedParts.tail === -1 ? '0' :
+                          parts.tail[selectedParts.tail]?.visualId || '0'
+                        }
+                        earsId={
+                          selectedParts.ears === -1 ? '0' :
+                          parts.ears[selectedParts.ears]?.visualId || '0'
+                        }
+                        bodyId={
+                          selectedParts.body === -1 ? '0' :
+                          parts.body[selectedParts.body]?.visualId || '0'
+                        }
+                        faceId={
+                          selectedParts.face === -1 ? '0' :
+                          parts.face[selectedParts.face]?.visualId || '0'
+                        }
                         mouthId={
+                          selectedParts.mouth === -1 ? '0' :
                           parts.mouth[selectedParts.mouth]?.visualId || '0'
                         }
-                        miscId={parts.misc[selectedParts.misc]?.visualId || '0'}
+                        miscId={
+                          selectedParts.misc === -1 ? '0' :
+                          parts.misc[selectedParts.misc]?.visualId || '0'
+                        }
                       />
-                      <ProposeButton auctionId={auctionId} />
+                      <Button
+                        onClick={() => setIsProposalModalOpen(true)}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        ✨ Propose New Visual
+                      </Button>
                     </div>
                   </div>
 
@@ -313,6 +340,13 @@ const AuctionPage: NextPage = () => {
           )}
         </div>
       </div>
+
+      {/* Propose Visual Modal */}
+      <ProposeVisualModal
+        auctionId={auctionId}
+        isOpen={isProposalModalOpen}
+        onClose={() => setIsProposalModalOpen(false)}
+      />
     </Layout>
   );
 };

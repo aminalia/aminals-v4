@@ -1,4 +1,6 @@
-import { useAccount, useWriteContract } from 'wagmi';
+import { useEffect } from 'react';
+import { useAccount, useWriteContract, useWaitForTransactionReceipt } from 'wagmi';
+import toast from 'react-hot-toast';
 import { Button } from '../ui/button';
 const geneAuctionAbi = require('../../../deployments/GeneAuction.json').abi;
 
@@ -29,17 +31,72 @@ export default function BulkVoteButton({
 
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
-  const { writeContractAsync, isPending } = useWriteContract();
+  const { writeContract, isPending, data: hash, error } = useWriteContract();
 
-  const action = async () => {
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash,
+  });
+
+  // Handle transaction success
+  useEffect(() => {
+    if (isConfirmed) {
+      toast.success('🗳️ All votes cast successfully!', {
+        id: 'bulk-vote-tx',
+        duration: 4000,
+      });
+    }
+  }, [isConfirmed]);
+
+  // Handle transaction errors
+  useEffect(() => {
+    if (error) {
+      console.error('Bulk vote transaction failed:', error);
+      toast.error('Failed to cast votes. Please try again.', { 
+        id: 'bulk-vote-tx' 
+      });
+    }
+  }, [error]);
+
+  // Handle receipt errors
+  useEffect(() => {
+    if (receiptError) {
+      console.error('Bulk vote transaction receipt error:', receiptError);
+      toast.error('Votes failed. Please try again.', { 
+        id: 'bulk-vote-tx' 
+      });
+    }
+  }, [receiptError]);
+
+  // Handle pending state
+  useEffect(() => {
+    if (isPending) {
+      toast.loading('Casting votes...', { id: 'bulk-vote-tx' });
+    }
+  }, [isPending]);
+
+  // Handle confirmation state
+  useEffect(() => {
+    if (isConfirming) {
+      toast.loading('Confirming votes...', { id: 'bulk-vote-tx' });
+    }
+  }, [isConfirming]);
+
+  const action = () => {
     if (enabled) {
-      await writeContractAsync({
+      // Convert trait IDs to BigInt array (8 elements for all categories)
+      const geneIds = traitIds.map(id => BigInt(id));
+      
+      writeContract({
         abi: geneAuctionAbi,
         address: GENE_AUCTION_ADDRESS,
-        functionName: 'bulkVote',
+        functionName: 'bulkVoteOnGenes',
         args: [
-          auctionId,
-          traitIds,
+          BigInt(auctionId),
+          geneIds, // Just the gene IDs array
         ],
       });
     }
@@ -49,10 +106,13 @@ export default function BulkVoteButton({
     <Button
       type="button"
       onClick={action}
-      disabled={!enabled || isPending}
-      className={enabled ? '' : 'text-neutral-400'}
+      disabled={!enabled || isPending || isConfirming}
+      className={enabled ? 'w-full' : 'w-full text-neutral-400'}
     >
-      Vote
+      {isPending || isConfirming 
+        ? 'Voting...' 
+        : 'Vote on Selected Traits'
+      }
     </Button>
   );
 }

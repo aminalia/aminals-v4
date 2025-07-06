@@ -108,6 +108,22 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
         </h3>
 
         <div className="grid grid-cols-2 gap-3">
+          {/* Empty Gene Option - Always show as first option */}
+          <div
+            className={`relative aspect-square rounded-xl overflow-hidden border-2 cursor-pointer transition-all
+              ${
+                selectedParts[activeCategory] === -1
+                  ? 'border-blue-500 shadow-md'
+                  : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+              }`}
+            onClick={() => onPartSelection(activeCategory, -1)}
+          >
+            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-gray-500">
+              <div className="text-2xl mb-1">∅</div>
+              <div className="text-xs font-medium">Empty</div>
+            </div>
+          </div>
+
           {parts[activeCategory]?.map((trait: Trait, index: number) => (
             <div
               key={index}
