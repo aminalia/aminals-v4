@@ -7,12 +7,12 @@ const aminalAbi = require('../../../deployments/Aminal.json').abi;
 // Known skill addresses (these would be loaded from a registry or config in production)
 const KNOWN_SKILLS = [
   {
-    address: '0x9095A2d6d7D06B58b72c6331930751fA854A369a',
+    address: '0xcf5e739449e7a7a1b83f750e962f5dd87bb99556',
     name: 'Move2D',
     description: 'Move your Aminal in 2D space',
   },
   {
-    address: '0x8Ea0127FDe8C314C282b8F43f65a58D9dFaA3e46', 
+    address: '0x99ea2abb821942d604b11065156fc8639dff5701', 
     name: 'MoveTwice',
     description: 'Move your Aminal twice in one action',
   },

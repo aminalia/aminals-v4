@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const aminalAbi = require('../../../deployments/Aminal.json').abi;
 const aminalFactoryAbi = require('../../../deployments/AminalFactory.json').abi;
 
-const AMINAL_FACTORY_ADDRESS = '0x42fa457B1a742C5D7330F24916C60985448B8E8f' as const;
+const AMINAL_FACTORY_ADDRESS = '0x9b89ac50cc02496d71c659dc765478e66017e521' as const;
 
 export default function BreedButton({ contractAddress }: { contractAddress: `0x${string}` }) {
   const { isConnected, chain } = useAccount();
@@ -79,10 +79,11 @@ export default function BreedButton({ contractAddress }: { contractAddress: `0x$
     }
 
     writeContract({
-      abi: aminalAbi,
-      address: contractAddress,
-      functionName: 'setBreedableWith',
-      args: [partnerAddress as `0x${string}`, true],
+      abi: aminalFactoryAbi,
+      address: AMINAL_FACTORY_ADDRESS,
+      functionName: 'breedAminals',
+      args: [contractAddress, partnerAddress as `0x${string}`],
+      value: parseEther('0.001'),
     });
   }
 

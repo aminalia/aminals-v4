@@ -4,7 +4,7 @@ import { useAccount, useWriteContract } from 'wagmi';
 import { Button } from '../ui/button';
 const aminalFactoryAbi = require('../../../deployments/AminalFactory.json').abi;
 
-const AMINAL_FACTORY_ADDRESS = '0x42fa457B1a742C5D7330F24916C60985448B8E8f' as const;
+const AMINAL_FACTORY_ADDRESS = '0x9b89ac50cc02496d71c659dc765478e66017e521' as const;
 
 export default function SpawnAminalButton() {
   const { isConnected, chain } = useAccount();

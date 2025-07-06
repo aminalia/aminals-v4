@@ -14,7 +14,7 @@ export default defineConfig({
     {
       abi: ABI.AminalFactory.abi,
       name: 'AminalFactory',
-      address: '0x42fa457b1a742c5d7330f24916c60985448b8e8f',
+      address: '0x9b89ac50cc02496d71c659dc765478e66017e521',
     },
     {
       abi: ABI.Aminal.abi,
@@ -25,12 +25,12 @@ export default defineConfig({
     {
       abi: ABI.GeneAuction.abi,
       name: 'GeneAuction',
-      address: '0x9c0ad5e98b4a3dcdaef1a2162172c9ac4391ac1f',
+      address: '0x99ca199a32502e94b1ca879edd264082ba4efaf3',
     },
     {
       abi: ABI.GenesNFT.abi,
       name: 'GenesNFT',
-      address: '0xbddca7fae18cba8fc457a8b69338d404d443cb0d',
+      address: '0x5ad73ca80684d75b2f10bf0d8844de9420d728ad',
     },
     // GeneNFTFactory not deployed to Sepolia yet
     // {
