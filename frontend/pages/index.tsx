@@ -13,8 +13,11 @@ const HomePage: NextPage = () => {
   const [filter, setFilter] = useState<AminalFilter>('all');
   const [sort, setSort] = useState<AminalSort>('most-loved');
 
+  console.log('HomePage - Current address:', address);
+  console.log('HomePage - Address being passed to hook:', address || '');
+
   const { data: aminals, isLoading: isLoadingAminals } = useAminalsDirect(
-    address as string,
+    address || '',
     filter,
     sort
   );

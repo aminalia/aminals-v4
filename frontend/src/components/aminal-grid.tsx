@@ -26,6 +26,7 @@ function convertAminalForDisplay(aminal: Aminal | any) {
     faceId: safeToString(aminal.faceId),
     mouthId: safeToString(aminal.mouthId),
     miscId: safeToString(aminal.miscId),
+    lovers: aminal.lovers || [],
   };
 }
 
