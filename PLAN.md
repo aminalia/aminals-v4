@@ -3,10 +3,15 @@
 UI:
 
 - Trait links don't work on aminal detail page
-- Show auction end time and countdown
-- Link to parents (kill buttons)
-- Child preview on breeding, see what the Aminal looks like based on most popular votes
-- breeding UX sucks
+- Hide things in propose gene that you can't propose (Should anyone be able to propose any gene?)
+- Add footer with GitHub link, and about page
+- Overview landing page explaining what Aminals are
+- Auction card shows child as settling even when auction is over (might be a graph issue)
+
+Features:
+
+- Track how much money you've made from genes
+- Give love to Aminals (check voting power) on breeding page (if you don't love them yet, it's not too late)
 
 Contracts:
 
@@ -22,9 +27,11 @@ Contracts:
 - Investigate if we should use VRGDA with loveDrivenPrice instead
 - Rename geneFactory -> geneRegistry
 - Shouldn't be able to breed an Aminal if already breeding? (needs test)
+- Reset breedable with after breeding?
 
 Indexer:
 
+- When breeding is done, remove breedable with
 - Switch to ponder?
-- Are votes and gene proposals getting indexed?
 - Get how much eth a gene creator has earned (UI to allow them to claim)
+- Make sure speaks and changes in love are being indexed
