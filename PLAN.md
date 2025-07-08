@@ -13,6 +13,8 @@
 - What should proposing a new gene cost? Currently there is a MIN_CREATION_FEE. Where should the funds go or does it only cost love?
 - Do we need setBreedableWith? Do Aminals need to consent before breeding? If no, it could simplify the UX.
 - Should an Aminal be able to breed with another aminal if it is already breeding?
+- If an Aminal previously breed with another aminal does it need consent to breed with them again?
+- Should contracts should be upgradable?
 
 ## TODO
 
@@ -26,15 +28,13 @@
 
 #### Contracts
 
-- setFactory in Genes is not good... maybe use an initializer? Owner can set factory whenever
+- setFactory in Genes is not good... maybe use an initializer? Owner can set factory whenever currently
 - More genes test coverage (renderer, auction, registry, NFT contract)
 - Clean up and document scripts
-- Shouldn't be able to breed an Aminal if already breeding? (needs test)
-- Reset breedable with after breeding?
 
 #### Do last
 
-- Rename "Visuals" to "GeneIds"
+- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
 - More docs
 - Landing page about the Aminals project
 
