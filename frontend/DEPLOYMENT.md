@@ -39,9 +39,24 @@ In your Cloudflare Pages dashboard:
 - **Framework preset**: Next.js
 - **Build command**: `npm run build:all && npm run build:cf`
 - **Build output directory**: `.vercel/output/static`
+- **Root directory**: `frontend` (if deploying from monorepo)
 - **Node.js version**: `18.x` or higher
 
-### 4. Custom Domain (Optional)
+### 4. Node.js Compatibility
+
+**IMPORTANT**: You must enable Node.js compatibility in your Cloudflare Pages project settings:
+
+1. Go to your Cloudflare Pages project dashboard
+2. Navigate to **Settings** → **Functions**
+3. In the **Compatibility flags** section, add: `nodejs_compat`
+4. In the **Compatibility date** field, set: `2024-01-01`
+5. Save the settings
+
+This enables Node.js built-in modules (`node:buffer`, `node:async_hooks`, etc.) that Next.js requires to work properly in the Cloudflare Workers environment.
+
+**Alternative**: If you have access to the project via Wrangler CLI, you can set these flags programmatically, but the dashboard method is recommended for Cloudflare Pages.
+
+### 5. Custom Domain (Optional)
 
 If you want to use a custom domain:
 
