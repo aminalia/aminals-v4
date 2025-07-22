@@ -58,7 +58,7 @@ General:
 Aminal detail page:
 
 - [x] Breeding modal should only show loved Aminals
-- [ ] Navigate to new auction after finding partner
+- [x] Navigate to new auction after finding partner
 
 Profile:
 
