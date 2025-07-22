@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
 import { useAminals } from '@/resources/aminals';
 import { X } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { isAddress } from 'viem';
+import { decodeEventLog, isAddress } from 'viem';
 import {
   useAccount,
   useWaitForTransactionReceipt,
@@ -29,12 +30,14 @@ export default function BreedingModal({
   const [selectedPartner, setSelectedPartner] = useState<any>(null);
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const { isConnected, chain, address } = useAccount();
+  const router = useRouter();
   const enabled = isConnected && chain;
 
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
     error: receiptError,
+    data: receipt,
   } = useWaitForTransactionReceipt({
     hash,
   });
@@ -58,22 +61,82 @@ export default function BreedingModal({
       });
   }, [aminals, aminal]);
 
-  // Handle transaction success
+  // Handle transaction success and extract auction ID for redirect
   useEffect(() => {
-    if (isConfirmed) {
-      toast.success(
-        '🍼 Gene auction started! Community can now vote on offspring traits.',
-        {
-          id: 'breed-tx',
-          duration: 6000,
+    if (isConfirmed && receipt) {
+      try {
+        // Find the BreedAminal event in the transaction logs
+        const breedAminalEvent = receipt.logs.find((log) => {
+          try {
+            const decoded = decodeEventLog({
+              abi: aminalFactoryAbi,
+              data: log.data,
+              topics: log.topics,
+            });
+            return decoded.eventName === 'BreedAminal';
+          } catch {
+            return false;
+          }
+        });
+
+        if (breedAminalEvent) {
+          const decoded = decodeEventLog({
+            abi: aminalFactoryAbi,
+            data: breedAminalEvent.data,
+            topics: breedAminalEvent.topics,
+          });
+
+          if (decoded.eventName === 'BreedAminal') {
+            const auctionId = decoded.args.auctionId;
+
+            toast.success(
+              '🍼 Gene auction started! Redirecting to voting page...',
+              {
+                id: 'breed-tx',
+                duration: 4000,
+              }
+            );
+
+            onSuccess?.();
+            onClose();
+            // Reset form
+            setSelectedPartner(null);
+
+            // Redirect to the gene auction page
+            setTimeout(() => {
+              router.push(`/breeding/${auctionId}`);
+            }, 1500); // Small delay to let toast show and ensure subgraph indexing
+
+            return;
+          }
         }
-      );
-      onSuccess?.();
-      onClose();
-      // Reset form
-      setSelectedPartner(null);
+
+        // Fallback if event not found
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+        onSuccess?.();
+        onClose();
+        setSelectedPartner(null);
+      } catch (error) {
+        console.error('Error parsing transaction receipt:', error);
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+        onSuccess?.();
+        onClose();
+        setSelectedPartner(null);
+      }
     }
-  }, [isConfirmed, onSuccess, onClose]);
+  }, [isConfirmed, receipt, onSuccess, onClose, router]);
 
   // Handle transaction errors
   useEffect(() => {

@@ -1,7 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { isAddress } from 'viem';
+import { decodeEventLog, isAddress } from 'viem';
 import {
   useAccount,
   useWaitForTransactionReceipt,
@@ -24,6 +25,7 @@ export default function BreedButton({
   const [partnerAddress, setPartnerAddress] = useState<string>('');
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const {
     isLoading: isConfirming,
@@ -49,7 +51,7 @@ export default function BreedButton({
     }
   }, [hash, contractAddress, partnerAddress, address, chain?.id]);
 
-  // Handle transaction success
+  // Handle transaction success and extract auction ID for redirect
   useEffect(() => {
     if (isConfirmed && receipt) {
       console.log('✅ Breed transaction confirmed:', {
@@ -65,19 +67,81 @@ export default function BreedButton({
         timestamp: new Date().toISOString(),
       });
 
-      toast.success(
-        '🍼 Gene auction started! Community can now vote on offspring traits.',
-        {
-          id: 'breed-tx',
-          duration: 6000,
-        }
-      );
+      try {
+        // Find the BreedAminal event in the transaction logs
+        const breedAminalEvent = receipt.logs.find((log) => {
+          try {
+            const decoded = decodeEventLog({
+              abi: aminalFactoryAbi,
+              data: log.data,
+              topics: log.topics,
+            });
+            return decoded.eventName === 'BreedAminal';
+          } catch {
+            return false;
+          }
+        });
 
-      queryClient.invalidateQueries({
-        queryKey: ['aminal-by-address', contractAddress],
-      });
-      queryClient.invalidateQueries({ queryKey: ['aminals'] });
-      queryClient.invalidateQueries({ queryKey: ['aminals'] });
+        if (breedAminalEvent) {
+          const decoded = decodeEventLog({
+            abi: aminalFactoryAbi,
+            data: breedAminalEvent.data,
+            topics: breedAminalEvent.topics,
+          });
+
+          if (decoded.eventName === 'BreedAminal') {
+            const auctionId = decoded.args.auctionId;
+
+            toast.success(
+              '🍼 Gene auction started! Redirecting to voting page...',
+              {
+                id: 'breed-tx',
+                duration: 4000,
+              }
+            );
+
+            queryClient.invalidateQueries({
+              queryKey: ['aminal-by-address', contractAddress],
+            });
+            queryClient.invalidateQueries({ queryKey: ['aminals'] });
+
+            // Redirect to the gene auction page
+            setTimeout(() => {
+              router.push(`/breeding/${auctionId}`);
+            }, 1500); // Small delay to let toast show and ensure subgraph indexing
+
+            return;
+          }
+        }
+
+        // Fallback if event not found
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+
+        queryClient.invalidateQueries({
+          queryKey: ['aminal-by-address', contractAddress],
+        });
+        queryClient.invalidateQueries({ queryKey: ['aminals'] });
+      } catch (error) {
+        console.error('Error parsing transaction receipt:', error);
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+
+        queryClient.invalidateQueries({
+          queryKey: ['aminal-by-address', contractAddress],
+        });
+        queryClient.invalidateQueries({ queryKey: ['aminals'] });
+      }
     }
   }, [
     isConfirmed,
@@ -86,6 +150,7 @@ export default function BreedButton({
     contractAddress,
     partnerAddress,
     queryClient,
+    router,
   ]);
 
   // Handle transaction errors
@@ -109,8 +174,7 @@ export default function BreedButton({
       // More specific error messages based on error type
       let errorMessage = 'Transaction failed. Please try again.';
       if (error.message.includes('insufficient funds')) {
-        errorMessage =
-          'Insufficient funds. You need ETH for gas fees.';
+        errorMessage = 'Insufficient funds. You need ETH for gas fees.';
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       } else if (error.message.includes('network')) {
