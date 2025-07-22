@@ -258,10 +258,6 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
     user.save();
   }
 
-  // Create deterministic vote ID based on voter and proposal to handle vote changes
-  let voteId = user.id.concat(proposal.id);
-  let vote = GeneVote.load(voteId);
-  
   // Get user's voting power from contract since the event doesn't include it
   let geneAuctionContract = GeneAuctionContract.bind(event.address);
   let votingPowerResult = geneAuctionContract.try_getUserVotingPower(
@@ -271,30 +267,31 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
   let votingPower = votingPowerResult.reverted
     ? BigInt.fromI32(0)
     : votingPowerResult.value;
-  
-  if (vote) {
-    // User is changing their vote - subtract previous amount first
-    proposal.loveVotes = proposal.loveVotes.minus(vote.loveAmount);
-    // Update existing vote
-    vote.loveAmount = votingPower;
-    vote.blockNumber = event.block.number;
-    vote.blockTimestamp = event.block.timestamp;
-    vote.transactionHash = event.transaction.hash;
-  } else {
-    // Create new vote entity for first-time voter
-    vote = new GeneVote(voteId);
-    vote.auction = auction.id;
-    vote.proposal = proposal.id;
-    vote.voter = user.id;
-    vote.isRemoveVote = false; // Regular vote
-    vote.loveAmount = votingPower;
-    vote.blockNumber = event.block.number;
-    vote.blockTimestamp = event.block.timestamp;
-    vote.transactionHash = event.transaction.hash;
+
+  // Find and subtract any previous regular votes by this user on this proposal
+  let existingVotes = proposal.votes.load();
+  for (let i = 0; i < existingVotes.length; i++) {
+    let existingVote = existingVotes[i];
+    if (existingVote.voter.equals(user.id) && !existingVote.isRemoveVote) {
+      // Subtract the previous vote amount
+      proposal.loveVotes = proposal.loveVotes.minus(existingVote.loveAmount);
+    }
   }
+
+  // Create new vote entity (always create new since GeneVote is immutable)
+  let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
+  let vote = new GeneVote(voteId);
+  vote.auction = auction.id;
+  vote.proposal = proposal.id;
+  vote.voter = user.id;
+  vote.isRemoveVote = false; // Regular vote
+  vote.loveAmount = votingPower;
+  vote.blockNumber = event.block.number;
+  vote.blockTimestamp = event.block.timestamp;
+  vote.transactionHash = event.transaction.hash;
   vote.save();
 
-  // Update proposal vote counts with new amount
+  // Add the new vote amount
   proposal.loveVotes = proposal.loveVotes.plus(votingPower);
   proposal.save();
 
@@ -348,33 +345,30 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
     user.save();
   }
 
-  // Create deterministic vote ID for removal votes (separate from regular votes)
-  let voteId = user.id.concat(proposal.id).concat(Bytes.fromUTF8("remove"));
-  let vote = GeneVote.load(voteId);
-  
-  if (vote) {
-    // User is changing their removal vote - subtract previous amount first
-    proposal.removeVotes = proposal.removeVotes.minus(vote.loveAmount);
-    // Update existing vote
-    vote.loveAmount = event.params.voteWeight;
-    vote.blockNumber = event.block.number;
-    vote.blockTimestamp = event.block.timestamp;
-    vote.transactionHash = event.transaction.hash;
-  } else {
-    // Create new removal vote entity
-    vote = new GeneVote(voteId);
-    vote.auction = auction.id;
-    vote.proposal = proposal.id;
-    vote.voter = user.id;
-    vote.isRemoveVote = true; // Removal vote
-    vote.loveAmount = event.params.voteWeight;
-    vote.blockNumber = event.block.number;
-    vote.blockTimestamp = event.block.timestamp;
-    vote.transactionHash = event.transaction.hash;
+  // Find and subtract any previous removal votes by this user on this proposal
+  let existingVotes = proposal.votes.load();
+  for (let i = 0; i < existingVotes.length; i++) {
+    let existingVote = existingVotes[i];
+    if (existingVote.voter.equals(user.id) && existingVote.isRemoveVote) {
+      // Subtract the previous removal vote amount
+      proposal.removeVotes = proposal.removeVotes.minus(existingVote.loveAmount);
+    }
   }
+
+  // Create new removal vote entity (always create new since GeneVote is immutable)
+  let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
+  let vote = new GeneVote(voteId);
+  vote.auction = auction.id;
+  vote.proposal = proposal.id;
+  vote.voter = user.id;
+  vote.isRemoveVote = true; // Removal vote
+  vote.loveAmount = event.params.voteWeight;
+  vote.blockNumber = event.block.number;
+  vote.blockTimestamp = event.block.timestamp;
+  vote.transactionHash = event.transaction.hash;
   vote.save();
 
-  // Update proposal removal vote counts with new amount
+  // Add the new removal vote amount
   proposal.removeVotes = proposal.removeVotes.plus(event.params.voteWeight);
   proposal.save();
 
@@ -497,33 +491,33 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
         );
       }
 
-      // Create deterministic vote ID for bulk votes to handle vote changes
-      let voteId = user.id.concat(proposal.id);
-      let vote = GeneVote.load(voteId);
-      
-      if (vote) {
-        // User is changing their vote - subtract previous amount first
-        proposal.loveVotes = proposal.loveVotes.minus(vote.loveAmount);
-        // Update existing vote
-        vote.loveAmount = votingPower;
-        vote.blockNumber = event.block.number;
-        vote.blockTimestamp = event.block.timestamp;
-        vote.transactionHash = event.transaction.hash;
-      } else {
-        // Create new vote entity for this individual vote
-        vote = new GeneVote(voteId);
-        vote.auction = auction.id;
-        vote.proposal = proposal.id;
-        vote.voter = user.id;
-        vote.isRemoveVote = false; // Regular vote
-        vote.loveAmount = votingPower;
-        vote.blockNumber = event.block.number;
-        vote.blockTimestamp = event.block.timestamp;
-        vote.transactionHash = event.transaction.hash;
+      // Find and subtract any previous regular votes by this user on this proposal
+      let existingVotes = proposal.votes.load();
+      for (let j = 0; j < existingVotes.length; j++) {
+        let existingVote = existingVotes[j];
+        if (existingVote.voter.equals(user.id) && !existingVote.isRemoveVote) {
+          // Subtract the previous vote amount
+          proposal.loveVotes = proposal.loveVotes.minus(existingVote.loveAmount);
+        }
       }
+
+      // Create new vote entity for this individual vote (always create new since GeneVote is immutable)
+      // Use a unique ID that includes the trait category to avoid collisions
+      let voteId = event.transaction.hash
+        .concatI32(event.logIndex.toI32())
+        .concatI32(i); // Add category index to make it unique
+      let vote = new GeneVote(voteId);
+      vote.auction = auction.id;
+      vote.proposal = proposal.id;
+      vote.voter = user.id;
+      vote.isRemoveVote = false; // Regular vote
+      vote.loveAmount = votingPower;
+      vote.blockNumber = event.block.number;
+      vote.blockTimestamp = event.block.timestamp;
+      vote.transactionHash = event.transaction.hash;
       vote.save();
 
-      // Update proposal vote counts with new amount
+      // Add the new vote amount
       proposal.loveVotes = proposal.loveVotes.plus(votingPower);
       proposal.save();
 
