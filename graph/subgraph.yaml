@@ -144,4 +144,4 @@ dataSources:
       eventHandlers:
         - event: GeneCreated(indexed uint256,indexed address,indexed uint8,string)
           handler: handleGeneCreated
-      file: ./src/gene-nft-factory.ts
+      file: ./src/gene-registry.ts
