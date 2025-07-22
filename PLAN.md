@@ -3,6 +3,7 @@
 ## New Features Ideas
 
 - Aminal Race
+- Prediction Market
 - Bribing
 - Give love to Aminals (check voting power) on breeding page (if you don't love them yet, it's not too late)
 - Aminals DAO (a DAO of Aminals based on Loveocracy)
@@ -38,9 +39,71 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### Indexer
 
 - Switch to ponder?
+- Have to reload often, can we make the indexer faster?
 
 #### Do last
 
 - Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
 - More docs
 - Landing page about the Aminals project
+
+### User Testing feedback
+
+General:
+
+- [ ] Tooltips and more info
+- [ ] Love should be a percentage?
+- [ ] Make clear costs in love and energy everywhere
+
+Aminal detail page:
+
+- [x] Breeding modal should only show loved Aminals
+- [ ] Navigate to new auction after finding partner
+
+Profile:
+
+- [ ] Classic profile stuff (ENS, picture, copy address)
+- [ ] Show favorite Aminal on profile
+
+Genes:
+
+- [ ] Zoom on traits (for tiny things like mouth)
+- [ ] Traits / genes should have UI to transfer
+
+Breeding:
+
+- [ ] SVG creator should just be text / preview, make nice coder with linting
+- [ ] "Vote on Genes" -> Submit
+- [ ] "Gene Selection" -> "Gene Pool"
+- [ ] "p1" - "Parent 1", etc
+- [ ] "Time Left" -> "Incubation Period"
+- [ ] Propose gene pbutton placement is bad, should be next to gene pool header
+- [ ] Button to breed aminals on Breeding page
+- [ ] Voting none seems to not work? (investigate)
+- [ ] Toast for propose is wrong
+- [ ] Be clearer what propose genes costs
+- [ ] Communicate the amount of energy / love to breed
+
+Desgin challenges:
+
+- [ ] Make it clear that you can't own an Aminal
+- [ ] Be clearer that you can own genes
+
+Indexer Bugs:
+
+- [ ] Many bugs on multiple votes with indexer
+- [ ] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
+
+Contract Changes:
+
+- [ ] Default Aminal Designer to winning combo
+- [ ] Randomize on StartAuction so that the preview shows what the Aminal will be if no one votes
+- [ ] bulkVoteOnGenes could be optimized to only vote on traits different than random
+- [ ] Propose gene is expensive (investigate)
+- [ ] Voting none seems to not work? (investigate)
+
+- [ ] Remember aminal state in aminal builder
+
+##### General Questions from User Interview
+
+- "Why aren't all genes listed?"
