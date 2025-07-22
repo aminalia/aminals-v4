@@ -62,8 +62,8 @@ Aminal detail page:
 
 Profile:
 
-- [ ] Classic profile stuff (ENS, picture, copy address)
-- [ ] Show favorite Aminal on profile
+- [x] Classic profile stuff (ENS, picture, copy address)
+- [ ] Show favorite Aminal on profile?
 
 Genes:
 
