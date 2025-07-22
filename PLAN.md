@@ -68,11 +68,12 @@ Profile:
 Genes:
 
 - [ ] Zoom on traits (for tiny things like mouth)
-- [ ] Traits / genes should have UI to transfer
+- [ ] Traits / genes should have UI to transfer?
 
 Breeding:
 
-- [ ] SVG creator should just be text / preview, make nice coder with linting
+- [ ] SVG creator should just be text / preview
+- [ ] make nice SVG coder with linting
 - [ ] "Vote on Genes" -> Submit
 - [ ] "Gene Selection" -> "Gene Pool"
 - [ ] "p1" - "Parent 1", etc
@@ -91,8 +92,9 @@ Desgin challenges:
 
 Indexer Bugs:
 
-- [ ] Many bugs on multiple votes with indexer
-- [ ] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
+- [x] Many bugs on multiple votes with indexer
+- [x] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
+- [ ] Verify bugs are fixed
 
 Contract Changes:
 
