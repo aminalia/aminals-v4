@@ -72,7 +72,7 @@ Genes:
 
 Breeding:
 
-- [ ] SVG creator should just be text / preview
+- [x] SVG creator should just be text / preview
 - [ ] make nice SVG coder with linting
 - [ ] "Vote on Genes" -> Submit
 - [ ] "Gene Selection" -> "Gene Pool"
