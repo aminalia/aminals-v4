@@ -78,12 +78,12 @@ Breeding:
 - [ ] "Gene Selection" -> "Gene Pool"
 - [ ] "p1" - "Parent 1", etc
 - [ ] "Time Left" -> "Incubation Period"
-- [ ] Propose gene pbutton placement is bad, should be next to gene pool header
+- [x] Propose gene button placement is bad, should be next to gene pool header
 - [ ] Button to breed aminals on Breeding page
-- [ ] Voting none seems to not work? (investigate)
+- [x] Voting none seems to not work? (investigated: fixed in indexer)
 - [ ] Toast for propose is wrong
-- [ ] Be clearer what propose genes costs
-- [ ] Communicate the amount of energy / love to breed
+- [ ] Be clearer what propose genes costs PROPOSE_GENE_COST
+- [ ] Communicate the amount of energy / love to breed (MIN_LOVE_REQUIRED / MIN_ENERGY_REQUIRED)
 
 Desgin challenges:
 
@@ -95,15 +95,16 @@ Indexer Bugs:
 - [x] Many bugs on multiple votes with indexer
 - [x] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
 - [ ] Verify bugs are fixed
+- [ ] Total earnings for OG genes are not updating it seems
 
 Contract Changes:
 
 - [ ] Default Aminal Designer to winning combo
 - [ ] Randomize on StartAuction so that the preview shows what the Aminal will be if no one votes
 - [ ] bulkVoteOnGenes could be optimized to only vote on traits different than random
-- [ ] Propose gene is expensive (investigate)
-- [ ] Voting none seems to not work? (investigate)
-
+- [x] Propose gene is expensive (investigate)
+- [x] More GeneAuction gas optimizations.
+- [ ] Clean up remove proposals logic?
 - [ ] Remember aminal state in aminal builder
 
 ##### General Questions from User Interview

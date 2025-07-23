@@ -1,10 +1,5 @@
 query GeneAuctionsList($first: Int = 100, $skip: Int = 0) {
-  geneAuctions(
-    first: $first
-    skip: $skip
-    orderBy: id
-    orderDirection: desc
-  ) {
+  geneAuctions(first: $first, skip: $skip, orderBy: id, orderDirection: desc) {
     id
     auctionId
     aminalOne {

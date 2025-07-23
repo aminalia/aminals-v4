@@ -1,9 +1,12 @@
 import AminalCard from '@/components/aminal-card';
-import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
-import { EmptyState, NoAminalsFound } from '@/components/ui/empty-state';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/ui/empty-state';
+import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { genesAddress } from '@/contracts/generated';
 import { useGene } from '@/resources/genes';
+import { ExternalLink } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -21,11 +24,14 @@ interface AminalWithDetails {
 const GeneDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
-  
+
   // Show loading state if router is not ready or ID is not available
-  const isRouterReady = router.isReady && id && typeof id === 'string' && id !== 'undefined';
-  
-  const { data: gene, isLoading } = useGene(isRouterReady ? (id as string) : '');
+  const isRouterReady =
+    router.isReady && id && typeof id === 'string' && id !== 'undefined';
+
+  const { data: gene, isLoading } = useGene(
+    isRouterReady ? (id as string) : ''
+  );
 
   // Handle fallback state for static export
   if (router.isFallback) {
@@ -84,6 +90,15 @@ const GeneDetailPage: NextPage = () => {
     : [];
   const aminalCount = uniqueAminals.length;
 
+  // Format total earnings from wei to ETH
+  const formatEarnings = (totalEarnings: string) => {
+    const earningsInEth = Number(totalEarnings) / 1e18;
+    return earningsInEth.toFixed(4);
+  };
+
+  // OpenSea URL
+  const openSeaUrl = `https://testnets.opensea.io/assets/sepolia/${genesAddress}/${gene.tokenId}`;
+
   return (
     <Layout>
       <div className="container max-w-5xl mx-auto px-4 py-8">
@@ -99,25 +114,50 @@ const GeneDetailPage: NextPage = () => {
                 {category.name}
               </Badge>
             </div>
-            <Link
-              href="/genes"
-              className="text-primary hover:text-primary/80 text-sm font-medium"
-            >
-              ← Back to all Genes
-            </Link>
+            <div className="flex items-center gap-4">
+              <Button
+                variant="outline"
+                size="sm"
+                asChild
+                className="flex items-center gap-2"
+              >
+                <Link
+                  href={openSeaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                  View on OpenSea
+                </Link>
+              </Button>
+              <Link
+                href="/genes"
+                className="text-primary hover:text-primary/80 text-sm font-medium"
+              >
+                ← Back to all Genes
+              </Link>
+            </div>
           </div>
 
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - SVG Display */}
-            <div className="aspect-square rounded-xl overflow-hidden bg-primary/5 flex items-center justify-center p-6 border">
-              <svg
-                viewBox="0 0 1000 1000"
-                className="w-full h-full"
-                dangerouslySetInnerHTML={{
-                  __html: gene.svg || '',
-                }}
-              />
+            <div className="space-y-4">
+              <div className="aspect-square rounded-xl overflow-hidden bg-primary/5 flex items-center justify-center p-6 border">
+                <svg
+                  viewBox="0 0 1000 1000"
+                  className="w-full h-full"
+                  dangerouslySetInnerHTML={{
+                    __html: gene.svg || '',
+                  }}
+                />
+              </div>
+              {/* Description as image caption */}
+              {gene.description && (
+                <div className="text-center text-sm text-muted-foreground italic leading-relaxed px-2">
+                  {gene.description}
+                </div>
+              )}
             </div>
 
             {/* Right Column - Details */}
@@ -138,22 +178,31 @@ const GeneDetailPage: NextPage = () => {
                 </div>
               </div>
 
-              {/* Stats Section */}
+              {/* Owner Info */}
               <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-3">
-                <h2 className="text-xl font-semibold">Stats</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted rounded-lg border">
-                    <div className="text-sm text-muted-foreground">Category</div>
-                    <div className="text-xl font-semibold flex items-center gap-2">
-                      <span>{category.emoji}</span>
-                      {category.name}
+                <h2 className="text-xl font-semibold">Current Owner</h2>
+                <div className="flex items-center gap-3">
+                  <div className="bg-muted w-12 h-12 rounded-full flex items-center justify-center text-xl">
+                    🏠
+                  </div>
+                  <div>
+                    <div className="font-medium">Address</div>
+                    <div className="font-mono text-sm text-muted-foreground">
+                      {gene.owner.address}
                     </div>
                   </div>
-                  <div className="p-4 bg-muted rounded-lg border">
-                    <div className="text-sm text-muted-foreground">Used by</div>
-                    <div className="text-xl font-semibold text-energy-600">
-                      {aminalCount} {aminalCount === 1 ? 'Aminal' : 'Aminals'}
-                    </div>
+                </div>
+              </div>
+
+              {/* Earnings Section */}
+              <div className="rounded-xl border bg-card text-card-foreground shadow-sm p-5 space-y-3">
+                <h2 className="text-xl font-semibold">Earnings</h2>
+                <div className="p-4 bg-muted rounded-lg border">
+                  <div className="text-sm text-muted-foreground">
+                    Total Earnings
+                  </div>
+                  <div className="text-2xl font-semibold text-green-600">
+                    {formatEarnings(gene.totalEarnings)} ETH
                   </div>
                 </div>
               </div>
@@ -162,7 +211,12 @@ const GeneDetailPage: NextPage = () => {
 
           {/* Aminals with this Trait */}
           <div className="mt-8 space-y-6">
-            <h2 className="text-2xl font-bold">Aminals with this Gene</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Aminals with this Gene</h2>
+              <Badge variant="secondary" size="lg">
+                {aminalCount} {aminalCount === 1 ? 'Aminal' : 'Aminals'}
+              </Badge>
+            </div>
             {aminalCount === 0 ? (
               <EmptyState
                 icon="🐾"
@@ -172,15 +226,20 @@ const GeneDetailPage: NextPage = () => {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {uniqueAminals.map((aminal: any) => {
-                  const aminalWithDetails = aminal as unknown as AminalWithDetails;
-                  
+                  const aminalWithDetails =
+                    aminal as unknown as AminalWithDetails;
+
                   // Transform the data to match AminalCard's expected interface
                   const transformedAminal = {
                     id: aminalWithDetails.id,
                     contractAddress: aminalWithDetails.contractAddress,
                     aminalIndex: aminalWithDetails.aminalIndex,
-                    energy: (Number(aminalWithDetails.energy) / 1e18).toString(),
-                    totalLove: (Number(aminalWithDetails.totalLove) / 1e18).toString(),
+                    energy: (
+                      Number(aminalWithDetails.energy) / 1e18
+                    ).toString(),
+                    totalLove: (
+                      Number(aminalWithDetails.totalLove) / 1e18
+                    ).toString(),
                     tokenURI: aminalWithDetails.tokenURI,
                     backId: '',
                     armId: '',
@@ -192,7 +251,7 @@ const GeneDetailPage: NextPage = () => {
                     miscId: '',
                     lovers: [],
                   };
-                  
+
                   return (
                     <AminalCard
                       key={aminalWithDetails.id}

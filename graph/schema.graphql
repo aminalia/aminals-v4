@@ -45,9 +45,6 @@ type Aminal @entity(immutable: false) {
   energy: BigInt!
   totalLove: BigInt!
   ethBalance: BigInt! # ETH balance of the Aminal contract
-
-
-
   # Relationships
   lovers: [Relationship]! @derivedFrom(field: "aminal")
 
@@ -85,7 +82,6 @@ type Relationship @entity(immutable: false) {
   love: BigInt!
 }
 
-
 type BreedAminalEvent @entity(immutable: true) {
   id: Bytes!
   aminalOne: Aminal! # Parent 1 address
@@ -121,8 +117,6 @@ type SkillUsed @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
-
-
 
 type GeneAuction @entity(immutable: false) {
   id: Bytes! # Auction ID
@@ -199,7 +193,7 @@ type GeneProposal @entity(immutable: false) {
   transactionHash: Bytes!
 }
 
-type GeneVote @entity(immutable: true) {
+type GeneVote @entity(immutable: false) {
   id: Bytes!
   auction: GeneAuction!
   proposal: GeneProposal!
@@ -228,4 +222,3 @@ type GeneCreatorPayout @entity(immutable: true) {
   blockTimestamp: BigInt!
   transactionHash: Bytes!
 }
-
