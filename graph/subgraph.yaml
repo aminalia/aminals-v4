@@ -37,7 +37,7 @@ dataSources:
     source:
       address: "0xfd69b3285974f11ac0e8490d86a2dc4ee7d2ce9c"
       abi: AminalFactory
-      startBlock: 8827586
+      startBlock: 8828041
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -64,7 +64,7 @@ dataSources:
     source:
       address: "0x96bd719eb8d32a1210e4e2eb77b5ce6ff157325d"
       abi: GeneAuction
-      startBlock: 8827586
+      startBlock: 8828041
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -107,7 +107,7 @@ dataSources:
     source:
       address: "0xb70c1d4ab9e90eb73b7f8972bd3eeb139201cd43"
       abi: Genes
-      startBlock: 8827586
+      startBlock: 8828041
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
@@ -128,7 +128,7 @@ dataSources:
     source:
       address: "0x2706cf8e08f6cbfd8a0fc32637d0289ab6ed2ca4"
       abi: GeneRegistry
-      startBlock: 8827586
+      startBlock: 8828041
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.9
