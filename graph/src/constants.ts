@@ -1,10 +1,10 @@
 // Auto-generated from subgraph.yaml
 // DO NOT EDIT MANUALLY - run 'npm run generate-constants' to regenerate
 
-export const AMINAL_FACTORY_ADDRESS = "0x54b5b4f464fdb5f34d2b899c435418ab43ebf304";
-export const GENE_AUCTION_ADDRESS = "0x5de69349b98094fa742bb9e426c31ab46a7b7e5e";
-export const GENES_NFT_ADDRESS = "0xd5322f9ae14927a67802e5bc8131bfaabe799dc0";
-export const GENE_REGISTRY_ADDRESS = "0x37980de8a71fc6147e61e1a9e23735e97bfb2170";
+export const AMINAL_FACTORY_ADDRESS = "0xfd69b3285974f11ac0e8490d86a2dc4ee7d2ce9c";
+export const GENE_AUCTION_ADDRESS = "0x96bd719eb8d32a1210e4e2eb77b5ce6ff157325d";
+export const GENES_NFT_ADDRESS = "0xb70c1d4ab9e90eb73b7f8972bd3eeb139201cd43";
+export const GENE_REGISTRY_ADDRESS = "0x2706cf8e08f6cbfd8a0fc32637d0289ab6ed2ca4";
 
 export const ADDRESS_ZERO = "0x0000000000000000000000000000000000000000";
 
