@@ -84,8 +84,8 @@ Breeding:
 
 Desgin challenges:
 
-- [ ] Make it clear that you can't own an Aminal
-- [ ] Be clearer that you can own genes
+- [ ] Make it clearer that you can't own an Aminal
+- [x] Be clearer that you can own genes (they have "owners" now)
 
 Indexer Bugs:
 
@@ -93,6 +93,7 @@ Indexer Bugs:
 - [x] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
 - [ ] Verify bugs are fixed
 - [ ] Total earnings for OG genes are not updating it seems
+- [ ] Regression, Aminals with gene seems broken
 
 Contract Changes:
 

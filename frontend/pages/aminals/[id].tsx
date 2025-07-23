@@ -507,7 +507,7 @@ const AminalPage: NextPage = () => {
                       return (
                         <Link
                           key={i}
-                          href={`/genes/${gene.id}`}
+                          href={`/genes/${geneInfo?.id || gene.id}`}
                           className="p-3 rounded-lg border bg-blue-50 border-blue-100 hover:bg-blue-100 transition-colors"
                         >
                           <div className="flex items-center gap-2">

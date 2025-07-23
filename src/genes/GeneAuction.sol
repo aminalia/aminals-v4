@@ -133,8 +133,8 @@ contract GeneAuction is
         uint256 indexed aminalOne,
         uint256 indexed aminalTwo,
         uint256 totalLove,
-        uint256 startTime,
-        uint256 endTime
+        uint64 startTime,
+        uint64 endTime
     );
 
     /// @notice Emitted when a user votes for a gene in a category
