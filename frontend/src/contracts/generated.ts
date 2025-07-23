@@ -993,7 +993,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0x487a60B69Bd81D3BD6D35C0D632b849B44F4A55D' as const
+  '0x54b5B4f464FDB5F34D2B899c435418Ab43Ebf304' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1024,13 +1024,6 @@ export const geneAuctionAbi = [
     type: 'function',
     inputs: [],
     name: 'PROPOSE_GENE_COST',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'TRAIT_CATEGORIES',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -1072,8 +1065,8 @@ export const geneAuctionAbi = [
       { name: 'aminalOne', internalType: 'uint256', type: 'uint256' },
       { name: 'aminalTwo', internalType: 'uint256', type: 'uint256' },
       { name: 'totalLove', internalType: 'uint256', type: 'uint256' },
-      { name: 'startTime', internalType: 'uint256', type: 'uint256' },
-      { name: 'endTime', internalType: 'uint256', type: 'uint256' },
+      { name: 'startTime', internalType: 'uint64', type: 'uint64' },
+      { name: 'endTime', internalType: 'uint64', type: 'uint64' },
       { name: 'settled', internalType: 'bool', type: 'bool' },
     ],
     stateMutability: 'view',
@@ -1123,8 +1116,8 @@ export const geneAuctionAbi = [
       { name: 'aminalOne', internalType: 'uint256', type: 'uint256' },
       { name: 'aminalTwo', internalType: 'uint256', type: 'uint256' },
       { name: 'totalLove', internalType: 'uint256', type: 'uint256' },
-      { name: 'startTime', internalType: 'uint256', type: 'uint256' },
-      { name: 'endTime', internalType: 'uint256', type: 'uint256' },
+      { name: 'startTime', internalType: 'uint64', type: 'uint64' },
+      { name: 'endTime', internalType: 'uint64', type: 'uint64' },
       { name: 'settled', internalType: 'bool', type: 'bool' },
     ],
     stateMutability: 'view',
@@ -1362,6 +1355,12 @@ export const geneAuctionAbi = [
         type: 'uint256[8]',
         indexed: false,
       },
+      {
+        name: 'userVotingPower',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
     ],
     name: 'BulkVoteCast',
   },
@@ -1517,6 +1516,12 @@ export const geneAuctionAbi = [
         type: 'address',
         indexed: false,
       },
+      {
+        name: 'userVotingPower',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
     ],
     name: 'GeneVoteCast',
   },
@@ -1627,7 +1632,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0xB10aFa4C9F04242FECcC8015822Dfc5d39b58B07' as const
+  '0x5de69349B98094fa742BB9e426c31AB46A7B7e5E' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1704,6 +1709,19 @@ export const geneRegistryAbi = [
     inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
     name: 'geneSVGs',
     outputs: [{ name: 'svg', internalType: 'string', type: 'string' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
+    name: 'getGeneCategory',
+    outputs: [
+      {
+        name: 'category',
+        internalType: 'enum IAminalStructs.VisualsCat',
+        type: 'uint8',
+      },
+    ],
     stateMutability: 'view',
   },
   {
@@ -1831,7 +1849,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0xD5ca2E91099d47E204ce47d3f293b82647756947' as const
+  '0x37980DE8a71Fc6147E61E1A9e23735E97BfB2170' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2218,7 +2236,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0x673bfeA6D500CCef982499146F58D610CcfCAaD9' as const
+  '0xD5322f9AE14927A67802e5bC8131BFAabE799DC0' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2302,6 +2320,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0x41063967Aa8337Ab89a2F69cA8FF54BA13Ce1f06' as const
+  '0xcCc1A96856baac5Be57c4E3dD6913755C5F3637e' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const
