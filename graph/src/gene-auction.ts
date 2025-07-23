@@ -1,23 +1,23 @@
-import { Address, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts";
-import {
-  GeneAuction as GeneAuctionContract,
-  VotingCreated as VotingCreatedEvent,
-  VotingSettled as VotingSettledEvent,
-  GeneProposed as GeneProposedEvent,
-  GeneVoteCast as GeneVoteCastEvent,
-  GeneRemovalVote as GeneRemovalVoteEvent,
-  GeneRemoved as GeneRemovedEvent,
-  BulkVoteCast as BulkVoteCastEvent,
-  GeneCreatorPayout as GeneCreatorPayoutEvent,
-} from "../generated/GeneAuction/GeneAuction";
+import { Address, BigInt, Bytes, log } from "@graphprotocol/graph-ts";
 import { AminalFactory as AminalFactoryContract } from "../generated/AminalFactory/AminalFactory";
 import {
+  BulkVoteCast as BulkVoteCastEvent,
+  GeneAuction as GeneAuctionContract,
+  GeneCreatorPayout as GeneCreatorPayoutEvent,
+  GeneProposed as GeneProposedEvent,
+  GeneRemovalVote as GeneRemovalVoteEvent,
+  GeneRemoved as GeneRemovedEvent,
+  GeneVoteCast as GeneVoteCastEvent,
+  VotingCreated as VotingCreatedEvent,
+  VotingSettled as VotingSettledEvent,
+} from "../generated/GeneAuction/GeneAuction";
+import {
+  Aminal,
   GeneAuction,
-  GeneProposal,
-  GeneVote,
   GeneCreatorPayout,
   GeneNFT,
-  Aminal,
+  GeneProposal,
+  GeneVote,
   User,
 } from "../generated/schema";
 import { AMINAL_FACTORY_ADDRESS, GENES_NFT_ADDRESS } from "./constants";
@@ -25,7 +25,7 @@ import { AMINAL_FACTORY_ADDRESS, GENES_NFT_ADDRESS } from "./constants";
 // Helper function to create consistent auction ID format
 export function createAuctionId(auctionId: BigInt): Bytes {
   return Bytes.fromHexString(
-    "0x" + (auctionId.toI32() * 0x1000000).toString(16).padStart(8, "0"),
+    "0x" + (auctionId.toI32() * 0x1000000).toString(16).padStart(8, "0")
   );
 }
 
@@ -33,7 +33,7 @@ export function createAuctionId(auctionId: BigInt): Bytes {
 function createProposalId(
   auctionId: BigInt,
   category: BigInt,
-  geneId: BigInt,
+  geneId: BigInt
 ): Bytes {
   let auctionIdHex = createAuctionId(auctionId);
   return auctionIdHex
@@ -55,6 +55,102 @@ function getGenesContractAddress(auctionContractAddress: Address): Address {
 // Helper function to create gene NFT entity ID (matches genes-nft.ts format)
 function createGeneNFTId(genesContractAddress: Address, geneId: BigInt): Bytes {
   return genesContractAddress.concat(Bytes.fromI32(geneId.toI32()));
+}
+
+// Helper function to handle vote updates consistently
+function handleVoteUpdate(
+  voter: Address,
+  auctionId: BigInt,
+  category: i32,
+  newProposal: GeneProposal,
+  votingPower: BigInt,
+  isRemoveVote: boolean,
+  blockNumber: BigInt,
+  blockTimestamp: BigInt,
+  transactionHash: Bytes,
+  auction: GeneAuction,
+  user: User
+): void {
+  // Create vote ID based on voter + auction + category (one vote per category per user)
+  let voteId = voter.concatI32(auctionId.toI32()).concatI32(category);
+
+  let existingVote = GeneVote.load(voteId);
+
+  if (existingVote) {
+    // Check if this is actually a change to a different proposal
+    if (existingVote.proposal.equals(newProposal.id)) {
+      // Same proposal - just update the vote amount (most common case)
+      let voteDifference = votingPower.minus(existingVote.loveAmount);
+
+      // Update vote amount efficiently without loading old proposal
+      if (isRemoveVote) {
+        newProposal.removeVotes = newProposal.removeVotes.plus(voteDifference);
+      } else {
+        newProposal.loveVotes = newProposal.loveVotes.plus(voteDifference);
+      }
+
+      existingVote.loveAmount = votingPower;
+      existingVote.isRemoveVote = isRemoveVote;
+      existingVote.blockNumber = blockNumber;
+      existingVote.blockTimestamp = blockTimestamp;
+      existingVote.transactionHash = transactionHash;
+      existingVote.save();
+    } else {
+      // Different proposal - need to remove from old and add to new
+      // Only load old proposal if we're changing to a different one
+      let oldProposal = GeneProposal.load(existingVote.proposal);
+      if (oldProposal) {
+        if (existingVote.isRemoveVote) {
+          oldProposal.removeVotes = oldProposal.removeVotes.minus(
+            existingVote.loveAmount
+          );
+        } else {
+          oldProposal.loveVotes = oldProposal.loveVotes.minus(
+            existingVote.loveAmount
+          );
+        }
+        oldProposal.save();
+      }
+
+      // Update vote to point to new proposal
+      existingVote.proposal = newProposal.id;
+      existingVote.loveAmount = votingPower;
+      existingVote.isRemoveVote = isRemoveVote;
+      existingVote.blockNumber = blockNumber;
+      existingVote.blockTimestamp = blockTimestamp;
+      existingVote.transactionHash = transactionHash;
+      existingVote.save();
+
+      // Add vote to new proposal
+      if (isRemoveVote) {
+        newProposal.removeVotes = newProposal.removeVotes.plus(votingPower);
+      } else {
+        newProposal.loveVotes = newProposal.loveVotes.plus(votingPower);
+      }
+    }
+  } else {
+    // Create new vote (first time voting)
+    let vote = new GeneVote(voteId);
+    vote.auction = auction.id;
+    vote.proposal = newProposal.id;
+    vote.voter = user.id;
+    vote.isRemoveVote = isRemoveVote;
+    vote.loveAmount = votingPower;
+    vote.blockNumber = blockNumber;
+    vote.blockTimestamp = blockTimestamp;
+    vote.transactionHash = transactionHash;
+    vote.save();
+
+    // Add vote to proposal
+    if (isRemoveVote) {
+      newProposal.removeVotes = newProposal.removeVotes.plus(votingPower);
+    } else {
+      newProposal.loveVotes = newProposal.loveVotes.plus(votingPower);
+    }
+  }
+
+  // Always save the new proposal at the end
+  newProposal.save();
 }
 
 export function handleVotingCreated(event: VotingCreatedEvent): void {
@@ -80,7 +176,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
         event.params.auctionId.toString(),
         aminalOneIndex.toString(),
         aminalTwoIndex.toString(),
-      ],
+      ]
     );
     return;
   }
@@ -138,7 +234,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
       aminalTwoIndex.toString(),
       aminalTwoAddress.toHexString(),
       event.params.totalLove.toString(),
-    ],
+    ]
   );
 }
 
@@ -163,7 +259,7 @@ export function handleVotingSettled(event: VotingSettledEvent): void {
 
   log.info(
     "Gene auction settled: {} with winning genes {}, child will be linked via AminalSpawned event",
-    [event.params.auctionId.toString(), event.params.winningGeneIds.toString()],
+    [event.params.auctionId.toString(), event.params.winningGeneIds.toString()]
   );
 }
 
@@ -193,7 +289,7 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId,
+    event.params.geneId
   );
   let proposal = new GeneProposal(proposalId);
   proposal.auction = auction.id;
@@ -219,7 +315,7 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
       event.params.category.toString(),
       event.params.proposer.toHexString(),
       proposal.geneNFT.toHexString(),
-    ],
+    ]
   );
 }
 
@@ -238,7 +334,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId,
+    event.params.geneId
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -258,42 +354,23 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
     user.save();
   }
 
-  // Get user's voting power from contract since the event doesn't include it
-  let geneAuctionContract = GeneAuctionContract.bind(event.address);
-  let votingPowerResult = geneAuctionContract.try_getUserVotingPower(
-    event.params.auctionId,
+  // Get user's voting power from event parameter
+  let votingPower = event.params.userVotingPower;
+
+  // Use helper function to handle vote update consistently
+  handleVoteUpdate(
     event.params.voter,
+    event.params.auctionId,
+    event.params.category,
+    proposal,
+    votingPower,
+    false, // Regular vote, not removal
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    auction,
+    user
   );
-  let votingPower = votingPowerResult.reverted
-    ? BigInt.fromI32(0)
-    : votingPowerResult.value;
-
-  // Find and subtract any previous regular votes by this user on this proposal
-  let existingVotes = proposal.votes.load();
-  for (let i = 0; i < existingVotes.length; i++) {
-    let existingVote = existingVotes[i];
-    if (existingVote.voter.equals(user.id) && !existingVote.isRemoveVote) {
-      // Subtract the previous vote amount
-      proposal.loveVotes = proposal.loveVotes.minus(existingVote.loveAmount);
-    }
-  }
-
-  // Create new vote entity (always create new since GeneVote is immutable)
-  let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
-  let vote = new GeneVote(voteId);
-  vote.auction = auction.id;
-  vote.proposal = proposal.id;
-  vote.voter = user.id;
-  vote.isRemoveVote = false; // Regular vote
-  vote.loveAmount = votingPower;
-  vote.blockNumber = event.block.number;
-  vote.blockTimestamp = event.block.timestamp;
-  vote.transactionHash = event.transaction.hash;
-  vote.save();
-
-  // Add the new vote amount
-  proposal.loveVotes = proposal.loveVotes.plus(votingPower);
-  proposal.save();
 
   log.info(
     "Gene vote cast for auction {}: gene {} trait {} by {} with love {}",
@@ -303,7 +380,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
       event.params.category.toString(),
       event.params.voter.toHexString(),
       votingPower.toString(),
-    ],
+    ]
   );
 }
 
@@ -322,7 +399,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId,
+    event.params.geneId
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -332,7 +409,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
         event.params.auctionId.toString(),
         event.params.geneId.toString(),
         event.params.category.toString(),
-      ],
+      ]
     );
     return;
   }
@@ -345,32 +422,20 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
     user.save();
   }
 
-  // Find and subtract any previous removal votes by this user on this proposal
-  let existingVotes = proposal.votes.load();
-  for (let i = 0; i < existingVotes.length; i++) {
-    let existingVote = existingVotes[i];
-    if (existingVote.voter.equals(user.id) && existingVote.isRemoveVote) {
-      // Subtract the previous removal vote amount
-      proposal.removeVotes = proposal.removeVotes.minus(existingVote.loveAmount);
-    }
-  }
-
-  // Create new removal vote entity (always create new since GeneVote is immutable)
-  let voteId = event.transaction.hash.concatI32(event.logIndex.toI32());
-  let vote = new GeneVote(voteId);
-  vote.auction = auction.id;
-  vote.proposal = proposal.id;
-  vote.voter = user.id;
-  vote.isRemoveVote = true; // Removal vote
-  vote.loveAmount = event.params.voteWeight;
-  vote.blockNumber = event.block.number;
-  vote.blockTimestamp = event.block.timestamp;
-  vote.transactionHash = event.transaction.hash;
-  vote.save();
-
-  // Add the new removal vote amount
-  proposal.removeVotes = proposal.removeVotes.plus(event.params.voteWeight);
-  proposal.save();
+  // Use helper function to handle removal vote consistently
+  handleVoteUpdate(
+    event.params.voter,
+    event.params.auctionId,
+    event.params.category,
+    proposal,
+    event.params.voteWeight,
+    true, // This is a removal vote
+    event.block.number,
+    event.block.timestamp,
+    event.transaction.hash,
+    auction,
+    user
+  );
 
   log.info(
     "Gene removal vote cast for auction {}: gene {} trait {} by {} with love {}",
@@ -380,7 +445,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
       event.params.category.toString(),
       event.params.voter.toHexString(),
       event.params.voteWeight.toString(),
-    ],
+    ]
   );
 }
 
@@ -389,7 +454,7 @@ export function handleGeneRemoved(event: GeneRemovedEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId,
+    event.params.geneId
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -399,7 +464,7 @@ export function handleGeneRemoved(event: GeneRemovedEvent): void {
         event.params.auctionId.toString(),
         event.params.geneId.toString(),
         event.params.category.toString(),
-      ],
+      ]
     );
     return;
   }
@@ -434,15 +499,8 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
     user.save();
   }
 
-  // Get user's voting power from contract since the event doesn't include it
-  let geneAuctionContract = GeneAuctionContract.bind(event.address);
-  let votingPowerResult = geneAuctionContract.try_getUserVotingPower(
-    event.params.auctionId,
-    event.params.voter,
-  );
-  let votingPower = votingPowerResult.reverted
-    ? BigInt.fromI32(0)
-    : votingPowerResult.value;
+  // Get user's voting power from event parameter
+  let votingPower = event.params.userVotingPower;
 
   log.info("Bulk vote cast for auction {} by {} with total vote weight {}", [
     event.params.auctionId.toString(),
@@ -455,83 +513,47 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
   let geneIds = event.params.geneIds;
   for (let i = 0; i < geneIds.length; i++) {
     let geneId = geneIds[i];
-    if (!geneId.isZero()) {
-      // Create proposal ID for this gene/category combination
-      let proposalId = createProposalId(
-        event.params.auctionId,
-        BigInt.fromI32(i),
-        geneId,
+    // Create proposal ID for this gene/category combination
+    let proposalId = createProposalId(
+      event.params.auctionId,
+      BigInt.fromI32(i),
+      geneId
+    );
+    let proposal = GeneProposal.load(proposalId);
+
+    if (!proposal) {
+      log.warning(
+        "Gene proposal not found for bulk vote: auction {} gene {} trait {} - creating proposal automatically",
+        [event.params.auctionId.toString(), geneId.toString(), i.toString()]
       );
-      let proposal = GeneProposal.load(proposalId);
-
-      if (!proposal) {
-        log.warning(
-          "Gene proposal not found for bulk vote: auction {} gene {} trait {} - creating proposal automatically",
-          [event.params.auctionId.toString(), geneId.toString(), i.toString()],
-        );
-
-        // Auto-create the proposal if it doesn't exist
-        let genesContractAddress = getGenesContractAddress(event.address);
-        proposal = new GeneProposal(proposalId);
-        proposal.auction = auction.id;
-        proposal.geneNFT = createGeneNFTId(genesContractAddress, geneId);
-        proposal.traitType = i;
-        proposal.proposer = user.id; // The voter becomes the proposer
-        proposal.loveVotes = BigInt.fromI32(0);
-        proposal.removeVotes = BigInt.fromI32(0);
-        proposal.removed = false;
-        proposal.blockNumber = event.block.number;
-        proposal.blockTimestamp = event.block.timestamp;
-        proposal.transactionHash = event.transaction.hash;
-        proposal.save();
-
-        log.info(
-          "Auto-created gene proposal for bulk vote: auction {} gene {} trait {}",
-          [event.params.auctionId.toString(), geneId.toString(), i.toString()],
-        );
-      }
-
-      // Find and subtract any previous regular votes by this user on this proposal
-      let existingVotes = proposal.votes.load();
-      for (let j = 0; j < existingVotes.length; j++) {
-        let existingVote = existingVotes[j];
-        if (existingVote.voter.equals(user.id) && !existingVote.isRemoveVote) {
-          // Subtract the previous vote amount
-          proposal.loveVotes = proposal.loveVotes.minus(existingVote.loveAmount);
-        }
-      }
-
-      // Create new vote entity for this individual vote (always create new since GeneVote is immutable)
-      // Use a unique ID that includes the trait category to avoid collisions
-      let voteId = event.transaction.hash
-        .concatI32(event.logIndex.toI32())
-        .concatI32(i); // Add category index to make it unique
-      let vote = new GeneVote(voteId);
-      vote.auction = auction.id;
-      vote.proposal = proposal.id;
-      vote.voter = user.id;
-      vote.isRemoveVote = false; // Regular vote
-      vote.loveAmount = votingPower;
-      vote.blockNumber = event.block.number;
-      vote.blockTimestamp = event.block.timestamp;
-      vote.transactionHash = event.transaction.hash;
-      vote.save();
-
-      // Add the new vote amount
-      proposal.loveVotes = proposal.loveVotes.plus(votingPower);
-      proposal.save();
-
-      log.info(
-        "Individual vote created from bulk vote for auction {}: gene {} trait {} by {} with love {}",
-        [
-          event.params.auctionId.toString(),
-          geneId.toString(),
-          i.toString(),
-          event.params.voter.toHexString(),
-          votingPower.toString(),
-        ],
-      );
+      return;
     }
+
+    // Use helper function to handle vote update consistently
+    handleVoteUpdate(
+      event.params.voter,
+      event.params.auctionId,
+      i,
+      proposal,
+      votingPower,
+      false, // Regular vote, not removal
+      event.block.number,
+      event.block.timestamp,
+      event.transaction.hash,
+      auction,
+      user
+    );
+
+    log.info(
+      "Individual vote created from bulk vote for auction {}: gene {} trait {} by {} with love {}",
+      [
+        event.params.auctionId.toString(),
+        geneId.toString(),
+        i.toString(),
+        event.params.voter.toHexString(),
+        votingPower.toString(),
+      ]
+    );
   }
 }
 
@@ -593,6 +615,6 @@ export function handleGeneCreatorPayout(event: GeneCreatorPayoutEvent): void {
       event.params.geneId.toString(),
       event.params.creator.toHexString(),
       event.params.amount.toString(),
-    ],
+    ]
   );
 }

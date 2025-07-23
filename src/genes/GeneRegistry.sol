@@ -36,7 +36,12 @@ contract GeneRegistry is IAminalStructs, Ownable {
     error EmptySVG();
     error InvalidSVG();
 
-    event GeneCreated(uint256 indexed geneId, address indexed creator, VisualsCat indexed category, string svg);
+    event GeneCreated(
+        uint256 indexed geneId,
+        address indexed creator,
+        VisualsCat indexed category,
+        string svg
+    );
 
     constructor(address _geneNFT) {
         geneNFT = Genes(_geneNFT);
@@ -49,7 +54,10 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @param category The visual category for the trait
      * @return geneId The ID of the created Gene NFT
      */
-    function createGene(string calldata svg, VisualsCat category) external returns (uint256 geneId) {
+    function createGene(
+        string calldata svg,
+        VisualsCat category
+    ) external returns (uint256 geneId) {
         if (bytes(svg).length == 0) revert EmptySVG();
         if (bytes(svg).length > MAX_SVG_LENGTH) revert SVGTooLarge();
 
@@ -91,7 +99,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @return category The visual category
      * @return svg The SVG content
      */
-    function getGeneInfo(uint256 geneId)
+    function getGeneInfo(
+        uint256 geneId
+    )
         external
         view
         returns (address creator, VisualsCat category, string memory svg)
@@ -104,7 +114,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @param creator The creator address
      * @return geneIds Array of Gene NFT IDs created by the address
      */
-    function getGenesByCreator(address creator) external view returns (uint256[] memory geneIds) {
+    function getGenesByCreator(
+        address creator
+    ) external view returns (uint256[] memory geneIds) {
         // Count genes by creator
         uint256 count = 0;
         for (uint256 i = 0; i < totalGenesCreated; i++) {
@@ -127,7 +139,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @param category The visual category
      * @return geneIds Array of Gene NFT IDs in the category
      */
-    function getGenesByCategory(VisualsCat category) external view returns (uint256[] memory geneIds) {
+    function getGenesByCategory(
+        VisualsCat category
+    ) external view returns (uint256[] memory geneIds) {
         // Count genes by category
         uint256 count = 0;
         for (uint256 i = 0; i < totalGenesCreated; i++) {
@@ -143,6 +157,17 @@ contract GeneRegistry is IAminalStructs, Ownable {
                 index++;
             }
         }
+    }
+
+    /**
+     * @notice Get the visual category for a Gene NFT
+     * @param geneId The ID of the Gene NFT
+     * @return category The visual category of the gene
+     */
+    function getGeneCategory(
+        uint256 geneId
+    ) external view returns (VisualsCat category) {
+        return geneCategories[geneId];
     }
 
     /**

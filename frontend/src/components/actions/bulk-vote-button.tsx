@@ -232,9 +232,10 @@ export default function BulkVoteButton({
         disabled={!enabled || !someGenesSelected || isPending || isConfirming}
         className={`
           w-full font-medium py-3 h-auto transition-all duration-200
-          ${enabled && someGenesSelected 
-            ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          ${
+            enabled && someGenesSelected
+              ? 'bg-blue-600 hover:bg-blue-700 text-white'
+              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
           }
         `}
       >
@@ -245,17 +246,11 @@ export default function BulkVoteButton({
               Casting Votes...
             </>
           ) : !enabled ? (
-            <>
-              Connect Wallet
-            </>
+            <>Connect Wallet</>
           ) : !someGenesSelected ? (
-            <>
-              Select Genes to Vote
-            </>
+            <>Select Genes to Vote</>
           ) : (
-            <>
-              🗳️ Vote on Selected Traits
-            </>
+            <>🗳️ Select Genes</>
           )}
         </span>
       </Button>

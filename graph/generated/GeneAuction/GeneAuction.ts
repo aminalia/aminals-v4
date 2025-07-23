@@ -34,6 +34,10 @@ export class BulkVoteCast__Params {
   get geneIds(): Array<BigInt> {
     return this._event.parameters[2].value.toBigIntArray();
   }
+
+  get userVotingPower(): BigInt {
+    return this._event.parameters[3].value.toBigInt();
+  }
 }
 
 export class GeneCreatorPayout extends ethereum.Event {
@@ -183,6 +187,10 @@ export class GeneVoteCast__Params {
 
   get voter(): Address {
     return this._event.parameters[3].value.toAddress();
+  }
+
+  get userVotingPower(): BigInt {
+    return this._event.parameters[4].value.toBigInt();
   }
 }
 
@@ -504,29 +512,6 @@ export class GeneAuction extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toBigInt());
   }
 
-  TRAIT_CATEGORIES(): BigInt {
-    let result = super.call(
-      "TRAIT_CATEGORIES",
-      "TRAIT_CATEGORIES():(uint256)",
-      [],
-    );
-
-    return result[0].toBigInt();
-  }
-
-  try_TRAIT_CATEGORIES(): ethereum.CallResult<BigInt> {
-    let result = super.tryCall(
-      "TRAIT_CATEGORIES",
-      "TRAIT_CATEGORIES():(uint256)",
-      [],
-    );
-    if (result.reverted) {
-      return new ethereum.CallResult();
-    }
-    let value = result.value;
-    return ethereum.CallResult.fromValue(value[0].toBigInt());
-  }
-
   TREASURY_TRANSFER_PERCENTAGE(): BigInt {
     let result = super.call(
       "TREASURY_TRANSFER_PERCENTAGE",
@@ -614,7 +599,7 @@ export class GeneAuction extends ethereum.SmartContract {
   auctions(param0: BigInt): GeneAuction__auctionsResult {
     let result = super.call(
       "auctions",
-      "auctions(uint256):(uint256,uint256,uint256,uint256,uint256,bool)",
+      "auctions(uint256):(uint256,uint256,uint256,uint64,uint64,bool)",
       [ethereum.Value.fromUnsignedBigInt(param0)],
     );
 
@@ -633,7 +618,7 @@ export class GeneAuction extends ethereum.SmartContract {
   ): ethereum.CallResult<GeneAuction__auctionsResult> {
     let result = super.tryCall(
       "auctions",
-      "auctions(uint256):(uint256,uint256,uint256,uint256,uint256,bool)",
+      "auctions(uint256):(uint256,uint256,uint256,uint64,uint64,bool)",
       [ethereum.Value.fromUnsignedBigInt(param0)],
     );
     if (result.reverted) {
@@ -724,7 +709,7 @@ export class GeneAuction extends ethereum.SmartContract {
   getAuctionInfo(auctionId: BigInt): GeneAuction__getAuctionInfoResult {
     let result = super.call(
       "getAuctionInfo",
-      "getAuctionInfo(uint256):(uint256,uint256,uint256,uint256,uint256,bool)",
+      "getAuctionInfo(uint256):(uint256,uint256,uint256,uint64,uint64,bool)",
       [ethereum.Value.fromUnsignedBigInt(auctionId)],
     );
 
@@ -743,7 +728,7 @@ export class GeneAuction extends ethereum.SmartContract {
   ): ethereum.CallResult<GeneAuction__getAuctionInfoResult> {
     let result = super.tryCall(
       "getAuctionInfo",
-      "getAuctionInfo(uint256):(uint256,uint256,uint256,uint256,uint256,bool)",
+      "getAuctionInfo(uint256):(uint256,uint256,uint256,uint64,uint64,bool)",
       [ethereum.Value.fromUnsignedBigInt(auctionId)],
     );
     if (result.reverted) {

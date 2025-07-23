@@ -48,6 +48,8 @@ export interface TraitSelectorProps {
   selectedParts: SelectedParts;
   onPartSelection: (part: string, index: number) => void;
   disabled?: boolean;
+  onProposeGene?: () => void;
+  showProposeButton?: boolean;
 }
 
 const TraitSelector: React.FC<TraitSelectorProps> = ({
@@ -55,6 +57,8 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
   selectedParts,
   onPartSelection,
   disabled = false,
+  onProposeGene,
+  showProposeButton = false,
 }) => {
   const [activeCategory, setActiveCategory] =
     useState<TraitCategory>('background');
@@ -77,7 +81,20 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
         disabled ? 'opacity-60 pointer-events-none' : ''
       }`}
     >
-      <h3 className="text-lg font-semibold text-gray-800">Gene Selection</h3>
+      {/* Header with Propose Gene Button */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-gray-800">Gene Selection</h3>
+        {showProposeButton && onProposeGene && (
+          <Button
+            onClick={onProposeGene}
+            size="sm"
+            className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto"
+            disabled={disabled}
+          >
+            + Propose Gene
+          </Button>
+        )}
+      </div>
 
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-1 overflow-x-auto">
@@ -119,7 +136,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
             const isParent = (trait as any)?.isParentGene;
             const isCommunity = (trait as any)?.isCommunityGene;
             const parentIndex = (trait as any)?.parentIndex;
-            
+
             return (
               <div
                 key={index}
@@ -153,7 +170,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                     C
                   </div>
                 )}
-                
+
                 {trait?.svg ? (
                   <svg
                     viewBox="0 0 1000 1000"
@@ -170,7 +187,7 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
               </div>
             );
           })}
-          
+
           {/* Empty Gene Option - Always show as last option */}
           <div
             className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all
