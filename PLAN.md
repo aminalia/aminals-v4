@@ -21,10 +21,6 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### UI
 
 - Trait links don't work on aminal detail page
-- Hide things in propose gene that you can't propose (Should anyone be able to propose any gene?)
-- Auction card shows child as settling even when auction is over (might be a graph issue)
-- View traits and Aminals on Open Sea
-- Show how much ETH Aminals have
 
 #### Contracts
 
@@ -35,6 +31,7 @@ In general we need a review of what things cost (even if the cost is in terms of
 - Clean up and document scripts
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
+- When initializing aminal genes during deployment, gene #0 has issues
 
 #### Indexer
 

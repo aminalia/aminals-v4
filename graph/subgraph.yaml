@@ -35,7 +35,7 @@ dataSources:
     name: AminalFactory
     network: sepolia
     source:
-      address: "0x487a60b69bd81d3bd6d35c0d632b849b44f4a55d"
+      address: "0x54b5b4f464fdb5f34d2b899c435418ab43ebf304"
       abi: AminalFactory
       startBlock: 8786150
     mapping:
@@ -62,7 +62,7 @@ dataSources:
     name: GeneAuction
     network: sepolia
     source:
-      address: "0xb10afa4c9f04242feccc8015822dfc5d39b58b07"
+      address: "0x5de69349b98094fa742bb9e426c31ab46a7b7e5e"
       abi: GeneAuction
       startBlock: 8786150
     mapping:
@@ -105,7 +105,7 @@ dataSources:
     name: Genes
     network: sepolia
     source:
-      address: "0x673bfea6d500ccef982499146f58d610ccfcaad9"
+      address: "0xd5322f9ae14927a67802e5bc8131bfaabe799dc0"
       abi: Genes
       startBlock: 8786150
     mapping:
@@ -126,7 +126,7 @@ dataSources:
     name: GeneRegistry
     network: sepolia
     source:
-      address: "0xd5ca2e91099d47e204ce47d3f293b82647756947"
+      address: "0x37980de8a71fc6147e61e1a9e23735e97bfb2170"
       abi: GeneRegistry
       startBlock: 8786150
     mapping:
