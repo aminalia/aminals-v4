@@ -5576,11 +5576,11 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:^18.16.12":
-  version: 18.19.119
-  resolution: "@types/node@npm:18.19.119"
+  version: 18.19.120
+  resolution: "@types/node@npm:18.19.120"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10c0/da8a015833e4e2d2da3dbc1129b0ce6681d7b5b6a0eb8884e618cc7a28bc2cdf24724c481536f1ddf5fb769208604b7d5502f566106f26068dc8abe72375fd4f
+  checksum: 10c0/fc436b93a3c9367b69d11a1c5d70cc923df6ea60141dd508ce2a248160c3bf8a04c658548a59df8ab9148b68bd58954fb603917baab3e2bc9da567f655534e5a
   languageName: node
   linkType: hard
 
@@ -6712,6 +6712,7 @@ __metadata:
     eslint: "npm:^8.15.0"
     eslint-config-next: "npm:^14.0.1"
     eslint-config-prettier: "npm:^9.0.0"
+    graphql: "npm:^16.11.0"
     lucide-react: "npm:^0.525.0"
     next: "npm:^14.0.1"
     postcss: "npm:^8.4.31"
@@ -6744,7 +6745,6 @@ __metadata:
     "@graphprotocol/graph-ts": "npm:^0.38.1"
     js-yaml: "npm:^4.1.0"
     matchstick-as: "npm:0.6.0"
-    undici: "npm:^7.11.0"
   languageName: unknown
   linkType: soft
 
@@ -10330,7 +10330,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"graphql@npm:16.11.0, graphql@npm:^16.6.0":
+"graphql@npm:16.11.0, graphql@npm:^16.11.0, graphql@npm:^16.6.0":
   version: 16.11.0
   resolution: "graphql@npm:16.11.0"
   checksum: 10c0/124da7860a2292e9acf2fed0c71fc0f6a9b9ca865d390d112bdd563c1f474357141501c12891f4164fe984315764736ad67f705219c62f7580681d431a85db88
@@ -15520,7 +15520,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici@npm:^7.10.0, undici@npm:^7.11.0":
+"undici@npm:^7.10.0":
   version: 7.12.0
   resolution: "undici@npm:7.12.0"
   checksum: 10c0/27aada7bd8d2588f146a2ba554f2f6b7593f9c2d14bf3797bbc7b74825d9bee38eb3ab61e2d0ee01bb827a9ac8017eb2991cb4f06d9ed9971c8a142d8306fbab
