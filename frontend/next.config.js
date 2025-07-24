@@ -5,6 +5,15 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    optimizeCss: true,
+    optimizePackageImports: ['@radix-ui/react-icons', 'lucide-react'],
+  },
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  swcMinify: true,
+  compress: true,
   webpack: (config) => {
     config.resolve.fallback = { fs: false, net: false, tls: false };
 
@@ -23,6 +32,26 @@ const nextConfig = {
         return plugin;
       }
     );
+
+    // Additional optimizations
+    config.optimization.splitChunks = {
+      chunks: 'all',
+      maxInitialRequests: 25,
+      maxAsyncRequests: 25,
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    };
+
+    // Tree shaking optimization for production
+    if (process.env.NODE_ENV === 'production') {
+      config.optimization.usedExports = true;
+      config.optimization.sideEffects = false;
+    }
 
     return config;
   },

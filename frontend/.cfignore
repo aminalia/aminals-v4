@@ -1,0 +1,107 @@
+# Dependencies
+node_modules/
+.yarn/
+.pnp.*
+
+# Build artifacts
+.next/
+out/
+build/
+dist/
+.vercel/
+
+# Cache directories
+.cache/
+.turbo/
+.swc/
+*.tsbuildinfo
+.eslintcache
+
+# Foundry/Solidity (not needed for frontend build)
+cache/
+out/
+broadcast/
+lib/
+src/
+test/
+script/
+*.toml
+remappings.txt
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Documentation
+README.md
+CLAUDE.md
+DEPLOYMENT.md
+*.md
+docs/
+
+# Test files
+**/*.test.*
+**/*.spec.*
+coverage/
+.nyc_output/
+
+# Source maps (can be large)
+**/*.map
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+.gitmodules
+
+# Yarn/NPM
+.yarnrc.yml
+.npmrc
+package-lock.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Graph client cache
+.graphclient/
+
+# Prettier/ESLint configs
+.prettierrc*
+.prettierignore
+.eslintrc*
+.eslintignore
+
+# Deployment scripts
+deploy-*.sh
+wrangler.toml
