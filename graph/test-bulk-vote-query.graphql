@@ -1,0 +1,165 @@
+# Test queries to debug bulk vote indexing
+
+# Query to check if an auction exists and its details
+query GetAuction($auctionId: ID!) {
+  geneAuction(id: $auctionId) {
+    id
+    auctionId
+    totalLove
+    finished
+    aminalOne {
+      id
+      aminalIndex
+    }
+    aminalTwo {
+      id
+      aminalIndex
+    }
+    proposals {
+      id
+      traitType
+      geneNFT {
+        id
+        tokenId
+      }
+      loveVotes
+      removeVotes
+      removed
+      proposer {
+        id
+      }
+    }
+    votes {
+      id
+      voter {
+        id
+        address
+      }
+      proposal {
+        id
+      }
+      isRemoveVote
+      loveAmount
+    }
+  }
+}
+
+# Query to find all auctions and check their IDs
+query ListAuctions {
+  geneAuctions(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+    id
+    auctionId
+    totalLove
+    finished
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
+
+# Query to check votes by a specific user
+query GetUserVotes($userAddress: ID!) {
+  user(id: $userAddress) {
+    id
+    address
+    geneVotes {
+      id
+      auction {
+        id
+        auctionId
+      }
+      proposal {
+        id
+        traitType
+        geneNFT {
+          tokenId
+        }
+      }
+      isRemoveVote
+      loveAmount
+      blockNumber
+      transactionHash
+    }
+  }
+}
+
+# Query to check all proposals for a specific auction
+query GetAuctionProposals($auctionId: String!) {
+  geneProposals(where: { auction: $auctionId }) {
+    id
+    traitType
+    geneNFT {
+      id
+      tokenId
+    }
+    proposer {
+      id
+    }
+    loveVotes
+    removeVotes
+    removed
+    votes {
+      id
+      voter {
+        address
+      }
+      loveAmount
+    }
+  }
+}
+
+# Query to check recent gene votes
+query RecentGeneVotes {
+  geneVotes(first: 20, orderBy: blockTimestamp, orderDirection: desc) {
+    id
+    auction {
+      id
+      auctionId
+    }
+    proposal {
+      id
+      traitType
+      geneNFT {
+        tokenId
+      }
+    }
+    voter {
+      id
+      address
+    }
+    isRemoveVote
+    loveAmount
+    blockNumber
+    blockTimestamp
+    transactionHash
+  }
+}
+
+# Query to check if specific gene proposals exist
+query CheckProposalExists($proposalId: ID!) {
+  geneProposal(id: $proposalId) {
+    id
+    auction {
+      id
+      auctionId
+    }
+    traitType
+    geneNFT {
+      id
+      tokenId
+    }
+    proposer {
+      id
+    }
+    loveVotes
+    removeVotes
+  }
+}
+
+# Query to debug auction ID format issues
+query DebugAuctionIds {
+  geneAuctions(first: 100) {
+    id
+    auctionId
+  }
+}

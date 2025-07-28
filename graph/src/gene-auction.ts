@@ -25,7 +25,7 @@ import { AMINAL_FACTORY_ADDRESS, GENES_NFT_ADDRESS } from "./constants";
 // Helper function to create consistent auction ID format
 export function createAuctionId(auctionId: BigInt): Bytes {
   return Bytes.fromHexString(
-    "0x" + (auctionId.toI32() * 0x1000000).toString(16).padStart(8, "0")
+    "0x" + (auctionId.toI32() * 0x1000000).toString(16).padStart(8, "0"),
   );
 }
 
@@ -33,7 +33,7 @@ export function createAuctionId(auctionId: BigInt): Bytes {
 function createProposalId(
   auctionId: BigInt,
   category: BigInt,
-  geneId: BigInt
+  geneId: BigInt,
 ): Bytes {
   let auctionIdHex = createAuctionId(auctionId);
   return auctionIdHex
@@ -69,7 +69,7 @@ function handleVoteUpdate(
   blockTimestamp: BigInt,
   transactionHash: Bytes,
   auction: GeneAuction,
-  user: User
+  user: User,
 ): void {
   // Create vote ID based on voter + auction + category (one vote per category per user)
   let voteId = voter.concatI32(auctionId.toI32()).concatI32(category);
@@ -102,11 +102,11 @@ function handleVoteUpdate(
       if (oldProposal) {
         if (existingVote.isRemoveVote) {
           oldProposal.removeVotes = oldProposal.removeVotes.minus(
-            existingVote.loveAmount
+            existingVote.loveAmount,
           );
         } else {
           oldProposal.loveVotes = oldProposal.loveVotes.minus(
-            existingVote.loveAmount
+            existingVote.loveAmount,
           );
         }
         oldProposal.save();
@@ -176,7 +176,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
         event.params.auctionId.toString(),
         aminalOneIndex.toString(),
         aminalTwoIndex.toString(),
-      ]
+      ],
     );
     return;
   }
@@ -193,7 +193,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
         aminalOneAddress.toHexString(),
         aminalOneIndex.toString(),
         event.params.auctionId.toString(),
-      ]
+      ],
     );
     return;
   }
@@ -206,7 +206,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
         aminalTwoAddress.toHexString(),
         aminalTwoIndex.toString(),
         event.params.auctionId.toString(),
-      ]
+      ],
     );
     return;
   }
@@ -234,7 +234,7 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
       aminalTwoIndex.toString(),
       aminalTwoAddress.toHexString(),
       event.params.totalLove.toString(),
-    ]
+    ],
   );
 }
 
@@ -259,7 +259,7 @@ export function handleVotingSettled(event: VotingSettledEvent): void {
 
   log.info(
     "Gene auction settled: {} with winning genes {}, child will be linked via AminalSpawned event",
-    [event.params.auctionId.toString(), event.params.winningGeneIds.toString()]
+    [event.params.auctionId.toString(), event.params.winningGeneIds.toString()],
   );
 }
 
@@ -289,7 +289,7 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId
+    event.params.geneId,
   );
   let proposal = new GeneProposal(proposalId);
   proposal.auction = auction.id;
@@ -315,7 +315,7 @@ export function handleGeneProposed(event: GeneProposedEvent): void {
       event.params.category.toString(),
       event.params.proposer.toHexString(),
       proposal.geneNFT.toHexString(),
-    ]
+    ],
   );
 }
 
@@ -334,7 +334,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId
+    event.params.geneId,
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -369,7 +369,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
     event.block.timestamp,
     event.transaction.hash,
     auction,
-    user
+    user,
   );
 
   log.info(
@@ -380,7 +380,7 @@ export function handleGeneVoteCast(event: GeneVoteCastEvent): void {
       event.params.category.toString(),
       event.params.voter.toHexString(),
       votingPower.toString(),
-    ]
+    ],
   );
 }
 
@@ -399,7 +399,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId
+    event.params.geneId,
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -409,7 +409,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
         event.params.auctionId.toString(),
         event.params.geneId.toString(),
         event.params.category.toString(),
-      ]
+      ],
     );
     return;
   }
@@ -434,7 +434,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
     event.block.timestamp,
     event.transaction.hash,
     auction,
-    user
+    user,
   );
 
   log.info(
@@ -445,7 +445,7 @@ export function handleGeneRemovalVote(event: GeneRemovalVoteEvent): void {
       event.params.category.toString(),
       event.params.voter.toHexString(),
       event.params.voteWeight.toString(),
-    ]
+    ],
   );
 }
 
@@ -454,7 +454,7 @@ export function handleGeneRemoved(event: GeneRemovedEvent): void {
   let proposalId = createProposalId(
     event.params.auctionId,
     BigInt.fromI32(event.params.category),
-    event.params.geneId
+    event.params.geneId,
   );
   let proposal = GeneProposal.load(proposalId);
   if (!proposal) {
@@ -464,7 +464,7 @@ export function handleGeneRemoved(event: GeneRemovedEvent): void {
         event.params.auctionId.toString(),
         event.params.geneId.toString(),
         event.params.category.toString(),
-      ]
+      ],
     );
     return;
   }
@@ -513,27 +513,121 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
   let geneIds = event.params.geneIds;
   for (let i = 0; i < geneIds.length; i++) {
     let geneId = geneIds[i];
+
+    // Skip zero gene IDs (no vote for this category)
+    if (geneId.equals(BigInt.zero())) {
+      continue;
+    }
+
     // Create proposal ID for this gene/category combination
     let proposalId = createProposalId(
       event.params.auctionId,
       BigInt.fromI32(i),
-      geneId
+      geneId,
     );
     let proposal = GeneProposal.load(proposalId);
 
     if (!proposal) {
-      log.warning(
-        "Gene proposal not found for bulk vote: auction {} gene {} trait {} - creating proposal automatically",
-        [event.params.auctionId.toString(), geneId.toString(), i.toString()]
+      // Check if this is a parent trait (which can be voted on without explicit proposal)
+      let aminalOne = Aminal.load(auction.aminalOne);
+      let aminalTwo = Aminal.load(auction.aminalTwo);
+
+      if (!aminalOne || !aminalTwo) {
+        log.warning(
+          "Parent Aminals not found for auction {} - skipping vote for gene {} trait {}",
+          [event.params.auctionId.toString(), geneId.toString(), i.toString()],
+        );
+        continue;
+      }
+
+      // Check if gene ID matches parent traits for this category
+      let isParentTrait = false;
+      if (
+        i == 0 &&
+        (geneId.equals(aminalOne.backId) || geneId.equals(aminalTwo.backId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 1 &&
+        (geneId.equals(aminalOne.armId) || geneId.equals(aminalTwo.armId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 2 &&
+        (geneId.equals(aminalOne.tailId) || geneId.equals(aminalTwo.tailId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 3 &&
+        (geneId.equals(aminalOne.earsId) || geneId.equals(aminalTwo.earsId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 4 &&
+        (geneId.equals(aminalOne.bodyId) || geneId.equals(aminalTwo.bodyId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 5 &&
+        (geneId.equals(aminalOne.faceId) || geneId.equals(aminalTwo.faceId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 6 &&
+        (geneId.equals(aminalOne.mouthId) || geneId.equals(aminalTwo.mouthId))
+      ) {
+        isParentTrait = true;
+      } else if (
+        i == 7 &&
+        (geneId.equals(aminalOne.miscId) || geneId.equals(aminalTwo.miscId))
+      ) {
+        isParentTrait = true;
+      }
+
+      if (!isParentTrait) {
+        log.warning(
+          "Gene {} is not a valid parent trait for auction {} trait {} - skipping this vote",
+          [geneId.toString(), event.params.auctionId.toString(), i.toString()],
+        );
+        continue;
+      }
+
+      // Create or load system user for implicit proposals
+      let systemUser = User.load(Address.zero());
+      if (!systemUser) {
+        systemUser = new User(Address.zero());
+        systemUser.address = Address.zero();
+        systemUser.save();
+      }
+
+      // Create proposal for parent trait
+      proposal = new GeneProposal(proposalId);
+      proposal.auction = auction.id;
+      proposal.geneNFT = createGeneNFTId(
+        getGenesContractAddress(event.address),
+        geneId,
       );
-      return;
+      proposal.traitType = i;
+      proposal.proposer = systemUser.id; // Use system user for parent traits
+      proposal.loveVotes = BigInt.fromI32(0);
+      proposal.removeVotes = BigInt.fromI32(0);
+      proposal.removed = false;
+      proposal.blockNumber = event.block.number;
+      proposal.blockTimestamp = event.block.timestamp;
+      proposal.transactionHash = event.transaction.hash;
+      proposal.save();
+
+      log.info(
+        "Created implicit proposal for parent trait: auction {} gene {} trait {}",
+        [event.params.auctionId.toString(), geneId.toString(), i.toString()],
+      );
     }
 
     // Use helper function to handle vote update consistently
     handleVoteUpdate(
       event.params.voter,
       event.params.auctionId,
-      i,
+      i32(i),
       proposal,
       votingPower,
       false, // Regular vote, not removal
@@ -541,7 +635,7 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
       event.block.timestamp,
       event.transaction.hash,
       auction,
-      user
+      user,
     );
 
     log.info(
@@ -552,7 +646,7 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
         i.toString(),
         event.params.voter.toHexString(),
         votingPower.toString(),
-      ]
+      ],
     );
   }
 }
@@ -615,6 +709,6 @@ export function handleGeneCreatorPayout(event: GeneCreatorPayoutEvent): void {
       event.params.geneId.toString(),
       event.params.creator.toHexString(),
       event.params.amount.toString(),
-    ]
+    ],
   );
 }
