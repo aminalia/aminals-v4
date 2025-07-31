@@ -1,7 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
 import { getOrGenerateAminalPersonality } from '../../lib/gene-personality-storage';
-import { execute, GenesByIdsDocument } from '../../.graphclient';
+import { execute } from '../../.graphclient';
+import { GenesByIdsDocument, GenesByIdsQuery } from '../../src/resources/genes';
 
 interface ChatRequest {
   message: string;
@@ -105,55 +106,55 @@ export default async function handler(
     // Get or generate personality for this Aminal based on genes
     let personality = 'mysterious and enigmatic, holding secrets of the digital realm';
     
-    try {
-      // Collect valid gene IDs
-      const geneIdArray = Object.entries(geneIds)
-        .filter(([_, id]) => id && id !== '0')
-        .map(([_, id]) => id as string);
-
-      if (geneIdArray.length > 0) {
-        // Fetch gene data from GraphQL
-        const response = await execute(GenesByIdsDocument, {
-          ids: geneIdArray,
-        });
-
-        if (!response.errors && response.data?.geneNFTs) {
-          const genes = response.data.geneNFTs;
+    if (geneIds && Object.values(geneIds).some(id => id)) {
+      try {
+        // Get gene IDs that exist
+        const existingGeneIds = Object.values(geneIds).filter(Boolean) as string[];
+        
+        if (existingGeneIds.length > 0) {
+          // Fetch gene data from GraphQL
+          const response = await execute(GenesByIdsDocument, {
+            ids: existingGeneIds
+          });
           
-          // Map genes to trait types
-          const traitTypeMap: Record<string, number> = {
-            backId: 0, armId: 1, tailId: 2, earsId: 3,
-            bodyId: 4, faceId: 5, mouthId: 6, miscId: 7,
-          };
-
-          const geneData = Object.entries(geneIds)
-            .filter(([_, geneId]) => geneId && geneId !== '0')
-            .map(([geneKey, geneId]) => {
-              const gene = genes.find(g => g.tokenId === geneId);
-              return gene && gene.svg ? {
-                geneId: geneId!,
-                traitType: traitTypeMap[geneKey],
+          if (response.data?.geneNFTs && response.data.geneNFTs.length > 0) {
+            // Transform to expected format
+            const geneData = response.data.geneNFTs.map((gene: any) => {
+              // Map gene to trait type based on gene ID position
+              const geneIdEntries = Object.entries(geneIds);
+              let traitType = 7; // default to misc
+              
+              for (const [key, value] of geneIdEntries) {
+                if (value === gene.tokenId.toString()) {
+                  const traitTypeMap: Record<string, number> = {
+                    'backId': 0, 'armId': 1, 'tailId': 2, 'earsId': 3,
+                    'bodyId': 4, 'faceId': 5, 'mouthId': 6, 'miscId': 7
+                  };
+                  traitType = traitTypeMap[key] || 7;
+                  break;
+                }
+              }
+              
+              return {
+                geneId: gene.tokenId.toString(),
+                traitType,
                 svg: gene.svg,
-                name: gene.name || undefined,
-              } : null;
-            })
-            .filter(Boolean) as Array<{
-              geneId: string;
-              traitType: number;
-              svg: string;
-              name?: string;
-            }>;
-
-          if (geneData.length > 0) {
+                name: gene.name
+              };
+            });
+            
+            // Generate personality from genes
             personality = await getOrGenerateAminalPersonality(aminalAddress, geneData);
           }
         }
+      } catch (error) {
+        console.error('Error generating gene-based personality:', error);
+        // Fall back to default personality
       }
-    } catch (error) {
-      console.error('Error generating gene-based personality, using fallback:', error);
     }
-    
+
     const systemPrompt = await createSystemPrompt(personality, loveAmount || 0, aminalStats);
+    console.log("💬 System Prompt for", aminalAddress, ":", systemPrompt)
     const contextualMessage = conversationContext ?
       `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` :
       message;

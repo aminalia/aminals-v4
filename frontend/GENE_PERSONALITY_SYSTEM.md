@@ -25,14 +25,14 @@ Each Aminal has up to 8 genes, each contributing a personality trait:
 
 | Gene Type | Trait Type | Example Trait |
 |-----------|------------|---------------|
-| `backId` (0) | Background trait | "Has a bold and adventurous spirit" |
-| `armId` (1) | Arms trait | "Shows gentle and nurturing gestures" |
-| `tailId` (2) | Tail trait | "Displays playful and energetic movements" |
-| `earsId` (3) | Ears trait | "Listens carefully with keen attention" |
-| `bodyId` (4) | Body trait | "Carries themselves with quiet confidence" |
-| `faceId` (5) | Face trait | "Expresses emotions openly and honestly" |
-| `mouthId` (6) | Mouth trait | "Speaks with thoughtful consideration" |
-| `miscId` (7) | Misc trait | "Has a mischievous streak for harmless fun" |
+| `backId` (0) | Background trait | "bold and adventurous with a fearless spirit" |
+| `armId` (1) | Arms trait | "gentle and nurturing in interactions" |
+| `tailId` (2) | Tail trait | "playful and energetic in movement" |
+| `earsId` (3) | Ears trait | "attentive and keen in listening" |
+| `bodyId` (4) | Body trait | "confident and composed in demeanor" |
+| `faceId` (5) | Face trait | "expressive and honest with emotions" |
+| `mouthId` (6) | Mouth trait | "thoughtful and considerate in speech" |
+| `miscId` (7) | Misc trait | "mischievous with a love for harmless fun" |
 
 ## Implementation
 
@@ -53,12 +53,12 @@ const trait = await generateTraitFromGeneSvg(
 ```typescript
 // Combine all gene traits into full personality
 const personality = combineTraitsIntoPersonality({
-  back: "Has a bold and adventurous spirit",
-  arms: "Shows gentle and nurturing gestures", 
-  face: "Expresses emotions openly and honestly",
+  back: "bold and adventurous with a fearless spirit",
+  arms: "gentle and nurturing in interactions", 
+  face: "expressive and honest with emotions",
   // ... other traits
 });
-// Result: "This Aminal has a bold and adventurous spirit, shows gentle and nurturing gestures, expresses emotions openly and honestly."
+// Result: "This Aminal is bold and adventurous with a fearless spirit, gentle and nurturing in interactions, and expressive and honest with emotions."
 ```
 
 ## Storage Format

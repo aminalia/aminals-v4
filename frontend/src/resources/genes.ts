@@ -18,6 +18,7 @@ import {
 import { handleGraphQLError, queryKeys } from '../lib/query-client';
 
 export type { CategoryFilter, GeneFilter, GeneSort };
+export { GenesByIdsDocument, GenesByIdsQuery };
 
 type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
 

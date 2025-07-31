@@ -189,18 +189,22 @@ This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneNa
 Gene SVG:
 ${svgContent}
 
-Based on this visual element, generate a single sentence personality trait that this gene would contribute to an Aminal. The trait should:
-- Be specific to what this visual element suggests about personality
-- Be one sentence only
-- Focus on behavioral or personality characteristics
-- Be consistent - any Aminal with this exact gene should have this same trait
+Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal. 
 
-Examples:
-- "Has a bold and adventurous spirit that seeks out new challenges"
-- "Displays a gentle and nurturing nature towards others"
-- "Shows a mischievous tendency to play harmless pranks"
+IMPORTANT FORMAT REQUIREMENTS:
+- Write the trait as a phrase that can follow "is" or "has"
+- Do NOT start with "This Aminal" or "Exhibits" or "Shows" or "Tends to"
+- Use present tense descriptive phrases
+- Make it one cohesive trait, not a full sentence
 
-Respond with just the personality trait sentence, no preamble.`;
+Good examples:
+- "bold and adventurous with a love for new challenges"
+- "gentle and nurturing towards others"
+- "mischievous with a tendency for harmless pranks"
+- "calm and collected under pressure"
+- "energetic and always ready for action"
+
+Respond with just the trait phrase, no preamble.`;
 
   const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -344,13 +348,19 @@ function combineTraitsIntoPersonality(traits: AminalPersonality['traits']): stri
   }
   
   if (traitList.length === 1) {
-    return traitList[0];
+    return `This Aminal is ${traitList[0].toLowerCase()}.`;
   }
   
-  // Combine multiple traits into a coherent personality description
-  const intro = "This Aminal";
-  const combined = traitList.join(', ');
-  return `${intro} ${combined.toLowerCase()}.`;
+  // Clean and combine traits with proper grammar
+  const cleanedTraits = traitList.map(trait => trait.replace(/\.$/, '').toLowerCase());
+  
+  if (cleanedTraits.length === 2) {
+    return `This Aminal is ${cleanedTraits[0]} and ${cleanedTraits[1]}.`;
+  } else {
+    const lastTrait = cleanedTraits.pop();
+    const otherTraits = cleanedTraits.join(', ');
+    return `This Aminal is ${otherTraits}, and ${lastTrait}.`;
+  }
 }
 
 // Get or generate full Aminal personality from genes

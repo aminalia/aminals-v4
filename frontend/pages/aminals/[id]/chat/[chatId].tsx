@@ -272,13 +272,13 @@ const ChatSessionPage: NextPage = () => {
           <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
             <span className="hidden sm:inline">
               {aminal.lovers?.[0]?.love ?
-                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
+                `Love 4 U: ${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
                 'New friend 👋'
               }
             </span>
             <span className="sm:hidden">
               {aminal.lovers?.[0]?.love ?
-                `${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
+                `${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
                 '👋'
               }
             </span>

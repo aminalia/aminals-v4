@@ -182,7 +182,7 @@ const ChatSessionsPage: NextPage = () => {
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
               {aminal.lovers?.[0]?.love ?
-                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
+                `Love 4 U: ${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
                 'New friend 👋'
               }
             </p>
