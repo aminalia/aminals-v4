@@ -6,9 +6,10 @@ import { useRouter } from 'next/router';
 import { useState, useRef, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
-import Layout from '../_layout';
-import { Send, ArrowLeft, MessageCircle } from 'lucide-react';
+import Layout from '../../../_layout';
+import { Send, ArrowLeft, MessageCircle, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { ChatSession, Message } from '../../../../lib/chat-storage';
 
 // Reuse the same query as the Aminal detail page
 const useAminalByAddress = (contractAddress: string, userAddress: string) => {
@@ -63,41 +64,64 @@ const useAminalByAddress = (contractAddress: string, userAddress: string) => {
   });
 };
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'aminal';
-  timestamp: Date;
-}
+const useChatSession = (sessionId: string) => {
+  return useQuery({
+    queryKey: ['chat-session', sessionId],
+    queryFn: async () => {
+      if (!sessionId) return null;
 
-const ChatPage: NextPage = () => {
+      const response = await fetch(`/api/chat/sessions/${sessionId}`);
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error('Failed to fetch chat session');
+      }
+      return response.json();
+    },
+    enabled: !!sessionId,
+    refetchInterval: 5000, // Refetch every 5 seconds to get new messages
+  });
+};
+
+const ChatSessionPage: NextPage = () => {
   const router = useRouter();
-  const { id } = router.query;
+  const { id, chatId } = router.query;
   const contractAddress = id as string;
+  const sessionId = chatId as string;
   const { address } = useAccount();
   
-  const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isRouterReady =
-    router.isReady && id && typeof id === 'string' && id !== 'undefined';
+    router.isReady && 
+    id && typeof id === 'string' && id !== 'undefined' &&
+    chatId && typeof chatId === 'string' && chatId !== 'undefined';
 
   const {
     data: aminal,
     isLoading: isAminalLoading,
   } = useAminalByAddress(isRouterReady ? contractAddress : '', address || '');
 
+  const {
+    data: session,
+    isLoading: isSessionLoading,
+    refetch: refetchSession,
+  } = useChatSession(isRouterReady ? sessionId : '');
+
+  // Combine server messages with local optimistic updates
+  const messages = session?.messages || localMessages;
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Add a welcome message when the aminal loads
+  // Add welcome message for new sessions
   useEffect(() => {
-    if (aminal && messages.length === 0) {
-      const loveAmount = aminal.lovers?.[0]?.love || 0;
+    if (session && session.messages.length === 0 && localMessages.length === 0) {
+      const loveAmount = aminal?.lovers?.[0]?.love || 0;
       let welcomeMessage = '';
       
       if (Number(loveAmount) > 20) {
@@ -108,26 +132,27 @@ const ChatPage: NextPage = () => {
         welcomeMessage = "Hello there! 👋 I'm excited to meet you! I'm still getting to know humans, so please be patient with me.";
       }
 
-      setMessages([{
-        id: '1',
+      setLocalMessages([{
+        id: 'welcome',
         text: welcomeMessage,
         sender: 'aminal',
         timestamp: new Date(),
       }]);
     }
-  }, [aminal, messages.length]);
+  }, [session, aminal, localMessages.length]);
 
   const sendMessage = async () => {
-    if (!inputMessage.trim() || !aminal || isLoading) return;
+    if (!inputMessage.trim() || !aminal || !session || isLoading) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
+    const tempUserMessage: Message = {
+      id: `temp-${Date.now()}`,
       text: inputMessage,
       sender: 'user',
       timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Optimistically add the message
+    setLocalMessages(prev => [...prev, tempUserMessage]);
     setInputMessage('');
     setIsLoading(true);
 
@@ -139,10 +164,9 @@ const ChatPage: NextPage = () => {
         },
         body: JSON.stringify({
           message: inputMessage,
-          aminalId: contractAddress,
+          sessionId: sessionId,
           loveAmount: Number(aminal.lovers?.[0]?.love || 0),
           aminalImageUrl: aminal.tokenURI,
-          userAddress: address,
         }),
       });
 
@@ -152,17 +176,20 @@ const ChatPage: NextPage = () => {
         throw new Error(data.error || 'Failed to send message');
       }
 
-      const aminalMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.response,
-        sender: 'aminal',
-        timestamp: new Date(),
-      };
+      // Add the AI response optimistically
+      setLocalMessages(prev => [
+        ...prev.filter(msg => msg.id !== tempUserMessage.id), // Remove temp message
+        data.message, // Real user message from server
+        data.response, // AI response
+      ]);
 
-      setMessages(prev => [...prev, aminalMessage]);
+      // Refetch session to get the latest data
+      setTimeout(() => refetchSession(), 1000);
     } catch (error) {
       console.error('Chat error:', error);
       toast.error('Failed to send message. Please try again.');
+      // Remove the optimistic message on error
+      setLocalMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
     } finally {
       setIsLoading(false);
     }
@@ -175,7 +202,7 @@ const ChatPage: NextPage = () => {
     }
   };
 
-  if (!isRouterReady || isAminalLoading) {
+  if (!isRouterReady || isAminalLoading || isSessionLoading) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-6">
@@ -199,6 +226,18 @@ const ChatPage: NextPage = () => {
     );
   }
 
+  if (!session) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-[50vh] text-gray-500">
+            Chat session not found
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="container max-w-4xl mx-auto px-4 py-4 h-screen flex flex-col">
@@ -206,7 +245,7 @@ const ChatPage: NextPage = () => {
         <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-lg">
           <div className="flex items-center gap-3">
             <Link
-              href={`/aminals/${contractAddress}`}
+              href={`/aminals/${contractAddress}/chat`}
               className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -220,18 +259,21 @@ const ChatPage: NextPage = () => {
               </h1>
               <div className="text-sm text-gray-500 flex items-center gap-2">
                 <MessageCircle className="w-3 h-3" />
-                {aminal.lovers?.[0]?.love ? 
-                  `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
-                  'New friend 👋'
-                }
+                {session.title}
               </div>
             </div>
+          </div>
+          <div className="text-sm text-gray-500">
+            {aminal.lovers?.[0]?.love ? 
+              `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
+              'New friend 👋'
+            }
           </div>
         </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-          {messages.map((message) => (
+          {messages.map((message: Message) => (
             <div
               key={message.id}
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -247,7 +289,7 @@ const ChatPage: NextPage = () => {
                 <p className={`text-xs mt-1 ${
                   message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {message.timestamp.toLocaleTimeString([], { 
+                  {new Date(message.timestamp).toLocaleTimeString([], { 
                     hour: '2-digit', 
                     minute: '2-digit' 
                   })}
@@ -303,4 +345,4 @@ const ChatPage: NextPage = () => {
   );
 };
 
-export default ChatPage;
+export default ChatSessionPage;

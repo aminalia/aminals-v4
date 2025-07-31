@@ -1,15 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
 
 interface ChatRequest {
   message: string;
-  aminalId: string;
+  sessionId: string;
   loveAmount: number;
   aminalImageUrl?: string;
-  userAddress: string;
 }
 
 interface ChatResponse {
-  response?: string;
+  message?: Message;
+  response?: Message;
   error?: string;
 }
 
@@ -66,19 +67,50 @@ export default async function handler(
   }
 
   try {
-    const { message, aminalId, loveAmount, aminalImageUrl, userAddress }: ChatRequest = req.body;
+    const { message, sessionId, loveAmount, aminalImageUrl }: ChatRequest = req.body;
 
-    if (!message || !aminalId) {
-      return res.status(400).json({ error: 'Message and aminalId are required' });
+    if (!message || !sessionId) {
+      return res.status(400).json({ error: 'Message and sessionId are required' });
     }
 
+    // Get the chat session
+    const session = await getChatSession(sessionId);
+    if (!session) {
+      return res.status(404).json({ error: 'Chat session not found' });
+    }
+
+    // Add user message to session
+    const userMessage = await addMessageToSession(sessionId, {
+      text: message,
+      sender: 'user',
+      timestamp: new Date(),
+    });
+
+    // Build context from recent messages for better conversation continuity
+    const recentMessages = session.messages.slice(-10); // Last 10 messages for context
+    const conversationContext = recentMessages
+      .map(msg => `${msg.sender === 'user' ? 'Human' : 'Aminal'}: ${msg.text}`)
+      .join('\n');
+
     const systemPrompt = createSystemPrompt(loveAmount || 0, aminalImageUrl);
+    const contextualMessage = conversationContext ? 
+      `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` : 
+      message;
 
-    // For now, we'll use a placeholder response since we need to integrate with Anthropic's API
-    // In production, you would call the Anthropic API here
-    const response = await callAnthropicAPI(systemPrompt, message);
+    // Get AI response
+    const responseText = await callAnthropicAPI(systemPrompt, contextualMessage);
 
-    res.status(200).json({ response });
+    // Add AI response to session
+    const aminalMessage = await addMessageToSession(sessionId, {
+      text: responseText,
+      sender: 'aminal',
+      timestamp: new Date(),
+    });
+
+    res.status(200).json({ 
+      message: userMessage,
+      response: aminalMessage 
+    });
   } catch (error) {
     console.error('Chat API error:', error);
     res.status(500).json({ error: 'Internal server error' });

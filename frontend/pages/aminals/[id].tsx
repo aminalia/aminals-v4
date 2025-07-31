@@ -17,6 +17,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { formatEther } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
+import { MessageCircle } from 'lucide-react';
 
 // Direct fetch for individual Aminal by contract address
 const useAminalByAddress = (contractAddress: string, userAddress: string) => {
@@ -354,10 +355,11 @@ const AminalPage: NextPage = () => {
                 />
 
                 <Link
-                  href={`/chat/${aminal.contractAddress}`}
+                  href={`/aminals/${aminal.contractAddress}/chat`}
                   className="w-full"
                 >
                   <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    <MessageCircle className="w-4 h-4 mr-2" />
                     💬 Chat with Aminal
                   </Button>
                 </Link>
