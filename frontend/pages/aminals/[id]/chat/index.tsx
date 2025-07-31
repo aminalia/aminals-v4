@@ -258,39 +258,37 @@ const ChatSessionsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-4 py-6">
+      <div className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Link
-              href={`/aminals/${contractAddress}`}
-              className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-indigo-50 border border-gray-200">
-              <AminalVisualImage aminal={aminal} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold">
-                Chat with Aminal #{aminal.aminalIndex}
-              </h1>
-              <p className="text-gray-600">
-                {aminal.lovers?.[0]?.love ? 
-                  `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
-                  'New friend 👋'
-                }
-              </p>
-            </div>
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <Link
+            href={`/aminals/${contractAddress}`}
+            className="text-blue-600 hover:text-blue-700 p-1 sm:p-2 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Link>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-indigo-50 border border-gray-200 flex-shrink-0">
+            <AminalVisualImage aminal={aminal} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold truncate">
+              Chat with Aminal #{aminal.aminalIndex}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              {aminal.lovers?.[0]?.love ? 
+                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
+                'New friend 👋'
+              }
+            </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="mb-6 space-y-3">
+        <div className="mb-4 sm:mb-6 space-y-3">
           <Button
             onClick={createNewSession}
             disabled={isCreating || !address}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 sm:py-2 text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 mr-2" />
             {isCreating ? 'Creating...' : 'Start New Conversation'}
@@ -302,20 +300,20 @@ const ChatSessionsPage: NextPage = () => {
                 onClick={() => setShowDeleteAll(!showDeleteAll)}
                 variant="outline"
                 size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                className="text-red-600 border-red-300 hover:bg-red-50 text-xs sm:text-sm"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 Delete All
               </Button>
             </div>
           )}
 
           {showDeleteAll && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
               <p className="text-sm text-red-800 mb-3">
                 Are you sure you want to delete all chat sessions with this Aminal? This action cannot be undone.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 <Button
                   onClick={deleteAllSessions}
                   size="sm"
@@ -342,49 +340,49 @@ const ChatSessionsPage: NextPage = () => {
         </div>
 
         {/* Chat Sessions List */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Your Conversations</h2>
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Your Conversations</h2>
           
           {isSessionsLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
             </div>
           ) : !sessions || sessions.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
-              <MessageCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
-              <p className="text-gray-600 mb-4">
+            <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border border-gray-200">
+              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
                 Start your first conversation with this Aminal!
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {sessions.map((session: ChatSession) => (
                 <div
                   key={session.id}
-                  className="p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group"
+                  className="p-3 sm:p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group"
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/aminals/${contractAddress}/chat/${session.id}`}
                       className="flex-1 min-w-0 hover:bg-gray-50 -m-2 p-2 rounded transition-colors"
                     >
-                      <h3 className="font-medium text-gray-900 truncate">
+                      <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">
                         {session.title}
                       </h3>
                       {session.messages.length > 0 && (
-                        <p className="text-sm text-gray-600 truncate mt-1">
+                        <p className="text-xs sm:text-sm text-gray-600 truncate mt-1">
                           {session.messages[session.messages.length - 1].text}
                         </p>
                       )}
-                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-2">
+                      <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-2">
                         <div className="flex items-center gap-1">
                           <MessageCircle className="w-3 h-3" />
-                          {session.messages.length}
+                          <span>{session.messages.length}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          {formatTimeAgo(session.updatedAt.toString())}
+                          <span>{formatTimeAgo(session.updatedAt.toString())}</span>
                         </div>
                       </div>
                     </Link>
@@ -395,7 +393,7 @@ const ChatSessionsPage: NextPage = () => {
                         deleteSession(session.id);
                       }}
                       disabled={deletingSessionId === session.id}
-                      className="ml-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                      className="ml-1 sm:ml-2 p-1 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 touch-manipulation"
                       title="Delete conversation"
                     >
                       {deletingSessionId === session.id ? (

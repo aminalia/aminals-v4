@@ -326,34 +326,40 @@ const ChatSessionPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-4 py-4 h-screen flex flex-col">
+      <div className="container max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-white rounded-t-lg">
-          <div className="flex items-center gap-3">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white rounded-t-lg">
+          <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <Link
               href={`/aminals/${contractAddress}/chat`}
-              className="text-blue-600 hover:text-blue-700 p-2 hover:bg-blue-50 rounded-lg transition-colors"
+              className="text-blue-600 hover:text-blue-700 p-1 sm:p-2 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
-            <div className="w-10 h-10 rounded-full overflow-hidden bg-indigo-50 border border-gray-200">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-indigo-50 border border-gray-200 flex-shrink-0">
               <AminalVisualImage aminal={aminal} />
             </div>
-            <div>
-              <h1 className="text-lg font-semibold">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-base sm:text-lg font-semibold truncate">
                 Aminal #{aminal.aminalIndex}
               </h1>
-              <div className="text-sm text-gray-500 flex items-center gap-2">
-                <MessageCircle className="w-3 h-3" />
-                {session.title}
+              <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 sm:gap-2">
+                <MessageCircle className="w-3 h-3 flex-shrink-0" />
+                <span className="truncate">{session.title}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <span>
+          <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
+            <span className="hidden sm:inline">
               {aminal.lovers?.[0]?.love ?
                 `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
                 'New friend 👋'
+              }
+            </span>
+            <span className="sm:hidden">
+              {aminal.lovers?.[0]?.love ?
+                `${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
+                '👋'
               }
             </span>
             {displayPersonality && (
@@ -362,7 +368,7 @@ const ChatSessionPage: NextPage = () => {
                 className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors text-xs"
               >
                 <Sparkles className="w-3 h-3" />
-                Personality
+                <span className="hidden sm:inline">Personality</span>
               </button>
             )}
           </div>
@@ -370,7 +376,7 @@ const ChatSessionPage: NextPage = () => {
 
         {/* Personality Display */}
         {showPersonality && displayPersonality && (
-          <div className="px-4 py-3 bg-purple-50 border-t border-purple-100">
+          <div className="px-3 sm:px-4 py-3 bg-purple-50 border-t border-purple-100">
             <div className="flex items-start gap-2">
               <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
               <div>
@@ -378,26 +384,29 @@ const ChatSessionPage: NextPage = () => {
                   AI-Generated Personality
                 </h4>
                 <p className="text-sm text-purple-700 leading-relaxed">{displayPersonality}</p>
+                <p className="text-xs text-purple-500 mt-2">
+                  Generated when you started this chat • Stored for consistency
+                </p>
               </div>
             </div>
           </div>
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
           {messages.map((message: Message) => (
             <div
               key={message.id}
               className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-xs lg:max-w-md px-4 py-2 rounded-2xl ${
+                className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-2xl ${
                   message.sender === 'user'
                     ? 'bg-blue-600 text-white rounded-br-sm'
                     : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
                 }`}
               >
-                <p className="text-sm">{message.text}</p>
+                <p className="text-sm leading-relaxed break-words">{message.text}</p>
                 <p className={`text-xs mt-1 ${
                   message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                 }`}>
@@ -412,7 +421,7 @@ const ChatSessionPage: NextPage = () => {
 
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-200 px-4 py-2">
+              <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-200 px-3 sm:px-4 py-2">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
@@ -426,15 +435,15 @@ const ChatSessionPage: NextPage = () => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-gray-200 bg-white rounded-b-lg">
-          <div className="flex items-end gap-2">
+        <div className="p-3 sm:p-4 border-t border-gray-200 bg-white rounded-b-lg">
+          <div className="flex gap-3">
             <div className="flex-1">
               <textarea
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 rows={1}
                 style={{ minHeight: '40px', maxHeight: '120px' }}
                 disabled={isLoading}
@@ -443,9 +452,9 @@ const ChatSessionPage: NextPage = () => {
             <Button
               onClick={sendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-2 h-10 w-10 flex items-center justify-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-10 w-10 flex touch-manipulation"
             >
-              <Send className="w-4 h-4" />
+              <Send />
             </Button>
           </div>
           <p className="text-xs text-gray-500 mt-2">
