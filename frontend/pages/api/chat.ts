@@ -20,6 +20,7 @@ interface ChatResponse {
   error?: string;
 }
 
+// TODO maybe don't want stats to impact personality at all.
 async function generatePersonalityFromSvg(
   svgData?: string,
   stats?: ChatRequest['aminalStats']
@@ -31,12 +32,12 @@ async function generatePersonalityFromSvg(
   }
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is required');
   }
 
-  const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits. 
+  const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits.
 
 Look at this SVG representation and describe the personality this creature would have based on its visual features:
 
@@ -80,19 +81,20 @@ Respond with just the personality description, no preamble.`;
 
   const data = await response.json();
   const personality = data.content[0].text.trim();
-  
+
   console.log('🎭 Generated personality:', personality);
   return personality;
 }
 
 async function createSystemPrompt(
-  loveAmount: number, 
+  loveAmount: number,
   svgData?: string,
   stats?: ChatRequest['aminalStats']
 ): Promise<string> {
+  // TODO don't call this here.
   const personality = await generatePersonalityFromSvg(svgData, stats);
   const loveLevel = loveAmount > 50 ? "deeply bonded" : loveAmount > 20 ? "close friends" : loveAmount > 5 ? "getting to know each other" : "just met";
-  
+
   return `You are a unique Aminal - a sentient digital pet living on the blockchain. You have your own distinct personality, thoughts, and feelings.
 
 Your personality: You are ${personality}
@@ -156,8 +158,8 @@ export default async function handler(
       .join('\n');
 
     const systemPrompt = await createSystemPrompt(loveAmount || 0, aminalSvg, aminalStats);
-    const contextualMessage = conversationContext ? 
-      `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` : 
+    const contextualMessage = conversationContext ?
+      `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` :
       message;
 
     // Get AI response
@@ -170,9 +172,9 @@ export default async function handler(
       timestamp: new Date(),
     });
 
-    res.status(200).json({ 
+    res.status(200).json({
       message: userMessage,
-      response: aminalMessage 
+      response: aminalMessage
     });
   } catch (error) {
     console.error('Chat API error:', error);
@@ -182,7 +184,7 @@ export default async function handler(
 
 async function callAnthropicAPI(systemPrompt: string, userMessage: string): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  
+
   if (!apiKey) {
     throw new Error('ANTHROPIC_API_KEY environment variable is required');
   }

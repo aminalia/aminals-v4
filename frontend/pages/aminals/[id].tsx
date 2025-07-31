@@ -3,6 +3,7 @@ import FeedButton from '@/components/actions/feed-button';
 import { AminalVisualImage } from '@/components/aminal-card';
 import BreedingModal from '@/components/breeding-modal';
 import { useGenesByIds } from '@/resources/genes';
+import { useAminalByContractAddress } from '@/resources/aminals';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -17,103 +18,7 @@ import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { formatEther } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-import { MessageCircle } from 'lucide-react';
 
-// Direct fetch for individual Aminal by contract address
-const useAminalByAddress = (contractAddress: string, userAddress: string) => {
-  return useQuery({
-    queryKey: ['aminal-by-address', contractAddress, userAddress],
-    queryFn: async () => {
-      if (!contractAddress || contractAddress === 'undefined') {
-        return null;
-      }
-
-      const SUBGRAPH_URL =
-        'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
-
-      const query = `
-        query AminalByAddress($contractAddress: Bytes, $address: Bytes) {
-          aminals(where: { contractAddress: $contractAddress }) {
-            id
-            contractAddress
-            aminalIndex
-            parentOne {
-              id
-              contractAddress
-              aminalIndex
-              energy
-              totalLove
-              tokenURI
-            }
-            parentTwo {
-              id
-              contractAddress
-              aminalIndex
-              energy
-              totalLove
-              tokenURI
-            }
-            energy
-            totalLove
-            ethBalance
-            blockTimestamp
-            tokenURI
-            backId
-            armId
-            tailId
-            earsId
-            bodyId
-            faceId
-            mouthId
-            miscId
-            lovers(where: { user_: { address: $address } }) {
-              love
-            }
-            feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
-              id
-              sender {
-                address
-              }
-              amount
-              love
-              blockTimestamp
-            }
-            skillUsed(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
-              id
-              caller {
-                address
-              }
-              skillAddress
-              blockTimestamp
-            }
-          }
-        }
-      `;
-
-      const response = await fetch(SUBGRAPH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables: { contractAddress, address: userAddress },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.errors) {
-        console.error('Aminal fetch errors:', data.errors);
-        throw new Error(data.errors[0].message);
-      }
-
-      const aminals = data.data?.aminals || [];
-      return aminals.length > 0 ? aminals[0] : null;
-    },
-    enabled: !!contractAddress && contractAddress !== 'undefined',
-  });
-};
 
 const AminalPage: NextPage = () => {
   const router = useRouter();
@@ -131,7 +36,7 @@ const AminalPage: NextPage = () => {
     data: aminal,
     isLoading,
     refetch,
-  } = useAminalByAddress(isRouterReady ? contractAddress : '', address || '');
+  } = useAminalByContractAddress(isRouterReady ? contractAddress : '', address || '');
 
   // Breeding transaction hooks
   const {
@@ -183,7 +88,7 @@ const AminalPage: NextPage = () => {
         }
       );
       queryClient.invalidateQueries({
-        queryKey: ['aminal-by-address', contractAddress],
+        queryKey: ['aminals', 'detail', contractAddress],
       });
       refetch();
     }
@@ -358,8 +263,7 @@ const AminalPage: NextPage = () => {
                   href={`/aminals/${aminal.contractAddress}/chat`}
                   className="w-full"
                 >
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
-                    <MessageCircle className="w-4 h-4 mr-2" />
+                  <Button className="w-full rounded-full mt-2  bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200">
                     💬 Chat with Aminal
                   </Button>
                 </Link>

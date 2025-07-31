@@ -3193,17 +3193,19 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337": AminalsListDocument,
-"043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337": AminalByIdDocument,
-"043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337": AminalFactoryDocument,
+        "0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalsListDocument,
+"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalByIdDocument,
+"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalForChatDocument,
+"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalByContractAddressDocument,
+"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalFactoryDocument,
+"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftsListDocument,
+"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftByIdDocument,
+"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GenesByTraitTypeDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionsListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneProposalsListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesByAuctionDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftsListDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftByIdDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GenesByTraitTypeDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedListDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedByAminalDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedBySkillDocument,
@@ -3236,21 +3238,56 @@ additionalEnvelopPlugins.push(usePersistedOperations({
           return printWithCache(AminalsListDocument);
         },
         location: 'AminalsListDocument.graphql',
-        sha256Hash: '043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337'
+        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
       },{
         document: AminalByIdDocument,
         get rawSDL() {
           return printWithCache(AminalByIdDocument);
         },
         location: 'AminalByIdDocument.graphql',
-        sha256Hash: '043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337'
+        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+      },{
+        document: AminalForChatDocument,
+        get rawSDL() {
+          return printWithCache(AminalForChatDocument);
+        },
+        location: 'AminalForChatDocument.graphql',
+        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+      },{
+        document: AminalByContractAddressDocument,
+        get rawSDL() {
+          return printWithCache(AminalByContractAddressDocument);
+        },
+        location: 'AminalByContractAddressDocument.graphql',
+        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
       },{
         document: AminalFactoryDocument,
         get rawSDL() {
           return printWithCache(AminalFactoryDocument);
         },
         location: 'AminalFactoryDocument.graphql',
-        sha256Hash: '043e62421358cc26b5a2abf24a2d783480c25a22cfdac3e6634d3816dc7ee337'
+        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+      },{
+        document: GeneNftsListDocument,
+        get rawSDL() {
+          return printWithCache(GeneNftsListDocument);
+        },
+        location: 'GeneNftsListDocument.graphql',
+        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
+      },{
+        document: GeneNftByIdDocument,
+        get rawSDL() {
+          return printWithCache(GeneNftByIdDocument);
+        },
+        location: 'GeneNftByIdDocument.graphql',
+        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
+      },{
+        document: GenesByTraitTypeDocument,
+        get rawSDL() {
+          return printWithCache(GenesByTraitTypeDocument);
+        },
+        location: 'GenesByTraitTypeDocument.graphql',
+        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
       },{
         document: GeneAuctionsListDocument,
         get rawSDL() {
@@ -3286,27 +3323,6 @@ additionalEnvelopPlugins.push(usePersistedOperations({
         },
         location: 'GeneVotesByAuctionDocument.graphql',
         sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
-      },{
-        document: GeneNftsListDocument,
-        get rawSDL() {
-          return printWithCache(GeneNftsListDocument);
-        },
-        location: 'GeneNftsListDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
-      },{
-        document: GeneNftByIdDocument,
-        get rawSDL() {
-          return printWithCache(GeneNftByIdDocument);
-        },
-        location: 'GeneNftByIdDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
-      },{
-        document: GenesByTraitTypeDocument,
-        get rawSDL() {
-          return printWithCache(GenesByTraitTypeDocument);
-        },
-        location: 'GenesByTraitTypeDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
       },{
         document: SkillUsedListDocument,
         get rawSDL() {
@@ -3429,6 +3445,34 @@ export type AminalByIdQuery = { aminals: Array<(
     )>, skillUsed: Array<(
       Pick<SkillUsed, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
       & { caller: Pick<User, 'id' | 'address'> }
+    )> }
+  )> };
+
+export type AminalForChatQueryVariables = Exact<{
+  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
+  address?: InputMaybe<Scalars['Bytes']['input']>;
+}>;
+
+
+export type AminalForChatQuery = { aminals: Array<(
+    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
+    & { lovers: Array<Maybe<Pick<Relationship, 'love'>>> }
+  )> };
+
+export type AminalByContractAddressQueryVariables = Exact<{
+  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
+  address?: InputMaybe<Scalars['Bytes']['input']>;
+}>;
+
+
+export type AminalByContractAddressQuery = { aminals: Array<(
+    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
+    & { parentOne?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, parentTwo?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, lovers: Array<Maybe<Pick<Relationship, 'love'>>>, feeds: Array<(
+      Pick<FeedAminalEvent, 'id' | 'amount' | 'love' | 'blockTimestamp'>
+      & { sender: Pick<User, 'address'> }
+    )>, skillUsed: Array<(
+      Pick<SkillUsed, 'id' | 'skillAddress' | 'blockTimestamp'>
+      & { caller: Pick<User, 'address'> }
     )> }
   )> };
 
@@ -3754,6 +3798,88 @@ export const AminalByIdDocument = gql`
   }
 }
     ` as unknown as DocumentNode<AminalByIdQuery, AminalByIdQueryVariables>;
+export const AminalForChatDocument = gql`
+    query AminalForChat($contractAddress: Bytes, $address: Bytes = "") {
+  aminals(where: {contractAddress: $contractAddress}) {
+    id
+    contractAddress
+    aminalIndex
+    energy
+    totalLove
+    ethBalance
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
+    lovers(where: {user_: {address: $address}}) {
+      love
+    }
+  }
+}
+    ` as unknown as DocumentNode<AminalForChatQuery, AminalForChatQueryVariables>;
+export const AminalByContractAddressDocument = gql`
+    query AminalByContractAddress($contractAddress: Bytes, $address: Bytes = "") {
+  aminals(where: {contractAddress: $contractAddress}) {
+    id
+    contractAddress
+    aminalIndex
+    parentOne {
+      id
+      contractAddress
+      aminalIndex
+      energy
+      totalLove
+      tokenURI
+    }
+    parentTwo {
+      id
+      contractAddress
+      aminalIndex
+      energy
+      totalLove
+      tokenURI
+    }
+    energy
+    totalLove
+    ethBalance
+    blockTimestamp
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
+    lovers(where: {user_: {address: $address}}) {
+      love
+    }
+    feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      sender {
+        address
+      }
+      amount
+      love
+      blockTimestamp
+    }
+    skillUsed(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      caller {
+        address
+      }
+      skillAddress
+      blockTimestamp
+    }
+  }
+}
+    ` as unknown as DocumentNode<AminalByContractAddressQuery, AminalByContractAddressQueryVariables>;
 export const AminalFactoryDocument = gql`
     query AminalFactory {
   aminalFactories(first: 1) {
@@ -4397,6 +4523,8 @@ export const UserActivityDocument = gql`
 
 
 
+
+
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
@@ -4405,6 +4533,12 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
     },
     AminalById(variables?: AminalByIdQueryVariables, options?: C): Promise<AminalByIdQuery> {
       return requester<AminalByIdQuery, AminalByIdQueryVariables>(AminalByIdDocument, variables, options) as Promise<AminalByIdQuery>;
+    },
+    AminalForChat(variables?: AminalForChatQueryVariables, options?: C): Promise<AminalForChatQuery> {
+      return requester<AminalForChatQuery, AminalForChatQueryVariables>(AminalForChatDocument, variables, options) as Promise<AminalForChatQuery>;
+    },
+    AminalByContractAddress(variables?: AminalByContractAddressQueryVariables, options?: C): Promise<AminalByContractAddressQuery> {
+      return requester<AminalByContractAddressQuery, AminalByContractAddressQueryVariables>(AminalByContractAddressDocument, variables, options) as Promise<AminalByContractAddressQuery>;
     },
     AminalFactory(variables?: AminalFactoryQueryVariables, options?: C): Promise<AminalFactoryQuery> {
       return requester<AminalFactoryQuery, AminalFactoryQueryVariables>(AminalFactoryDocument, variables, options) as Promise<AminalFactoryQuery>;

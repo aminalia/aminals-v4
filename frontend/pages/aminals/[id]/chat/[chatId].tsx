@@ -10,68 +10,8 @@ import Layout from '../../../_layout';
 import { Send, ArrowLeft, MessageCircle, MoreVertical, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession, Message } from '../../../../lib/chat-storage';
+import { useAminalForChat } from '../../../../src/resources/aminals';
 
-// Reuse the same query as the Aminal detail page
-const useAminalByAddress = (contractAddress: string, userAddress: string) => {
-  return useQuery({
-    queryKey: ['aminal-by-address', contractAddress, userAddress],
-    queryFn: async () => {
-      if (!contractAddress || contractAddress === 'undefined') {
-        return null;
-      }
-
-      const SUBGRAPH_URL =
-        'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
-
-      const query = `
-        query AminalByAddress($contractAddress: Bytes, $address: Bytes) {
-          aminals(where: { contractAddress: $contractAddress }) {
-            id
-            contractAddress
-            aminalIndex
-            energy
-            totalLove
-            ethBalance
-            tokenURI
-            backId
-            armId
-            tailId
-            earsId
-            bodyId
-            faceId
-            mouthId
-            miscId
-            lovers(where: { user_: { address: $address } }) {
-              love
-            }
-          }
-        }
-      `;
-
-      const response = await fetch(SUBGRAPH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables: { contractAddress, address: userAddress },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.errors) {
-        console.error('Aminal fetch errors:', data.errors);
-        throw new Error(data.errors[0].message);
-      }
-
-      const aminals = data.data?.aminals || [];
-      return aminals.length > 0 ? aminals[0] : null;
-    },
-    enabled: !!contractAddress && contractAddress !== 'undefined',
-  });
-};
 
 const useChatSession = (sessionId: string) => {
   return useQuery({
@@ -110,7 +50,7 @@ const ChatSessionPage: NextPage = () => {
   const {
     data: aminal,
     isLoading: isAminalLoading,
-  } = useAminalByAddress(isRouterReady ? contractAddress : '', address || '');
+  } = useAminalForChat(isRouterReady ? contractAddress : '', address || '');
 
   const {
     data: session,
@@ -126,7 +66,7 @@ const ChatSessionPage: NextPage = () => {
     }
 
     // If we have local messages that aren't in the session yet, merge them
-    const sessionMessageIds = new Set(session.messages.map(msg => msg.id));
+    const sessionMessageIds = new Set(session.messages.map((msg: Message) => msg.id));
     const newLocalMessages = localMessages.filter(msg => !sessionMessageIds.has(msg.id));
 
     const combined = [...session.messages, ...newLocalMessages];
@@ -384,9 +324,6 @@ const ChatSessionPage: NextPage = () => {
                   AI-Generated Personality
                 </h4>
                 <p className="text-sm text-purple-700 leading-relaxed">{displayPersonality}</p>
-                <p className="text-xs text-purple-500 mt-2">
-                  Generated when you started this chat • Stored for consistency
-                </p>
               </div>
             </div>
           </div>

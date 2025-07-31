@@ -10,60 +10,8 @@ import Layout from '../../../_layout';
 import { Plus, MessageCircle, ArrowLeft, Clock, Trash2, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession } from '../../../../lib/chat-storage';
+import { useAminalForChat } from '../../../../src/resources/aminals';
 
-// Reuse the same query as the Aminal detail page
-const useAminalByAddress = (contractAddress: string, userAddress: string) => {
-  return useQuery({
-    queryKey: ['aminal-by-address', contractAddress, userAddress],
-    queryFn: async () => {
-      if (!contractAddress || contractAddress === 'undefined') {
-        return null;
-      }
-
-      const SUBGRAPH_URL =
-        'https://api.studio.thegraph.com/query/57078/aminals-3/version/latest';
-
-      const query = `
-        query AminalByAddress($contractAddress: Bytes, $address: Bytes) {
-          aminals(where: { contractAddress: $contractAddress }) {
-            id
-            contractAddress
-            aminalIndex
-            energy
-            totalLove
-            ethBalance
-            tokenURI
-            lovers(where: { user_: { address: $address } }) {
-              love
-            }
-          }
-        }
-      `;
-
-      const response = await fetch(SUBGRAPH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          query,
-          variables: { contractAddress, address: userAddress },
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.errors) {
-        console.error('Aminal fetch errors:', data.errors);
-        throw new Error(data.errors[0].message);
-      }
-
-      const aminals = data.data?.aminals || [];
-      return aminals.length > 0 ? aminals[0] : null;
-    },
-    enabled: !!contractAddress && contractAddress !== 'undefined',
-  });
-};
 
 const useChatSessions = (aminalAddress: string, userAddress: string) => {
   return useQuery({
@@ -88,7 +36,6 @@ const ChatSessionsPage: NextPage = () => {
   const { address } = useAccount();
   const [isCreating, setIsCreating] = useState(false);
   const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
-  const [showDeleteAll, setShowDeleteAll] = useState(false);
 
   const isRouterReady =
     router.isReady && id && typeof id === 'string' && id !== 'undefined';
@@ -96,7 +43,7 @@ const ChatSessionsPage: NextPage = () => {
   const {
     data: aminal,
     isLoading: isAminalLoading,
-  } = useAminalByAddress(isRouterReady ? contractAddress : '', address || '');
+  } = useAminalForChat(isRouterReady ? contractAddress : '', address || '');
 
   const {
     data: sessions,
@@ -107,26 +54,26 @@ const ChatSessionsPage: NextPage = () => {
   // Extract SVG data for personality generation
   const extractedSvg = useMemo(() => {
     if (!aminal?.tokenURI) return null;
-    
+
     try {
       if (!aminal.tokenURI.startsWith('data:')) return null;
-      
+
       const base64Payload = aminal.tokenURI.split(',')[1];
       const decodedJsonString = atob(base64Payload);
       const json = JSON.parse(decodedJsonString);
-      
+
       // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
       const imageDataUri = json.image;
       if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
-      
+
       const svgBase64 = imageDataUri.split(',')[1];
       const svgString = atob(svgBase64);
-      
-      console.log('🎭 Extracted SVG for session creation:', { 
-        hasSvg: !!svgString, 
-        svgLength: svgString?.length 
+
+      console.log('🎭 Extracted SVG for session creation:', {
+        hasSvg: !!svgString,
+        svgLength: svgString?.length
       });
-      
+
       return svgString;
     } catch (error) {
       console.error('Failed to extract SVG from tokenURI:', error);
@@ -163,7 +110,7 @@ const ChatSessionsPage: NextPage = () => {
       }
 
       const newSession: ChatSession = await response.json();
-      
+
       // Navigate to the new chat session
       router.push(`/aminals/${contractAddress}/chat/${newSession.id}`);
     } catch (error) {
@@ -197,27 +144,6 @@ const ChatSessionsPage: NextPage = () => {
     }
   };
 
-  const deleteAllSessions = async () => {
-    if (!address) return;
-
-    try {
-      const response = await fetch(`/api/chat/sessions?aminalAddress=${contractAddress}&userAddress=${address}&deleteAll=true`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete all chat sessions');
-      }
-
-      toast.success('All chat sessions deleted');
-      refetchSessions();
-      setShowDeleteAll(false);
-    } catch (error) {
-      console.error('Error deleting all chat sessions:', error);
-      toast.error('Failed to delete all chat sessions');
-    }
-  };
-
   if (!isRouterReady || isAminalLoading) {
     return (
       <Layout>
@@ -246,13 +172,13 @@ const ChatSessionsPage: NextPage = () => {
     const now = new Date();
     const messageDate = new Date(date);
     const diffInHours = Math.floor((now.getTime() - messageDate.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d ago`;
-    
+
     return messageDate.toLocaleDateString();
   };
 
@@ -275,8 +201,8 @@ const ChatSessionsPage: NextPage = () => {
               Chat with Aminal #{aminal.aminalIndex}
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
-              {aminal.lovers?.[0]?.love ? 
-                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
+              {aminal.lovers?.[0]?.love ?
+                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
                 'New friend 👋'
               }
             </p>
@@ -293,45 +219,7 @@ const ChatSessionsPage: NextPage = () => {
             <Plus className="w-4 h-4 mr-2" />
             {isCreating ? 'Creating...' : 'Start New Conversation'}
           </Button>
-          
-          {sessions && sessions.length > 0 && (
-            <div className="flex justify-end">
-              <Button
-                onClick={() => setShowDeleteAll(!showDeleteAll)}
-                variant="outline"
-                size="sm"
-                className="text-red-600 border-red-300 hover:bg-red-50 text-xs sm:text-sm"
-              >
-                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                Delete All
-              </Button>
-            </div>
-          )}
 
-          {showDeleteAll && (
-            <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-800 mb-3">
-                Are you sure you want to delete all chat sessions with this Aminal? This action cannot be undone.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2">
-                <Button
-                  onClick={deleteAllSessions}
-                  size="sm"
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Delete All Sessions
-                </Button>
-                <Button
-                  onClick={() => setShowDeleteAll(false)}
-                  variant="outline"
-                  size="sm"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-          
           {!address && (
             <p className="text-sm text-gray-500 text-center">
               Connect your wallet to start chatting
@@ -342,7 +230,7 @@ const ChatSessionsPage: NextPage = () => {
         {/* Chat Sessions List */}
         <div className="space-y-3 sm:space-y-4">
           <h2 className="text-base sm:text-lg font-semibold text-gray-900">Your Conversations</h2>
-          
+
           {isSessionsLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -386,7 +274,7 @@ const ChatSessionsPage: NextPage = () => {
                         </div>
                       </div>
                     </Link>
-                    
+
                     <button
                       onClick={(e) => {
                         e.preventDefault();
