@@ -159,3 +159,80 @@ export async function getUserChatSessions(
     return [];
   }
 }
+
+export async function deleteChatSession(sessionId: string): Promise<void> {
+  await ensureChatDataDir();
+  
+  try {
+    // Get the session first to know which user's session list to update
+    const session = await getChatSession(sessionId);
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    // Delete the session file
+    const sessionPath = getSessionFilePath(sessionId);
+    await fs.unlink(sessionPath);
+
+    // Remove from user's session list
+    await removeSessionFromUserList(session.userAddress, session.aminalAddress, sessionId);
+    
+    console.log(`🗑️ Deleted chat session: ${sessionId}`);
+  } catch (error) {
+    console.error('Error deleting chat session:', error);
+    throw error;
+  }
+}
+
+async function removeSessionFromUserList(
+  userAddress: string,
+  aminalAddress: string,
+  sessionId: string
+): Promise<void> {
+  const userSessionsPath = getUserSessionsFilePath(userAddress, aminalAddress);
+  
+  try {
+    const data = await fs.readFile(userSessionsPath, 'utf-8');
+    let sessions: string[] = JSON.parse(data);
+    
+    // Remove the session ID
+    sessions = sessions.filter(id => id !== sessionId);
+    
+    if (sessions.length === 0) {
+      // If no sessions left, delete the user sessions file
+      await fs.unlink(userSessionsPath);
+    } else {
+      // Update the user sessions file
+      await fs.writeFile(userSessionsPath, JSON.stringify(sessions, null, 2));
+    }
+  } catch (error) {
+    // File might not exist, which is fine
+    console.log('User sessions file not found, nothing to remove');
+  }
+}
+
+export async function deleteAllUserSessions(
+  userAddress: string,
+  aminalAddress: string
+): Promise<void> {
+  const sessions = await getUserChatSessions(userAddress, aminalAddress);
+  
+  // Delete all session files
+  const deletePromises = sessions.map(session => 
+    fs.unlink(getSessionFilePath(session.id)).catch(err => 
+      console.error(`Failed to delete session ${session.id}:`, err)
+    )
+  );
+  
+  await Promise.all(deletePromises);
+  
+  // Remove the user sessions file
+  const userSessionsPath = getUserSessionsFilePath(userAddress, aminalAddress);
+  try {
+    await fs.unlink(userSessionsPath);
+  } catch (error) {
+    // File might not exist, which is fine
+  }
+  
+  console.log(`🗑️ Deleted all chat sessions for user ${userAddress} with aminal ${aminalAddress}`);
+}

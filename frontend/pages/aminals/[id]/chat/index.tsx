@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
-import { Plus, MessageCircle, ArrowLeft, Clock } from 'lucide-react';
+import { Plus, MessageCircle, ArrowLeft, Clock, Trash2, MoreVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession } from '../../../../lib/chat-storage';
 
@@ -86,6 +86,8 @@ const ChatSessionsPage: NextPage = () => {
   const contractAddress = id as string;
   const { address } = useAccount();
   const [isCreating, setIsCreating] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [showDeleteAll, setShowDeleteAll] = useState(false);
 
   const isRouterReady =
     router.isReady && id && typeof id === 'string' && id !== 'undefined';
@@ -131,6 +133,50 @@ const ChatSessionsPage: NextPage = () => {
       toast.error('Failed to create new chat session');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const deleteSession = async (sessionId: string) => {
+    if (!address) return;
+
+    setDeletingSessionId(sessionId);
+    try {
+      const response = await fetch(`/api/chat/sessions?sessionId=${sessionId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete chat session');
+      }
+
+      toast.success('Chat session deleted');
+      refetchSessions();
+    } catch (error) {
+      console.error('Error deleting chat session:', error);
+      toast.error('Failed to delete chat session');
+    } finally {
+      setDeletingSessionId(null);
+    }
+  };
+
+  const deleteAllSessions = async () => {
+    if (!address) return;
+
+    try {
+      const response = await fetch(`/api/chat/sessions?aminalAddress=${contractAddress}&userAddress=${address}&deleteAll=true`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete all chat sessions');
+      }
+
+      toast.success('All chat sessions deleted');
+      refetchSessions();
+      setShowDeleteAll(false);
+    } catch (error) {
+      console.error('Error deleting all chat sessions:', error);
+      toast.error('Failed to delete all chat sessions');
     }
   };
 
@@ -201,8 +247,8 @@ const ChatSessionsPage: NextPage = () => {
           </div>
         </div>
 
-        {/* Create New Chat Button */}
-        <div className="mb-6">
+        {/* Action Buttons */}
+        <div className="mb-6 space-y-3">
           <Button
             onClick={createNewSession}
             disabled={isCreating || !address}
@@ -211,8 +257,47 @@ const ChatSessionsPage: NextPage = () => {
             <Plus className="w-4 h-4 mr-2" />
             {isCreating ? 'Creating...' : 'Start New Conversation'}
           </Button>
+          
+          {sessions && sessions.length > 0 && (
+            <div className="flex justify-end">
+              <Button
+                onClick={() => setShowDeleteAll(!showDeleteAll)}
+                variant="outline"
+                size="sm"
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete All
+              </Button>
+            </div>
+          )}
+
+          {showDeleteAll && (
+            <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-800 mb-3">
+                Are you sure you want to delete all chat sessions with this Aminal? This action cannot be undone.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  onClick={deleteAllSessions}
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Delete All Sessions
+                </Button>
+                <Button
+                  onClick={() => setShowDeleteAll(false)}
+                  variant="outline"
+                  size="sm"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
+          
           {!address && (
-            <p className="text-sm text-gray-500 mt-2 text-center">
+            <p className="text-sm text-gray-500 text-center">
               Connect your wallet to start chatting
             </p>
           )}
@@ -237,13 +322,15 @@ const ChatSessionsPage: NextPage = () => {
           ) : (
             <div className="space-y-3">
               {sessions.map((session: ChatSession) => (
-                <Link
+                <div
                   key={session.id}
-                  href={`/aminals/${contractAddress}/chat/${session.id}`}
-                  className="block p-4 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:border-gray-300 transition-colors"
+                  className="p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex-1 min-w-0">
+                    <Link
+                      href={`/aminals/${contractAddress}/chat/${session.id}`}
+                      className="flex-1 min-w-0 hover:bg-gray-50 -m-2 p-2 rounded transition-colors"
+                    >
                       <h3 className="font-medium text-gray-900 truncate">
                         {session.title}
                       </h3>
@@ -252,19 +339,35 @@ const ChatSessionsPage: NextPage = () => {
                           {session.messages[session.messages.length - 1].text}
                         </p>
                       )}
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="w-3 h-3" />
-                        {session.messages.length}
+                      <div className="flex items-center gap-3 text-xs text-gray-500 mt-2">
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" />
+                          {session.messages.length}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          {formatTimeAgo(session.updatedAt.toString())}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        {formatTimeAgo(session.updatedAt.toString())}
-                      </div>
-                    </div>
+                    </Link>
+                    
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        deleteSession(session.id);
+                      }}
+                      disabled={deletingSessionId === session.id}
+                      className="ml-2 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete conversation"
+                    >
+                      {deletingSessionId === session.id ? (
+                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
           )}

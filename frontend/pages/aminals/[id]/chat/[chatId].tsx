@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
-import { Send, ArrowLeft, MessageCircle, MoreVertical } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, MoreVertical, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession, Message } from '../../../../lib/chat-storage';
 
@@ -31,7 +31,16 @@ const useAminalByAddress = (contractAddress: string, userAddress: string) => {
             aminalIndex
             energy
             totalLove
+            ethBalance
             tokenURI
+            backId
+            armId
+            tailId
+            earsId
+            bodyId
+            faceId
+            mouthId
+            miscId
             lovers(where: { user_: { address: $address } }) {
               love
             }
@@ -92,6 +101,8 @@ const ChatSessionPage: NextPage = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  const [generatedPersonality, setGeneratedPersonality] = useState<string | null>(null);
+  const [showPersonality, setShowPersonality] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isRouterReady =
@@ -141,6 +152,63 @@ const ChatSessionPage: NextPage = () => {
     }
   }, [session, aminal, localMessages.length]);
 
+  // Helper function to extract SVG from tokenURI
+  const extractSVGFromTokenURI = (tokenUri?: string): string | null => {
+    try {
+      if (!tokenUri || !tokenUri.startsWith('data:')) return null;
+      
+      const base64Payload = tokenUri.split(',')[1];
+      const decodedJsonString = atob(base64Payload);
+      const json = JSON.parse(decodedJsonString);
+      
+      // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
+      const imageDataUri = json.image;
+      if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
+      
+      const svgBase64 = imageDataUri.split(',')[1];
+      const svgString = atob(svgBase64);
+      
+      return svgString;
+    } catch (error) {
+      console.error('Failed to extract SVG from tokenURI:', error);
+      return null;
+    }
+  };
+
+  // Generate a simple personality description based on stats for display
+  const generateSimplePersonality = useCallback((aminal: any): string => {
+    const energy = Number(aminal.energy || 50);
+    const love = Number(aminal.totalLove || 0);
+    const hasEth = parseFloat(aminal.ethBalance || '0') > 0.01;
+
+    let personality = 'a unique digital being';
+
+    if (energy > 80) {
+      personality = 'an energetic and enthusiastic digital companion';
+    } else if (energy < 20) {
+      personality = 'a contemplative and calm digital soul';
+    } else if (love > 100) {
+      personality = 'a beloved and warm-hearted digital friend';
+    } else if (love > 20) {
+      personality = 'a friendly and approachable digital companion';
+    }
+
+    if (hasEth) {
+      personality += ', with a keen interest in the blockchain economy';
+    }
+
+    return `This Aminal is ${personality}. Their personality is analyzed from their visual appearance and current stats, influencing how they respond in conversations.`;
+  }, []);
+
+  // Set personality when aminal loads
+  useEffect(() => {
+    if (aminal && !generatedPersonality) {
+      const personality = generateSimplePersonality(aminal);
+      setGeneratedPersonality(personality);
+      console.log('🎭 Generated simple personality for display:', personality);
+    }
+  }, [aminal, generatedPersonality, generateSimplePersonality]);
+
   const sendMessage = async () => {
     if (!inputMessage.trim() || !aminal || !session || isLoading) return;
 
@@ -156,6 +224,15 @@ const ChatSessionPage: NextPage = () => {
     setInputMessage('');
     setIsLoading(true);
 
+    // Extract SVG from tokenURI for personality analysis
+    const svgData = extractSVGFromTokenURI(aminal.tokenURI);
+    
+    console.log('🎭 Extracted SVG data:', { 
+      hasSvg: !!svgData, 
+      svgLength: svgData?.length,
+      tokenURI: aminal.tokenURI?.slice(0, 100) + '...' 
+    });
+
     try {
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -166,7 +243,13 @@ const ChatSessionPage: NextPage = () => {
           message: inputMessage,
           sessionId: sessionId,
           loveAmount: Number(aminal.lovers?.[0]?.love || 0),
-          aminalImageUrl: aminal.tokenURI,
+          aminalSvg: svgData,
+          aminalStats: {
+            energy: Number(aminal.energy || 0),
+            totalLove: Number(aminal.totalLove || 0),
+            ethBalance: aminal.ethBalance || '0',
+            aminalIndex: Number(aminal.aminalIndex || 0),
+          },
         }),
       });
 
@@ -263,13 +346,40 @@ const ChatSessionPage: NextPage = () => {
               </div>
             </div>
           </div>
-          <div className="text-sm text-gray-500">
-            {aminal.lovers?.[0]?.love ? 
-              `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
-              'New friend 👋'
-            }
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <span>
+              {aminal.lovers?.[0]?.love ? 
+                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
+                'New friend 👋'
+              }
+            </span>
+            {generatedPersonality && (
+              <button
+                onClick={() => setShowPersonality(!showPersonality)}
+                className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors text-xs"
+              >
+                <Sparkles className="w-3 h-3" />
+                Personality
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Personality Display */}
+        {showPersonality && generatedPersonality && (
+          <div className="px-4 py-3 bg-purple-50 border-t border-purple-100">
+            <div className="flex items-start gap-2">
+              <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-purple-900 mb-1">AI-Generated Personality</h4>
+                <p className="text-sm text-purple-700 leading-relaxed">{generatedPersonality}</p>
+                <p className="text-xs text-purple-500 mt-2">
+                  Based on visual analysis • This influences how your Aminal responds
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
