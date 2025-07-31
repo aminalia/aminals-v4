@@ -1,8 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import {
   execute,
-  GeneProposalsListDocument,
   GeneProposal,
+  GeneProposalsListDocument,
 } from '../../.graphclient';
 
 const BASE_KEY = 'gene-proposals';
@@ -28,13 +28,13 @@ export const useGeneProposalsByAuctionId = (auctionId: string) => {
         skip: 0,
       });
       if (response.errors) throw new Error(response.errors[0].message);
-      
+
       // Filter to only proposals for this auction
       const hexAuctionId = toHexAuctionId(auctionId);
       const filteredProposals = (response.data.geneProposals || []).filter(
         (proposal: GeneProposal) => proposal.auction.id === hexAuctionId
       );
-      
+
       return filteredProposals;
     },
     enabled: !!auctionId,

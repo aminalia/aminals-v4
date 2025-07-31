@@ -11,7 +11,10 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends React.Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -23,7 +26,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Error Boundary caught an error:', error, errorInfo);
-    
+
     // You can log to an error reporting service here
     // logErrorToService(error, errorInfo);
   }
@@ -35,7 +38,12 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
   render() {
     if (this.state.hasError) {
       const FallbackComponent = this.props.fallback || DefaultErrorFallback;
-      return <FallbackComponent error={this.state.error!} resetError={this.resetError} />;
+      return (
+        <FallbackComponent
+          error={this.state.error!}
+          resetError={this.resetError}
+        />
+      );
     }
 
     return this.props.children;
@@ -57,7 +65,8 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
             Something went wrong
           </h2>
           <p className="text-gray-600 mb-4">
-            We encountered an unexpected error. Please try refreshing the page or contact support if the problem persists.
+            We encountered an unexpected error. Please try refreshing the page
+            or contact support if the problem persists.
           </p>
           <details className="text-left bg-gray-50 rounded-lg p-4 mb-4">
             <summary className="cursor-pointer text-sm font-medium text-gray-700 mb-2">
@@ -72,10 +81,7 @@ function DefaultErrorFallback({ error, resetError }: ErrorFallbackProps) {
           <Button onClick={resetError} variant="default">
             Try Again
           </Button>
-          <Button 
-            onClick={() => window.location.reload()} 
-            variant="outline"
-          >
+          <Button onClick={() => window.location.reload()} variant="outline">
             Refresh Page
           </Button>
         </div>
@@ -105,15 +111,16 @@ function QueryErrorFallback({ error, resetError }: ErrorFallbackProps) {
             Failed to load data
           </h3>
           <p className="text-gray-600 text-sm mb-4">
-            We couldn&apos;t fetch the latest data. This might be due to network issues or server problems.
+            We couldn&apos;t fetch the latest data. This might be due to network
+            issues or server problems.
           </p>
         </div>
         <div className="flex gap-3 justify-center">
           <Button onClick={resetError} variant="default" size="sm">
             Retry
           </Button>
-          <Button 
-            onClick={() => window.location.reload()} 
+          <Button
+            onClick={() => window.location.reload()}
             variant="outline"
             size="sm"
           >
@@ -128,7 +135,10 @@ function QueryErrorFallback({ error, resetError }: ErrorFallbackProps) {
 /**
  * Component Error Boundary - For individual component errors
  */
-export function ComponentErrorBoundary({ children, fallback }: ErrorBoundaryProps) {
+export function ComponentErrorBoundary({
+  children,
+  fallback,
+}: ErrorBoundaryProps) {
   return (
     <ErrorBoundary fallback={fallback || ComponentErrorFallback}>
       {children}
@@ -146,7 +156,8 @@ function ComponentErrorFallback({ error, resetError }: ErrorFallbackProps) {
             Component Error
           </h4>
           <p className="text-xs text-gray-600 mb-3">
-            This component encountered an error and couldn&apos;t render properly.
+            This component encountered an error and couldn&apos;t render
+            properly.
           </p>
         </div>
         <Button onClick={resetError} variant="outline" size="sm">

@@ -49,20 +49,17 @@ function EmptyState({
           {icon}
         </div>
       )}
-      
+
       <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
-      
+
       {description && (
         <p className="text-sm text-muted-foreground mb-6 max-w-md">
           {description}
         </p>
       )}
-      
+
       {action && (
-        <Button
-          variant={action.variant || 'default'}
-          onClick={action.onClick}
-        >
+        <Button variant={action.variant || 'default'} onClick={action.onClick}>
           {action.label}
         </Button>
       )}
@@ -73,43 +70,64 @@ function EmptyState({
 /**
  * Aminals-specific empty states
  */
-export function NoAminalsFound({ className, ...props }: Omit<EmptyStateProps, 'icon' | 'title'>) {
+export function NoAminalsFound({
+  className,
+  ...props
+}: Omit<EmptyStateProps, 'icon' | 'title'>) {
   return (
     <EmptyState
       icon="🐾"
       title="No Aminals Found"
       description="No Aminals match your current filters. Try adjusting your search criteria."
-      className={cn('bg-neutral-50 rounded-lg border border-neutral-200', className)}
+      className={cn(
+        'bg-neutral-50 rounded-lg border border-neutral-200',
+        className
+      )}
       {...props}
     />
   );
 }
 
-export function NoGenesFound({ className, ...props }: Omit<EmptyStateProps, 'icon' | 'title'>) {
+export function NoGenesFound({
+  className,
+  ...props
+}: Omit<EmptyStateProps, 'icon' | 'title'>) {
   return (
     <EmptyState
       icon="🧬"
       title="No Genes Found"
       description="No genes match your current filters. Try exploring different categories."
-      className={cn('bg-neutral-50 rounded-lg border border-neutral-200', className)}
+      className={cn(
+        'bg-neutral-50 rounded-lg border border-neutral-200',
+        className
+      )}
       {...props}
     />
   );
 }
 
-export function NoAuctionsFound({ className, ...props }: Omit<EmptyStateProps, 'icon' | 'title'>) {
+export function NoAuctionsFound({
+  className,
+  ...props
+}: Omit<EmptyStateProps, 'icon' | 'title'>) {
   return (
     <EmptyState
       icon="💕"
       title="No Auctions Found"
       description="There are no active breeding auctions at the moment. Check back later!"
-      className={cn('bg-neutral-50 rounded-lg border border-neutral-200', className)}
+      className={cn(
+        'bg-neutral-50 rounded-lg border border-neutral-200',
+        className
+      )}
       {...props}
     />
   );
 }
 
-export function WalletNotConnected({ className, ...props }: Omit<EmptyStateProps, 'icon' | 'title'>) {
+export function WalletNotConnected({
+  className,
+  ...props
+}: Omit<EmptyStateProps, 'icon' | 'title'>) {
   return (
     <EmptyState
       icon="👛"
@@ -121,12 +139,12 @@ export function WalletNotConnected({ className, ...props }: Omit<EmptyStateProps
   );
 }
 
-export function ErrorState({ 
-  className, 
+export function ErrorState({
+  className,
   error,
   onRetry,
-  ...props 
-}: Omit<EmptyStateProps, 'icon' | 'title'> & { 
+  ...props
+}: Omit<EmptyStateProps, 'icon' | 'title'> & {
   error?: string;
   onRetry?: () => void;
 }) {
@@ -134,9 +152,18 @@ export function ErrorState({
     <EmptyState
       icon="⚠️"
       title="Something went wrong"
-      description={error || "We're having trouble loading this content. Please try again."}
-      action={onRetry ? { label: 'Try Again', onClick: onRetry, variant: 'outline' } : undefined}
-      className={cn('bg-error-50 rounded-lg border border-error-200', className)}
+      description={
+        error || "We're having trouble loading this content. Please try again."
+      }
+      action={
+        onRetry
+          ? { label: 'Try Again', onClick: onRetry, variant: 'outline' }
+          : undefined
+      }
+      className={cn(
+        'bg-error-50 rounded-lg border border-error-200',
+        className
+      )}
       {...props}
     />
   );

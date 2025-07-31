@@ -7,7 +7,7 @@ function convertAminalForDisplay(aminal: Aminal | any) {
     return null;
   }
 
-  const safeToString = (value: any) => value ? value.toString() : '0';
+  const safeToString = (value: any) => (value ? value.toString() : '0');
 
   return {
     id: safeToString(aminal.id),
@@ -17,8 +17,12 @@ function convertAminalForDisplay(aminal: Aminal | any) {
     totalLove: safeToString(aminal.totalLove),
     ethBalance: safeToString(aminal.ethBalance),
     tokenURI: aminal.tokenURI || undefined,
-    momAddress: aminal.momAddress ? safeToString(aminal.momAddress) : '0x0000000000000000000000000000000000000000',
-    dadAddress: aminal.dadAddress ? safeToString(aminal.dadAddress) : '0x0000000000000000000000000000000000000000',
+    momAddress: aminal.momAddress
+      ? safeToString(aminal.momAddress)
+      : '0x0000000000000000000000000000000000000000',
+    dadAddress: aminal.dadAddress
+      ? safeToString(aminal.dadAddress)
+      : '0x0000000000000000000000000000000000000000',
     backId: safeToString(aminal.backId),
     armId: safeToString(aminal.armId),
     tailId: safeToString(aminal.tailId),
@@ -33,18 +37,20 @@ function convertAminalForDisplay(aminal: Aminal | any) {
 
 export default function AminalGrid({ aminals }: { aminals: (Aminal | any)[] }) {
   // Convert GraphQL format to display format
-  const validAminals = aminals
-    ?.filter(Boolean)
-    ?.map(convertAminalForDisplay)
-    ?.filter(Boolean) || [];
+  const validAminals =
+    aminals?.filter(Boolean)?.map(convertAminalForDisplay)?.filter(Boolean) ||
+    [];
 
   if (!validAminals.length) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <div className="text-6xl mb-4">🐾</div>
-        <h3 className="text-xl font-medium text-gray-700 mb-2">No Aminals Found</h3>
+        <h3 className="text-xl font-medium text-gray-700 mb-2">
+          No Aminals Found
+        </h3>
         <p className="text-gray-500 max-w-md">
-          There are currently no Aminals to display. Try connecting your wallet or check back later!
+          There are currently no Aminals to display. Try connecting your wallet
+          or check back later!
         </p>
       </div>
     );
@@ -55,9 +61,9 @@ export default function AminalGrid({ aminals }: { aminals: (Aminal | any)[] }) {
       {validAminals.map((aminal, index) => {
         if (!aminal) return null;
         return (
-          <AminalCard 
-            key={`${aminal.contractAddress || aminal.id || index}-${index}`} 
-            aminal={aminal} 
+          <AminalCard
+            key={`${aminal.contractAddress || aminal.id || index}-${index}`}
+            aminal={aminal}
           />
         );
       })}

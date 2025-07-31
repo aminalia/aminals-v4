@@ -91,7 +91,10 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
               <div>
                 <div className="text-xs text-muted-foreground">ETH Balance</div>
                 <div className="text-sm font-semibold text-blue-600">
-                  Ξ {Number(formatEther(BigInt(aminal.ethBalance || 0))).toFixed(3)}
+                  Ξ{' '}
+                  {Number(formatEther(BigInt(aminal.ethBalance || 0))).toFixed(
+                    3
+                  )}
                 </div>
               </div>
             </div>

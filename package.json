@@ -5,8 +5,7 @@
   "main": "index.js",
   "private": true,
   "workspaces": [
-    "frontend",
-    "graph"
+    "frontend"
   ],
   "directories": {
     "lib": "lib",

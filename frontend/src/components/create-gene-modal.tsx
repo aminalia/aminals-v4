@@ -227,20 +227,6 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                   </div>
                 </div>
 
-                {/* Info */}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-600">✨</span>
-                    <div className="text-sm text-green-800">
-                      <p className="font-medium">Free Gene Creation</p>
-                      <p className="text-xs">
-                        Create unlimited gene NFTs at no cost! Help expand the
-                        Aminal trait ecosystem.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
                 {/* Action Buttons */}
                 <div className="pt-4 border-t">
                   <div className="flex gap-3">
@@ -289,33 +275,6 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
               <SimpleSVGBuilder onSVGChange={setSvg} initialSVG={svg} />
             </div>
           </div>
-
-          {/* Tips */}
-          <Card className="mt-6 p-4 bg-blue-50 border-blue-200">
-            <div className="text-sm">
-              <h3 className="font-medium text-blue-900 mb-2">
-                💡 Tips for Creating Great Genes
-              </h3>
-              <ul className="space-y-1 text-blue-800">
-                <li>• Use the SVG builder to create simple, clean designs</li>
-                <li>
-                  • Choose colors that work well with different Aminal
-                  combinations
-                </li>
-                <li>
-                  • Keep designs simple - they&apos;ll be small when used on
-                  Aminals
-                </li>
-                <li>
-                  • Consider how your trait will look alongside other traits
-                </li>
-                <li>
-                  • You can edit the SVG code directly for advanced
-                  customization
-                </li>
-              </ul>
-            </div>
-          </Card>
         </div>
       </div>
     </div>

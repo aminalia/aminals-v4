@@ -27,7 +27,6 @@
   --radius: 0.5rem;
 }
 
-
 /* Base styles */
 * {
   border-color: hsl(var(--border));
@@ -36,7 +35,7 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-feature-settings: "rlig" 1, "calt" 1;
+  font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
 /* Scrollbar styling */

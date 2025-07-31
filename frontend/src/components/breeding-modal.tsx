@@ -1,9 +1,10 @@
 import { cn } from '@/lib/utils';
 import { useAminals } from '@/resources/aminals';
 import { X } from 'lucide-react';
+import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
-import { isAddress } from 'viem';
+import { decodeEventLog, isAddress } from 'viem';
 import {
   useAccount,
   useWaitForTransactionReceipt,
@@ -12,7 +13,6 @@ import {
 import { aminalFactoryAbi, aminalFactoryAddress } from '../contracts/generated';
 import { AminalVisualImage } from './aminal-card';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 
 interface BreedingModalProps {
   aminal: any;
@@ -28,18 +28,16 @@ export default function BreedingModal({
   onSuccess,
 }: BreedingModalProps) {
   const [selectedPartner, setSelectedPartner] = useState<any>(null);
-  const [manualAddress, setManualAddress] = useState<string>('');
-  const [useManualAddress, setUseManualAddress] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'loved'>('all');
-
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const { isConnected, chain, address } = useAccount();
+  const router = useRouter();
   const enabled = isConnected && chain;
 
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
     error: receiptError,
+    data: receipt,
   } = useWaitForTransactionReceipt({
     hash,
   });
@@ -47,7 +45,7 @@ export default function BreedingModal({
   // Fetch available Aminals for selection
   const { data: aminals, isLoading: isLoadingAminals } = useAminals(
     address || '',
-    filter,
+    'loved',
     'most-loved'
   );
 
@@ -63,25 +61,82 @@ export default function BreedingModal({
       });
   }, [aminals, aminal]);
 
-
-  // Handle transaction success
+  // Handle transaction success and extract auction ID for redirect
   useEffect(() => {
-    if (isConfirmed) {
-      toast.success(
-        '🍼 Gene auction started! Community can now vote on offspring traits.',
-        {
-          id: 'breed-tx',
-          duration: 6000,
+    if (isConfirmed && receipt) {
+      try {
+        // Find the BreedAminal event in the transaction logs
+        const breedAminalEvent = receipt.logs.find((log) => {
+          try {
+            const decoded = decodeEventLog({
+              abi: aminalFactoryAbi,
+              data: log.data,
+              topics: log.topics,
+            });
+            return decoded.eventName === 'BreedAminal';
+          } catch {
+            return false;
+          }
+        });
+
+        if (breedAminalEvent) {
+          const decoded = decodeEventLog({
+            abi: aminalFactoryAbi,
+            data: breedAminalEvent.data,
+            topics: breedAminalEvent.topics,
+          });
+
+          if (decoded.eventName === 'BreedAminal') {
+            const auctionId = decoded.args.auctionId;
+
+            toast.success(
+              '🍼 Gene auction started! Redirecting to voting page...',
+              {
+                id: 'breed-tx',
+                duration: 4000,
+              }
+            );
+
+            onSuccess?.();
+            onClose();
+            // Reset form
+            setSelectedPartner(null);
+
+            // Redirect to the gene auction page
+            setTimeout(() => {
+              router.push(`/breeding/${auctionId}`);
+            }, 1500); // Small delay to let toast show and ensure subgraph indexing
+
+            return;
+          }
         }
-      );
-      onSuccess?.();
-      onClose();
-      // Reset form
-      setSelectedPartner(null);
-      setManualAddress('');
-      setUseManualAddress(false);
+
+        // Fallback if event not found
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+        onSuccess?.();
+        onClose();
+        setSelectedPartner(null);
+      } catch (error) {
+        console.error('Error parsing transaction receipt:', error);
+        toast.success(
+          '🍼 Gene auction started! Check the breeding page for your auction.',
+          {
+            id: 'breed-tx',
+            duration: 6000,
+          }
+        );
+        onSuccess?.();
+        onClose();
+        setSelectedPartner(null);
+      }
     }
-  }, [isConfirmed, onSuccess, onClose]);
+  }, [isConfirmed, receipt, onSuccess, onClose, router]);
 
   // Handle transaction errors
   useEffect(() => {
@@ -89,8 +144,7 @@ export default function BreedingModal({
       console.error('Breeding transaction failed:', error);
       let errorMessage = 'Transaction failed. Please try again.';
       if (error.message.includes('insufficient funds')) {
-        errorMessage =
-          'Insufficient funds. You need ETH for gas fees.';
+        errorMessage = 'Insufficient funds. You need ETH for gas fees.';
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       }
@@ -123,9 +177,7 @@ export default function BreedingModal({
   const handleBreeding = () => {
     if (!enabled) return;
 
-    const partnerAddress = useManualAddress
-      ? manualAddress
-      : selectedPartner?.contractAddress;
+    const partnerAddress = selectedPartner?.contractAddress;
     if (!partnerAddress || !isAddress(partnerAddress)) {
       toast.error('Please select a valid partner');
       return;
@@ -147,7 +199,6 @@ export default function BreedingModal({
     return '🍼 Start Gene Auction';
   };
 
-
   if (!isOpen) return null;
 
   return (
@@ -160,8 +211,7 @@ export default function BreedingModal({
               Find Breeding Partner
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 mt-1 hidden sm:block">
-              Select an Aminal to breed with or enter a contract address
-              manually
+              Select one of your loved Aminals to breed with.
             </p>
           </div>
           <button
@@ -176,142 +226,66 @@ export default function BreedingModal({
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
           {/* Selection Method */}
           <div className="mb-6">
-            <h3 className="text-base sm:text-lg font-semibold mb-3">
-              Selection Method
-            </h3>
-            <div className="flex gap-2 sm:gap-4 mb-4">
-              <button
-                onClick={() => setUseManualAddress(false)}
-                className={cn(
-                  'px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex-1',
-                  !useManualAddress
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                )}
-              >
-                Browse Aminals
-              </button>
-              <button
-                onClick={() => setUseManualAddress(true)}
-                className={cn(
-                  'px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex-1',
-                  useManualAddress
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                )}
-              >
-                Manual Address
-              </button>
-            </div>
-
-            {useManualAddress ? (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Partner Contract Address
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter contract address (0x...)"
-                  value={manualAddress}
-                  onChange={(e) => setManualAddress(e.target.value)}
-                  className="max-w-md"
-                />
-              </div>
-            ) : (
-              <div>
-                {/* Filter Options */}
-                <div className="flex gap-2 mb-4">
-                  <button
-                    onClick={() => setFilter('all')}
-                    className={cn(
-                      'px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex-1',
-                      filter === 'all'
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    )}
-                  >
-                    All Aminals
-                  </button>
-                  <button
-                    onClick={() => setFilter('loved')}
-                    className={cn(
-                      'px-3 py-2 rounded-full text-xs sm:text-sm font-medium transition-colors min-h-[44px] flex-1',
-                      filter === 'loved'
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                    )}
-                  >
-                    Your Loved
-                  </button>
+            <div>
+              {/* Aminals Grid */}
+              {isLoadingAminals ? (
+                <div className="flex justify-center items-center h-32">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                 </div>
-
-                {/* Aminals Grid */}
-                {isLoadingAminals ? (
-                  <div className="flex justify-center items-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  </div>
-                ) : !availableAminals || availableAminals.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    No available Aminals found
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                    {availableAminals.map((aminalOption: any) => (
-                      <div
-                        key={aminalOption.id}
-                        className={cn(
-                          'border-2 rounded-lg p-2 sm:p-3 cursor-pointer transition-all active:scale-95',
-                          selectedPartner?.id === aminalOption.id
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
-                        )}
-                        onClick={() => setSelectedPartner(aminalOption)}
-                      >
-                        <div className="aspect-square mb-2 bg-gray-50 rounded-lg overflow-hidden">
-                          <AminalVisualImage aminal={aminalOption} />
+              ) : !availableAminals || availableAminals.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No available Aminals found
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                  {availableAminals.map((aminalOption: any) => (
+                    <div
+                      key={aminalOption.id}
+                      className={cn(
+                        'border-2 rounded-lg p-2 sm:p-3 cursor-pointer transition-all active:scale-95',
+                        selectedPartner?.id === aminalOption.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      )}
+                      onClick={() => setSelectedPartner(aminalOption)}
+                    >
+                      <div className="aspect-square mb-2 bg-gray-50 rounded-lg overflow-hidden">
+                        <AminalVisualImage aminal={aminalOption} />
+                      </div>
+                      <div className="text-center space-y-1">
+                        <div className="text-xs sm:text-sm font-medium truncate">
+                          Aminal #{aminalOption.aminalIndex}
                         </div>
-                        <div className="text-center space-y-1">
-                          <div className="text-xs sm:text-sm font-medium truncate">
-                            Aminal #{aminalOption.aminalIndex}
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {Number(aminalOption.totalLove).toFixed(0)} ❤️
-                          </div>
+                        <div className="text-xs text-gray-600">
+                          {Number(aminalOption.totalLove).toFixed(0)} ❤️
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Selected Partner Info */}
-          {(selectedPartner ||
-            (useManualAddress && isAddress(manualAddress))) && (
+          {selectedPartner && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
               <h4 className="font-medium text-blue-900 mb-2">
                 Selected Partner
               </h4>
-              {useManualAddress ? (
-                <div className="text-sm text-blue-700">
-                  Contract Address: {manualAddress}
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white rounded-lg overflow-hidden border border-blue-200">
+                  <AminalVisualImage aminal={selectedPartner} />
                 </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white rounded-lg overflow-hidden border border-blue-200">
-                    <AminalVisualImage aminal={selectedPartner} />
+                <div>
+                  <div className="font-medium">
+                    Aminal #{selectedPartner.aminalIndex}
                   </div>
-                  <div>
-                    <div className="font-medium">
-                      Aminal #{selectedPartner.aminalIndex}
-                    </div>
-                    <div className="text-sm text-blue-700">
-                      {selectedPartner.contractAddress}
-                    </div>
+                  <div className="text-sm text-blue-700">
+                    {selectedPartner.contractAddress}
                   </div>
                 </div>
-              )}
+              </div>
             </div>
           )}
         </div>
@@ -319,7 +293,8 @@ export default function BreedingModal({
         {/* Footer */}
         <div className="border-t border-gray-200 p-4 sm:p-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between shrink-0">
           <div className="text-xs sm:text-sm text-gray-600 order-2 sm:order-1">
-            Start the gene auction to create offspring with your selected partner
+            Start the gene auction to create offspring with your selected
+            partner
           </div>
           <div className="flex gap-3 order-1 sm:order-2">
             <Button
@@ -332,12 +307,7 @@ export default function BreedingModal({
             <Button
               onClick={handleBreeding}
               disabled={
-                !enabled ||
-                (!selectedPartner && !manualAddress) ||
-                (!useManualAddress && !selectedPartner) ||
-                (useManualAddress && !isAddress(manualAddress)) ||
-                isPending ||
-                isConfirming
+                !enabled || !selectedPartner || isPending || isConfirming
               }
               className={cn(
                 'bg-green-600 hover:bg-green-700 text-white',

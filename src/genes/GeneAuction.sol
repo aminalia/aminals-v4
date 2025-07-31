@@ -48,9 +48,6 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Cost in love and energy to propose a gene
     uint256 public constant PROPOSE_GENE_COST = 10;
 
-    /// @notice Number of trait categories per Aminal
-    uint256 public constant TRAIT_CATEGORIES = 8;
-
     /// @notice Minimum fraction of total love required to remove a gene (1/3)
     uint256 public constant GENE_REMOVAL_THRESHOLD = 3;
 
@@ -82,9 +79,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 aminalOne; // Index of first parent Aminal
         uint256 aminalTwo; // Index of second parent Aminal
         uint256 totalLove; // Total love used for voting power calculation
-        uint256 startTime; // Auction start timestamp
-        uint256 endTime; // Auction end timestamp
-        bool settled; // Whether auction has been settled
+        uint64 startTime; // Auction start timestamp - packed to save gas
+        uint64 endTime; // Auction end timestamp - packed to save gas
+        bool settled; // Whether auction has been settled - packed with timestamps
         uint256[8] parentOneTraits; // Parent 1 traits by category
         uint256[8] parentTwoTraits; // Parent 2 traits by category
         mapping(VisualsCat => CategoryVoting) categoryVotes; // Voting data per category
@@ -131,8 +128,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 indexed aminalOne,
         uint256 indexed aminalTwo,
         uint256 totalLove,
-        uint256 startTime,
-        uint256 endTime
+        uint64 startTime,
+        uint64 endTime
     );
 
     /// @notice Emitted when a user votes for a gene in a category
@@ -140,13 +137,19 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param category The trait category being voted on
     /// @param geneId The gene being voted for
     /// @param voter Address of the voter
-    event GeneVoteCast(uint256 indexed auctionId, VisualsCat indexed category, uint256 indexed geneId, address voter);
+    event GeneVoteCast(
+        uint256 indexed auctionId,
+        VisualsCat indexed category,
+        uint256 indexed geneId,
+        address voter,
+        uint256 userVotingPower
+    );
 
     /// @notice Emitted when a user votes for multiple categories at once
     /// @param auctionId The auction being voted in
     /// @param voter Address of the voter
     /// @param geneIds Array of gene IDs voted for (by category index)
-    event BulkVoteCast(uint256 indexed auctionId, address indexed voter, uint256[8] geneIds);
+    event BulkVoteCast(uint256 indexed auctionId, address indexed voter, uint256[8] geneIds, uint256 userVotingPower);
 
     /// @notice Emitted when an auction is settled and child is spawned
     /// @param auctionId The settled auction
@@ -280,8 +283,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         auction.aminalOne = aminalOne;
         auction.aminalTwo = aminalTwo;
         auction.totalLove = totalLove;
-        auction.startTime = block.timestamp;
-        auction.endTime = block.timestamp + VOTING_DURATION;
+        auction.startTime = uint64(block.timestamp);
+        auction.endTime = uint64(block.timestamp + VOTING_DURATION);
 
         // Store parent traits for inheritance fallback
         _captureParentTraits(auction, aminalOne, aminalTwo);
@@ -298,7 +301,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function settleAuction(uint256 auctionId) external validVoting(auctionId) nonReentrant {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp < auction.endTime) revert VotingNotEnded();
+        if (block.timestamp < uint256(auction.endTime)) revert VotingNotEnded();
         if (auction.settled) revert VotingAlreadySettled();
 
         auction.settled = true;
@@ -316,11 +319,11 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 treasuryFromAminalTwo = (aminalTwoTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
 
         // Pre-calculate treasury per gene to avoid repeated division
-        uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / TRAIT_CATEGORIES;
+        uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / 8;
         uint256 treasuryPerGeneHalf = treasuryPerGene / 2;
 
         // Process each trait category
-        for (uint256 i = 0; i < TRAIT_CATEGORIES; i++) {
+        for (uint256 i = 0; i < 8;) {
             VisualsCat category = VisualsCat(i);
             uint256 selectedGeneId = _selectWinningGene(auction, category, i);
             winningGeneIds[i] = selectedGeneId;
@@ -330,6 +333,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
                 totalTreasuryTransferred += _payoutGeneCreator(
                     auctionId, selectedGeneId, treasuryPerGeneHalf, aminalOneAddress, aminalTwoAddress
                 );
+            }
+            unchecked {
+                ++i;
             }
         }
 
@@ -346,15 +352,15 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function proposeGene(uint256 auctionId, VisualsCat category, uint256 geneId) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= TRAIT_CATEGORIES) revert InvalidCategory();
+        if (uint256(category) >= 8) revert InvalidCategory();
 
         // Verify gene exists and is from the registry
         if (!geneRegistry.isValidGene(geneId)) revert InvalidGene();
 
         // Verify gene is in the correct category
-        (, VisualsCat geneCategory,) = geneRegistry.getGeneInfo(geneId);
+        VisualsCat geneCategory = geneRegistry.getGeneCategory(geneId);
         if (geneCategory != category) revert InvalidCategory();
 
         CategoryVoting storage categoryVoting = auction.categoryVotes[category];
@@ -380,17 +386,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function voteOnGene(uint256 auctionId, VisualsCat category, uint256 geneId) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= TRAIT_CATEGORIES) revert InvalidCategory();
+        if (uint256(category) >= 8) revert InvalidCategory();
 
         // Cache external calls for gas efficiency
-        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
-        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
-
-        uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(msg.sender);
-        uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(msg.sender);
-        uint256 userVotingPower = loveToAminalOne + loveToAminalTwo;
+        (address aminalOneAddress, address aminalTwoAddress, uint256 userVotingPower) =
+            _getCachedAminalDataForUser(auction, msg.sender);
 
         if (userVotingPower == 0) revert NoVotingPower();
 
@@ -415,7 +417,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Update highest vote for category and handle ties
         _updateCategoryWinner(categoryVoting, geneId);
 
-        emit GeneVoteCast(auctionId, category, geneId, msg.sender);
+        emit GeneVoteCast(auctionId, category, geneId, msg.sender, userVotingPower);
     }
 
     /**
@@ -425,36 +427,38 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function bulkVoteOnGenes(uint256 auctionId, uint256[8] calldata geneIds) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
 
         // Cache external calls to avoid repeated expensive operations
-        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
-        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
-
-        uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(msg.sender);
-        uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(msg.sender);
-        uint256 userVotingPower = loveToAminalOne + loveToAminalTwo;
+        (address aminalOneAddress, address aminalTwoAddress, uint256 userVotingPower) =
+            _getCachedAminalDataForUser(auction, msg.sender);
 
         if (userVotingPower == 0) revert NoVotingPower();
 
         // Batch validate all genes upfront to fail fast
-        for (uint256 i = 0; i < TRAIT_CATEGORIES; i++) {
+        for (uint256 i = 0; i < 8;) {
             if (geneIds[i] != 0) {
                 VisualsCat category = VisualsCat(i);
                 if (!_isGeneValidForVoting(auction, category, geneIds[i])) revert InvalidGene();
             }
+            unchecked {
+                ++i;
+            }
         }
 
         // Process votes for each category with cached values
-        for (uint256 i = 0; i < TRAIT_CATEGORIES; i++) {
+        for (uint256 i = 0; i < 8;) {
             if (geneIds[i] != 0) {
                 VisualsCat category = VisualsCat(i);
                 _processSingleVote(auction, category, geneIds[i], userVotingPower);
             }
+            unchecked {
+                ++i;
+            }
         }
 
-        emit BulkVoteCast(auctionId, msg.sender, geneIds);
+        emit BulkVoteCast(auctionId, msg.sender, geneIds, userVotingPower);
     }
 
     /**
@@ -492,9 +496,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     {
         Auction storage auction = auctions[auctionId];
 
-        if (block.timestamp >= auction.endTime) revert VotingNotActive();
+        if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= TRAIT_CATEGORIES) revert InvalidCategory();
+        if (uint256(category) >= 8) revert InvalidCategory();
 
         // Calculate user's voting power
         uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
@@ -543,18 +547,19 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Remove from tied genes if present
         if (categoryVoting.isGeneTied[geneId]) {
             categoryVoting.isGeneTied[geneId] = false;
-            // Remove from tiedGenes array - rebuild array without this gene
-            uint256[] memory newTiedGenes = new uint256[](categoryVoting.tiedGenes.length);
-            uint256 newLength = 0;
-            for (uint256 i = 0; i < categoryVoting.tiedGenes.length; i++) {
-                if (categoryVoting.tiedGenes[i] != geneId) {
-                    newTiedGenes[newLength] = categoryVoting.tiedGenes[i];
-                    newLength++;
+            // Use swap-and-pop pattern for gas efficiency
+            uint256 tiedLength = categoryVoting.tiedGenes.length;
+            for (uint256 i = 0; i < tiedLength;) {
+                if (categoryVoting.tiedGenes[i] == geneId) {
+                    // Swap with last element and pop
+                    uint256 lastIndex = tiedLength - 1;
+                    if (i != lastIndex) categoryVoting.tiedGenes[i] = categoryVoting.tiedGenes[lastIndex];
+                    categoryVoting.tiedGenes.pop();
+                    break;
                 }
-            }
-            delete categoryVoting.tiedGenes;
-            for (uint256 i = 0; i < newLength; i++) {
-                categoryVoting.tiedGenes.push(newTiedGenes[i]);
+                unchecked {
+                    ++i;
+                }
             }
         }
 
@@ -568,11 +573,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             categoryVoting.highestVotes = 0;
 
             // Recalculate winner from remaining genes
-            for (uint256 i = 0; i < categoryVoting.proposedGenes.length; i++) {
+            for (uint256 i = 0; i < categoryVoting.proposedGenes.length;) {
                 uint256 currentGeneId = categoryVoting.proposedGenes[i];
                 if (categoryVoting.geneVotes[currentGeneId] > categoryVoting.highestVotes) {
                     categoryVoting.highestVotes = categoryVoting.geneVotes[currentGeneId];
                     categoryVoting.winningGeneId = currentGeneId;
+                }
+                unchecked {
+                    ++i;
                 }
             }
         }
@@ -586,16 +594,20 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      */
     function _updateCategoryWinner(CategoryVoting storage categoryVoting, uint256 geneId) internal {
         uint256 currentVotes = categoryVoting.geneVotes[geneId];
+        uint256 cachedHighestVotes = categoryVoting.highestVotes;
 
-        if (currentVotes > categoryVoting.highestVotes) {
+        if (currentVotes > cachedHighestVotes) {
             // New highest votes - update winner and highest vote count
             categoryVoting.highestVotes = currentVotes;
             categoryVoting.winningGeneId = geneId;
 
             // Clear previous tied gene markers (but defer array cleanup)
             if (categoryVoting.tiedGenes.length > 0) {
-                for (uint256 i = 0; i < categoryVoting.tiedGenes.length; i++) {
+                for (uint256 i = 0; i < categoryVoting.tiedGenes.length;) {
                     categoryVoting.isGeneTied[categoryVoting.tiedGenes[i]] = false;
+                    unchecked {
+                        ++i;
+                    }
                 }
                 delete categoryVoting.tiedGenes;
             }
@@ -603,7 +615,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             // Mark new winner as tied (for consistency)
             categoryVoting.isGeneTied[geneId] = true;
             categoryVoting.tiedGenes.push(geneId);
-        } else if (currentVotes == categoryVoting.highestVotes && currentVotes > 0) {
+        } else if (currentVotes == cachedHighestVotes && currentVotes > 0) {
             // Tie situation - only add to tied array if not already there
             if (!categoryVoting.isGeneTied[geneId]) {
                 categoryVoting.isGeneTied[geneId] = true;
@@ -655,13 +667,26 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @dev Voting power is the sum of love given to both parent Aminals
      */
     function _calculateVotingPower(Auction storage auction, address user) internal view returns (uint256) {
-        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
-        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
+        (,, uint256 votingPower) = _getCachedAminalDataForUser(auction, user);
+        return votingPower;
+    }
+
+    /**
+     * @notice Get cached aminal addresses and user voting power
+     * @dev Reduces redundant external calls by caching results
+     */
+    function _getCachedAminalDataForUser(Auction storage auction, address user)
+        internal
+        view
+        returns (address aminalOneAddress, address aminalTwoAddress, uint256 votingPower)
+    {
+        aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
+        aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
         uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(user);
         uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(user);
 
-        return loveToAminalOne + loveToAminalTwo;
+        votingPower = loveToAminalOne + loveToAminalTwo;
     }
 
     /**
@@ -675,8 +700,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             uint256 aminalOne,
             uint256 aminalTwo,
             uint256 totalLove,
-            uint256 startTime,
-            uint256 endTime,
+            uint64 startTime,
+            uint64 endTime,
             bool settled
         )
     {
@@ -768,7 +793,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      */
     function isVotingActive(uint256 auctionId) external view validVoting(auctionId) returns (bool) {
         Auction storage auction = auctions[auctionId];
-        return block.timestamp < auction.endTime && !auction.settled;
+        return block.timestamp < uint256(auction.endTime) && !auction.settled;
     }
 
     /**
@@ -872,8 +897,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         view
         returns (uint256 selectedGeneId)
     {
-        // Create array of available parent traits (excluding 0 which means no trait)
-        uint256[] memory availableTraits = new uint256[](2);
+        // Use fixed-size array for parent traits (max 2 parents)
+        uint256[2] memory availableTraits;
         uint256 availableCount = 0;
 
         if (auction.parentOneTraits[categoryIndex] != 0) {

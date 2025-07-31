@@ -4,8 +4,13 @@
  */
 
 import { colors, semanticColors, tailwindColors } from './colors';
-import { layout, componentSpacing, breakpoints, tailwindSpacing } from './spacing';
-import { typography, textStyles, tailwindTextStyles } from './typography';
+import {
+  breakpoints,
+  componentSpacing,
+  layout,
+  tailwindSpacing,
+} from './spacing';
+import { tailwindTextStyles, textStyles, typography } from './typography';
 
 /**
  * Complete design token system

@@ -146,6 +146,15 @@ contract GeneRegistry is IAminalStructs, Ownable {
     }
 
     /**
+     * @notice Get the visual category for a Gene NFT
+     * @param geneId The ID of the Gene NFT
+     * @return category The visual category of the gene
+     */
+    function getGeneCategory(uint256 geneId) external view returns (VisualsCat category) {
+        return geneCategories[geneId];
+    }
+
+    /**
      * @notice Basic SVG validation
      * @dev Checks for basic SVG structure - not comprehensive security validation
      * @param svg The SVG string to validate

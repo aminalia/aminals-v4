@@ -1,6 +1,6 @@
 /**
  * ContentContainer Component
- * 
+ *
  * Provides standardized content areas with responsive behavior and consistent spacing.
  * Supports different layout patterns and grid configurations.
  */
@@ -44,7 +44,7 @@ export const ContentContainer = ({
 
 /**
  * ContentSection Component
- * 
+ *
  * A wrapper for individual content sections within a ContentContainer.
  * Provides consistent padding and styling.
  */
@@ -68,9 +68,7 @@ export const ContentSection = ({
   };
 
   return (
-    <div className={cn(variantStyles[variant], className)}>
-      {children}
-    </div>
+    <div className={cn(variantStyles[variant], className)}>{children}</div>
   );
 };
 

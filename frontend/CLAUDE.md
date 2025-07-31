@@ -78,6 +78,7 @@ npm run graphclient:build
 ### Components (`/src/components`)
 
 #### Action Components (`/actions`)
+
 - `breed-button.tsx`: Breeding functionality
 - `call-skill-button.tsx`: Execute Aminal skills
 - `feed-button.tsx`: Feed Aminals (increase energy)
@@ -85,6 +86,7 @@ npm run graphclient:build
 - `endauction-button.tsx`: End breeding auctions
 
 #### UI Components
+
 - `aminal-card.tsx`: Individual Aminal display (refactored with design system)
 - `aminal-grid.tsx`: Grid layout for Aminals
 - `gene-card.tsx`: Gene NFT display
@@ -93,6 +95,7 @@ npm run graphclient:build
 - `countdown-timer.tsx`: Auction countdown display
 
 #### Base UI (`/ui`)
+
 - Enhanced components with design system integration
 - `button.tsx`: Multiple variants (default, success, love, energy, feed, breed, skill)
 - `badge.tsx`: Semantic color variants (success, warning, error, love, energy, neutral)
@@ -172,6 +175,7 @@ const handleAction = () => {
 ### Component Structure
 
 Components follow a consistent pattern:
+
 - Props interface definition
 - Main component with hooks
 - Event handlers
@@ -220,15 +224,13 @@ Components follow a consistent pattern:
 
 ```typescript
 // Import design tokens
-import { colors, spacing, typography } from '@/theme'
+import { colors, spacing, typography } from '@/theme';
 
 // Use in components
-<div className="bg-love-100 text-love-700 p-4">
-  Love-themed content
-</div>
+<div className="bg-love-100 text-love-700 p-4">Love-themed content</div>;
 
 // Access tokens programmatically
-const loveColor = colors.love[600]
+const loveColor = colors.love[600];
 ```
 
 ### Component Variants
@@ -271,6 +273,7 @@ const loveColor = colors.love[600]
 ## Testing
 
 Currently uses Next.js default testing setup. Tests should be added for:
+
 - Component rendering
 - Contract interaction flows
 - Data fetching logic
@@ -279,6 +282,7 @@ Currently uses Next.js default testing setup. Tests should be added for:
 ## Deployment
 
 The frontend is designed to be deployed on standard Next.js hosting platforms:
+
 - Vercel (recommended)
 - Netlify
 - AWS Amplify
@@ -287,16 +291,19 @@ The frontend is designed to be deployed on standard Next.js hosting platforms:
 ## Integration Points
 
 ### Smart Contracts
+
 - Connects to deployed contracts via wagmi
 - Contract ABIs imported from `../out/` directory
 - Addresses configured in `wagmi.config.ts`
 
 ### Graph Protocol
+
 - Queries indexed blockchain data
 - GraphQL schema defined in `/graph` directory
 - Client auto-generated from schema
 
 ### Wallet Integration
+
 - RainbowKit for wallet connection
 - wagmi for contract interactions
 - Supports multiple wallet providers
@@ -304,19 +311,23 @@ The frontend is designed to be deployed on standard Next.js hosting platforms:
 ## Component Reusability
 
 ### AminalCard Component
+
 The `AminalCard` component is designed to be reused across different pages:
+
 - **Homepage**: Grid display of all Aminals
 - **Gene Detail Page**: Shows Aminals that use a specific gene
 - **Profile Page**: Shows user's Aminals
 - **Breeding Page**: Shows breeding partners
 
 ### Consistent UX Patterns
+
 - **Loading States**: Consistent loading indicators across the app
 - **Empty States**: Standardized empty state messages with appropriate icons
 - **Filter/Sort**: Reusable filter bar component for consistent interaction
 - **Stats Display**: Flexible stats grid for different data types
 
 ### Design System Benefits
+
 - **Consistency**: All components use the same color palette and spacing
 - **Maintainability**: Changes to design tokens update the entire app
 - **Accessibility**: Built-in focus states and ARIA labels

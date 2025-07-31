@@ -7,7 +7,6 @@ import TraitSelector, {
   SelectedParts,
   TraitParts,
 } from '@/components/trait-selector';
-import { Button } from '@/components/ui/button';
 import VoteStats from '@/components/vote-stats';
 import { useAuction, useAuctionProposeGenes } from '@/resources/auctions';
 import { useGenesByIds } from '@/resources/genes';
@@ -25,7 +24,11 @@ const AuctionPage: NextPage = () => {
   const auctionId = router.query.auctionId as string;
 
   // Show loading state if router is not ready or ID is not available
-  const isRouterReady = router.isReady && auctionId && typeof auctionId === 'string' && auctionId !== 'undefined';
+  const isRouterReady =
+    router.isReady &&
+    auctionId &&
+    typeof auctionId === 'string' &&
+    auctionId !== 'undefined';
 
   const {
     data: auction,
@@ -638,25 +641,15 @@ const AuctionPage: NextPage = () => {
                         selectedParts={selectedParts}
                         onPartSelection={handlePartSelection}
                         disabled={auction?.finished || isAuctionEnded}
+                        onProposeGene={() => setIsProposalModalOpen(true)}
+                        showProposeButton={
+                          !auction?.finished && !isAuctionEnded
+                        }
                       />
 
-                      {/* Vote Button - Right next to gene selection */}
+                      {/* Vote Button */}
                       {!auction?.finished && !isAuctionEnded && (
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <h4 className="text-sm font-medium text-blue-900">
-                              Vote on Your Selection
-                            </h4>
-                            {!auction?.finished && !isAuctionEnded && (
-                              <Button
-                                onClick={() => setIsProposalModalOpen(true)}
-                                size="sm"
-                                className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto"
-                              >
-                                + Propose Gene
-                              </Button>
-                            )}
-                          </div>
+                        <div>
                           <BulkVoteButton
                             auctionId={auctionId}
                             backId={

@@ -46,7 +46,7 @@ export const queryKeys = {
   aminals: {
     all: ['aminals'] as const,
     lists: () => [...queryKeys.aminals.all, 'list'] as const,
-    list: (filter: string, sort: string, userAddress: string) => 
+    list: (filter: string, sort: string, userAddress: string) =>
       [...queryKeys.aminals.lists(), filter, sort, userAddress] as const,
     details: () => [...queryKeys.aminals.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.aminals.details(), id] as const,
@@ -72,7 +72,8 @@ export const queryKeys = {
   },
   userProfile: {
     all: ['userProfile'] as const,
-    detail: (address: string) => [...queryKeys.userProfile.all, address] as const,
+    detail: (address: string) =>
+      [...queryKeys.userProfile.all, address] as const,
   },
 } as const;
 

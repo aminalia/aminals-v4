@@ -5,6 +5,7 @@ This document explains how to deploy the Aminals frontend to Cloudflare Pages us
 ## Overview
 
 The frontend is configured to work with Cloudflare Pages using the `@cloudflare/next-on-pages` adapter. This approach provides:
+
 - Full Next.js compatibility including SSR and dynamic routes
 - Better performance through Cloudflare's edge network
 - Automatic handling of dynamic routes without fallback configuration
@@ -69,6 +70,7 @@ If you want to use a custom domain:
 ### Next.js Configuration
 
 The `next.config.js` file is configured to:
+
 - Work with standard Next.js features
 - Support dynamic routes natively
 - Optimize images for edge deployment
@@ -77,6 +79,7 @@ The `next.config.js` file is configured to:
 ### Dynamic Routes
 
 Dynamic routes like `/aminals/[id]` are handled through:
+
 - Server-side rendering on Cloudflare's edge
 - Automatic route resolution
 - No need for static path generation
@@ -85,6 +88,7 @@ Dynamic routes like `/aminals/[id]` are handled through:
 ### Cloudflare Adapter
 
 The `@cloudflare/next-on-pages` adapter:
+
 - Converts Next.js build output to Cloudflare Pages format
 - Handles SSR and dynamic routes
 - Provides better performance than static export
@@ -138,6 +142,7 @@ This will serve the app using Cloudflare's local development environment.
 ## Monitoring
 
 Monitor your deployment through:
+
 - Cloudflare Pages dashboard
 - Build logs
 - Analytics (if enabled)
@@ -147,6 +152,7 @@ Monitor your deployment through:
 ## Security
 
 The `@cloudflare/next-on-pages` approach provides:
+
 - Server-side rendering security
 - Automatic HTTPS through Cloudflare
 - DDoS protection through Cloudflare's CDN

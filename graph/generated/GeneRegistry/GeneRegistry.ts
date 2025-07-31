@@ -247,6 +247,29 @@ export class GeneRegistry extends ethereum.SmartContract {
     return ethereum.CallResult.fromValue(value[0].toString());
   }
 
+  getGeneCategory(geneId: BigInt): i32 {
+    let result = super.call(
+      "getGeneCategory",
+      "getGeneCategory(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(geneId)],
+    );
+
+    return result[0].toI32();
+  }
+
+  try_getGeneCategory(geneId: BigInt): ethereum.CallResult<i32> {
+    let result = super.tryCall(
+      "getGeneCategory",
+      "getGeneCategory(uint256):(uint8)",
+      [ethereum.Value.fromUnsignedBigInt(geneId)],
+    );
+    if (result.reverted) {
+      return new ethereum.CallResult();
+    }
+    let value = result.value;
+    return ethereum.CallResult.fromValue(value[0].toI32());
+  }
+
   getGeneInfo(geneId: BigInt): GeneRegistry__getGeneInfoResult {
     let result = super.call(
       "getGeneInfo",
