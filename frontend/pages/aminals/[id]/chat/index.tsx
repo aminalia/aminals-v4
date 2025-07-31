@@ -7,7 +7,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
-import { Plus, MessageCircle, ArrowLeft, Clock, Trash2, MoreVertical } from 'lucide-react';
+import { Plus, MessageCircle, ArrowLeft, Clock, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession } from '../../../../lib/chat-storage';
 import { useAminalForChat } from '../../../../src/resources/aminals';
@@ -51,35 +51,21 @@ const ChatSessionsPage: NextPage = () => {
     refetch: refetchSessions,
   } = useChatSessions(isRouterReady ? contractAddress : '', address || '');
 
-  // Extract SVG data for personality generation
-  const extractedSvg = useMemo(() => {
-    if (!aminal?.tokenURI) return null;
-
-    try {
-      if (!aminal.tokenURI.startsWith('data:')) return null;
-
-      const base64Payload = aminal.tokenURI.split(',')[1];
-      const decodedJsonString = atob(base64Payload);
-      const json = JSON.parse(decodedJsonString);
-
-      // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
-      const imageDataUri = json.image;
-      if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
-
-      const svgBase64 = imageDataUri.split(',')[1];
-      const svgString = atob(svgBase64);
-
-      console.log('🎭 Extracted SVG for session creation:', {
-        hasSvg: !!svgString,
-        svgLength: svgString?.length
-      });
-
-      return svgString;
-    } catch (error) {
-      console.error('Failed to extract SVG from tokenURI:', error);
-      return null;
-    }
-  }, [aminal?.tokenURI]);
+  // Prepare gene IDs for personality generation
+  const geneIds = useMemo(() => {
+    if (!aminal) return {};
+    
+    return {
+      backId: aminal.backId?.toString(),
+      armId: aminal.armId?.toString(),
+      tailId: aminal.tailId?.toString(),
+      earsId: aminal.earsId?.toString(),
+      bodyId: aminal.bodyId?.toString(),
+      faceId: aminal.faceId?.toString(),
+      mouthId: aminal.mouthId?.toString(),
+      miscId: aminal.miscId?.toString(),
+    };
+  }, [aminal]);
 
   const createNewSession = async () => {
     if (!aminal || !address || isCreating) return;
@@ -95,7 +81,7 @@ const ChatSessionsPage: NextPage = () => {
           aminalAddress: contractAddress,
           userAddress: address,
           title: `Chat ${new Date().toLocaleDateString()}`,
-          aminalSvg: extractedSvg,
+          geneIds,
         }),
       });
 

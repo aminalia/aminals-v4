@@ -2,14 +2,15 @@
 
 ## Overview
 
-The personality system generates unique, consistent personalities for each Aminal based on their visual appearance (SVG). Personalities are cached per Aminal and shared across all chat sessions with that Aminal.
+**Gene-Based System** - The personality system generates unique, consistent personalities for each Aminal based on their individual gene traits. Each gene contributes a specific personality trait, and the full personality is a combination of all gene traits.
 
 ## Key Features
 
-- **Aminal-specific**: Each Aminal contract address gets one consistent personality
-- **SVG-based**: Personalities are generated from visual analysis of the Aminal's SVG
-- **Cached**: Generated once per Aminal and reused across all chats
-- **Auto-regeneration**: If an Aminal's SVG changes, personality is regenerated
+- **Gene-specific traits**: Each gene NFT contributes one personality trait
+- **Trait consistency**: Aminals with the same gene always share that trait  
+- **Compositional**: Full Aminal personality combines all gene traits
+- **Two-level caching**: Traits cached per gene, personalities cached per Aminal
+- **Auto-updates**: Personalities regenerate when gene composition changes
 
 ## Architecture
 
@@ -79,12 +80,12 @@ Each Aminal's personality is stored as:
 3. **Cost**: Reduces API calls to Claude Opus
 4. **User Experience**: Aminals feel more authentic and consistent
 
-## Migration
+## Data Storage
 
-Existing session-specific personalities have been migrated to the new Aminal-specific system:
-- Run `node scripts/migrate-personalities.js` to migrate from old sessions
-- Original TypeScript migration utility available in `lib/migrate-personalities.ts`
-- All data now stored consistently in `data/` directory
+All personality-related data is stored in the `data/` directory:
+- Gene traits: `data/gene-traits/{geneId}.json`
+- Aminal personalities: `data/personalities/{aminalAddress}.json`
+- Chat sessions: `data/chat-sessions/`
 
 ## Directory Structure
 

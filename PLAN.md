@@ -113,22 +113,3 @@ Contract Changes:
 ##### General Questions from User Interview
 
 - "Why aren't all genes listed?"
-
-
-### Chat Feature
-
-I want to add the ability to chat with the Aminals. On @frontend/pages/aminals/[id].tsx, add a chat button that launches a modal (or takes the user to a new chat page (which might be better as that link could reference that particular chat)).
-
-We'll use Claude Opus as the chatbot, write a simple system promt (we will refine this later). The system promt template should feed in how much love the Aminal has for a user. It should also take the image of the aminal and use that to construct personality traits for the aminal.
-
-Make sure the UX is elegant.
-
-
-It would be nice if the chats could be persistent. Does the claude API support chat sessions? If so, maybe consider making /chat a sub folder of frontend/pages/aminals/? So we might have a url like https:/aminals.life/aminals/0xf9555236DEA7940a21c0f271FA2b004af06B0Fcb/chat/{chatId}? Is that possible?
-
----
-
-Let's make a few more improvements:
-- Button styling on @frontend/pages/aminals/[id].tsx could be improved, it's too close to the feed button and doesn't have rounded corners. Make the UX better and consistent here.
-- Generate personality when starting a new chat. Store the personality so it doesn't need to be generated again.
-- On @frontend/pages/aminals/[id]/chat/[chatId].tsx show the generated personality

@@ -161,3 +161,14 @@ query GenesByTraitType($traitType: Int!) {
     blockTimestamp
   }
 }
+
+query GenesByIds($ids: [BigInt!]!) {
+  geneNFTs(where: { tokenId_in: $ids }) {
+    id
+    tokenId
+    traitType
+    name
+    description
+    svg
+  }
+}

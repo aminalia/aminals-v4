@@ -1,13 +1,23 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
-import { getOrGeneratePersonality } from '../../lib/personality-storage';
+import { getOrGenerateAminalPersonality } from '../../lib/gene-personality-storage';
+import { execute, GenesByIdsDocument } from '../../.graphclient';
 
 interface ChatRequest {
   message: string;
   sessionId: string;
   loveAmount: number;
-  aminalSvg?: string; // The actual SVG representation of the Aminal
   aminalAddress: string; // Contract address of the Aminal
+  geneIds: {
+    backId?: string;
+    armId?: string;
+    tailId?: string;
+    earsId?: string;
+    bodyId?: string;
+    faceId?: string;
+    mouthId?: string;
+    miscId?: string;
+  };
   aminalStats?: {
     energy: number;
     totalLove: number;
@@ -67,7 +77,7 @@ export default async function handler(
   }
 
   try {
-    const { message, sessionId, loveAmount, aminalSvg, aminalAddress, aminalStats }: ChatRequest = req.body;
+    const { message, sessionId, loveAmount, aminalAddress, geneIds, aminalStats }: ChatRequest = req.body;
 
     if (!message || !sessionId || !aminalAddress) {
       return res.status(400).json({ error: 'Message, sessionId, and aminalAddress are required' });
@@ -92,10 +102,56 @@ export default async function handler(
       .map(msg => `${msg.sender === 'user' ? 'Human' : 'Aminal'}: ${msg.text}`)
       .join('\n');
 
-    // Get or generate personality for this Aminal
-    const personality = aminalSvg ? 
-      await getOrGeneratePersonality(aminalAddress, aminalSvg) :
-      'mysterious and enigmatic, holding secrets of the digital realm';
+    // Get or generate personality for this Aminal based on genes
+    let personality = 'mysterious and enigmatic, holding secrets of the digital realm';
+    
+    try {
+      // Collect valid gene IDs
+      const geneIdArray = Object.entries(geneIds)
+        .filter(([_, id]) => id && id !== '0')
+        .map(([_, id]) => id as string);
+
+      if (geneIdArray.length > 0) {
+        // Fetch gene data from GraphQL
+        const response = await execute(GenesByIdsDocument, {
+          ids: geneIdArray,
+        });
+
+        if (!response.errors && response.data?.geneNFTs) {
+          const genes = response.data.geneNFTs;
+          
+          // Map genes to trait types
+          const traitTypeMap: Record<string, number> = {
+            backId: 0, armId: 1, tailId: 2, earsId: 3,
+            bodyId: 4, faceId: 5, mouthId: 6, miscId: 7,
+          };
+
+          const geneData = Object.entries(geneIds)
+            .filter(([_, geneId]) => geneId && geneId !== '0')
+            .map(([geneKey, geneId]) => {
+              const gene = genes.find(g => g.tokenId === geneId);
+              return gene && gene.svg ? {
+                geneId: geneId!,
+                traitType: traitTypeMap[geneKey],
+                svg: gene.svg,
+                name: gene.name || undefined,
+              } : null;
+            })
+            .filter(Boolean) as Array<{
+              geneId: string;
+              traitType: number;
+              svg: string;
+              name?: string;
+            }>;
+
+          if (geneData.length > 0) {
+            personality = await getOrGenerateAminalPersonality(aminalAddress, geneData);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error generating gene-based personality, using fallback:', error);
+    }
     
     const systemPrompt = await createSystemPrompt(personality, loveAmount || 0, aminalStats);
     const contextualMessage = conversationContext ?

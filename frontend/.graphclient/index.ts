@@ -3198,14 +3198,15 @@ const documentHashMap = {
 "0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalForChatDocument,
 "0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalByContractAddressDocument,
 "0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalFactoryDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftsListDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GeneNftByIdDocument,
-"fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0": GenesByTraitTypeDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionsListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneProposalsListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesListDocument,
 "cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesByAuctionDocument,
+"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GeneNftsListDocument,
+"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GeneNftByIdDocument,
+"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GenesByTraitTypeDocument,
+"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GenesByIdsDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedListDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedByAminalDocument,
 "c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedBySkillDocument,
@@ -3268,27 +3269,6 @@ additionalEnvelopPlugins.push(usePersistedOperations({
         location: 'AminalFactoryDocument.graphql',
         sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
       },{
-        document: GeneNftsListDocument,
-        get rawSDL() {
-          return printWithCache(GeneNftsListDocument);
-        },
-        location: 'GeneNftsListDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
-      },{
-        document: GeneNftByIdDocument,
-        get rawSDL() {
-          return printWithCache(GeneNftByIdDocument);
-        },
-        location: 'GeneNftByIdDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
-      },{
-        document: GenesByTraitTypeDocument,
-        get rawSDL() {
-          return printWithCache(GenesByTraitTypeDocument);
-        },
-        location: 'GenesByTraitTypeDocument.graphql',
-        sha256Hash: 'fefd76273d34f49707460b18b6e22a4089317a1d4e360031844926cee97001a0'
-      },{
         document: GeneAuctionsListDocument,
         get rawSDL() {
           return printWithCache(GeneAuctionsListDocument);
@@ -3323,6 +3303,34 @@ additionalEnvelopPlugins.push(usePersistedOperations({
         },
         location: 'GeneVotesByAuctionDocument.graphql',
         sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+      },{
+        document: GeneNftsListDocument,
+        get rawSDL() {
+          return printWithCache(GeneNftsListDocument);
+        },
+        location: 'GeneNftsListDocument.graphql',
+        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+      },{
+        document: GeneNftByIdDocument,
+        get rawSDL() {
+          return printWithCache(GeneNftByIdDocument);
+        },
+        location: 'GeneNftByIdDocument.graphql',
+        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+      },{
+        document: GenesByTraitTypeDocument,
+        get rawSDL() {
+          return printWithCache(GenesByTraitTypeDocument);
+        },
+        location: 'GenesByTraitTypeDocument.graphql',
+        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+      },{
+        document: GenesByIdsDocument,
+        get rawSDL() {
+          return printWithCache(GenesByIdsDocument);
+        },
+        location: 'GenesByIdsDocument.graphql',
+        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
       },{
         document: SkillUsedListDocument,
         get rawSDL() {
@@ -3606,6 +3614,13 @@ export type GenesByTraitTypeQuery = { geneNFTs: Array<(
       & { auction: Pick<GeneAuction, 'id' | 'auctionId'> }
     )> }
   )> };
+
+export type GenesByIdsQueryVariables = Exact<{
+  ids: Array<Scalars['BigInt']['input']> | Scalars['BigInt']['input'];
+}>;
+
+
+export type GenesByIdsQuery = { geneNFTs: Array<Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg'>> };
 
 export type SkillUsedListQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
@@ -4290,6 +4305,18 @@ export const GenesByTraitTypeDocument = gql`
   }
 }
     ` as unknown as DocumentNode<GenesByTraitTypeQuery, GenesByTraitTypeQueryVariables>;
+export const GenesByIdsDocument = gql`
+    query GenesByIds($ids: [BigInt!]!) {
+  geneNFTs(where: {tokenId_in: $ids}) {
+    id
+    tokenId
+    traitType
+    name
+    description
+    svg
+  }
+}
+    ` as unknown as DocumentNode<GenesByIdsQuery, GenesByIdsQueryVariables>;
 export const SkillUsedListDocument = gql`
     query SkillUsedList($first: Int = 100, $skip: Int = 0) {
   skillUseds(
@@ -4525,6 +4552,7 @@ export const UserActivityDocument = gql`
 
 
 
+
 export type Requester<C = {}, E = unknown> = <R, V>(doc: DocumentNode, vars?: V, options?: C) => Promise<R> | AsyncIterable<R>
 export function getSdk<C, E>(requester: Requester<C, E>) {
   return {
@@ -4566,6 +4594,9 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
     },
     GenesByTraitType(variables: GenesByTraitTypeQueryVariables, options?: C): Promise<GenesByTraitTypeQuery> {
       return requester<GenesByTraitTypeQuery, GenesByTraitTypeQueryVariables>(GenesByTraitTypeDocument, variables, options) as Promise<GenesByTraitTypeQuery>;
+    },
+    GenesByIds(variables: GenesByIdsQueryVariables, options?: C): Promise<GenesByIdsQuery> {
+      return requester<GenesByIdsQuery, GenesByIdsQueryVariables>(GenesByIdsDocument, variables, options) as Promise<GenesByIdsQuery>;
     },
     SkillUsedList(variables?: SkillUsedListQueryVariables, options?: C): Promise<SkillUsedListQuery> {
       return requester<SkillUsedListQuery, SkillUsedListQueryVariables>(SkillUsedListDocument, variables, options) as Promise<SkillUsedListQuery>;

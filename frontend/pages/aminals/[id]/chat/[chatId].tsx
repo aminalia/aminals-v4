@@ -7,11 +7,10 @@ import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
-import { Send, ArrowLeft, MessageCircle, MoreVertical, Sparkles } from 'lucide-react';
+import { Send, ArrowLeft, MessageCircle, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { ChatSession, Message } from '../../../../lib/chat-storage';
 import { useAminalForChat } from '../../../../src/resources/aminals';
-
 
 const useChatSession = (sessionId: string) => {
   return useQuery({
@@ -108,35 +107,6 @@ const ChatSessionPage: NextPage = () => {
     }
   }, [session, aminal, localMessages.length]);
 
-  // Memoized SVG extraction to avoid re-computation
-  const extractedSvg = useMemo(() => {
-    if (!aminal?.tokenURI) return null;
-
-    try {
-      if (!aminal.tokenURI.startsWith('data:')) return null;
-
-      const base64Payload = aminal.tokenURI.split(',')[1];
-      const decodedJsonString = atob(base64Payload);
-      const json = JSON.parse(decodedJsonString);
-
-      // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
-      const imageDataUri = json.image;
-      if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
-
-      const svgBase64 = imageDataUri.split(',')[1];
-      const svgString = atob(svgBase64);
-
-      console.log('🎭 Extracted SVG data (cached):', {
-        hasSvg: !!svgString,
-        svgLength: svgString?.length
-      });
-
-      return svgString;
-    } catch (error) {
-      console.error('Failed to extract SVG from tokenURI:', error);
-      return null;
-    }
-  }, [aminal?.tokenURI]);
 
   // Set personality when session loads
   useEffect(() => {
@@ -166,8 +136,17 @@ const ChatSessionPage: NextPage = () => {
     setInputMessage('');
     setIsLoading(true);
 
-    // Use pre-extracted SVG data
-    const svgData = extractedSvg;
+    // Prepare gene IDs for personality generation
+    const geneIds = {
+      backId: aminal.backId?.toString(),
+      armId: aminal.armId?.toString(),
+      tailId: aminal.tailId?.toString(),
+      earsId: aminal.earsId?.toString(),
+      bodyId: aminal.bodyId?.toString(),
+      faceId: aminal.faceId?.toString(),
+      mouthId: aminal.mouthId?.toString(),
+      miscId: aminal.miscId?.toString(),
+    };
 
     try {
       const response = await fetch('/api/chat', {
@@ -179,8 +158,8 @@ const ChatSessionPage: NextPage = () => {
           message: inputMessage,
           sessionId: sessionId,
           loveAmount: Number(aminal.lovers?.[0]?.love || 0),
-          aminalSvg: svgData,
           aminalAddress: contractAddress,
+          geneIds,
           aminalStats: {
             energy: Number(aminal.energy || 0),
             totalLove: Number(aminal.totalLove || 0),
@@ -322,7 +301,7 @@ const ChatSessionPage: NextPage = () => {
               <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
               <div>
                 <h4 className="text-sm font-medium text-purple-900 mb-1">
-                  AI-Generated Personality
+                  Personality
                 </h4>
                 <p className="text-sm text-purple-700 leading-relaxed">{displayPersonality}</p>
               </div>
