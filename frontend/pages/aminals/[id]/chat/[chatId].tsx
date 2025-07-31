@@ -180,6 +180,7 @@ const ChatSessionPage: NextPage = () => {
           sessionId: sessionId,
           loveAmount: Number(aminal.lovers?.[0]?.love || 0),
           aminalSvg: svgData,
+          aminalAddress: contractAddress,
           aminalStats: {
             energy: Number(aminal.energy || 0),
             totalLove: Number(aminal.totalLove || 0),

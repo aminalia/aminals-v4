@@ -1,17 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createChatSession, getUserChatSessions, deleteChatSession, deleteAllUserSessions, ChatSession } from '../../../lib/chat-storage';
+import { getOrGeneratePersonality } from '../../../lib/personality-storage';
 
 interface CreateSessionRequest {
   aminalAddress: string;
   userAddress: string;
   title?: string;
   aminalSvg?: string;
-  aminalStats?: {
-    energy: number;
-    totalLove: number;
-    ethBalance: string;
-    aminalIndex: number;
-  };
 }
 
 interface GetSessionsRequest {
@@ -19,70 +14,6 @@ interface GetSessionsRequest {
   userAddress: string;
 }
 
-async function generatePersonalityFromSvg(
-  svgData?: string,
-  stats?: CreateSessionRequest['aminalStats']
-): Promise<string> {
-  console.log('🎭 Generating personality for new chat session:', { hasSvg: !!svgData, stats });
-
-  if (!svgData) {
-    return 'mysterious and enigmatic, holding secrets of the digital realm';
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY environment variable is required');
-  }
-
-  const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits. 
-
-Look at this SVG representation and describe the personality this creature would have based on its visual features:
-
-${svgData}
-
-Additional context:
-- Current energy level: ${stats?.energy || 50}/100
-- Total love received: ${stats?.totalLove || 0}
-- ETH balance: ${stats?.ethBalance || '0'} ETH
-
-Based on the visual design, colors, shapes, and overall aesthetic, describe this Aminal's personality in 1-2 sentences. Focus on:
-- Core personality traits (e.g., playful, wise, mysterious, energetic)
-- Communication style (e.g., cheerful, contemplative, mischievous)
-- Unique quirks that match their appearance
-
-Respond with just the personality description, no preamble.`;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-3-opus-20240229',
-      max_tokens: 150,
-      messages: [
-        {
-          role: 'user',
-          content: personalityPrompt,
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Anthropic API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-  }
-
-  const data = await response.json();
-  const personality = data.content[0].text.trim();
-  
-  console.log('🎭 Generated personality for session:', personality);
-  return personality;
-}
 
 export default async function handler(
   req: NextApiRequest,
@@ -91,14 +22,16 @@ export default async function handler(
   if (req.method === 'POST') {
     // Create new chat session
     try {
-      const { aminalAddress, userAddress, title, aminalSvg, aminalStats }: CreateSessionRequest = req.body;
+      const { aminalAddress, userAddress, title, aminalSvg }: CreateSessionRequest = req.body;
 
       if (!aminalAddress || !userAddress) {
         return res.status(400).json({ error: 'aminalAddress and userAddress are required' });
       }
 
-      // Generate personality from SVG data
-      const personality = await generatePersonalityFromSvg(aminalSvg, aminalStats);
+      // Get or generate personality for this Aminal
+      const personality = aminalSvg ? 
+        await getOrGeneratePersonality(aminalAddress, aminalSvg) :
+        'mysterious and enigmatic, holding secrets of the digital realm';
 
       const session = await createChatSession(aminalAddress, userAddress, title, personality);
       res.status(201).json(session);

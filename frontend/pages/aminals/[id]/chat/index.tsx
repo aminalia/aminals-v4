@@ -96,12 +96,6 @@ const ChatSessionsPage: NextPage = () => {
           userAddress: address,
           title: `Chat ${new Date().toLocaleDateString()}`,
           aminalSvg: extractedSvg,
-          aminalStats: {
-            energy: Number(aminal.energy || 0),
-            totalLove: Number(aminal.totalLove || 0),
-            ethBalance: aminal.ethBalance || '0',
-            aminalIndex: Number(aminal.aminalIndex || 0),
-          },
         }),
       });
 

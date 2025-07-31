@@ -19,7 +19,7 @@ export interface ChatSession {
   updatedAt: Date;
 }
 
-const CHAT_DATA_DIR = path.join(process.cwd(), '.chat-data');
+const CHAT_DATA_DIR = path.join(process.cwd(), 'data', 'chat-sessions');
 
 // Ensure the chat data directory exists
 async function ensureChatDataDir() {

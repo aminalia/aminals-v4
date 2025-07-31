@@ -1,11 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
+import { getOrGeneratePersonality } from '../../lib/personality-storage';
 
 interface ChatRequest {
   message: string;
   sessionId: string;
   loveAmount: number;
   aminalSvg?: string; // The actual SVG representation of the Aminal
+  aminalAddress: string; // Contract address of the Aminal
   aminalStats?: {
     energy: number;
     totalLove: number;
@@ -20,79 +22,12 @@ interface ChatResponse {
   error?: string;
 }
 
-// TODO maybe don't want stats to impact personality at all.
-async function generatePersonalityFromSvg(
-  svgData?: string,
-  stats?: ChatRequest['aminalStats']
-): Promise<string> {
-  console.log('🎭 Generating personality from SVG and stats:', { hasSvg: !!svgData, stats });
-
-  if (!svgData) {
-    return 'mysterious and enigmatic, holding secrets of the digital realm';
-  }
-
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY environment variable is required');
-  }
-
-  const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits.
-
-Look at this SVG representation and describe the personality this creature would have based on its visual features:
-
-${svgData}
-
-Additional context:
-- Current energy level: ${stats?.energy || 50}/100
-- Total love received: ${stats?.totalLove || 0}
-- ETH balance: ${stats?.ethBalance || '0'} ETH
-
-Based on the visual design, colors, shapes, and overall aesthetic, describe this Aminal's personality in 1-2 sentences. Focus on:
-- Core personality traits (e.g., playful, wise, mysterious, energetic)
-- Communication style (e.g., cheerful, contemplative, mischievous)
-- Unique quirks that match their appearance
-
-Respond with just the personality description, no preamble.`;
-
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-3-opus-20240229',
-      max_tokens: 150,
-      messages: [
-        {
-          role: 'user',
-          content: personalityPrompt,
-        },
-      ],
-    }),
-  });
-
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Anthropic API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
-  }
-
-  const data = await response.json();
-  const personality = data.content[0].text.trim();
-
-  console.log('🎭 Generated personality:', personality);
-  return personality;
-}
 
 async function createSystemPrompt(
+  personality: string,
   loveAmount: number,
-  svgData?: string,
   stats?: ChatRequest['aminalStats']
 ): Promise<string> {
-  // TODO don't call this here.
-  const personality = await generatePersonalityFromSvg(svgData, stats);
   const loveLevel = loveAmount > 50 ? "deeply bonded" : loveAmount > 20 ? "close friends" : loveAmount > 5 ? "getting to know each other" : "just met";
 
   return `You are a unique Aminal - a sentient digital pet living on the blockchain. You have your own distinct personality, thoughts, and feelings.
@@ -132,10 +67,10 @@ export default async function handler(
   }
 
   try {
-    const { message, sessionId, loveAmount, aminalSvg, aminalStats }: ChatRequest = req.body;
+    const { message, sessionId, loveAmount, aminalSvg, aminalAddress, aminalStats }: ChatRequest = req.body;
 
-    if (!message || !sessionId) {
-      return res.status(400).json({ error: 'Message and sessionId are required' });
+    if (!message || !sessionId || !aminalAddress) {
+      return res.status(400).json({ error: 'Message, sessionId, and aminalAddress are required' });
     }
 
     // Get the chat session
@@ -157,7 +92,12 @@ export default async function handler(
       .map(msg => `${msg.sender === 'user' ? 'Human' : 'Aminal'}: ${msg.text}`)
       .join('\n');
 
-    const systemPrompt = await createSystemPrompt(loveAmount || 0, aminalSvg, aminalStats);
+    // Get or generate personality for this Aminal
+    const personality = aminalSvg ? 
+      await getOrGeneratePersonality(aminalAddress, aminalSvg) :
+      'mysterious and enigmatic, holding secrets of the digital realm';
+    
+    const systemPrompt = await createSystemPrompt(personality, loveAmount || 0, aminalStats);
     const contextualMessage = conversationContext ?
       `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` :
       message;
