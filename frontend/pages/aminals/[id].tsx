@@ -353,6 +353,15 @@ const AminalPage: NextPage = () => {
                   contractAddress={aminal.contractAddress as `0x${string}`}
                 />
 
+                <Link
+                  href={`/chat/${aminal.contractAddress}`}
+                  className="w-full"
+                >
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                    💬 Chat with Aminal
+                  </Button>
+                </Link>
+
                 {/* Auction functionality removed from schema */}
               </div>
             </div>

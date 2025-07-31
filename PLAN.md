@@ -2,6 +2,8 @@
 
 ## New Features Ideas
 
+- Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
+- Maybe make this a chat skill (with an AVS that extracts personality traits)
 - Aminal Race
 - Prediction Market
 - Bribing
@@ -9,10 +11,12 @@
 - Aminals DAO (a DAO of Aminals based on Loveocracy)
 - Poo skill to create a new NFT
 
+
 ## Open Design Questions
 
 - Do we need remove gene?
 - What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
+- Should there be a way of creating an entirely new Aminal?
 
 In general we need a review of what things cost (even if the cost is in terms of love or energy).
 
@@ -21,6 +25,7 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### UI
 
 - Trait links don't work on aminal detail page
+- Fix CI
 
 #### Contracts
 
@@ -108,3 +113,15 @@ Contract Changes:
 ##### General Questions from User Interview
 
 - "Why aren't all genes listed?"
+
+
+### Chat Feature
+
+I want to add the ability to chat with the Aminals. On @frontend/pages/aminals/[id].tsx, add a chat button that launches a modal (or takes the user to a new chat page (which might be better as that link could reference that particular chat)).
+
+We'll use Claude Opus as the chatbot, write a simple system promt (we will refine this later). The system promt template should feed in how much love the Aminal has for a user. It should also take the image of the aminal and use that to construct personality traits for the aminal.
+
+Make sure the UX is elegant.
+
+
+It would be nice if the chats could be persistent. Does the claude API support chat sessions? If so, maybe consider making /chat a sub folder of frontend/pages/aminals/? So we might have a url like https:/aminals.life/aminals/0xf9555236DEA7940a21c0f271FA2b004af06B0Fcb/chat/{chatId}? Is that possible?
