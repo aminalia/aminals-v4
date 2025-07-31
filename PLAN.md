@@ -125,3 +125,10 @@ Make sure the UX is elegant.
 
 
 It would be nice if the chats could be persistent. Does the claude API support chat sessions? If so, maybe consider making /chat a sub folder of frontend/pages/aminals/? So we might have a url like https:/aminals.life/aminals/0xf9555236DEA7940a21c0f271FA2b004af06B0Fcb/chat/{chatId}? Is that possible?
+
+---
+
+Let's make a few more improvements:
+- Button styling on @frontend/pages/aminals/[id].tsx could be improved, it's too close to the feed button and doesn't have rounded corners. Make the UX better and consistent here.
+- Generate personality when starting a new chat. Store the personality so it doesn't need to be generated again.
+- On @frontend/pages/aminals/[id]/chat/[chatId].tsx show the generated personality

@@ -33,18 +33,10 @@ async function generatePersonalityFromSvg(
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    // Fallback to simple analysis based on stats
-    const basePersonality = 'curious and playful digital being';
-    if (stats) {
-      if (stats.energy > 80) return `${basePersonality}, currently bursting with energy`;
-      if (stats.energy < 20) return `${basePersonality}, feeling contemplative and sleepy`;
-      if (stats.totalLove > 100) return `${basePersonality}, radiating warmth from all the love received`;
-    }
-    return basePersonality;
+    throw new Error('ANTHROPIC_API_KEY environment variable is required');
   }
 
-  try {
-    const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits. 
+  const personalityPrompt = `You are analyzing the visual appearance of an Aminal (a digital pet NFT) to determine its personality traits. 
 
 Look at this SVG representation and describe the personality this creature would have based on its visual features:
 
@@ -62,38 +54,35 @@ Based on the visual design, colors, shapes, and overall aesthetic, describe this
 
 Respond with just the personality description, no preamble.`;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-opus-20240229',
-        max_tokens: 150,
-        messages: [
-          {
-            role: 'user',
-            content: personalityPrompt,
-          },
-        ],
-      }),
-    });
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-opus-20240229',
+      max_tokens: 150,
+      messages: [
+        {
+          role: 'user',
+          content: personalityPrompt,
+        },
+      ],
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const personality = data.content[0].text.trim();
-    
-    console.log('🎭 Generated personality:', personality);
-    return personality;
-  } catch (error) {
-    console.error('Failed to generate personality from SVG:', error);
-    return 'curious and adaptive digital being, learning to express their unique nature';
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Anthropic API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
   }
+
+  const data = await response.json();
+  const personality = data.content[0].text.trim();
+  
+  console.log('🎭 Generated personality:', personality);
+  return personality;
 }
 
 async function createSystemPrompt(
@@ -192,46 +181,37 @@ export default async function handler(
 }
 
 async function callAnthropicAPI(systemPrompt: string, userMessage: string): Promise<string> {
-  // Placeholder implementation - you'll need to integrate with Anthropic's API
-  // For now, return a simple response based on the system prompt context
-  
   const apiKey = process.env.ANTHROPIC_API_KEY;
   
   if (!apiKey) {
-    // Fallback response for development
-    return "Hi there! I'm still learning to talk, but I appreciate you reaching out! 🐾 The developers are still setting up my connection to the Anthropic API. Once that's ready, I'll be able to have full conversations with you!";
+    throw new Error('ANTHROPIC_API_KEY environment variable is required');
   }
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-opus-20240229',
-        max_tokens: 300,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: userMessage,
-          },
-        ],
-      }),
-    });
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-opus-20240229',
+      max_tokens: 300,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: userMessage,
+        },
+      ],
+    }),
+  });
 
-    if (!response.ok) {
-      throw new Error(`Anthropic API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.content[0].text;
-  } catch (error) {
-    console.error('Anthropic API call failed:', error);
-    // Fallback response
-    return "I'm having trouble connecting to my AI brain right now, but I'm here! 🤖 Please try again in a moment.";
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(`Anthropic API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
   }
+
+  const data = await response.json();
+  return data.content[0].text;
 }

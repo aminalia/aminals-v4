@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
@@ -31,6 +31,7 @@ const useAminalByAddress = (contractAddress: string, userAddress: string) => {
             aminalIndex
             energy
             totalLove
+            ethBalance
             tokenURI
             lovers(where: { user_: { address: $address } }) {
               love
@@ -103,6 +104,36 @@ const ChatSessionsPage: NextPage = () => {
     refetch: refetchSessions,
   } = useChatSessions(isRouterReady ? contractAddress : '', address || '');
 
+  // Extract SVG data for personality generation
+  const extractedSvg = useMemo(() => {
+    if (!aminal?.tokenURI) return null;
+    
+    try {
+      if (!aminal.tokenURI.startsWith('data:')) return null;
+      
+      const base64Payload = aminal.tokenURI.split(',')[1];
+      const decodedJsonString = atob(base64Payload);
+      const json = JSON.parse(decodedJsonString);
+      
+      // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
+      const imageDataUri = json.image;
+      if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
+      
+      const svgBase64 = imageDataUri.split(',')[1];
+      const svgString = atob(svgBase64);
+      
+      console.log('🎭 Extracted SVG for session creation:', { 
+        hasSvg: !!svgString, 
+        svgLength: svgString?.length 
+      });
+      
+      return svgString;
+    } catch (error) {
+      console.error('Failed to extract SVG from tokenURI:', error);
+      return null;
+    }
+  }, [aminal?.tokenURI]);
+
   const createNewSession = async () => {
     if (!aminal || !address || isCreating) return;
 
@@ -117,6 +148,13 @@ const ChatSessionsPage: NextPage = () => {
           aminalAddress: contractAddress,
           userAddress: address,
           title: `Chat ${new Date().toLocaleDateString()}`,
+          aminalSvg: extractedSvg,
+          aminalStats: {
+            energy: Number(aminal.energy || 0),
+            totalLove: Number(aminal.totalLove || 0),
+            ethBalance: aminal.ethBalance || '0',
+            aminalIndex: Number(aminal.aminalIndex || 0),
+          },
         }),
       });
 

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useAccount } from 'wagmi';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../../_layout';
@@ -87,7 +87,7 @@ const useChatSession = (sessionId: string) => {
       return response.json();
     },
     enabled: !!sessionId,
-    refetchInterval: 5000, // Refetch every 5 seconds to get new messages
+    refetchInterval: process.env.NODE_ENV === 'development' ? false : 5000, // Skip auto-refetch in dev mode
   });
 };
 
@@ -97,18 +97,15 @@ const ChatSessionPage: NextPage = () => {
   const contractAddress = id as string;
   const sessionId = chatId as string;
   const { address } = useAccount();
-  
+
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  const [generatedPersonality, setGeneratedPersonality] = useState<string | null>(null);
+  const [displayPersonality, setDisplayPersonality] = useState<string | null>(null);
   const [showPersonality, setShowPersonality] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isRouterReady =
-    router.isReady && 
-    id && typeof id === 'string' && id !== 'undefined' &&
-    chatId && typeof chatId === 'string' && chatId !== 'undefined';
+  const isRouterReady = router.isReady && !!id && !!chatId;
 
   const {
     data: aminal,
@@ -122,7 +119,26 @@ const ChatSessionPage: NextPage = () => {
   } = useChatSession(isRouterReady ? sessionId : '');
 
   // Combine server messages with local optimistic updates
-  const messages = session?.messages || localMessages;
+  const messages = useMemo(() => {
+    if (!session) {
+      console.log('💬 No session, using local messages:', localMessages.length);
+      return localMessages;
+    }
+
+    // If we have local messages that aren't in the session yet, merge them
+    const sessionMessageIds = new Set(session.messages.map(msg => msg.id));
+    const newLocalMessages = localMessages.filter(msg => !sessionMessageIds.has(msg.id));
+
+    const combined = [...session.messages, ...newLocalMessages];
+    console.log('💬 Combined messages:', {
+      sessionMessages: session.messages.length,
+      localMessages: localMessages.length,
+      newLocalMessages: newLocalMessages.length,
+      combined: combined.length
+    });
+
+    return combined;
+  }, [session?.messages, localMessages]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -134,7 +150,7 @@ const ChatSessionPage: NextPage = () => {
     if (session && session.messages.length === 0 && localMessages.length === 0) {
       const loveAmount = aminal?.lovers?.[0]?.love || 0;
       let welcomeMessage = '';
-      
+
       if (Number(loveAmount) > 20) {
         welcomeMessage = "Hey there, friend! 🐾 It's so good to see you again! What's on your mind today?";
       } else if (Number(loveAmount) > 5) {
@@ -152,62 +168,43 @@ const ChatSessionPage: NextPage = () => {
     }
   }, [session, aminal, localMessages.length]);
 
-  // Helper function to extract SVG from tokenURI
-  const extractSVGFromTokenURI = (tokenUri?: string): string | null => {
+  // Memoized SVG extraction to avoid re-computation
+  const extractedSvg = useMemo(() => {
+    if (!aminal?.tokenURI) return null;
+
     try {
-      if (!tokenUri || !tokenUri.startsWith('data:')) return null;
-      
-      const base64Payload = tokenUri.split(',')[1];
+      if (!aminal.tokenURI.startsWith('data:')) return null;
+
+      const base64Payload = aminal.tokenURI.split(',')[1];
       const decodedJsonString = atob(base64Payload);
       const json = JSON.parse(decodedJsonString);
-      
+
       // The image field contains: "data:image/svg+xml;base64,<base64_svg>"
       const imageDataUri = json.image;
       if (!imageDataUri || !imageDataUri.includes('svg+xml')) return null;
-      
+
       const svgBase64 = imageDataUri.split(',')[1];
       const svgString = atob(svgBase64);
-      
+
+      console.log('🎭 Extracted SVG data (cached):', {
+        hasSvg: !!svgString,
+        svgLength: svgString?.length
+      });
+
       return svgString;
     } catch (error) {
       console.error('Failed to extract SVG from tokenURI:', error);
       return null;
     }
-  };
+  }, [aminal?.tokenURI]);
 
-  // Generate a simple personality description based on stats for display
-  const generateSimplePersonality = useCallback((aminal: any): string => {
-    const energy = Number(aminal.energy || 50);
-    const love = Number(aminal.totalLove || 0);
-    const hasEth = parseFloat(aminal.ethBalance || '0') > 0.01;
-
-    let personality = 'a unique digital being';
-
-    if (energy > 80) {
-      personality = 'an energetic and enthusiastic digital companion';
-    } else if (energy < 20) {
-      personality = 'a contemplative and calm digital soul';
-    } else if (love > 100) {
-      personality = 'a beloved and warm-hearted digital friend';
-    } else if (love > 20) {
-      personality = 'a friendly and approachable digital companion';
-    }
-
-    if (hasEth) {
-      personality += ', with a keen interest in the blockchain economy';
-    }
-
-    return `This Aminal is ${personality}. Their personality is analyzed from their visual appearance and current stats, influencing how they respond in conversations.`;
-  }, []);
-
-  // Set personality when aminal loads
+  // Set personality when session loads
   useEffect(() => {
-    if (aminal && !generatedPersonality) {
-      const personality = generateSimplePersonality(aminal);
-      setGeneratedPersonality(personality);
-      console.log('🎭 Generated simple personality for display:', personality);
+    if (session && session.personality && !displayPersonality) {
+      setDisplayPersonality(session.personality);
+      console.log('🎭 Using stored personality from session:', session.personality);
     }
-  }, [aminal, generatedPersonality, generateSimplePersonality]);
+  }, [session, displayPersonality]);
 
   const sendMessage = async () => {
     if (!inputMessage.trim() || !aminal || !session || isLoading) return;
@@ -220,18 +217,17 @@ const ChatSessionPage: NextPage = () => {
     };
 
     // Optimistically add the message
-    setLocalMessages(prev => [...prev, tempUserMessage]);
+    console.log('💬 Adding optimistic user message:', tempUserMessage);
+    setLocalMessages(prev => {
+      const updated = [...prev, tempUserMessage];
+      console.log('💬 Updated local messages:', updated.length);
+      return updated;
+    });
     setInputMessage('');
     setIsLoading(true);
 
-    // Extract SVG from tokenURI for personality analysis
-    const svgData = extractSVGFromTokenURI(aminal.tokenURI);
-    
-    console.log('🎭 Extracted SVG data:', { 
-      hasSvg: !!svgData, 
-      svgLength: svgData?.length,
-      tokenURI: aminal.tokenURI?.slice(0, 100) + '...' 
-    });
+    // Use pre-extracted SVG data
+    const svgData = extractedSvg;
 
     try {
       const response = await fetch('/api/chat', {
@@ -259,15 +255,22 @@ const ChatSessionPage: NextPage = () => {
         throw new Error(data.error || 'Failed to send message');
       }
 
-      // Add the AI response optimistically
-      setLocalMessages(prev => [
-        ...prev.filter(msg => msg.id !== tempUserMessage.id), // Remove temp message
-        data.message, // Real user message from server
-        data.response, // AI response
-      ]);
+      // Replace temp message with real messages from server
+      setLocalMessages(prev => {
+        const filteredMessages = prev.filter(msg => msg.id !== tempUserMessage.id);
+        return [
+          ...filteredMessages,
+          data.message, // Real user message from server
+          data.response, // AI response
+        ];
+      });
 
-      // Refetch session to get the latest data
-      setTimeout(() => refetchSession(), 1000);
+      // Refetch session to get the latest data, then clear local messages
+      setTimeout(() => {
+        refetchSession();
+        // Clear local messages after successful refetch since they're now in the session
+        setTimeout(() => setLocalMessages([]), 500);
+      }, 1000);
     } catch (error) {
       console.error('Chat error:', error);
       toast.error('Failed to send message. Please try again.');
@@ -348,12 +351,12 @@ const ChatSessionPage: NextPage = () => {
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-500">
             <span>
-              {aminal.lovers?.[0]?.love ? 
-                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` : 
+              {aminal.lovers?.[0]?.love ?
+                `Love: ${Number(aminal.lovers[0].love).toFixed(1)} ❤️` :
                 'New friend 👋'
               }
             </span>
-            {generatedPersonality && (
+            {displayPersonality && (
               <button
                 onClick={() => setShowPersonality(!showPersonality)}
                 className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors text-xs"
@@ -366,16 +369,15 @@ const ChatSessionPage: NextPage = () => {
         </div>
 
         {/* Personality Display */}
-        {showPersonality && generatedPersonality && (
+        {showPersonality && displayPersonality && (
           <div className="px-4 py-3 bg-purple-50 border-t border-purple-100">
             <div className="flex items-start gap-2">
               <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-purple-900 mb-1">AI-Generated Personality</h4>
-                <p className="text-sm text-purple-700 leading-relaxed">{generatedPersonality}</p>
-                <p className="text-xs text-purple-500 mt-2">
-                  Based on visual analysis • This influences how your Aminal responds
-                </p>
+                <h4 className="text-sm font-medium text-purple-900 mb-1">
+                  AI-Generated Personality
+                </h4>
+                <p className="text-sm text-purple-700 leading-relaxed">{displayPersonality}</p>
               </div>
             </div>
           </div>
@@ -399,15 +401,15 @@ const ChatSessionPage: NextPage = () => {
                 <p className={`text-xs mt-1 ${
                   message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                 }`}>
-                  {new Date(message.timestamp).toLocaleTimeString([], { 
-                    hour: '2-digit', 
-                    minute: '2-digit' 
+                  {new Date(message.timestamp).toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </p>
               </div>
             </div>
           ))}
-          
+
           {isLoading && (
             <div className="flex justify-start">
               <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-200 px-4 py-2">
@@ -419,7 +421,7 @@ const ChatSessionPage: NextPage = () => {
               </div>
             </div>
           )}
-          
+
           <div ref={messagesEndRef} />
         </div>
 

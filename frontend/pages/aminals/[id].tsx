@@ -358,7 +358,7 @@ const AminalPage: NextPage = () => {
                   href={`/aminals/${aminal.contractAddress}/chat`}
                   className="w-full"
                 >
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
                     <MessageCircle className="w-4 h-4 mr-2" />
                     💬 Chat with Aminal
                   </Button>

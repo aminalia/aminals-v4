@@ -14,6 +14,7 @@ export interface ChatSession {
   userAddress: string;
   title: string;
   messages: Message[];
+  personality?: string; // Generated personality description
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,7 +41,8 @@ function getUserSessionsFilePath(userAddress: string, aminalAddress: string): st
 export async function createChatSession(
   aminalAddress: string,
   userAddress: string,
-  title?: string
+  title?: string,
+  personality?: string
 ): Promise<ChatSession> {
   await ensureChatDataDir();
   
@@ -53,6 +55,7 @@ export async function createChatSession(
     userAddress,
     title: title || `Chat ${new Date().toLocaleDateString()}`,
     messages: [],
+    personality,
     createdAt: now,
     updatedAt: now,
   };
