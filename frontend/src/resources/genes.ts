@@ -1,21 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 import { useAccount } from 'wagmi';
-import { 
-  GeneNftByIdQuery, 
-  GeneNftsListQuery, 
-  GeneNftsListDocument,
+import {
   GeneNftByIdDocument,
-  execute 
+  GeneNftByIdQuery,
+  GeneNftsListDocument,
+  GeneNftsListQuery,
+  execute,
 } from '../../.graphclient';
-import { queryKeys, handleGraphQLError } from '../lib/query-client';
-import { 
-  transformGenes, 
-  GeneFilter, 
-  GeneSort, 
-  CategoryFilter 
+import {
+  CategoryFilter,
+  GeneFilter,
+  GeneSort,
+  transformGenes,
 } from '../lib/gene-transformers';
+import { handleGraphQLError, queryKeys } from '../lib/query-client';
 
-export type { GeneFilter, GeneSort, CategoryFilter };
+export type { CategoryFilter, GeneFilter, GeneSort };
 
 type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
 
@@ -31,7 +31,7 @@ export const useGenes = (
     queryFn: async () => {
       try {
         const response = await execute(GeneNftsListDocument, {});
-        
+
         if (response.errors) {
           console.error('GraphQL errors:', response.errors);
           throw handleGraphQLError(response.errors);
@@ -87,14 +87,14 @@ export const useGenesByIds = (ids: string[]) => {
       try {
         // Use the main genes query and filter by IDs
         const response = await execute(GeneNftsListDocument, {});
-        
+
         if (response.errors) {
           console.error('GraphQL Errors:', response.errors);
           throw handleGraphQLError(response.errors);
         }
 
         const allGenes = response.data?.geneNFTs || [];
-        
+
         // Filter genes by the requested IDs
         return allGenes.filter((gene: GeneNFT) => ids.includes(gene.tokenId));
       } catch (error) {

@@ -2,7 +2,16 @@ import { GeneNftsListQuery } from '../../.graphclient';
 
 export type GeneFilter = 'all' | 'yours';
 export type GeneSort = 'aminals-count' | 'created-at';
-export type CategoryFilter = 'all' | '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7';
+export type CategoryFilter =
+  | 'all'
+  | '0'
+  | '1'
+  | '2'
+  | '3'
+  | '4'
+  | '5'
+  | '6'
+  | '7';
 
 type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
 
@@ -69,7 +78,7 @@ export const calculateGeneStats = (gene: GeneNFT) => {
   const totalEarnings = Number(gene.totalEarnings || 0);
   const proposalCount = gene.proposalsUsingGene?.length || 0;
   const payoutCount = gene.payouts?.length || 0;
-  
+
   // Calculate unique Aminals count from proposals
   const uniqueAminalsCount = gene.proposalsUsingGene
     ? new Set([
@@ -83,7 +92,8 @@ export const calculateGeneStats = (gene: GeneNFT) => {
     proposalCount,
     payoutCount,
     uniqueAminalsCount,
-    averageEarningsPerProposal: proposalCount > 0 ? totalEarnings / proposalCount : 0,
+    averageEarningsPerProposal:
+      proposalCount > 0 ? totalEarnings / proposalCount : 0,
   };
 };
 
@@ -92,7 +102,7 @@ export const calculateGeneStats = (gene: GeneNFT) => {
  */
 export const formatGeneForDisplay = (gene: GeneNFT) => {
   const stats = calculateGeneStats(gene);
-  
+
   return {
     id: gene.id,
     tokenId: gene.tokenId,
@@ -140,13 +150,13 @@ export const filterGenesBySearch = (
   }
 
   const lowerSearchTerm = searchTerm.toLowerCase();
-  
+
   return genes.filter((gene) => {
     const name = gene.name?.toLowerCase() || '';
     const description = gene.description?.toLowerCase() || '';
     const tokenId = gene.tokenId?.toString() || '';
     const traitTypeName = getTraitTypeName(gene.traitType).toLowerCase();
-    
+
     return (
       name.includes(lowerSearchTerm) ||
       description.includes(lowerSearchTerm) ||

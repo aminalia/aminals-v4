@@ -58,4 +58,3 @@ query SkillUsedBySkill($skillAddress: Bytes!) {
     blockTimestamp
   }
 }
-

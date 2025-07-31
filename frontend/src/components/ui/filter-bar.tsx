@@ -1,7 +1,7 @@
-import * as React from 'react';
 import { cn } from '@/lib/utils';
-import { Button } from './button';
+import * as React from 'react';
 import { Badge } from './badge';
+import { Button } from './button';
 
 export interface FilterOption {
   value: string;
@@ -69,18 +69,16 @@ export function FilterBar({
                 {filters.map((filter) => (
                   <Button
                     key={filter.value}
-                    variant={activeFilter === filter.value ? 'default' : 'outline'}
+                    variant={
+                      activeFilter === filter.value ? 'default' : 'outline'
+                    }
                     size="sm"
                     onClick={() => onFilterChange?.(filter.value)}
                     className="h-8"
                   >
                     {filter.label}
                     {filter.count !== undefined && (
-                      <Badge 
-                        variant="neutral" 
-                        size="sm" 
-                        className="ml-2"
-                      >
+                      <Badge variant="neutral" size="sm" className="ml-2">
                         {filter.count}
                       </Badge>
                     )}

@@ -37,7 +37,13 @@ export interface LoadingSpinnerProps
   label?: string;
 }
 
-function LoadingSpinner({ className, size, color, label, ...props }: LoadingSpinnerProps) {
+function LoadingSpinner({
+  className,
+  size,
+  color,
+  label,
+  ...props
+}: LoadingSpinnerProps) {
   return (
     <div
       role="status"
@@ -54,7 +60,10 @@ function LoadingSpinner({ className, size, color, label, ...props }: LoadingSpin
 /**
  * Full-page loading spinner component
  */
-export function PageLoadingSpinner({ className, ...props }: LoadingSpinnerProps) {
+export function PageLoadingSpinner({
+  className,
+  ...props
+}: LoadingSpinnerProps) {
   return (
     <div className={cn('flex items-center justify-center h-64', className)}>
       <LoadingSpinner size="xl" label="Loading page..." {...props} />
@@ -65,20 +74,22 @@ export function PageLoadingSpinner({ className, ...props }: LoadingSpinnerProps)
 /**
  * Inline loading spinner for buttons
  */
-export function ButtonLoadingSpinner({ className, ...props }: LoadingSpinnerProps) {
+export function ButtonLoadingSpinner({
+  className,
+  ...props
+}: LoadingSpinnerProps) {
   return (
-    <LoadingSpinner 
-      size="sm" 
-      className={cn('mr-2', className)} 
-      {...props} 
-    />
+    <LoadingSpinner size="sm" className={cn('mr-2', className)} {...props} />
   );
 }
 
 /**
  * Card loading spinner
  */
-export function CardLoadingSpinner({ className, ...props }: LoadingSpinnerProps) {
+export function CardLoadingSpinner({
+  className,
+  ...props
+}: LoadingSpinnerProps) {
   return (
     <div className={cn('flex items-center justify-center py-8', className)}>
       <LoadingSpinner size="lg" {...props} />

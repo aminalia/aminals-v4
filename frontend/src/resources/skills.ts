@@ -1,5 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { SkillUsedListDocument, SkillUsedListQuery, execute } from '../../.graphclient';
+import {
+  SkillUsedListDocument,
+  SkillUsedListQuery,
+  execute,
+} from '../../.graphclient';
 
 const BASE_KEY = 'skills';
 

@@ -34,7 +34,9 @@ const GenesList = ({ auctionId }: GenesListProps) => {
         <div className="text-gray-600">
           <div className="text-lg mb-2">🎨</div>
           <div className="font-medium">No community proposals yet</div>
-          <div className="text-sm mt-1">Be the first to propose a gene for this breeding!</div>
+          <div className="text-sm mt-1">
+            Be the first to propose a gene for this breeding!
+          </div>
         </div>
       </div>
     );
