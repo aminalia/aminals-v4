@@ -6,11 +6,11 @@ import {
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
+import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
-import { Toaster } from 'react-hot-toast';
-import { createQueryClient } from '../src/lib/query-client';
 import { ErrorBoundary } from '../src/components/error-boundary';
+import { createQueryClient } from '../src/lib/query-client';
 import '../styles/globals.css';
 
 const wagmiConfig = getDefaultConfig({
@@ -43,7 +43,8 @@ function AminalsApp({ Component, pageProps }: AppProps) {
                   color: 'hsl(var(--card-foreground))',
                   border: '1px solid hsl(var(--border))',
                   borderRadius: '8px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                  boxShadow:
+                    '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 },
               }}
             />

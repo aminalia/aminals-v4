@@ -6,8 +6,12 @@ import {
   AminalsListDocument,
   execute,
 } from '../../.graphclient';
-import { queryKeys, handleGraphQLError } from '../lib/query-client';
-import { transformAminals, AminalFilter, AminalSort } from '../lib/data-transformers';
+import {
+  AminalFilter,
+  AminalSort,
+  transformAminals,
+} from '../lib/data-transformers';
+import { handleGraphQLError, queryKeys } from '../lib/query-client';
 
 export type { AminalFilter, AminalSort };
 
@@ -25,7 +29,7 @@ export const useAminals = (
           skip: 0,
           address: userAddress,
         });
-        
+
         if (response.errors) {
           console.error('GraphQL errors:', response.errors);
           throw handleGraphQLError(response.errors);

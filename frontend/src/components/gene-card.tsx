@@ -1,19 +1,33 @@
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardMedia,
+  CardSection,
+} from '@/components/ui/card';
+import Link from 'next/link';
 import { GeneProposal } from '../../.graphclient';
 import VoteButton from './actions/vote-button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardMedia, CardSection } from '@/components/ui/card';
-import Link from 'next/link';
 interface GeneCardProps {
   gene: GeneProposal;
   userLove?: bigint;
 }
 
 const GeneCard = ({ gene, userLove }: GeneCardProps) => {
-  const geneTypeNames = ['Background', 'Arms', 'Tail', 'Ears', 'Body', 'Face', 'Mouth', 'Misc'];
+  const geneTypeNames = [
+    'Background',
+    'Arms',
+    'Tail',
+    'Ears',
+    'Body',
+    'Face',
+    'Mouth',
+    'Misc',
+  ];
   const categoryName = geneTypeNames[gene.traitType] || 'Unknown';
   const categoryEmoji = '🧬';
-  
+
   // TODO: Add usage count metadata when available
   // const { data: usageCount } = useGeneUsageCount(gene.geneNFT.tokenId);
 
@@ -83,7 +97,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
           </CardContent>
         </CardSection>
       </Link>
-      
+
       {/* Actions - positioned outside the link to prevent nested interactivity */}
       <div className="p-4 pt-0 border-t bg-muted/30">
         <VoteButton

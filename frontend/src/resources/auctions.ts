@@ -2,11 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import {
   GeneAuction,
   GeneAuctionDocument,
-  GeneAuctionQuery,
   GeneAuctionsListDocument,
   GeneProposal,
-  GeneVotesByAuctionDocument,
   GeneVote,
+  GeneVotesByAuctionDocument,
   execute,
 } from '../../.graphclient';
 
@@ -73,7 +72,9 @@ export const useProposeGenes = () => {
         skip: 0,
       });
       if (response.errors) throw new Error(response.errors[0].message);
-      return response.data.geneAuctions.flatMap((auction: any) => auction.proposals);
+      return response.data.geneAuctions.flatMap(
+        (auction: any) => auction.proposals
+      );
     },
   });
 };
