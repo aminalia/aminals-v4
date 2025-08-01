@@ -2,6 +2,8 @@
 
 ## New Features Ideas
 
+- Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
+- Maybe make this a chat skill (with an AVS that extracts personality traits)
 - Aminal Race
 - Prediction Market
 - Bribing
@@ -9,10 +11,12 @@
 - Aminals DAO (a DAO of Aminals based on Loveocracy)
 - Poo skill to create a new NFT
 
+
 ## Open Design Questions
 
 - Do we need remove gene?
 - What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
+- Should there be a way of creating an entirely new Aminal?
 
 In general we need a review of what things cost (even if the cost is in terms of love or energy).
 
@@ -21,6 +25,8 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### UI
 
 - Trait links don't work on aminal detail page
+- Fix CI
+- Optimize all of the UI to be screenshotable for Twitter
 
 #### Contracts
 

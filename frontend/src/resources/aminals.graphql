@@ -90,6 +90,86 @@ query AminalById($contractAddress: Bytes, $address: Bytes = "") {
   }
 }
 
+query AminalForChat($contractAddress: Bytes, $address: Bytes = "") {
+  aminals(where: { contractAddress: $contractAddress }) {
+    id
+    contractAddress
+    aminalIndex
+    energy
+    totalLove
+    ethBalance
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
+    lovers(where: { user_: { address: $address } }) {
+      love
+    }
+  }
+}
+
+query AminalByContractAddress($contractAddress: Bytes, $address: Bytes = "") {
+  aminals(where: { contractAddress: $contractAddress }) {
+    id
+    contractAddress
+    aminalIndex
+    parentOne {
+      id
+      contractAddress
+      aminalIndex
+      energy
+      totalLove
+      tokenURI
+    }
+    parentTwo {
+      id
+      contractAddress
+      aminalIndex
+      energy
+      totalLove
+      tokenURI
+    }
+    energy
+    totalLove
+    ethBalance
+    blockTimestamp
+    tokenURI
+    backId
+    armId
+    tailId
+    earsId
+    bodyId
+    faceId
+    mouthId
+    miscId
+    lovers(where: { user_: { address: $address } }) {
+      love
+    }
+    feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      sender {
+        address
+      }
+      amount
+      love
+      blockTimestamp
+    }
+    skillUsed(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
+      id
+      caller {
+        address
+      }
+      skillAddress
+      blockTimestamp
+    }
+  }
+}
+
 query AminalFactory {
   aminalFactories(first: 1) {
     id

@@ -1,6 +1,5 @@
 import { defineConfig } from '@wagmi/cli';
 
-// TODO use ABIs in out/ dir
 const ABI = {
   AminalFactory: require('../out/AminalFactory.sol/AminalFactory.json'),
   Aminal: require('../out/Aminal.sol/Aminal.json'),

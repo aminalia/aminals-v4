@@ -5,6 +5,8 @@ import {
   GeneNftByIdQuery,
   GeneNftsListDocument,
   GeneNftsListQuery,
+  GenesByIdsDocument,
+  GenesByIdsQuery,
   execute,
 } from '../../.graphclient';
 import {
@@ -16,6 +18,7 @@ import {
 import { handleGraphQLError, queryKeys } from '../lib/query-client';
 
 export type { CategoryFilter, GeneFilter, GeneSort };
+export { GenesByIdsDocument, GenesByIdsQuery };
 
 type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
 
@@ -79,24 +82,25 @@ export const useGene = (id: string) => {
 };
 
 export const useGenesByIds = (ids: string[]) => {
-  return useQuery<GeneNftsListQuery['geneNFTs']>({
+  return useQuery<GenesByIdsQuery['geneNFTs']>({
     queryKey: queryKeys.genes.list({ ids: ids.sort() }),
     queryFn: async () => {
       if (ids.length === 0) return [];
 
       try {
-        // Use the main genes query and filter by IDs
-        const response = await execute(GeneNftsListDocument, {});
+        // Convert string IDs to BigInt for GraphQL
+        const bigIntIds = ids.map(id => id);
+        
+        const response = await execute(GenesByIdsDocument, {
+          ids: bigIntIds,
+        });
 
         if (response.errors) {
           console.error('GraphQL Errors:', response.errors);
           throw handleGraphQLError(response.errors);
         }
 
-        const allGenes = response.data?.geneNFTs || [];
-
-        // Filter genes by the requested IDs
-        return allGenes.filter((gene: GeneNFT) => ids.includes(gene.tokenId));
+        return response.data?.geneNFTs || [];
       } catch (error) {
         console.error('Error fetching genes by IDs:', error);
         throw error;
