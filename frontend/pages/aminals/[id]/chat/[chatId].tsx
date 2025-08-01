@@ -69,14 +69,24 @@ const ChatSessionPage: NextPage = () => {
     const newLocalMessages = localMessages.filter(msg => !sessionMessageIds.has(msg.id));
 
     const combined = [...session.messages, ...newLocalMessages];
+
+    // Filter out the initial Claude message from user
+    const filteredMessages = combined.filter(msg => {
+      if (msg.sender === 'user' && msg.text === "Greetings") {
+        return false;
+      }
+      return true;
+    });
+
     console.log('💬 Combined messages:', {
       sessionMessages: session.messages.length,
       localMessages: localMessages.length,
       newLocalMessages: newLocalMessages.length,
-      combined: combined.length
+      combined: combined.length,
+      filtered: filteredMessages.length
     });
 
-    return combined;
+    return filteredMessages;
   }, [session?.messages, localMessages]);
 
   // Auto-scroll to bottom when messages change
@@ -84,28 +94,63 @@ const ChatSessionPage: NextPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Add welcome message for new sessions
+  // Send initial message for new sessions
   useEffect(() => {
-    if (session && session.messages.length === 0 && localMessages.length === 0) {
-      const loveAmount = aminal?.lovers?.[0]?.love || 0;
-      let welcomeMessage = '';
+    if (session && session.messages.length === 0 && localMessages.length === 0 && !isLoading) {
+      const initialMessage = "Greetings";
 
-      if (Number(loveAmount) > 20) {
-        welcomeMessage = "Hey there, friend! 🐾 It's so good to see you again! What's on your mind today?";
-      } else if (Number(loveAmount) > 5) {
-        welcomeMessage = "Hi! 😊 I remember you! Thanks for coming to chat with me. How are you doing?";
-      } else {
-        welcomeMessage = "Hello there! 👋 I'm excited to meet you! I'm still getting to know humans, so please be patient with me.";
-      }
+      // Prepare gene IDs for personality generation
+      const geneIds = {
+        backId: aminal?.backId?.toString(),
+        armId: aminal?.armId?.toString(),
+        tailId: aminal?.tailId?.toString(),
+        earsId: aminal?.earsId?.toString(),
+        bodyId: aminal?.bodyId?.toString(),
+        faceId: aminal?.faceId?.toString(),
+        mouthId: aminal?.mouthId?.toString(),
+        miscId: aminal?.miscId?.toString(),
+      };
 
-      setLocalMessages([{
-        id: 'welcome',
-        text: welcomeMessage,
-        sender: 'aminal',
-        timestamp: new Date(),
-      }]);
+      // Send the initial message automatically
+      setIsLoading(true);
+      fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: initialMessage,
+          sessionId: sessionId,
+          loveAmount: Number(aminal?.lovers?.[0]?.love || 0),
+          aminalAddress: contractAddress,
+          geneIds,
+          aminalStats: {
+            energy: Number(aminal?.energy || 0),
+            totalLove: Number(aminal?.totalLove || 0),
+            ethBalance: aminal?.ethBalance || '0',
+            aminalIndex: Number(aminal?.aminalIndex || 0),
+          },
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.response) {
+          // Only show the AI response, not the initial user message
+          setLocalMessages([data.response]);
+        }
+        setTimeout(() => {
+          refetchSession();
+          setTimeout(() => setLocalMessages([]), 500);
+        }, 1000);
+      })
+      .catch(error => {
+        console.error('Error sending initial message:', error);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
     }
-  }, [session, aminal, localMessages.length]);
+  }, [session, aminal, localMessages.length, sessionId, contractAddress, isLoading, refetchSession]);
 
 
   // Set personality when session loads
@@ -323,7 +368,7 @@ const ChatSessionPage: NextPage = () => {
                     : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
                 }`}
               >
-                <p className="text-sm leading-relaxed break-words">{message.text}</p>
+                <p className="text-sm leading-relaxed break-words whitespace-pre-wrap font-mono">{message.text}</p>
                 <p className={`text-xs mt-1 ${
                   message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
                 }`}>

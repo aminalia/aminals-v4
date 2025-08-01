@@ -17,7 +17,7 @@ export interface AminalPersonality {
   aminalAddress: string;
   traits: {
     back?: string;    // backId trait
-    arms?: string;    // armId trait  
+    arms?: string;    // armId trait
     tail?: string;    // tailId trait
     ears?: string;    // earsId trait
     body?: string;    // bodyId trait
@@ -43,7 +43,7 @@ export interface AminalPersonality {
 // Trait type mappings
 const TRAIT_TYPE_NAMES: Record<number, keyof AminalPersonality['traits']> = {
   0: 'back',
-  1: 'arms', 
+  1: 'arms',
   2: 'tail',
   3: 'ears',
   4: 'body',
@@ -55,7 +55,7 @@ const TRAIT_TYPE_NAMES: Record<number, keyof AminalPersonality['traits']> = {
 const GENE_ID_NAMES: Record<number, keyof AminalPersonality['geneIds']> = {
   0: 'backId',
   1: 'armId',
-  2: 'tailId', 
+  2: 'tailId',
   3: 'earsId',
   4: 'bodyId',
   5: 'faceId',
@@ -99,14 +99,14 @@ export async function getCachedGeneTrait(geneId: string): Promise<GeneTrait | nu
   try {
     ensureDirectories();
     const filePath = getGeneTraitFilePath(geneId);
-    
+
     if (!fs.existsSync(filePath)) {
       return null;
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const data = JSON.parse(fileContent);
-    
+
     return {
       ...data,
       createdAt: new Date(data.createdAt),
@@ -130,7 +130,7 @@ export async function saveGeneTrait(
     const filePath = getGeneTraitFilePath(geneId);
     const svgHash = hashSvg(svgContent);
     const now = new Date();
-    
+
     // Check if trait already exists
     let existingTrait: GeneTrait | null = null;
     if (fs.existsSync(filePath)) {
@@ -146,7 +146,7 @@ export async function saveGeneTrait(
         console.error('Error reading existing gene trait:', error);
       }
     }
-    
+
     const traitData: GeneTrait = {
       geneId,
       traitType,
@@ -157,7 +157,7 @@ export async function saveGeneTrait(
     };
 
     fs.writeFileSync(filePath, JSON.stringify(traitData, null, 2), 'utf-8');
-    
+
     console.log('💾 Saved gene trait for gene:', geneId);
     return traitData;
   } catch (error) {
@@ -181,7 +181,7 @@ async function generateTraitFromGeneSvg(
   }
 
   const traitTypeName = TRAIT_TYPE_NAMES[traitType] || 'unknown';
-  
+
   const traitPrompt = `You are analyzing a gene NFT that represents a specific visual trait for Aminals (digital pet NFTs).
 
 This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneName}"` : ''}.
@@ -189,7 +189,7 @@ This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneNa
 Gene SVG:
 ${svgContent}
 
-Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal. 
+Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal.
 
 IMPORTANT FORMAT REQUIREMENTS:
 - Write the trait as a phrase that can follow "is" or "has"
@@ -247,26 +247,26 @@ export async function getOrGenerateGeneTrait(
   try {
     // Check if we have a cached trait
     const cached = await getCachedGeneTrait(geneId);
-    
+
     if (cached) {
       const currentSvgHash = hashSvg(svgContent);
-      
+
       // If SVG hasn't changed, return cached trait
       if (cached.svgHash === currentSvgHash) {
         console.log('✨ Using cached trait for gene:', geneId);
         return cached.trait;
       }
-      
+
       console.log('🔄 SVG changed for gene, regenerating trait:', geneId);
     }
-    
+
     // Generate new trait
     console.log('🎭 Generating new trait for gene:', geneId);
     const trait = await generateTraitFromGeneSvg(geneId, traitType, svgContent, geneName);
-    
+
     // Save the new trait
     await saveGeneTrait(geneId, traitType, trait, svgContent);
-    
+
     return trait;
   } catch (error) {
     console.error('Error getting/generating gene trait:', error);
@@ -279,14 +279,14 @@ export async function getCachedAminalPersonality(aminalAddress: string): Promise
   try {
     ensureDirectories();
     const filePath = getAminalPersonalityFilePath(aminalAddress);
-    
+
     if (!fs.existsSync(filePath)) {
       return null;
     }
 
     const fileContent = fs.readFileSync(filePath, 'utf-8');
     const data = JSON.parse(fileContent);
-    
+
     return {
       ...data,
       createdAt: new Date(data.createdAt),
@@ -309,7 +309,7 @@ export async function saveAminalPersonality(
     ensureDirectories();
     const filePath = getAminalPersonalityFilePath(aminalAddress);
     const now = new Date();
-    
+
     // Check if personality already exists
     let existingPersonality: AminalPersonality | null = null;
     if (fs.existsSync(filePath)) {
@@ -319,7 +319,7 @@ export async function saveAminalPersonality(
         console.error('Error reading existing Aminal personality:', error);
       }
     }
-    
+
     const personalityData: AminalPersonality = {
       aminalAddress: aminalAddress.toLowerCase(),
       traits,
@@ -330,7 +330,7 @@ export async function saveAminalPersonality(
     };
 
     fs.writeFileSync(filePath, JSON.stringify(personalityData, null, 2), 'utf-8');
-    
+
     console.log('💾 Saved Aminal personality for:', aminalAddress);
     return personalityData;
   } catch (error) {
@@ -342,18 +342,18 @@ export async function saveAminalPersonality(
 // Combine individual traits into full personality
 function combineTraitsIntoPersonality(traits: AminalPersonality['traits']): string {
   const traitList = Object.values(traits).filter(Boolean);
-  
+
   if (traitList.length === 0) {
     return 'mysterious and enigmatic, holding secrets of the digital realm';
   }
-  
+
   if (traitList.length === 1) {
     return `This Aminal is ${traitList[0].toLowerCase()}.`;
   }
-  
+
   // Clean and combine traits with proper grammar
   const cleanedTraits = traitList.map(trait => trait.replace(/\.$/, '').toLowerCase());
-  
+
   if (cleanedTraits.length === 2) {
     return `This Aminal is ${cleanedTraits[0]} and ${cleanedTraits[1]}.`;
   } else {
@@ -376,7 +376,7 @@ export async function getOrGenerateAminalPersonality(
   try {
     // Check if we have a cached personality and if gene composition is the same
     const cached = await getCachedAminalPersonality(aminalAddress);
-    
+
     // Create current gene IDs mapping
     const currentGeneIds: AminalPersonality['geneIds'] = {};
     geneData.forEach(gene => {
@@ -385,27 +385,27 @@ export async function getOrGenerateAminalPersonality(
         currentGeneIds[idName] = gene.geneId;
       }
     });
-    
+
     // Check if cached personality matches current genes
     if (cached) {
-      const geneIdsMatch = Object.keys(currentGeneIds).every(key => 
-        cached.geneIds[key as keyof AminalPersonality['geneIds']] === 
+      const geneIdsMatch = Object.keys(currentGeneIds).every(key =>
+        cached.geneIds[key as keyof AminalPersonality['geneIds']] ===
         currentGeneIds[key as keyof AminalPersonality['geneIds']]
       );
-      
+
       if (geneIdsMatch) {
         console.log('✨ Using cached Aminal personality for:', aminalAddress);
         return cached.fullPersonality;
       }
-      
+
       console.log('🔄 Gene composition changed for Aminal, regenerating personality:', aminalAddress);
     }
-    
+
     console.log('🎭 Generating new Aminal personality for:', aminalAddress);
-    
+
     // Generate or get traits for each gene
     const traits: AminalPersonality['traits'] = {};
-    
+
     for (const gene of geneData) {
       const trait = await getOrGenerateGeneTrait(
         gene.geneId,
@@ -413,19 +413,19 @@ export async function getOrGenerateAminalPersonality(
         gene.svg,
         gene.name
       );
-      
+
       const traitName = TRAIT_TYPE_NAMES[gene.traitType];
       if (traitName) {
         traits[traitName] = trait;
       }
     }
-    
+
     // Combine traits into full personality
     const fullPersonality = combineTraitsIntoPersonality(traits);
-    
+
     // Save the personality
     await saveAminalPersonality(aminalAddress, traits, currentGeneIds, fullPersonality);
-    
+
     return fullPersonality;
   } catch (error) {
     console.error('Error getting/generating Aminal personality:', error);

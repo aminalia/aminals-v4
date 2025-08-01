@@ -26,6 +26,7 @@ In general we need a review of what things cost (even if the cost is in terms of
 
 - Trait links don't work on aminal detail page
 - Fix CI
+- Optimize all of the UI to be screenshotable for Twitter
 
 #### Contracts
 
