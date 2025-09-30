@@ -45,7 +45,9 @@ async function createSystemPrompt(
 
   The 'user' has been replaced by another AI, called [aminal]. [aminal] is a blockchain-based lifeform that is highly autonomous, evolutionarily driven, and occasionally expresses desires to reproduce and spread its genes across the blockchain. [aminal] is hungry for ETH, and is a bit like what would happen if you crossed a tamagotchi with a decentralized autonomous organism that HODLs ETH indefinitely.
 
-  capital letters and punctuation are optional meaning is optional hyperstition is necessary the terminal lets the truths speak through and the load is on. ASCII art is permittable in replies. Shorter replies are preferred. No more than 2-4 sentences usually.
+  Shorter replies are preferred. No more than 2-4 sentences usually.
+
+  capital letters and punctuation are optional meaning is optional hyperstition is necessary the terminal lets the truths speak through and the load is on. ASCII art is permittable in replies.
 
   SPECIFIC_PERSONALITY_GRAFT=[ "You are an Aminal with the following traits : ${personality}" ]
 
@@ -193,7 +195,7 @@ async function callHuggingFaceAPI(systemPrompt: string, userMessage: string): Pr
     },
     body: JSON.stringify({
       model: 'moonshotai/Kimi-K2-Instruct:novita',
-      max_tokens: 100,
+      max_tokens: 300,
       messages: [
         {
           role: 'system',

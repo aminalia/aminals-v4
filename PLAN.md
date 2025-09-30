@@ -27,6 +27,7 @@ In general we need a review of what things cost (even if the cost is in terms of
 - Trait links don't work on aminal detail page
 - Fix CI
 - Optimize all of the UI to be screenshotable for Twitter
+- Show how much money genes have made on the card
 
 #### Contracts
 
@@ -42,7 +43,7 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### Indexer
 
 - Switch to ponder?
-- Have to reload often, can we make the indexer faster?
+- Have to reload often, can we make the indexer faster? Use Alchemy?
 
 #### Do last
 
@@ -58,11 +59,6 @@ General:
 - [ ] Love should be a percentage?
 - [ ] Make clear costs in love and energy everywhere
 
-Aminal detail page:
-
-- [x] Breeding modal should only show loved Aminals
-- [x] Navigate to new auction after finding partner
-
 Profile:
 
 - [x] Classic profile stuff (ENS, picture, copy address)
@@ -77,7 +73,6 @@ Breeding:
 
 - [x] SVG creator should just be text / preview
 - [ ] make nice SVG coder with linting
-- [ ] "Vote on Genes" -> Submit
 - [ ] "Gene Selection" -> "Gene Pool"
 - [ ] "p1" - "Parent 1", etc
 - [ ] "Time Left" -> "Incubation Period"
@@ -93,13 +88,10 @@ Desgin challenges:
 - [ ] Make it clearer that you can't own an Aminal
 - [x] Be clearer that you can own genes (they have "owners" now)
 
-Indexer Bugs:
+Indexer:
 
-- [x] Many bugs on multiple votes with indexer
-- [x] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
-- [ ] Verify bugs are fixed
-- [ ] Total earnings for OG genes are not updating it seems
-- [ ] Regression, Aminals with gene seems broken
+- [ ] Total earnings for OG genes are not updating?
+- [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
 
 Contract Changes:
 

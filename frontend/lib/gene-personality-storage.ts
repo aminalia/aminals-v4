@@ -175,21 +175,14 @@ async function generateTraitFromGeneSvg(
 ): Promise<string> {
   console.log('🎭 Generating trait for gene:', { geneId, traitType, geneName });
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.HF_TOKEN;
   if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY environment variable is required');
+    throw new Error('HF_TOKEN environment variable is required');
   }
 
   const traitTypeName = TRAIT_TYPE_NAMES[traitType] || 'unknown';
 
-  const traitPrompt = `You are analyzing a gene NFT that represents a specific visual trait for Aminals (digital pet NFTs).
-
-This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneName}"` : ''}.
-
-Gene SVG:
-${svgContent}
-
-Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal.
+  const systemPrompt = `You are analyzing a gene NFT that represents a specific visual trait for Aminals (digital pet NFTs).
 
 IMPORTANT FORMAT REQUIREMENTS:
 - Write the trait as a phrase that can follow "is" or "has"
@@ -206,20 +199,30 @@ Good examples:
 
 Respond with just the trait phrase, no preamble.`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const userPrompt = `This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneName}"` : ''}.
+
+Gene SVG:
+${svgContent}
+
+Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal.`;
+
+  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
+      'Authorization': `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: 'claude-3-opus-20240229',
+      model: 'moonshotai/Kimi-K2-Instruct:novita',
       max_tokens: 100,
       messages: [
         {
+          role: 'system',
+          content: systemPrompt,
+        },
+        {
           role: 'user',
-          content: traitPrompt,
+          content: userPrompt,
         },
       ],
     }),
@@ -227,11 +230,11 @@ Respond with just the trait phrase, no preamble.`;
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Anthropic API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+    throw new Error(`Hugging Face API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
   }
 
   const data = await response.json();
-  const trait = data.content[0].text.trim();
+  const trait = data.choices[0].message.content.trim();
 
   console.log('🎭 Generated trait:', trait);
   return trait;
