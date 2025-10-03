@@ -2,14 +2,12 @@ import { Address, BigInt, Bytes, log, store } from "@graphprotocol/graph-ts";
 import {
   AminalFactory as AminalFactoryContract,
   AminalSpawned as AminalSpawnedEvent,
-  BreedAminal as BreedAminalEvent,
 } from "../generated/AminalFactory/AminalFactory";
 import { Aminal as AminalContract } from "../generated/templates/Aminal/Aminal";
 import { Aminal as AminalTemplate } from "../generated/templates";
 import {
   AminalFactory,
   Aminal,
-  BreedAminalEvent as BreedAminal,
   GeneAuction,
   User,
 } from "../generated/schema";
@@ -42,41 +40,6 @@ export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   if (!factory) {
     factory = new AminalFactory(event.address);
     factory.totalAminals = BigInt.fromI32(0);
-    factory.initialAminalSpawned = false;
-
-    // Get factory contract to read state
-    let factoryContract = AminalFactoryContract.bind(event.address);
-    let geneAuctionResult = factoryContract.try_geneAuction();
-    let GenesResult = factoryContract.try_genes();
-    let loveVRGDAResult = factoryContract.try_loveVRGDA();
-
-    if (!geneAuctionResult.reverted) {
-      factory.geneAuction = geneAuctionResult.value;
-    } else {
-      factory.geneAuction = Bytes.fromHexString(
-        "0x0000000000000000000000000000000000000000"
-      );
-    }
-
-    if (!GenesResult.reverted) {
-      factory.genes = GenesResult.value;
-    } else {
-      factory.genes = Bytes.fromHexString(
-        "0x0000000000000000000000000000000000000000"
-      );
-    }
-
-    if (!loveVRGDAResult.reverted) {
-      factory.loveVRGDA = loveVRGDAResult.value;
-    } else {
-      factory.loveVRGDA = Bytes.fromHexString(
-        "0x0000000000000000000000000000000000000000"
-      );
-    }
-
-    factory.blockNumber = event.block.number;
-    factory.blockTimestamp = event.block.timestamp;
-    factory.transactionHash = event.transaction.hash;
   }
 
   // Create new Aminal entity
@@ -163,43 +126,4 @@ export function handleAminalSpawned(event: AminalSpawnedEvent): void {
   AminalTemplate.create(event.params.child);
 
   log.info("New Aminal spawned: {}", [event.params.child.toHexString()]);
-}
-
-export function handleBreedAminal(event: BreedAminalEvent): void {
-  // Load the Aminal entities
-  let aminalOne = Aminal.load(event.params.aminalOne);
-  let aminalTwo = Aminal.load(event.params.aminalTwo);
-
-  if (!aminalOne || !aminalTwo) {
-    log.error("One or both Aminals not found for breeding event: {} and {}", [
-      event.params.aminalOne.toHexString(),
-      event.params.aminalTwo.toHexString(),
-    ]);
-    return;
-  }
-
-  // Create breed event entity
-  let breedEvent = new BreedAminal(
-    event.transaction.hash.concatI32(event.logIndex.toI32())
-  );
-  breedEvent.aminalOne = aminalOne.id;
-  breedEvent.aminalTwo = aminalTwo.id;
-  breedEvent.auctionId = event.params.auctionId;
-
-  // Link to auction if one was created
-  if (event.params.auctionId.gt(BigInt.fromI32(0))) {
-    breedEvent.auction = Bytes.fromI32(event.params.auctionId.toI32());
-  }
-
-  breedEvent.blockNumber = event.block.number;
-  breedEvent.blockTimestamp = event.block.timestamp;
-  breedEvent.transactionHash = event.transaction.hash;
-
-  breedEvent.save();
-
-  log.info("Breed event created between {} and {} with auction ID {}", [
-    event.params.aminalOne.toHexString(),
-    event.params.aminalTwo.toHexString(),
-    event.params.auctionId.toString(),
-  ]);
 }

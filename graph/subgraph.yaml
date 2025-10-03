@@ -45,7 +45,6 @@ dataSources:
       entities:
         - AminalFactory
         - Aminal
-        - BreedAminalEvent
         - User
       abis:
         - name: AminalFactory
@@ -55,8 +54,6 @@ dataSources:
       eventHandlers:
         - event: AminalSpawned(indexed address,indexed address,indexed address,uint256,uint256[8])
           handler: handleAminalSpawned
-        - event: BreedAminal(indexed address,indexed address,uint256)
-          handler: handleBreedAminal
       file: ./src/factory.ts
   - kind: ethereum
     name: GeneAuction

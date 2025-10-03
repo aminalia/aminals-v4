@@ -220,6 +220,28 @@ export function handleVotingCreated(event: VotingCreatedEvent): void {
   auction.aminalTwo = aminalTwo.id;
   auction.totalLove = event.params.totalLove;
   auction.finished = false;
+
+  // Cache parent trait IDs for bulk vote optimization (prevents loading parents on each vote)
+  // Order: [parent1: back, arm, tail, ears, body, face, mouth, misc, parent2: back, arm, tail, ears, body, face, mouth, misc]
+  auction.parentGeneIds = [
+    aminalOne.backId,
+    aminalOne.armId,
+    aminalOne.tailId,
+    aminalOne.earsId,
+    aminalOne.bodyId,
+    aminalOne.faceId,
+    aminalOne.mouthId,
+    aminalOne.miscId,
+    aminalTwo.backId,
+    aminalTwo.armId,
+    aminalTwo.tailId,
+    aminalTwo.earsId,
+    aminalTwo.bodyId,
+    aminalTwo.faceId,
+    aminalTwo.mouthId,
+    aminalTwo.miscId,
+  ];
+
   auction.blockNumber = event.block.number;
   auction.blockTimestamp = event.block.timestamp;
   auction.transactionHash = event.transaction.hash;
@@ -251,10 +273,6 @@ export function handleVotingSettled(event: VotingSettledEvent): void {
 
   // Update auction with settlement data
   auction.finished = true;
-  auction.winningGeneIds = event.params.winningGeneIds;
-  auction.endBlockNumber = event.block.number;
-  auction.endBlockTimestamp = event.block.timestamp;
-  auction.endTransactionHash = event.transaction.hash;
   auction.save();
 
   log.info(
@@ -529,58 +547,16 @@ export function handleBulkVoteCast(event: BulkVoteCastEvent): void {
 
     if (!proposal) {
       // Check if this is a parent trait (which can be voted on without explicit proposal)
-      let aminalOne = Aminal.load(auction.aminalOne);
-      let aminalTwo = Aminal.load(auction.aminalTwo);
-
-      if (!aminalOne || !aminalTwo) {
-        log.warning(
-          "Parent Aminals not found for auction {} - skipping vote for gene {} trait {}",
-          [event.params.auctionId.toString(), geneId.toString(), i.toString()],
-        );
-        continue;
-      }
+      // Use cached parent trait IDs instead of loading full Aminal entities (optimization)
+      let parentGeneIds = auction.parentGeneIds;
 
       // Check if gene ID matches parent traits for this category
+      // parentGeneIds order: [parent1: back, arm, tail, ears, body, face, mouth, misc, parent2: back, arm, tail, ears, body, face, mouth, misc]
       let isParentTrait = false;
-      if (
-        i == 0 &&
-        (geneId.equals(aminalOne.backId) || geneId.equals(aminalTwo.backId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 1 &&
-        (geneId.equals(aminalOne.armId) || geneId.equals(aminalTwo.armId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 2 &&
-        (geneId.equals(aminalOne.tailId) || geneId.equals(aminalTwo.tailId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 3 &&
-        (geneId.equals(aminalOne.earsId) || geneId.equals(aminalTwo.earsId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 4 &&
-        (geneId.equals(aminalOne.bodyId) || geneId.equals(aminalTwo.bodyId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 5 &&
-        (geneId.equals(aminalOne.faceId) || geneId.equals(aminalTwo.faceId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 6 &&
-        (geneId.equals(aminalOne.mouthId) || geneId.equals(aminalTwo.mouthId))
-      ) {
-        isParentTrait = true;
-      } else if (
-        i == 7 &&
-        (geneId.equals(aminalOne.miscId) || geneId.equals(aminalTwo.miscId))
-      ) {
+      let parent1TraitId = parentGeneIds[i];
+      let parent2TraitId = parentGeneIds[i + 8];
+
+      if (geneId.equals(parent1TraitId) || geneId.equals(parent2TraitId)) {
         isParentTrait = true;
       }
 
