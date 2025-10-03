@@ -68,97 +68,6 @@ export class AminalFactory extends Entity {
     this.set("totalAminals", Value.fromBigInt(value));
   }
 
-  get geneAuction(): Bytes {
-    let value = this.get("geneAuction");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set geneAuction(value: Bytes) {
-    this.set("geneAuction", Value.fromBytes(value));
-  }
-
-  get genes(): Bytes {
-    let value = this.get("genes");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set genes(value: Bytes) {
-    this.set("genes", Value.fromBytes(value));
-  }
-
-  get loveVRGDA(): Bytes {
-    let value = this.get("loveVRGDA");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set loveVRGDA(value: Bytes) {
-    this.set("loveVRGDA", Value.fromBytes(value));
-  }
-
-  get initialAminalSpawned(): boolean {
-    let value = this.get("initialAminalSpawned");
-    if (!value || value.kind == ValueKind.NULL) {
-      return false;
-    } else {
-      return value.toBoolean();
-    }
-  }
-
-  set initialAminalSpawned(value: boolean) {
-    this.set("initialAminalSpawned", Value.fromBoolean(value));
-  }
-
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
-  get blockTimestamp(): BigInt {
-    let value = this.get("blockTimestamp");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set blockTimestamp(value: BigInt) {
-    this.set("blockTimestamp", Value.fromBigInt(value));
-  }
-
-  get transactionHash(): Bytes {
-    let value = this.get("transactionHash");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set transactionHash(value: Bytes) {
-    this.set("transactionHash", Value.fromBytes(value));
-  }
-
   get aminals(): AminalLoader {
     return new AminalLoader(
       "AminalFactory",
@@ -499,30 +408,6 @@ export class Aminal extends Entity {
     );
   }
 
-  get breedingEventsAsParentOne(): BreedAminalEventLoader {
-    return new BreedAminalEventLoader(
-      "Aminal",
-      this.get("id")!.toBytes().toHexString(),
-      "breedingEventsAsParentOne",
-    );
-  }
-
-  get breedingEventsAsParentTwo(): BreedAminalEventLoader {
-    return new BreedAminalEventLoader(
-      "Aminal",
-      this.get("id")!.toBytes().toHexString(),
-      "breedingEventsAsParentTwo",
-    );
-  }
-
-  get auctions(): GeneAuctionLoader {
-    return new GeneAuctionLoader(
-      "Aminal",
-      this.get("id")!.toBytes().toHexString(),
-      "auctions",
-    );
-  }
-
   get blockNumber(): BigInt {
     let value = this.get("blockNumber");
     if (!value || value.kind == ValueKind.NULL) {
@@ -622,14 +507,6 @@ export class User extends Entity {
       "User",
       this.get("id")!.toBytes().toHexString(),
       "lovers",
-    );
-  }
-
-  get geneProposals(): GeneProposalLoader {
-    return new GeneProposalLoader(
-      "User",
-      this.get("id")!.toBytes().toHexString(),
-      "geneProposals",
     );
   }
 
@@ -738,145 +615,6 @@ export class Relationship extends Entity {
 
   set love(value: BigInt) {
     this.set("love", Value.fromBigInt(value));
-  }
-}
-
-export class BreedAminalEvent extends Entity {
-  constructor(id: Bytes) {
-    super();
-    this.set("id", Value.fromBytes(id));
-  }
-
-  save(): void {
-    let id = this.get("id");
-    assert(id != null, "Cannot save BreedAminalEvent entity without an ID");
-    if (id) {
-      assert(
-        id.kind == ValueKind.BYTES,
-        `Entities of type BreedAminalEvent must have an ID of type Bytes but the id '${id.displayData()}' is of type ${id.displayKind()}`,
-      );
-      store.set("BreedAminalEvent", id.toBytes().toHexString(), this);
-    }
-  }
-
-  static loadInBlock(id: Bytes): BreedAminalEvent | null {
-    return changetype<BreedAminalEvent | null>(
-      store.get_in_block("BreedAminalEvent", id.toHexString()),
-    );
-  }
-
-  static load(id: Bytes): BreedAminalEvent | null {
-    return changetype<BreedAminalEvent | null>(
-      store.get("BreedAminalEvent", id.toHexString()),
-    );
-  }
-
-  get id(): Bytes {
-    let value = this.get("id");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set id(value: Bytes) {
-    this.set("id", Value.fromBytes(value));
-  }
-
-  get aminalOne(): Bytes {
-    let value = this.get("aminalOne");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set aminalOne(value: Bytes) {
-    this.set("aminalOne", Value.fromBytes(value));
-  }
-
-  get aminalTwo(): Bytes {
-    let value = this.get("aminalTwo");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set aminalTwo(value: Bytes) {
-    this.set("aminalTwo", Value.fromBytes(value));
-  }
-
-  get auctionId(): BigInt {
-    let value = this.get("auctionId");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set auctionId(value: BigInt) {
-    this.set("auctionId", Value.fromBigInt(value));
-  }
-
-  get auction(): Bytes | null {
-    let value = this.get("auction");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set auction(value: Bytes | null) {
-    if (!value) {
-      this.unset("auction");
-    } else {
-      this.set("auction", Value.fromBytes(<Bytes>value));
-    }
-  }
-
-  get blockNumber(): BigInt {
-    let value = this.get("blockNumber");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set blockNumber(value: BigInt) {
-    this.set("blockNumber", Value.fromBigInt(value));
-  }
-
-  get blockTimestamp(): BigInt {
-    let value = this.get("blockTimestamp");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set blockTimestamp(value: BigInt) {
-    this.set("blockTimestamp", Value.fromBigInt(value));
-  }
-
-  get transactionHash(): Bytes {
-    let value = this.get("transactionHash");
-    if (!value || value.kind == ValueKind.NULL) {
-      throw new Error("Cannot return null for a required field.");
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set transactionHash(value: Bytes) {
-    this.set("transactionHash", Value.fromBytes(value));
   }
 }
 
@@ -1297,6 +1035,19 @@ export class GeneAuction extends Entity {
     this.set("finished", Value.fromBoolean(value));
   }
 
+  get parentGeneIds(): Array<BigInt> {
+    let value = this.get("parentGeneIds");
+    if (!value || value.kind == ValueKind.NULL) {
+      throw new Error("Cannot return null for a required field.");
+    } else {
+      return value.toBigIntArray();
+    }
+  }
+
+  set parentGeneIds(value: Array<BigInt>) {
+    this.set("parentGeneIds", Value.fromBigIntArray(value));
+  }
+
   get childAminal(): Bytes | null {
     let value = this.get("childAminal");
     if (!value || value.kind == ValueKind.NULL) {
@@ -1311,23 +1062,6 @@ export class GeneAuction extends Entity {
       this.unset("childAminal");
     } else {
       this.set("childAminal", Value.fromBytes(<Bytes>value));
-    }
-  }
-
-  get winningGeneIds(): Array<BigInt> | null {
-    let value = this.get("winningGeneIds");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigIntArray();
-    }
-  }
-
-  set winningGeneIds(value: Array<BigInt> | null) {
-    if (!value) {
-      this.unset("winningGeneIds");
-    } else {
-      this.set("winningGeneIds", Value.fromBigIntArray(<Array<BigInt>>value));
     }
   }
 
@@ -1392,57 +1126,6 @@ export class GeneAuction extends Entity {
 
   set transactionHash(value: Bytes) {
     this.set("transactionHash", Value.fromBytes(value));
-  }
-
-  get endBlockNumber(): BigInt | null {
-    let value = this.get("endBlockNumber");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set endBlockNumber(value: BigInt | null) {
-    if (!value) {
-      this.unset("endBlockNumber");
-    } else {
-      this.set("endBlockNumber", Value.fromBigInt(<BigInt>value));
-    }
-  }
-
-  get endBlockTimestamp(): BigInt | null {
-    let value = this.get("endBlockTimestamp");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBigInt();
-    }
-  }
-
-  set endBlockTimestamp(value: BigInt | null) {
-    if (!value) {
-      this.unset("endBlockTimestamp");
-    } else {
-      this.set("endBlockTimestamp", Value.fromBigInt(<BigInt>value));
-    }
-  }
-
-  get endTransactionHash(): Bytes | null {
-    let value = this.get("endTransactionHash");
-    if (!value || value.kind == ValueKind.NULL) {
-      return null;
-    } else {
-      return value.toBytes();
-    }
-  }
-
-  set endTransactionHash(value: Bytes | null) {
-    if (!value) {
-      this.unset("endTransactionHash");
-    } else {
-      this.set("endTransactionHash", Value.fromBytes(<Bytes>value));
-    }
   }
 }
 
@@ -2220,60 +1903,6 @@ export class FeedAminalEventLoader extends Entity {
   }
 }
 
-export class BreedAminalEventLoader extends Entity {
-  _entity: string;
-  _field: string;
-  _id: string;
-
-  constructor(entity: string, id: string, field: string) {
-    super();
-    this._entity = entity;
-    this._id = id;
-    this._field = field;
-  }
-
-  load(): BreedAminalEvent[] {
-    let value = store.loadRelated(this._entity, this._id, this._field);
-    return changetype<BreedAminalEvent[]>(value);
-  }
-}
-
-export class GeneAuctionLoader extends Entity {
-  _entity: string;
-  _field: string;
-  _id: string;
-
-  constructor(entity: string, id: string, field: string) {
-    super();
-    this._entity = entity;
-    this._id = id;
-    this._field = field;
-  }
-
-  load(): GeneAuction[] {
-    let value = store.loadRelated(this._entity, this._id, this._field);
-    return changetype<GeneAuction[]>(value);
-  }
-}
-
-export class GeneProposalLoader extends Entity {
-  _entity: string;
-  _field: string;
-  _id: string;
-
-  constructor(entity: string, id: string, field: string) {
-    super();
-    this._entity = entity;
-    this._id = id;
-    this._field = field;
-  }
-
-  load(): GeneProposal[] {
-    let value = store.loadRelated(this._entity, this._id, this._field);
-    return changetype<GeneProposal[]>(value);
-  }
-}
-
 export class GeneNFTLoader extends Entity {
   _entity: string;
   _field: string;
@@ -2307,6 +1936,24 @@ export class GeneVoteLoader extends Entity {
   load(): GeneVote[] {
     let value = store.loadRelated(this._entity, this._id, this._field);
     return changetype<GeneVote[]>(value);
+  }
+}
+
+export class GeneProposalLoader extends Entity {
+  _entity: string;
+  _field: string;
+  _id: string;
+
+  constructor(entity: string, id: string, field: string) {
+    super();
+    this._entity = entity;
+    this._id = id;
+    this._field = field;
+  }
+
+  load(): GeneProposal[] {
+    let value = store.loadRelated(this._entity, this._id, this._field);
+    return changetype<GeneProposal[]>(value);
   }
 }
 

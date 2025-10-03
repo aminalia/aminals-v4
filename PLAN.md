@@ -3,13 +3,44 @@
 - [ ] Make issues / resolve issues from security audit
 - [ ] Switch to ponder (will hopefully solve many bugs)
 
-### Try ponder
+# Indexer Cleanup
+
+✅ **COMPLETED** - Graph indexing optimizations implemented (2025-10-03)
+
+## Implemented Optimizations
+
+### Phase 1: High-Impact Performance Improvements (30-40% faster bulk votes)
+- ✅ Added `parentGeneIds` cache to GeneAuction schema
+- ✅ Updated `handleVotingCreated` to store parent trait IDs on auction creation
+- ✅ Updated `handleBulkVoteCast` to use cached traits (eliminates 2 entity loads per vote)
+
+### Phase 2: Schema Cleanup (5-10% reduction in write operations)
+- ✅ Removed `BreedAminalEvent` entity entirely (not queried by frontend)
+- ✅ Removed unused AminalFactory fields: `geneAuction`, `genes`, `loveVRGDA`, `initialAminalSpawned`, `blockNumber`, `blockTimestamp`, `transactionHash`
+- ✅ Removed unused Aminal derived relationships: `breedingEventsAsParentOne`, `breedingEventsAsParentTwo`, `auctions`
+- ✅ Removed unused GeneAuction metadata: `winningGeneIds`, `endBlockNumber`, `endBlockTimestamp`, `endTransactionHash`
+- ✅ Removed `User.geneProposals` field (not queried)
+
+### Expected Performance Impact
+- **Bulk vote processing**: 30-40% faster (primary bottleneck)
+- **Overall indexing**: 10-20% improvement
+- **Write operations**: 5-10% reduction
+
+### Documentation
+- See `GRAPH_INDEXING_REPORT.md` for full analysis
+- See `GRAPH_OPTIMIZATION_SUMMARY.md` for quick reference
+- See `FRONTEND_VERIFICATION_REPORT.md` for frontend impact analysis
+
+### Future Optimizations (Phase 3 - Not Yet Implemented)
+- ⚠️ Add `first` limits to unbounded relationships (requires frontend testing)
+- ⚠️ Optimize `proposalsUsingGene` queries to fetch only IDs for list views (requires frontend refactor)
+
+# Try ponder
 
 I want to experiment with using ponder.sh instead of the graph for indexing the solidity contracts. Create a new `ponder` directory, and let's create an indexer similar to the functionality we've already created with the graph in @graph/
 
 ## New Features Ideas
 
-- Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
 - Maybe make this a chat skill (with an AVS that extracts personality traits)
 - Aminal Race
 - Prediction Market
@@ -17,7 +48,6 @@ I want to experiment with using ponder.sh instead of the graph for indexing the 
 - Give love to Aminals (check voting power) on breeding page (if you don't love them yet, it's not too late)
 - Aminals DAO (a DAO of Aminals based on Loveocracy)
 - Poo skill to create a new NFT
-
 
 ## Open Design Questions
 
