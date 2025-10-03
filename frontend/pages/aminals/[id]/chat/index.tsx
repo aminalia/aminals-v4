@@ -1,0 +1,284 @@
+import { AminalVisualImage } from '@/components/aminal-card';
+import { Button } from '@/components/ui/button';
+import type { NextPage } from 'next';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useState, useEffect, useMemo } from 'react';
+import { useAccount } from 'wagmi';
+import { useQuery } from '@tanstack/react-query';
+import Layout from '../../../_layout';
+import { Plus, MessageCircle, ArrowLeft, Clock, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { ChatSession } from '../../../../lib/chat-storage';
+import { useAminalForChat } from '../../../../src/resources/aminals';
+
+
+const useChatSessions = (aminalAddress: string, userAddress: string) => {
+  return useQuery({
+    queryKey: ['chat-sessions', aminalAddress, userAddress],
+    queryFn: async () => {
+      if (!aminalAddress || !userAddress) return [];
+
+      const response = await fetch(`/api/chat/sessions?aminalAddress=${aminalAddress}&userAddress=${userAddress}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch chat sessions');
+      }
+      return response.json();
+    },
+    enabled: !!aminalAddress && !!userAddress,
+  });
+};
+
+const ChatSessionsPage: NextPage = () => {
+  const router = useRouter();
+  const { id } = router.query;
+  const contractAddress = id as string;
+  const { address } = useAccount();
+  const [isCreating, setIsCreating] = useState(false);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+
+  const isRouterReady =
+    router.isReady && id && typeof id === 'string' && id !== 'undefined';
+
+  const {
+    data: aminal,
+    isLoading: isAminalLoading,
+  } = useAminalForChat(isRouterReady ? contractAddress : '', address || '');
+
+  const {
+    data: sessions,
+    isLoading: isSessionsLoading,
+    refetch: refetchSessions,
+  } = useChatSessions(isRouterReady ? contractAddress : '', address || '');
+
+  // Prepare gene IDs for personality generation
+  const geneIds = useMemo(() => {
+    if (!aminal) return {};
+    
+    return {
+      backId: aminal.backId?.toString(),
+      armId: aminal.armId?.toString(),
+      tailId: aminal.tailId?.toString(),
+      earsId: aminal.earsId?.toString(),
+      bodyId: aminal.bodyId?.toString(),
+      faceId: aminal.faceId?.toString(),
+      mouthId: aminal.mouthId?.toString(),
+      miscId: aminal.miscId?.toString(),
+    };
+  }, [aminal]);
+
+  const createNewSession = async () => {
+    if (!aminal || !address || isCreating) return;
+
+    setIsCreating(true);
+    try {
+      const response = await fetch('/api/chat/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          aminalAddress: contractAddress,
+          userAddress: address,
+          title: `Chat ${new Date().toLocaleDateString()}`,
+          geneIds,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create chat session');
+      }
+
+      const newSession: ChatSession = await response.json();
+
+      // Navigate to the new chat session
+      router.push(`/aminals/${contractAddress}/chat/${newSession.id}`);
+    } catch (error) {
+      console.error('Error creating chat session:', error);
+      toast.error('Failed to create new chat session');
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const deleteSession = async (sessionId: string) => {
+    if (!address) return;
+
+    setDeletingSessionId(sessionId);
+    try {
+      const response = await fetch(`/api/chat/sessions?sessionId=${sessionId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete chat session');
+      }
+
+      toast.success('Chat session deleted');
+      refetchSessions();
+    } catch (error) {
+      console.error('Error deleting chat session:', error);
+      toast.error('Failed to delete chat session');
+    } finally {
+      setDeletingSessionId(null);
+    }
+  };
+
+  if (!isRouterReady || isAminalLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-[50vh]">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!aminal) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center justify-center h-[50vh] text-gray-500">
+            Aminal not found
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  const formatTimeAgo = (date: string) => {
+    const now = new Date();
+    const messageDate = new Date(date);
+    const diffInHours = Math.floor((now.getTime() - messageDate.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+
+    return messageDate.toLocaleDateString();
+  };
+
+  return (
+    <Layout>
+      <div className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-4 sm:mb-6">
+          <Link
+            href={`/aminals/${contractAddress}`}
+            className="text-blue-600 hover:text-blue-700 p-1 sm:p-2 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+          >
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          </Link>
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-indigo-50 border border-gray-200 flex-shrink-0">
+            <AminalVisualImage aminal={aminal} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-lg sm:text-2xl font-bold truncate">
+              Chat with Aminal #{aminal.aminalIndex}
+            </h1>
+            <p className="text-sm sm:text-base text-gray-600">
+              {aminal.lovers?.[0]?.love ?
+                `Love 4 U: ${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
+                'New friend 👋'
+              }
+            </p>
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="mb-4 sm:mb-6 space-y-3">
+          <Button
+            onClick={createNewSession}
+            disabled={isCreating || !address}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 sm:py-2 text-sm sm:text-base"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {isCreating ? 'Creating...' : 'Start New Conversation'}
+          </Button>
+
+          {!address && (
+            <p className="text-sm text-gray-500 text-center">
+              Connect your wallet to start chatting
+            </p>
+          )}
+        </div>
+
+        {/* Chat Sessions List */}
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Your Conversations</h2>
+
+          {isSessionsLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            </div>
+          ) : !sessions || sessions.length === 0 ? (
+            <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border border-gray-200">
+              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+              <p className="text-sm sm:text-base text-gray-600 mb-4">
+                Start your first conversation with this Aminal!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 sm:space-y-3">
+              {sessions.map((session: ChatSession) => (
+                <div
+                  key={session.id}
+                  className="p-3 sm:p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <Link
+                      href={`/aminals/${contractAddress}/chat/${session.id}`}
+                      className="flex-1 min-w-0 hover:bg-gray-50 -m-2 p-2 rounded transition-colors"
+                    >
+                      <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">
+                        {session.title}
+                      </h3>
+                      {session.messages.length > 0 && (
+                        <p className="text-xs sm:text-sm text-gray-600 truncate mt-1">
+                          {session.messages[session.messages.length - 1].text}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-2">
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>{session.messages.length}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatTimeAgo(session.updatedAt.toString())}</span>
+                        </div>
+                      </div>
+                    </Link>
+
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        deleteSession(session.id);
+                      }}
+                      disabled={deletingSessionId === session.id}
+                      className="ml-1 sm:ml-2 p-1 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 touch-manipulation"
+                      title="Delete conversation"
+                    >
+                      {deletingSessionId === session.id ? (
+                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </Layout>
+  );
+};
+
+export default ChatSessionsPage;

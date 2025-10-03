@@ -3,6 +3,10 @@ import {
   Aminal,
   AminalByIdDocument,
   AminalByIdQuery,
+  AminalByContractAddressDocument,
+  AminalByContractAddressQuery,
+  AminalForChatDocument,
+  AminalForChatQuery,
   AminalsListDocument,
   execute,
 } from '../../.graphclient';
@@ -75,5 +79,57 @@ export const useAminal = (aminalId: string) => {
       }
     },
     enabled: !!aminalId,
+  });
+};
+
+export const useAminalForChat = (contractAddress: string, userAddress: string) => {
+  return useQuery<AminalForChatQuery['aminals'][0] | undefined>({
+    queryKey: queryKeys.aminals.chat(contractAddress, userAddress),
+    queryFn: async () => {
+      try {
+        const response = await execute(AminalForChatDocument, {
+          contractAddress,
+          address: userAddress,
+        });
+
+        if (response.errors) {
+          console.error('GraphQL errors:', response.errors);
+          throw handleGraphQLError(response.errors);
+        }
+
+        const aminals = response.data?.aminals || [];
+        return aminals.length > 0 ? aminals[0] : undefined;
+      } catch (error) {
+        console.error('Failed to fetch aminal for chat:', error);
+        throw error;
+      }
+    },
+    enabled: !!contractAddress && contractAddress !== 'undefined' && !!userAddress,
+  });
+};
+
+export const useAminalByContractAddress = (contractAddress: string, userAddress: string) => {
+  return useQuery<AminalByContractAddressQuery['aminals'][0] | undefined>({
+    queryKey: queryKeys.aminals.detail(contractAddress),
+    queryFn: async () => {
+      try {
+        const response = await execute(AminalByContractAddressDocument, {
+          contractAddress,
+          address: userAddress,
+        });
+
+        if (response.errors) {
+          console.error('GraphQL errors:', response.errors);
+          throw handleGraphQLError(response.errors);
+        }
+
+        const aminals = response.data?.aminals || [];
+        return aminals.length > 0 ? aminals[0] : undefined;
+      } catch (error) {
+        console.error('Failed to fetch aminal by contract address:', error);
+        throw error;
+      }
+    },
+    enabled: !!contractAddress && contractAddress !== 'undefined',
   });
 };

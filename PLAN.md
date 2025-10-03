@@ -1,7 +1,16 @@
 # Plan
 
+- [ ] Make issues / resolve issues from security audit
+- [ ] Switch to ponder (will hopefully solve many bugs)
+
+### Try ponder
+
+I want to experiment with using ponder.sh instead of the graph for indexing the solidity contracts. Create a new `ponder` directory, and let's create an indexer similar to the functionality we've already created with the graph in @graph/
+
 ## New Features Ideas
 
+- Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
+- Maybe make this a chat skill (with an AVS that extracts personality traits)
 - Aminal Race
 - Prediction Market
 - Bribing
@@ -9,10 +18,12 @@
 - Aminals DAO (a DAO of Aminals based on Loveocracy)
 - Poo skill to create a new NFT
 
+
 ## Open Design Questions
 
 - Do we need remove gene?
 - What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
+- Should there be a way of creating an entirely new Aminal?
 
 In general we need a review of what things cost (even if the cost is in terms of love or energy).
 
@@ -21,6 +32,9 @@ In general we need a review of what things cost (even if the cost is in terms of
 #### UI
 
 - Trait links don't work on aminal detail page
+- Fix CI
+- Optimize all of the UI to be screenshotable for Twitter
+- Show how much money genes have made on the card
 
 #### Contracts
 
@@ -32,11 +46,6 @@ In general we need a review of what things cost (even if the cost is in terms of
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
-
-#### Indexer
-
-- Switch to ponder?
-- Have to reload often, can we make the indexer faster?
 
 #### Do last
 
@@ -52,11 +61,6 @@ General:
 - [ ] Love should be a percentage?
 - [ ] Make clear costs in love and energy everywhere
 
-Aminal detail page:
-
-- [x] Breeding modal should only show loved Aminals
-- [x] Navigate to new auction after finding partner
-
 Profile:
 
 - [x] Classic profile stuff (ENS, picture, copy address)
@@ -71,7 +75,6 @@ Breeding:
 
 - [x] SVG creator should just be text / preview
 - [ ] make nice SVG coder with linting
-- [ ] "Vote on Genes" -> Submit
 - [ ] "Gene Selection" -> "Gene Pool"
 - [ ] "p1" - "Parent 1", etc
 - [ ] "Time Left" -> "Incubation Period"
@@ -87,13 +90,10 @@ Desgin challenges:
 - [ ] Make it clearer that you can't own an Aminal
 - [x] Be clearer that you can own genes (they have "owners" now)
 
-Indexer Bugs:
+Indexer:
 
-- [x] Many bugs on multiple votes with indexer
-- [x] Index indexes multiple votes for changing votes. If someone already voted, don't increment votes.
-- [ ] Verify bugs are fixed
-- [ ] Total earnings for OG genes are not updating it seems
-- [ ] Regression, Aminals with gene seems broken
+- [ ] Total earnings for OG genes are not updating?
+- [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
 
 Contract Changes:
 

@@ -50,6 +50,9 @@ export const queryKeys = {
       [...queryKeys.aminals.lists(), filter, sort, userAddress] as const,
     details: () => [...queryKeys.aminals.all, 'detail'] as const,
     detail: (id: string) => [...queryKeys.aminals.details(), id] as const,
+    chats: () => [...queryKeys.aminals.all, 'chat'] as const,
+    chat: (contractAddress: string, userAddress: string) =>
+      [...queryKeys.aminals.chats(), contractAddress, userAddress] as const,
   },
   genes: {
     all: ['genes'] as const,

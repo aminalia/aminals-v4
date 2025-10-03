@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: process.env.NODE_ENV !== 'development', // Disable strict mode in dev for performance
   trailingSlash: true,
   images: {
     unoptimized: true,
@@ -14,47 +14,48 @@ const nextConfig = {
   },
   swcMinify: true,
   compress: true,
-  webpack: (config) => {
-    config.resolve.fallback = { fs: false, net: false, tls: false };
+  // // Seemed to fuck with dev server
+  // webpack: (config) => {
+  //   config.resolve.fallback = { fs: false, net: false, tls: false };
 
-    // Handle ES modules in workers
-    config.module.rules.push({
-      test: /HeartbeatWorker\.js$/,
-      type: 'javascript/auto',
-    });
+  //   // Handle ES modules in workers
+  //   config.module.rules.push({
+  //     test: /HeartbeatWorker\.js$/,
+  //     type: 'javascript/auto',
+  //   });
 
-    // Configure optimization to exclude worker files from Terser
-    config.optimization.minimizer = config.optimization.minimizer.map(
-      (plugin) => {
-        if (plugin.constructor.name === 'TerserPlugin') {
-          plugin.options.exclude = /HeartbeatWorker\.js$/;
-        }
-        return plugin;
-      }
-    );
+  //   // Configure optimization to exclude worker files from Terser
+  //   config.optimization.minimizer = config.optimization.minimizer.map(
+  //     (plugin) => {
+  //       if (plugin.constructor.name === 'TerserPlugin') {
+  //         plugin.options.exclude = /HeartbeatWorker\.js$/;
+  //       }
+  //       return plugin;
+  //     }
+  //   );
 
-    // Additional optimizations
-    config.optimization.splitChunks = {
-      chunks: 'all',
-      maxInitialRequests: 25,
-      maxAsyncRequests: 25,
-      cacheGroups: {
-        vendor: {
-          test: /[\\/]node_modules[\\/]/,
-          name: 'vendors',
-          chunks: 'all',
-        },
-      },
-    };
+  //   // Additional optimizations
+  //   config.optimization.splitChunks = {
+  //     chunks: 'all',
+  //     maxInitialRequests: 25,
+  //     maxAsyncRequests: 25,
+  //     cacheGroups: {
+  //       vendor: {
+  //         test: /[\\/]node_modules[\\/]/,
+  //         name: 'vendors',
+  //         chunks: 'all',
+  //       },
+  //     },
+  //   };
 
-    // Tree shaking optimization for production
-    if (process.env.NODE_ENV === 'production') {
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
-    }
+  //   // Tree shaking optimization for production
+  //   if (process.env.NODE_ENV === 'production') {
+  //     config.optimization.usedExports = true;
+  //     config.optimization.sideEffects = false;
+  //   }
 
-    return config;
-  },
+  //   return config;
+  // },
 };
 
 module.exports = nextConfig;
