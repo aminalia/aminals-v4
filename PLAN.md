@@ -1,5 +1,12 @@
 # Plan
 
+- [ ] Make issues / resolve issues from security audit
+- [ ] Switch to ponder (will hopefully solve many bugs)
+
+### Try ponder
+
+I want to experiment with using ponder.sh instead of the graph for indexing the solidity contracts. Create a new `ponder` directory, and let's create an indexer similar to the functionality we've already created with the graph in @graph/
+
 ## New Features Ideas
 
 - Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
@@ -39,11 +46,6 @@ In general we need a review of what things cost (even if the cost is in terms of
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
-
-#### Indexer
-
-- Switch to ponder?
-- Have to reload often, can we make the indexer faster? Use Alchemy?
 
 #### Do last
 
