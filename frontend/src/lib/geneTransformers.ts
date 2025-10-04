@@ -1,4 +1,16 @@
-import type { GeneNFT, GeneNFTWithRelations } from '../types/ponder';
+/**
+ * Gene Transformers
+ *
+ * Updated for Ponder schema with hex-based IDs and new structure.
+ */
+
+import * as schema from '../../../ponder/ponder.schema';
+
+// Type inference from Ponder schema
+type GeneNFT = typeof schema.geneNFT.$inferSelect;
+type GeneProposal = typeof schema.geneProposal.$inferSelect;
+type GeneCreatorPayout = typeof schema.geneCreatorPayout.$inferSelect;
+type User = typeof schema.user.$inferSelect;
 
 export type GeneFilter = 'all' | 'yours';
 export type GeneSort = 'aminals-count' | 'created-at';
@@ -13,56 +25,54 @@ export type CategoryFilter =
   | '6'
   | '7';
 
+// Extended type with relationships (matches hook return type)
+export interface GeneNFTWithRelations extends GeneNFT {
+  owner?: User;
+  creator?: User;
+  proposals?: GeneProposal[];
+  payouts?: GeneCreatorPayout[];
+}
+
 /**
  * Transform and filter genes based on user preferences
+ *
+ * Note: With Ponder, most filtering/sorting is done in the hooks.
+ * This function is kept for backward compatibility and additional client-side processing.
  */
 export const transformGenes = (
-  genes: GeneNFT[],
+  genes: GeneNFTWithRelations[],
   filter: GeneFilter = 'all',
   sort: GeneSort = 'aminals-count',
   category: CategoryFilter = 'all',
   userAddress?: string
-): GeneNFT[] => {
+): GeneNFTWithRelations[] => {
   let processedGenes = [...genes];
 
   // Apply owner filter
   if (filter === 'yours' && userAddress) {
     processedGenes = processedGenes.filter(
-      (gene: GeneNFT) =>
-        gene.creator?.address?.toLowerCase() === userAddress.toLowerCase()
+      (gene) =>
+        gene.creatorId?.toLowerCase() === userAddress.toLowerCase()
     );
   }
 
   // Apply category filter
   if (category !== 'all') {
     processedGenes = processedGenes.filter(
-      (gene: GeneNFT) => gene.traitType === Number(category)
+      (gene) => gene.traitType === Number(category)
     );
   }
 
   // Apply sort
-  processedGenes.sort((a: GeneNFT, b: GeneNFT) => {
+  processedGenes.sort((a, b) => {
     switch (sort) {
       case 'aminals-count':
-        // Calculate unique Aminals count from proposals
-        const aProposals = a.proposals?.items || [];
-        const aCount = aProposals.length > 0
-          ? new Set([
-              ...aProposals.map((p: any) => p.auction?.aminalOne?.id).filter(Boolean),
-              ...aProposals.map((p: any) => p.auction?.aminalTwo?.id).filter(Boolean),
-            ]).size
-          : 0;
-        const bProposals = b.proposals?.items || [];
-        const bCount = bProposals.length > 0
-          ? new Set([
-              ...bProposals.map((p: any) => p.auction?.aminalOne?.id).filter(Boolean),
-              ...bProposals.map((p: any) => p.auction?.aminalTwo?.id).filter(Boolean),
-            ]).size
-          : 0;
+        // Count based on proposals
+        const aCount = a.proposals?.length || 0;
+        const bCount = b.proposals?.length || 0;
         return bCount - aCount;
       case 'created-at':
-        // Sort by tokenId as a proxy for creation time
-        return Number(b.tokenId) - Number(a.tokenId);
+        return Number(b.blockTimestamp - a.blockTimestamp);
       default:
         return 0;
     }
@@ -74,19 +84,16 @@ export const transformGenes = (
 /**
  * Calculate gene statistics
  */
-export const calculateGeneStats = (gene: GeneNFT) => {
-  const totalEarnings = Number(gene.totalEarnings || 0);
-  const proposals = gene.proposals?.items || [];
+export const calculateGeneStats = (gene: GeneNFTWithRelations) => {
+  const totalEarnings = Number(gene.totalEarnings || 0n);
+  const proposals = gene.proposals || [];
   const proposalCount = proposals.length;
-  const payoutCount = gene.payouts?.items?.length || 0;
+  const payoutCount = gene.payouts?.length || 0;
 
   // Calculate unique Aminals count from proposals
-  const uniqueAminalsCount = proposals.length > 0
-    ? new Set([
-        ...proposals.map((p: any) => p.auction?.aminalOne?.id).filter(Boolean),
-        ...proposals.map((p: any) => p.auction?.aminalTwo?.id).filter(Boolean),
-      ]).size
-    : 0;
+  // Note: This would require auction data which we don't have in this context
+  // We'll use proposal count as a proxy
+  const uniqueAminalsCount = proposalCount;
 
   return {
     totalEarnings,
@@ -101,12 +108,12 @@ export const calculateGeneStats = (gene: GeneNFT) => {
 /**
  * Format gene display data
  */
-export const formatGeneForDisplay = (gene: GeneNFT) => {
+export const formatGeneForDisplay = (gene: GeneNFTWithRelations) => {
   const stats = calculateGeneStats(gene);
 
   return {
     id: gene.id,
-    tokenId: gene.tokenId,
+    tokenId: gene.tokenId.toString(),
     displayName: gene.name || `Gene #${gene.tokenId}`,
     description: gene.description || '',
     traitType: gene.traitType,
@@ -116,8 +123,8 @@ export const formatGeneForDisplay = (gene: GeneNFT) => {
     creator: gene.creator,
     stats,
     metadata: {
-      blockTimestamp: Number(gene.blockTimestamp || 0),
-      createdAt: new Date(Number(gene.blockTimestamp || 0) * 1000),
+      blockTimestamp: Number(gene.blockTimestamp || 0n),
+      createdAt: new Date(Number(gene.blockTimestamp || 0n) * 1000),
     },
   };
 };
@@ -143,9 +150,9 @@ export const getTraitTypeName = (traitType: number): string => {
  * Filter genes by search term
  */
 export const filterGenesBySearch = (
-  genes: GeneNFT[],
+  genes: GeneNFTWithRelations[],
   searchTerm: string
-): GeneNFT[] => {
+): GeneNFTWithRelations[] => {
   if (!searchTerm.trim()) {
     return genes;
   }
@@ -170,16 +177,16 @@ export const filterGenesBySearch = (
 /**
  * Group genes by trait type
  */
-export const groupGenesByTraitType = (genes: GeneNFT[]) => {
+export const groupGenesByTraitType = (genes: GeneNFTWithRelations[]) => {
   const groups = {
-    0: [] as GeneNFT[], // Background
-    1: [] as GeneNFT[], // Arm
-    2: [] as GeneNFT[], // Tail
-    3: [] as GeneNFT[], // Ears
-    4: [] as GeneNFT[], // Body
-    5: [] as GeneNFT[], // Face
-    6: [] as GeneNFT[], // Mouth
-    7: [] as GeneNFT[], // Misc
+    0: [] as GeneNFTWithRelations[], // Background
+    1: [] as GeneNFTWithRelations[], // Arm
+    2: [] as GeneNFTWithRelations[], // Tail
+    3: [] as GeneNFTWithRelations[], // Ears
+    4: [] as GeneNFTWithRelations[], // Body
+    5: [] as GeneNFTWithRelations[], // Face
+    6: [] as GeneNFTWithRelations[], // Mouth
+    7: [] as GeneNFTWithRelations[], // Misc
   };
 
   genes.forEach((gene) => {
@@ -195,7 +202,7 @@ export const groupGenesByTraitType = (genes: GeneNFT[]) => {
 /**
  * Validate gene data structure
  */
-export const validateGene = (gene: any): gene is GeneNFT => {
+export const validateGene = (gene: any): gene is GeneNFTWithRelations => {
   return (
     gene &&
     typeof gene === 'object' &&

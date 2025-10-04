@@ -7,8 +7,9 @@ import {
   CardSection,
 } from '@/components/ui/card';
 import Link from 'next/link';
-import { GeneProposal } from '../../.graphclient';
+import type { GeneProposal } from '@/hooks';
 import VoteButton from './actions/vote-button';
+
 interface GeneCardProps {
   gene: GeneProposal;
   userLove?: bigint;

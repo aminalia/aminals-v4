@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { cn } from '@/lib/utils';
-import { useUserEarnings, useUserProfile } from '@/resources/user-profile';
+import { useUserEarnings, useUserProfile } from '@/hooks';
 import { Check, Copy } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';

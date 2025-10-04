@@ -2,23 +2,20 @@ import CallSkillButton from '@/components/actions/call-skill-button';
 import FeedButton from '@/components/actions/feed-button';
 import { AminalVisualImage } from '@/components/aminal-card';
 import BreedingModal from '@/components/breeding-modal';
-import { useGenesByIds } from '@/resources/genes';
-import { useAminalByContractAddress } from '@/resources/aminals';
+import { useAminalByContractAddress, useGenesByIds } from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { GeneNftsListQuery } from '../../.graphclient';
 import Layout from '../_layout';
 
 import { Button } from '@/components/ui/button';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
 import { formatEther } from 'viem';
 import { useWaitForTransactionReceipt, useWriteContract } from 'wagmi';
-
 
 const AminalPage: NextPage = () => {
   const router = useRouter();
@@ -36,7 +33,10 @@ const AminalPage: NextPage = () => {
     data: aminal,
     isLoading,
     refetch,
-  } = useAminalByContractAddress(isRouterReady ? contractAddress : '', address || '');
+  } = useAminalByContractAddress(
+    isRouterReady ? contractAddress : '',
+    address || ''
+  );
 
   // Breeding transaction hooks
   const {
@@ -236,7 +236,7 @@ const AminalPage: NextPage = () => {
                   <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
                     <div className="text-sm text-gray-500">Love 4 U</div>
                     <div className="text-xl font-semibold text-purple-600">
-                      💜 {Number(aminal.lovers[0].love).toFixed(2)}
+                      💜 {Number(aminal.lovers.items[0].love).toFixed(2)}
                     </div>
                     <div className="text-xs text-purple-500 mt-1">
                       Your love relationship with this Aminal
@@ -346,15 +346,15 @@ const AminalPage: NextPage = () => {
                       className="w-full bg-pink-600 hover:bg-pink-700 text-white"
                       disabled={
                         !aminal?.lovers ||
-                        aminal.lovers.length === 0 ||
-                        Number(aminal.lovers[0]?.love || 0) <= 0
+                        aminal.lovers.items.length === 0 ||
+                        Number(aminal.lovers.items[0]?.love || 0) <= 0
                       }
                     >
                       🔍 Find Breeding Partner
                     </Button>
                     {(!aminal?.lovers ||
-                      aminal.lovers.length === 0 ||
-                      Number(aminal.lovers[0]?.love || 0) <= 0) && (
+                      aminal.lovers.items.length === 0 ||
+                      Number(aminal.lovers.items[0]?.love || 0) <= 0) && (
                       <p className="text-xs text-yellow-600 mt-1">
                         You must feed this Aminal first to unlock breeding.
                       </p>
@@ -415,8 +415,7 @@ const AminalPage: NextPage = () => {
                     ].map((gene, i) => {
                       // Find gene data for this trait
                       const geneInfo = geneData?.find(
-                        (g: GeneNftsListQuery['geneNFTs'][number]) =>
-                          g?.tokenId === gene.id?.toString()
+                        (g: any) => g?.tokenId === gene.id?.toString()
                       );
 
                       return (

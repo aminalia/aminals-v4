@@ -82,7 +82,9 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
                 <div className="text-xs text-muted-foreground">Love 4 U</div>
                 <div className="text-sm font-semibold text-energy-600">
                   {aminal.lovers && aminal.lovers.length > 0 ? (
-                    <>💜 {Number(aminal.lovers[0].love || 0).toFixed(1)}</>
+                    <>
+                      💜 {Number(aminal.lovers[0].love || 0).toFixed(1)}
+                    </>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}

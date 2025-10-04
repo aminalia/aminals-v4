@@ -1,6 +1,6 @@
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { cn } from '@/lib/utils';
-import { CategoryFilter, useGenes } from '@/resources/genes';
+import { CategoryFilter, useGenes } from '@/hooks';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import toast from 'react-hot-toast';

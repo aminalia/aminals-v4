@@ -389,21 +389,24 @@ export const geneAuctionRelations = relations(geneAuction, ({ one, many }) => ({
   payouts: many(geneCreatorPayout),
 }));
 
-export const geneProposalRelations = relations(geneProposal, ({ one, many }) => ({
-  auction: one(geneAuction, {
-    fields: [geneProposal.auctionId],
-    references: [geneAuction.id],
-  }),
-  geneNFT: one(geneNFT, {
-    fields: [geneProposal.geneNFTId],
-    references: [geneNFT.id],
-  }),
-  proposer: one(user, {
-    fields: [geneProposal.proposerId],
-    references: [user.id],
-  }),
-  votes: many(geneVote),
-}));
+export const geneProposalRelations = relations(
+  geneProposal,
+  ({ one, many }) => ({
+    auction: one(geneAuction, {
+      fields: [geneProposal.auctionId],
+      references: [geneAuction.id],
+    }),
+    geneNFT: one(geneNFT, {
+      fields: [geneProposal.geneNFTId],
+      references: [geneNFT.id],
+    }),
+    proposer: one(user, {
+      fields: [geneProposal.proposerId],
+      references: [user.id],
+    }),
+    votes: many(geneVote),
+  })
+);
 
 export const geneVoteRelations = relations(geneVote, ({ one }) => ({
   auction: one(geneAuction, {
@@ -420,20 +423,23 @@ export const geneVoteRelations = relations(geneVote, ({ one }) => ({
   }),
 }));
 
-export const geneCreatorPayoutRelations = relations(geneCreatorPayout, ({ one }) => ({
-  auction: one(geneAuction, {
-    fields: [geneCreatorPayout.auctionId],
-    references: [geneAuction.id],
-  }),
-  geneNFT: one(geneNFT, {
-    fields: [geneCreatorPayout.geneNFTId],
-    references: [geneNFT.id],
-  }),
-  creator: one(user, {
-    fields: [geneCreatorPayout.creatorId],
-    references: [user.id],
-  }),
-}));
+export const geneCreatorPayoutRelations = relations(
+  geneCreatorPayout,
+  ({ one }) => ({
+    auction: one(geneAuction, {
+      fields: [geneCreatorPayout.auctionId],
+      references: [geneAuction.id],
+    }),
+    geneNFT: one(geneNFT, {
+      fields: [geneCreatorPayout.geneNFTId],
+      references: [geneNFT.id],
+    }),
+    creator: one(user, {
+      fields: [geneCreatorPayout.creatorId],
+      references: [user.id],
+    }),
+  })
+);
 
 export const feedEventRelations = relations(feedEvent, ({ one }) => ({
   aminal: one(aminal, {

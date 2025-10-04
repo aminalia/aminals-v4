@@ -5,7 +5,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { genesAddress } from '@/contracts/generated';
-import { useGene } from '@/resources/genes';
+import { useGene } from '@/hooks';
 import { ExternalLink } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -73,18 +73,19 @@ const GeneDetailPage: NextPage = () => {
   const category =
     TRAIT_CATEGORIES[gene.traitType as keyof typeof TRAIT_CATEGORIES];
   // Extract unique Aminals from proposals (each proposal has 2 Aminals)
-  const uniqueAminals = gene.proposalsUsingGene
+  const proposals = gene.proposals?.items || [];
+  const uniqueAminals = proposals.length > 0
     ? Array.from(
         new Set(
           [
-            ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalOne),
-            ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalTwo),
+            ...proposals.map((p: any) => p.auction?.aminalOne).filter(Boolean),
+            ...proposals.map((p: any) => p.auction?.aminalTwo).filter(Boolean),
           ].map((a) => a.id)
         )
       ).map((id) =>
         [
-          ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalOne),
-          ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalTwo),
+          ...proposals.map((p: any) => p.auction?.aminalOne).filter(Boolean),
+          ...proposals.map((p: any) => p.auction?.aminalTwo).filter(Boolean),
         ].find((a) => a.id === id)
       )
     : [];

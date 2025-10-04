@@ -1,3 +1,4 @@
+import { PonderProvider } from '@ponder/react';
 import {
   getDefaultConfig,
   lightTheme,
@@ -10,6 +11,7 @@ import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 import { ErrorBoundary } from '../src/components/error-boundary';
+import { ponderClient } from '../src/lib/ponderClient';
 import { createQueryClient } from '../src/lib/query-client';
 import '../styles/globals.css';
 
@@ -30,26 +32,28 @@ function AminalsApp({ Component, pageProps }: AppProps) {
   return (
     <ErrorBoundary>
       <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider theme={rainbowTheme}>
-            <Component {...pageProps} />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                className: 'toast-custom',
-                style: {
-                  background: 'hsl(var(--card))',
-                  color: 'hsl(var(--card-foreground))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  boxShadow:
-                    '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                },
-              }}
-            />
-          </RainbowKitProvider>
-        </QueryClientProvider>
+        <PonderProvider client={ponderClient}>
+          <QueryClientProvider client={queryClient}>
+            <RainbowKitProvider theme={rainbowTheme}>
+              <Component {...pageProps} />
+              <Toaster
+                position="top-right"
+                toastOptions={{
+                  duration: 4000,
+                  className: 'toast-custom',
+                  style: {
+                    background: 'hsl(var(--card))',
+                    color: 'hsl(var(--card-foreground))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '8px',
+                    boxShadow:
+                      '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                  },
+                }}
+              />
+            </RainbowKitProvider>
+          </QueryClientProvider>
+        </PonderProvider>
       </WagmiProvider>
     </ErrorBoundary>
   );

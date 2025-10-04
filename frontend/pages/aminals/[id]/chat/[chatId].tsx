@@ -1,16 +1,16 @@
 import { AminalVisualImage } from '@/components/aminal-card';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, MessageCircle, Send, Sparkles } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { useQuery } from '@tanstack/react-query';
-import Layout from '../../../_layout';
-import { Send, ArrowLeft, MessageCircle, Sparkles } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { ChatSession, Message } from '../../../../lib/chat-storage';
-import { useAminalForChat } from '../../../../src/resources/aminals';
+import { useAccount } from 'wagmi';
+import { Message } from '../../../../lib/chat-storage';
+import { useAminalForChat } from '../../../../src/hooks/useAminals';
+import Layout from '../../../_layout';
 
 const useChatSession = (sessionId: string) => {
   return useQuery({
@@ -40,16 +40,18 @@ const ChatSessionPage: NextPage = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [localMessages, setLocalMessages] = useState<Message[]>([]);
-  const [displayPersonality, setDisplayPersonality] = useState<string | null>(null);
+  const [displayPersonality, setDisplayPersonality] = useState<string | null>(
+    null
+  );
   const [showPersonality, setShowPersonality] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const isRouterReady = router.isReady && !!id && !!chatId;
 
-  const {
-    data: aminal,
-    isLoading: isAminalLoading,
-  } = useAminalForChat(isRouterReady ? contractAddress : '', address || '');
+  const { data: aminal, isLoading: isAminalLoading } = useAminalForChat(
+    isRouterReady ? contractAddress : '',
+    address || ''
+  );
 
   const {
     data: session,
@@ -65,14 +67,18 @@ const ChatSessionPage: NextPage = () => {
     }
 
     // If we have local messages that aren't in the session yet, merge them
-    const sessionMessageIds = new Set(session.messages.map((msg: Message) => msg.id));
-    const newLocalMessages = localMessages.filter(msg => !sessionMessageIds.has(msg.id));
+    const sessionMessageIds = new Set(
+      session.messages.map((msg: Message) => msg.id)
+    );
+    const newLocalMessages = localMessages.filter(
+      (msg) => !sessionMessageIds.has(msg.id)
+    );
 
     const combined = [...session.messages, ...newLocalMessages];
 
     // Filter out the initial Claude message from user
-    const filteredMessages = combined.filter(msg => {
-      if (msg.sender === 'user' && msg.text === "Greetings") {
+    const filteredMessages = combined.filter((msg) => {
+      if (msg.sender === 'user' && msg.text === 'Greetings') {
         return false;
       }
       return true;
@@ -83,7 +89,7 @@ const ChatSessionPage: NextPage = () => {
       localMessages: localMessages.length,
       newLocalMessages: newLocalMessages.length,
       combined: combined.length,
-      filtered: filteredMessages.length
+      filtered: filteredMessages.length,
     });
 
     return filteredMessages;
@@ -96,8 +102,13 @@ const ChatSessionPage: NextPage = () => {
 
   // Send initial message for new sessions
   useEffect(() => {
-    if (session && session.messages.length === 0 && localMessages.length === 0 && !isLoading) {
-      const initialMessage = "Greetings";
+    if (
+      session &&
+      session.messages.length === 0 &&
+      localMessages.length === 0 &&
+      !isLoading
+    ) {
+      const initialMessage = 'Greetings';
 
       // Prepare gene IDs for personality generation
       const geneIds = {
@@ -132,32 +143,42 @@ const ChatSessionPage: NextPage = () => {
           },
         }),
       })
-      .then(response => response.json())
-      .then(data => {
-        if (data.response) {
-          // Only show the AI response, not the initial user message
-          setLocalMessages([data.response]);
-        }
-        setTimeout(() => {
-          refetchSession();
-          setTimeout(() => setLocalMessages([]), 500);
-        }, 1000);
-      })
-      .catch(error => {
-        console.error('Error sending initial message:', error);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.response) {
+            // Only show the AI response, not the initial user message
+            setLocalMessages([data.response]);
+          }
+          setTimeout(() => {
+            refetchSession();
+            setTimeout(() => setLocalMessages([]), 500);
+          }, 1000);
+        })
+        .catch((error) => {
+          console.error('Error sending initial message:', error);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
-  }, [session, aminal, localMessages.length, sessionId, contractAddress, isLoading, refetchSession]);
-
+  }, [
+    session,
+    aminal,
+    localMessages.length,
+    sessionId,
+    contractAddress,
+    isLoading,
+    refetchSession,
+  ]);
 
   // Set personality when session loads
   useEffect(() => {
     if (session && session.personality && !displayPersonality) {
       setDisplayPersonality(session.personality);
-      console.log('🎭 Using stored personality from session:', session.personality);
+      console.log(
+        '🎭 Using stored personality from session:',
+        session.personality
+      );
     }
   }, [session, displayPersonality]);
 
@@ -173,7 +194,7 @@ const ChatSessionPage: NextPage = () => {
 
     // Optimistically add the message
     console.log('💬 Adding optimistic user message:', tempUserMessage);
-    setLocalMessages(prev => {
+    setLocalMessages((prev) => {
       const updated = [...prev, tempUserMessage];
       console.log('💬 Updated local messages:', updated.length);
       return updated;
@@ -202,7 +223,7 @@ const ChatSessionPage: NextPage = () => {
         body: JSON.stringify({
           message: inputMessage,
           sessionId: sessionId,
-          loveAmount: Number(aminal.lovers?.[0]?.love || 0),
+          loveAmount: Number(aminal.lovers.items?.[0]?.love || 0),
           aminalAddress: contractAddress,
           geneIds,
           aminalStats: {
@@ -221,8 +242,10 @@ const ChatSessionPage: NextPage = () => {
       }
 
       // Replace temp message with real messages from server
-      setLocalMessages(prev => {
-        const filteredMessages = prev.filter(msg => msg.id !== tempUserMessage.id);
+      setLocalMessages((prev) => {
+        const filteredMessages = prev.filter(
+          (msg) => msg.id !== tempUserMessage.id
+        );
         return [
           ...filteredMessages,
           data.message, // Real user message from server
@@ -240,7 +263,9 @@ const ChatSessionPage: NextPage = () => {
       console.error('Chat error:', error);
       toast.error('Failed to send message. Please try again.');
       // Remove the optimistic message on error
-      setLocalMessages(prev => prev.filter(msg => msg.id !== tempUserMessage.id));
+      setLocalMessages((prev) =>
+        prev.filter((msg) => msg.id !== tempUserMessage.id)
+      );
     } finally {
       setIsLoading(false);
     }
@@ -316,16 +341,16 @@ const ChatSessionPage: NextPage = () => {
           </div>
           <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
             <span className="hidden sm:inline">
-              {aminal.lovers?.[0]?.love ?
-                `Love 4 U: ${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
-                'New friend 👋'
-              }
+              {aminal.lovers.items?.[0]?.love
+                ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
+                    1
+                  )} 💜`
+                : 'New friend 👋'}
             </span>
             <span className="sm:hidden">
-              {aminal.lovers?.[0]?.love ?
-                `${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
-                '👋'
-              }
+              {aminal.lovers.items?.[0]?.love
+                ? `${Number(aminal.lovers.items[0].love).toFixed(1)} 💜`
+                : '👋'}
             </span>
             {displayPersonality && (
               <button
@@ -348,7 +373,9 @@ const ChatSessionPage: NextPage = () => {
                 <h4 className="text-sm font-medium text-purple-900 mb-1">
                   Personality
                 </h4>
-                <p className="text-sm text-purple-700 leading-relaxed">{displayPersonality}</p>
+                <p className="text-sm text-purple-700 leading-relaxed">
+                  {displayPersonality}
+                </p>
               </div>
             </div>
           </div>
@@ -359,7 +386,9 @@ const ChatSessionPage: NextPage = () => {
           {messages.map((message: Message) => (
             <div
               key={message.id}
-              className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${
+                message.sender === 'user' ? 'justify-end' : 'justify-start'
+              }`}
             >
               <div
                 className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-2xl ${
@@ -368,13 +397,19 @@ const ChatSessionPage: NextPage = () => {
                     : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
                 }`}
               >
-                <p className="text-sm leading-relaxed break-words whitespace-pre-wrap font-mono">{message.text}</p>
-                <p className={`text-xs mt-1 ${
-                  message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
-                }`}>
+                <p className="text-sm leading-relaxed break-words whitespace-pre-wrap font-mono">
+                  {message.text}
+                </p>
+                <p
+                  className={`text-xs mt-1 ${
+                    message.sender === 'user'
+                      ? 'text-blue-100'
+                      : 'text-gray-500'
+                  }`}
+                >
                   {new Date(message.timestamp).toLocaleTimeString([], {
                     hour: '2-digit',
-                    minute: '2-digit'
+                    minute: '2-digit',
                   })}
                 </p>
               </div>
@@ -386,8 +421,14 @@ const ChatSessionPage: NextPage = () => {
               <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-200 px-3 sm:px-4 py-2">
                 <div className="flex items-center gap-1">
                   <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.1s' }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    style={{ animationDelay: '0.2s' }}
+                  ></div>
                 </div>
               </div>
             </div>

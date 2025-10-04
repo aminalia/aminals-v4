@@ -8,29 +8,31 @@
 import { ponder } from "ponder:registry";
 import type { Address, Hex } from "viem";
 import {
-  factory,
   aminal,
-  user,
-  relationship,
-  geneNFT,
+  factory,
+  feedEvent,
   geneAuction,
+  geneCreatorPayout,
+  geneNFT,
   geneProposal,
   geneVote,
-  geneCreatorPayout,
-  feedEvent,
+  relationship,
   skillUsedEvent,
+  user,
 } from "../ponder.schema";
 import {
+  makeAuctionId,
   makeEventId,
+  makeGeneNFTId,
+  makeProposalId,
   makeRelationshipId,
   normalizeAddress,
   normalizeTraitArray,
-  makeGeneNFTId,
-  makeAuctionId,
-  makeProposalId,
 } from "./utils/helpers";
-import { assertValidTraitArray, assertValidParentGeneIds } from "./utils/validation";
-import { CONTRACTS } from "./utils/constants";
+import {
+  assertValidParentGeneIds,
+  assertValidTraitArray,
+} from "./utils/validation";
 
 // ============================================================================
 // FACTORY EVENTS
@@ -128,7 +130,8 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
  * Updates Aminal state and creates feed event
  */
 ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
-  const { sender, loveGained, love, totalLove, energyGained, energy } = event.args;
+  const { sender, loveGained, love, totalLove, energyGained, energy } =
+    event.args;
   const { db } = context;
 
   const aminalId = normalizeAddress(event.log.address);
@@ -144,13 +147,11 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Update Aminal state
-  await db
-    .update(aminal, { id: aminalId })
-    .set({
-      energy: energy,
-      totalLove: totalLove,
-      ethBalance: event.transaction.value,
-    });
+  await db.update(aminal, { id: aminalId }).set({
+    energy: energy,
+    totalLove: totalLove,
+    ethBalance: event.transaction.value,
+  });
 
   // Create or update relationship (user's love for this Aminal)
   const relationshipId = makeRelationshipId(sender, event.log.address);
@@ -189,11 +190,11 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
  * Creates skill usage event
  */
 ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
-  const { sender, energyCost, skillAddress, selector } = event.args;
+  const { user: userAddress, cost, target, selector } = event.args;
   const { db } = context;
 
   const aminalId = normalizeAddress(event.log.address);
-  const callerId = normalizeAddress(sender);
+  const callerId = normalizeAddress(userAddress);
 
   // Ensure user exists
   await db
@@ -207,22 +208,20 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
   // Get current energy and subtract cost
   const aminalRecord = await db.find(aminal, { id: aminalId });
 
-  const newEnergy = (aminalRecord?.energy ?? 0n) - energyCost;
+  const newEnergy = (aminalRecord?.energy ?? 0n) - cost;
   const finalEnergy = newEnergy < 0n ? 0n : newEnergy;
 
   // Update Aminal energy
-  await db
-    .update(aminal, { id: aminalId })
-    .set({
-      energy: finalEnergy,
-    });
+  await db.update(aminal, { id: aminalId }).set({
+    energy: finalEnergy,
+  });
 
   // Create skill used event
   await db.insert(skillUsedEvent).values({
     id: makeEventId(event.transaction.hash, event.log.logIndex),
     aminalId,
     callerId,
-    skillAddress: normalizeAddress(skillAddress),
+    skillAddress: normalizeAddress(target),
     selector: selector as Hex,
     newEnergy: finalEnergy,
     blockNumber: event.block.number,
@@ -236,17 +235,15 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
  * Updates Aminal energy when lost through other means
  */
 ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
-  const { owner, energyLost, newEnergy } = event.args;
+  const { user, amount, remainingEnergy } = event.args;
   const { db } = context;
 
   const aminalId = normalizeAddress(event.log.address);
 
   // Update Aminal energy
-  await db
-    .update(aminal, { id: aminalId })
-    .set({
-      energy: newEnergy,
-    });
+  await db.update(aminal, { id: aminalId }).set({
+    energy: remainingEnergy,
+  });
 });
 
 // ============================================================================
@@ -258,8 +255,8 @@ ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
  * Creates new GeneNFT entity when gene is registered
  */
 ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
-  const { tokenId, creator, traitType, svg } = event.args;
-  const { db, client } = context;
+  const { geneId, creator, category, svg } = event.args;
+  const { db, client, contracts } = context;
 
   const creatorId = normalizeAddress(creator);
 
@@ -279,7 +276,7 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
   try {
     // Fetch gene info from Genes contract
     const geneInfo = await client.readContract({
-      address: CONTRACTS.Genes as Address,
+      address: contracts.Genes.address as Address,
       abi: [
         {
           type: "function",
@@ -295,21 +292,21 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
         },
       ],
       functionName: "getGeneInfo",
-      args: [tokenId],
+      args: [geneId],
     });
 
     const [geneName, geneDesc] = geneInfo as [string, string, string, number];
     name = geneName;
     description = geneDesc;
   } catch (error) {
-    console.log(`Could not fetch gene metadata for token ${tokenId}`);
+    console.log(`Could not fetch gene metadata for token ${geneId}`);
   }
 
   // Create GeneNFT entity
   await db.insert(geneNFT).values({
-    id: makeGeneNFTId(tokenId),
-    tokenId,
-    traitType: Number(traitType),
+    id: makeGeneNFTId(geneId),
+    tokenId: geneId,
+    traitType: Number(category),
     ownerId: creatorId, // Creator is initial owner
     creatorId,
     svg,
@@ -356,11 +353,9 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Update GeneNFT owner
-  await db
-    .update(geneNFT, { id: makeGeneNFTId(tokenId) })
-    .set({
-      ownerId: newOwnerId,
-    });
+  await db.update(geneNFT, { id: makeGeneNFTId(tokenId) }).set({
+    ownerId: newOwnerId,
+  });
 });
 
 // ============================================================================
@@ -373,10 +368,10 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
  */
 ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
   const { auctionId, aminalOne, aminalTwo, totalLove } = event.args;
-  const { db, client } = context;
+  const { db, client, contracts } = context;
 
   // Resolve Aminal indices to addresses using factory contract
-  const factoryAddress = CONTRACTS.AminalFactory as Address;
+  const factoryAddress = contracts.AminalFactory.address as Address;
 
   let aminalOneAddress: Address;
   let aminalTwoAddress: Address;
@@ -412,7 +407,10 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
       args: [aminalTwo],
     })) as Address;
   } catch (error) {
-    console.error(`Failed to resolve Aminal addresses for auction ${auctionId}:`, error);
+    console.error(
+      `Failed to resolve Aminal addresses for auction ${auctionId}:`,
+      error
+    );
     return;
   }
 
@@ -458,15 +456,13 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
  * Marks auction as finished
  */
 ponder.on("GeneAuction:VotingSettled", async ({ event, context }) => {
-  const { auctionId, winningGeneIds, childIndex } = event.args;
+  const { auctionId, winningGeneIds } = event.args;
   const { db } = context;
 
   // Update auction as finished
-  await db
-    .update(geneAuction, { id: makeAuctionId(auctionId) })
-    .set({
-      finished: true,
-    });
+  await db.update(geneAuction, { id: makeAuctionId(auctionId) }).set({
+    finished: true,
+  });
 });
 
 /**
@@ -509,7 +505,7 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
  * Records individual vote on a gene proposal
  */
 ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
-  const { auctionId, category, geneId, voter, voteWeight } = event.args;
+  const { auctionId, category, geneId, voter, userVotingPower } = event.args;
   const { db } = context;
 
   const voterId = normalizeAddress(voter);
@@ -533,18 +529,16 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
     proposalId,
     voterId,
     isRemoveVote: false,
-    loveAmount: voteWeight,
+    loveAmount: userVotingPower,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,
   });
 
   // Update proposal vote count
-  await db
-    .update(geneProposal, { id: proposalId })
-    .set((row) => ({
-      loveVotes: row.loveVotes + voteWeight,
-    }));
+  await db.update(geneProposal, { id: proposalId }).set((row) => ({
+    loveVotes: row.loveVotes + userVotingPower,
+  }));
 });
 
 /**
@@ -583,11 +577,9 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
   });
 
   // Update proposal remove vote count
-  await db
-    .update(geneProposal, { id: proposalId })
-    .set((row) => ({
-      removeVotes: row.removeVotes + voteWeight,
-    }));
+  await db.update(geneProposal, { id: proposalId }).set((row) => ({
+    removeVotes: row.removeVotes + voteWeight,
+  }));
 });
 
 /**
@@ -601,11 +593,9 @@ ponder.on("GeneAuction:GeneRemoved", async ({ event, context }) => {
   const proposalId = makeProposalId(auctionId, Number(category), geneId);
 
   // Mark proposal as removed
-  await db
-    .update(geneProposal, { id: proposalId })
-    .set({
-      removed: true,
-    });
+  await db.update(geneProposal, { id: proposalId }).set({
+    removed: true,
+  });
 });
 
 /**
@@ -653,7 +643,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     const geneId = geneIds[i];
 
     // Skip zero gene IDs (no vote for this category)
-    if (geneId === 0n) {
+    if (!geneId || geneId === 0n) {
       continue;
     }
 
@@ -667,7 +657,8 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
       const parent1TraitId = parentGeneIds[i]; // Parent 1: indices 0-7
       const parent2TraitId = parentGeneIds[i + 8]; // Parent 2: indices 8-15
 
-      const isParentTrait = geneId === parent1TraitId || geneId === parent2TraitId;
+      const isParentTrait =
+        geneId === parent1TraitId || geneId === parent2TraitId;
 
       if (!isParentTrait) {
         console.warn(
@@ -697,7 +688,10 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     }
 
     // Create vote entity for this trait
-    const voteId = makeEventId(event.transaction.hash, BigInt(event.log.logIndex) + BigInt(i));
+    const voteId = makeEventId(
+      event.transaction.hash,
+      BigInt(event.log.logIndex) + BigInt(i)
+    );
 
     await db.insert(geneVote).values({
       id: voteId,
@@ -712,11 +706,9 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     });
 
     // Update proposal vote count
-    await db
-      .update(geneProposal, { id: proposalId })
-      .set((row) => ({
-        loveVotes: row.loveVotes + userVotingPower,
-      }));
+    await db.update(geneProposal, { id: proposalId }).set((row) => ({
+      loveVotes: row.loveVotes + userVotingPower,
+    }));
   }
 });
 
@@ -754,9 +746,7 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
   });
 
   // Update gene NFT total earnings
-  await db
-    .update(geneNFT, { id: makeGeneNFTId(geneId) })
-    .set((row) => ({
-      totalEarnings: row.totalEarnings + amount,
-    }));
+  await db.update(geneNFT, { id: makeGeneNFTId(geneId) }).set((row) => ({
+    totalEarnings: row.totalEarnings + amount,
+  }));
 });

@@ -2,112 +2,6 @@
 
 High-performance blockchain indexer for the Aminals protocol using [Ponder.sh](https://ponder.sh).
 
-## 🎯 Project Status
-
-**Planning Phase Complete** ✅
-
-All architecture and design documents are ready. Ready to begin implementation.
-
-## 📚 Documentation
-
-### Planning Documents (Read in Order)
-
-1. **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Architecture overview and design decisions
-2. **[TRAIT_ORDER.md](./TRAIT_ORDER.md)** - **CRITICAL**: Trait array order specification
-3. **[IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md)** - Step-by-step implementation plan
-4. **[PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)** - File structure and templates
-5. **[SCHEMA_COMPARISON.md](./SCHEMA_COMPARISON.md)** - Migration guide from The Graph
-
-### Quick Reference
-
-- **Contract Addresses**: See IMPLEMENTATION_GUIDE.md
-- **Trait Order**: `[BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]` (indices 0-7)
-- **Network**: Sepolia testnet (Chain ID: 11155111)
-- **Start Block**: 8828041
-
-## 🚀 Implementation Plan
-
-### Phase 1: Setup ⚙️ (30 min)
-- Initialize Ponder project
-- Configure contracts and network
-- Test connection to Sepolia
-
-### Phase 2: Schema 📋 (15 min)
-- Finalize `ponder.schema.ts`
-- Generate types
-- Verify compilation
-
-### Phase 3: Core Entities 🏭 (1 hour)
-- AminalFactory (spawning)
-- Aminal events (feed, skill, energy)
-- User relationships
-
-### Phase 4: Gene System 🧬 (30 min)
-- Gene NFT creation
-- Gene NFT transfers
-- Ownership tracking
-
-### Phase 5: Auction System 🎪 (2 hours)
-- Auction creation
-- Gene proposals
-- Voting (simple + bulk)
-- Settlement and payouts
-
-### Phase 6: Testing ✅ (1 hour)
-- Compare with Graph indexer
-- Validate all queries
-- Performance testing
-
-### Phase 7: Frontend Migration 🖥️ (1 hour)
-- Update GraphQL endpoint
-- Update trait access pattern
-- Regenerate types
-- Test all pages
-
-**Total Estimated Time**: ~6.5 hours
-
-## 🔑 Key Design Decisions
-
-### 1. Trait Array (Breaking Change)
-
-**OLD (The Graph)**:
-```typescript
-{
-  backId: "123",
-  armId: "456",
-  tailId: "789",
-  // ... 8 separate fields
-}
-```
-
-**NEW (Ponder)**:
-```typescript
-{
-  traits: ["123", "456", "789", ...] // Array of 8 gene IDs
-}
-```
-
-**Rationale**: More maintainable, type-safe, and flexible for future changes.
-
-### 2. Performance Optimizations
-
-- ✅ Cached `parentGeneIds` in auctions (eliminates 2 entity loads per bulk vote)
-- ✅ Explicit database indexes on common query patterns
-- ✅ Separated immutable events from mutable state
-
-### 3. No Backwards Compatibility
-
-- Forward-only migration
-- Clean, modern codebase
-- Full TypeScript type safety
-- Breaking changes are acceptable (documented)
-
-### 4. Local Development First
-
-- Run locally against Sepolia RPC
-- Use PGlite for fast local database
-- Deploy to production later
-
 ## 🏗️ Architecture
 
 ### Contracts Indexed
@@ -147,6 +41,115 @@ All architecture and design documents are ready. Ready to begin implementation.
    └───────┘
 ```
 
+## 📁 Project Structure
+
+### Directory Layout
+
+```
+ponder/
+├── .gitignore              # Git ignore rules
+├── .env.local              # Local environment variables (not committed)
+├── package.json            # Dependencies and scripts
+├── tsconfig.json           # TypeScript configuration
+├── ponder.config.ts        # Main Ponder configuration
+├── ponder.schema.ts        # Database schema definition
+│
+├── src/                    # Source code
+│   ├── index.ts           # Main event handlers
+│   │
+│   └── utils/             # Utility functions
+│       ├── constants.ts   # Contract addresses, trait constants
+│       ├── helpers.ts     # Shared helper functions
+│       └── validation.ts  # Validation functions
+│
+├── .ponder/               # Ponder internal (generated, gitignored)
+│   ├── sqlite/           # Local database
+│   └── cache/            # Event cache
+│
+└── docs/                  # Documentation (planning phase)
+    ├── ARCHITECTURE.md
+    ├── IMPLEMENTATION_GUIDE.md
+    ├── SCHEMA_COMPARISON.md
+    └── TRAIT_ORDER.md
+```
+
+### File Responsibilities
+
+#### Configuration Files
+
+**`ponder.config.ts`** - Main configuration for Ponder
+- Network configuration (Sepolia RPC)
+- Contract addresses and ABIs
+- Start blocks and event filters
+
+**`ponder.schema.ts`** - Database schema definition
+- All table definitions
+- Column types and constraints
+- Relationship definitions and indexes
+
+#### Source Code
+
+**`src/index.ts`** - Main event handler registry
+```typescript
+import { ponder } from "@/generated";
+
+ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
+  // Handler logic
+});
+
+ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
+  // Handler logic
+});
+```
+
+**`src/utils/constants.ts`** - Shared constants
+```typescript
+// Trait indices - CRITICAL ORDER
+export const TRAIT_BACK = 0;
+export const TRAIT_ARM = 1;
+export const TRAIT_TAIL = 2;
+export const TRAIT_EARS = 3;
+export const TRAIT_BODY = 4;
+export const TRAIT_FACE = 5;
+export const TRAIT_MOUTH = 6;
+export const TRAIT_MISC = 7;
+
+export const TRAIT_NAMES = [
+  "BACK", "ARM", "TAIL", "EARS",
+  "BODY", "FACE", "MOUTH", "MISC"
+] as const;
+```
+
+**`src/utils/helpers.ts`** - Reusable utility functions
+```typescript
+import type { Context } from "@/generated";
+
+export async function getOrCreateUser(
+  context: Context,
+  address: `0x${string}`
+) {
+  let user = await context.db.users.findUnique({ id: address });
+  if (!user) {
+    user = await context.db.users.create({
+      id: address,
+      data: { address },
+    });
+  }
+  return user;
+}
+```
+
+**`src/utils/validation.ts`** - Data validation functions
+```typescript
+export function validateTraits(traits: bigint[]): void {
+  if (traits.length !== 8) {
+    throw new Error(
+      `Invalid traits array length: ${traits.length}, expected 8`
+    );
+  }
+}
+```
+
 ## 🛠️ Development
 
 ### Prerequisites
@@ -177,11 +180,18 @@ open http://localhost:42069
 ### Commands
 
 ```bash
-npm dev      # Start dev server (hot reload)
-npm start    # Start production indexer
-npm serve    # Serve HTTP API only
-npm codegen  # Generate types (auto in dev)
+npm dev        # Start development server (hot reload)
+npm start      # Start production indexer
+npm serve      # Start HTTP server only (no indexing)
+npm codegen    # Generate types (usually automatic)
 ```
+
+### Environment Variables
+
+- `PONDER_RPC_URL_11155111` - Sepolia RPC URL
+- `PONDER_PORT` - Change API port (default 42069)
+- `PONDER_LOG_LEVEL` - debug | info | warn | error
+- `DATABASE_URL` - Postgres connection (optional)
 
 ## 📊 Schema Overview
 
@@ -295,6 +305,45 @@ See [TRAIT_ORDER.md](./TRAIT_ORDER.md) for full specification.
 ### Performance Optimization
 The `parentGeneIds` field in auctions caches parent traits to avoid loading Aminal entities during bulk vote processing. This is critical for performance with 100+ vote events.
 
+### Key Concepts
+- **Trait Order**: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
+- **Parent Gene IDs**: 16 elements (8 from each parent)
+- **Composite IDs**: Use tx hash + log index or meaningful strings
+- **Validation**: Always validate array lengths
+
+## 🏆 Best Practices
+
+### Code Organization
+- ✅ Keep handlers in `src/index.ts` (or split by contract if it gets large)
+- ✅ Extract reusable logic to `src/utils/helpers.ts`
+- ✅ Keep constants in one place (`src/utils/constants.ts`)
+- ✅ Add JSDoc comments to all exported functions
+- ✅ Use TypeScript strict mode
+
+### Error Handling
+- ✅ Check if entities exist before accessing
+- ✅ Validate array lengths (traits, parentGeneIds)
+- ✅ Log errors with context (event name, tx hash)
+- ✅ Don't throw unless critical - log and skip bad data
+
+### Performance
+- ✅ Use cached data (parentGeneIds) to avoid extra queries
+- ✅ Batch database operations when possible
+- ✅ Add indexes for frequently queried fields
+- ✅ Avoid loading unnecessary relationships
+
+### Documentation
+- ✅ Document trait order wherever traits are used
+- ✅ Add comments explaining complex logic
+- ✅ Reference Solidity event signatures in handlers
+
+## 🐛 Debugging
+
+1. **Check logs**: Terminal running `npm dev` shows all logs
+2. **Add console.log**: In any handler
+3. **Check database**: Use GraphiQL to query data
+4. **Reset state**: Delete `.ponder/` and restart
+
 ## 🧪 Testing Checklist
 
 - [ ] All 14 event types indexed correctly
@@ -319,28 +368,22 @@ When ready for production:
 6. Deploy frontend
 7. Monitor logs and performance
 
-## 🤝 Contributing
+## 📚 Quick Reference
 
-### Code Standards
+### Ports
+- `42069` - GraphQL API (default)
+- GraphiQL available at: `http://localhost:42069`
 
-- ✅ Use TypeScript strict mode
-- ✅ Use constants for magic numbers
-- ✅ Document trait order in all relevant files
-- ✅ Validate array lengths (traits, parentGeneIds)
-- ✅ Add JSDoc comments to exported functions
-- ✅ Handle errors gracefully (log and skip vs throw)
+### Important Files
+- `ponder.config.ts` - Contract config
+- `ponder.schema.ts` - Database schema
+- `src/index.ts` - Event handlers
+- `src/utils/constants.ts` - Trait constants
+- `.env.local` - Environment variables
 
-### Before Committing
-
-- [ ] Code compiles without errors
-- [ ] All handlers tested with real data
-- [ ] Queries return expected results
-- [ ] Documentation updated if needed
-- [ ] No console.logs left in code (or use proper logger)
-
-## 📝 License
-
-Same as parent Aminals project.
+### Generated Files (by Ponder)
+- `.ponder/` - SQLite database, cache, logs (gitignored)
+- `@/generated` - TypeScript types from schema and config
 
 ## 🔗 Resources
 
@@ -349,10 +392,6 @@ Same as parent Aminals project.
 - [Current Graph Indexer](../graph/)
 - [Frontend](../frontend/)
 
----
+## 📝 License
 
-**Ready to implement?** Start with [IMPLEMENTATION_GUIDE.md](./IMPLEMENTATION_GUIDE.md) Phase 1.
-
-**Questions?** Review [ARCHITECTURE.md](./ARCHITECTURE.md) for design rationale.
-
-**Need help?** Check [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) for file templates.
+Same as parent Aminals project.

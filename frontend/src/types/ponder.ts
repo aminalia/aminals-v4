@@ -1,0 +1,111 @@
+/**
+ * Ponder Schema Types
+ *
+ * Type-safe exports from the Ponder schema.
+ * Use these instead of 'any' for full type safety.
+ */
+
+import * as schema from '../../../ponder/ponder.schema';
+
+// ============================================================================
+// Base Table Types (using Ponder's $inferSelect)
+// ============================================================================
+
+export type Factory = typeof schema.factory.$inferSelect;
+export type Aminal = typeof schema.aminal.$inferSelect;
+export type User = typeof schema.user.$inferSelect;
+export type Relationship = typeof schema.relationship.$inferSelect;
+export type GeneNFT = typeof schema.geneNFT.$inferSelect;
+export type GeneAuction = typeof schema.geneAuction.$inferSelect;
+export type GeneProposal = typeof schema.geneProposal.$inferSelect;
+export type GeneVote = typeof schema.geneVote.$inferSelect;
+export type GeneCreatorPayout = typeof schema.geneCreatorPayout.$inferSelect;
+export type FeedEvent = typeof schema.feedEvent.$inferSelect;
+export type SkillUsedEvent = typeof schema.skillUsedEvent.$inferSelect;
+
+// ============================================================================
+// Extended Types with Relations
+// ============================================================================
+
+export interface AminalWithRelations extends Aminal {
+  lovers?: Relationship[];
+  userLove?: bigint;
+  parentOne?: Aminal | null;
+  parentTwo?: Aminal | null;
+  feeds?: FeedEvent[];
+  skillsUsed?: SkillUsedEvent[];
+}
+
+export interface GeneNFTWithRelations extends GeneNFT {
+  owner?: User;
+  creator?: User;
+  proposals?: GeneProposal[];
+  payouts?: GeneCreatorPayout[];
+}
+
+export interface GeneAuctionWithRelations extends GeneAuction {
+  proposals?: GeneProposal[];
+  aminalOne?: Aminal;
+  aminalTwo?: Aminal;
+  childAminal?: Aminal | null;
+  votes?: GeneVote[];
+  payouts?: GeneCreatorPayout[];
+}
+
+export interface GeneProposalWithRelations extends GeneProposal {
+  geneNFT?: GeneNFT;
+  auction?: GeneAuction;
+  proposer?: User;
+  votes?: GeneVote[];
+}
+
+export interface UserWithRelations extends User {
+  lovers?: Relationship[];
+  genesCreated?: GeneNFT[];
+  genesOwned?: GeneNFT[];
+  geneVotes?: GeneVote[];
+  proposedGenes?: GeneProposal[];
+  receivedPayouts?: GeneCreatorPayout[];
+  feedEvents?: FeedEvent[];
+  skillEvents?: SkillUsedEvent[];
+}
+
+// ============================================================================
+// Query Result Types (for arrays)
+// ============================================================================
+
+export type AminalList = Aminal[];
+export type GeneNFTList = GeneNFT[];
+export type GeneAuctionList = GeneAuction[];
+export type GeneProposalList = GeneProposal[];
+
+// ============================================================================
+// Single Item Types (for queries that return one item)
+// ============================================================================
+
+export type AminalSingle = Aminal | null | undefined;
+export type GeneNFTSingle = GeneNFT | null | undefined;
+export type GeneAuctionSingle = GeneAuction | null | undefined;
+export type UserSingle = User | null | undefined;
+
+// ============================================================================
+// Helper Types
+// ============================================================================
+
+// Trait array type (8 bigints)
+export type TraitArray = readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
+
+// Trait type enum (matches schema)
+export enum TraitType {
+  BACK = 0,
+  ARM = 1,
+  TAIL = 2,
+  EARS = 3,
+  BODY = 4,
+  FACE = 5,
+  MOUTH = 6,
+  MISC = 7,
+}
+
+// Helper to extract array element type
+export type ArrayElement<T> = T extends (infer U)[] ? U : T;

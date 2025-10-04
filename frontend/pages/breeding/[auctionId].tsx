@@ -8,8 +8,7 @@ import TraitSelector, {
   TraitParts,
 } from '@/components/trait-selector';
 import VoteStats from '@/components/vote-stats';
-import { useAuction, useAuctionProposeGenes } from '@/resources/auctions';
-import { useGenesByIds } from '@/resources/genes';
+import { useAuction, useAuctionProposeGenes, useGenesByIds } from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';

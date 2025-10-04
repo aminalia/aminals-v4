@@ -1,8 +1,0 @@
-sources:
-  - name: ponder
-    handler:
-      graphql:
-        endpoint: http://localhost:42069/graphql
-
-documents:
-  - ./src/**/*.graphql

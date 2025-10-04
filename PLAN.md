@@ -1,79 +1,15 @@
 # Plan
 
-- [ ] Make issues / resolve issues from security audit
-- [ ] Switch to ponder (will hopefully solve many bugs)
+- [-] Switch to ponder (will hopefully solve many bugs)
+- [ ] Project cleanup (remove dead docs, graph etc.)
+- [ ] Resolve issues from security audit
 
-# Indexer Cleanup
+# ponder
 
-✅ **COMPLETED** - Graph indexing optimizations implemented (2025-10-03)
+- Fix love4u
+- fix genes
+- TEST
 
-## Implemented Optimizations
-
-### Phase 1: High-Impact Performance Improvements (30-40% faster bulk votes)
-- ✅ Added `parentGeneIds` cache to GeneAuction schema
-- ✅ Updated `handleVotingCreated` to store parent trait IDs on auction creation
-- ✅ Updated `handleBulkVoteCast` to use cached traits (eliminates 2 entity loads per vote)
-
-### Phase 2: Schema Cleanup (5-10% reduction in write operations)
-- ✅ Removed `BreedAminalEvent` entity entirely (not queried by frontend)
-- ✅ Removed unused AminalFactory fields: `geneAuction`, `genes`, `loveVRGDA`, `initialAminalSpawned`, `blockNumber`, `blockTimestamp`, `transactionHash`
-- ✅ Removed unused Aminal derived relationships: `breedingEventsAsParentOne`, `breedingEventsAsParentTwo`, `auctions`
-- ✅ Removed unused GeneAuction metadata: `winningGeneIds`, `endBlockNumber`, `endBlockTimestamp`, `endTransactionHash`
-- ✅ Removed `User.geneProposals` field (not queried)
-
-### Expected Performance Impact
-- **Bulk vote processing**: 30-40% faster (primary bottleneck)
-- **Overall indexing**: 10-20% improvement
-- **Write operations**: 5-10% reduction
-
-### Documentation
-- See `GRAPH_INDEXING_REPORT.md` for full analysis
-- See `GRAPH_OPTIMIZATION_SUMMARY.md` for quick reference
-- See `FRONTEND_VERIFICATION_REPORT.md` for frontend impact analysis
-
-### Future Optimizations (Phase 3 - Not Yet Implemented)
-- ⚠️ Add `first` limits to unbounded relationships (requires frontend testing)
-- ⚠️ Optimize `proposalsUsingGene` queries to fetch only IDs for list views (requires frontend refactor)
-
-# Try ponder
-
-## Planning Phase Complete ✅ (2025-10-03)
-
-Created comprehensive architecture and implementation plan for migrating from The Graph to Ponder.sh.
-
-### Documentation Created
-- ✅ `ponder/README.md` - Project overview and quick start
-- ✅ `ponder/ARCHITECTURE.md` - Complete architecture design
-- ✅ `ponder/TRAIT_ORDER.md` - **CRITICAL** trait array order specification
-- ✅ `ponder/IMPLEMENTATION_GUIDE.md` - Step-by-step implementation plan (7 phases)
-- ✅ `ponder/PROJECT_STRUCTURE.md` - File structure and templates
-- ✅ `ponder/SCHEMA_COMPARISON.md` - Migration guide from The Graph
-- ✅ `ponder/ponder.schema.ts.draft` - Complete schema definition
-
-### Key Decisions
-1. **Trait Array**: Breaking change - 8 separate fields → single array (order documented)
-2. **No Backwards Compatibility**: Clean, forward-only migration
-3. **Local First**: Run locally against Sepolia RPC using PGlite
-4. **High Priority**: Complete today with clean, maintainable code
-5. **Performance**: Keep parentGeneIds optimization from Graph
-
-### Implementation Phases
-1. ⚙️ Setup (30 min) - Project initialization
-2. 📋 Schema (15 min) - Finalize database schema
-3. 🏭 Core Entities (1 hr) - Factory & Aminal handlers
-4. 🧬 Gene System (30 min) - Gene NFTs and transfers
-5. 🎪 Auction System (2 hrs) - Complex voting and payouts
-6. ✅ Testing (1 hr) - Validation and comparison
-7. 🖥️ Frontend (1 hr) - Update queries and trait access
-
-**Est. Total**: ~6.5 hours
-
-### Next Steps
-Ready to begin implementation. Start with Phase 1 in `ponder/IMPLEMENTATION_GUIDE.md`.
-
-
-
-Create a new `ponder` directory, and let's create an indexer similar to the functionality we've already created with the graph in @graph/
 
 ## New Features Ideas
 

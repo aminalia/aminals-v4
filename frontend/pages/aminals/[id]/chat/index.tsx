@@ -1,17 +1,16 @@
 import { AminalVisualImage } from '@/components/aminal-card';
 import { Button } from '@/components/ui/button';
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Clock, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState, useEffect, useMemo } from 'react';
-import { useAccount } from 'wagmi';
-import { useQuery } from '@tanstack/react-query';
-import Layout from '../../../_layout';
-import { Plus, MessageCircle, ArrowLeft, Clock, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useAccount } from 'wagmi';
 import { ChatSession } from '../../../../lib/chat-storage';
-import { useAminalForChat } from '../../../../src/resources/aminals';
-
+import { useAminalForChat } from '../../../../src/hooks/useAminals';
+import Layout from '../../../_layout';
 
 const useChatSessions = (aminalAddress: string, userAddress: string) => {
   return useQuery({
@@ -19,7 +18,9 @@ const useChatSessions = (aminalAddress: string, userAddress: string) => {
     queryFn: async () => {
       if (!aminalAddress || !userAddress) return [];
 
-      const response = await fetch(`/api/chat/sessions?aminalAddress=${aminalAddress}&userAddress=${userAddress}`);
+      const response = await fetch(
+        `/api/chat/sessions?aminalAddress=${aminalAddress}&userAddress=${userAddress}`
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch chat sessions');
       }
@@ -35,15 +36,17 @@ const ChatSessionsPage: NextPage = () => {
   const contractAddress = id as string;
   const { address } = useAccount();
   const [isCreating, setIsCreating] = useState(false);
-  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(null);
+  const [deletingSessionId, setDeletingSessionId] = useState<string | null>(
+    null
+  );
 
   const isRouterReady =
     router.isReady && id && typeof id === 'string' && id !== 'undefined';
 
-  const {
-    data: aminal,
-    isLoading: isAminalLoading,
-  } = useAminalForChat(isRouterReady ? contractAddress : '', address || '');
+  const { data: aminal, isLoading: isAminalLoading } = useAminalForChat(
+    isRouterReady ? contractAddress : '',
+    address || ''
+  );
 
   const {
     data: sessions,
@@ -54,7 +57,7 @@ const ChatSessionsPage: NextPage = () => {
   // Prepare gene IDs for personality generation
   const geneIds = useMemo(() => {
     if (!aminal) return {};
-    
+
     return {
       backId: aminal.backId?.toString(),
       armId: aminal.armId?.toString(),
@@ -106,9 +109,12 @@ const ChatSessionsPage: NextPage = () => {
 
     setDeletingSessionId(sessionId);
     try {
-      const response = await fetch(`/api/chat/sessions?sessionId=${sessionId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `/api/chat/sessions?sessionId=${sessionId}`,
+        {
+          method: 'DELETE',
+        }
+      );
 
       if (!response.ok) {
         throw new Error('Failed to delete chat session');
@@ -151,7 +157,9 @@ const ChatSessionsPage: NextPage = () => {
   const formatTimeAgo = (date: string) => {
     const now = new Date();
     const messageDate = new Date(date);
-    const diffInHours = Math.floor((now.getTime() - messageDate.getTime()) / (1000 * 60 * 60));
+    const diffInHours = Math.floor(
+      (now.getTime() - messageDate.getTime()) / (1000 * 60 * 60)
+    );
 
     if (diffInHours < 1) return 'Just now';
     if (diffInHours < 24) return `${diffInHours}h ago`;
@@ -181,10 +189,11 @@ const ChatSessionsPage: NextPage = () => {
               Chat with Aminal #{aminal.aminalIndex}
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
-              {aminal.lovers?.[0]?.love ?
-                `Love 4 U: ${Number(aminal.lovers[0].love).toFixed(1)} 💜` :
-                'New friend 👋'
-              }
+              {aminal.lovers.items?.[0]?.love
+                ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
+                    1
+                  )} 💜`
+                : 'New friend 👋'}
             </p>
           </div>
         </div>
@@ -209,7 +218,9 @@ const ChatSessionsPage: NextPage = () => {
 
         {/* Chat Sessions List */}
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Your Conversations</h2>
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+            Your Conversations
+          </h2>
 
           {isSessionsLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -218,7 +229,9 @@ const ChatSessionsPage: NextPage = () => {
           ) : !sessions || sessions.length === 0 ? (
             <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border border-gray-200">
               <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No conversations yet</h3>
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+                No conversations yet
+              </h3>
               <p className="text-sm sm:text-base text-gray-600 mb-4">
                 Start your first conversation with this Aminal!
               </p>
@@ -250,7 +263,9 @@ const ChatSessionsPage: NextPage = () => {
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />
-                          <span>{formatTimeAgo(session.updatedAt.toString())}</span>
+                          <span>
+                            {formatTimeAgo(session.updatedAt.toString())}
+                          </span>
                         </div>
                       </div>
                     </Link>

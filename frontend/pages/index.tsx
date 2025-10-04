@@ -4,7 +4,7 @@ import { NoAminalsFound } from '@/components/ui/empty-state';
 import { AminalsFilterBar } from '@/components/ui/filter-bar';
 import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
 import { useHasMounted } from '@/hooks/useHasMounted';
-import { AminalFilter, AminalSort, useAminals } from '@/resources/aminals';
+import { AminalFilter, AminalSort, useAminals } from '@/hooks';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useState } from 'react';

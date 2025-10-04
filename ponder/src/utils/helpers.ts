@@ -5,7 +5,7 @@
  */
 
 import type { Address, Hex } from "viem";
-import { GENES_CONTRACT_ADDRESS } from "./constants";
+import { genesAddress } from "../../../frontend/src/contracts/generated";
 
 /**
  * Generate a composite ID for entities
@@ -18,9 +18,13 @@ export function makeId(...parts: (string | bigint | number)[]): Hex {
 /**
  * Generate gene NFT ID from token ID
  * Format: genesContractAddress-tokenId
+ *
+ * Note: Genes contract address is imported from generated contracts
  */
 export function makeGeneNFTId(tokenId: bigint): Hex {
-  return `0x${GENES_CONTRACT_ADDRESS.replace("0x", "")}-${tokenId.toString()}` as Hex;
+  return `0x${genesAddress
+    .toLowerCase()
+    .replace("0x", "")}-${tokenId.toString()}` as Hex;
 }
 
 /**
@@ -48,7 +52,9 @@ export function makeProposalId(
  * Format: userId-aminalId
  */
 export function makeRelationshipId(userId: Address, aminalId: Address): Hex {
-  return `0x${userId.toLowerCase().replace("0x", "")}-${aminalId.toLowerCase().replace("0x", "")}` as Hex;
+  return `0x${userId.toLowerCase().replace("0x", "")}-${aminalId
+    .toLowerCase()
+    .replace("0x", "")}` as Hex;
 }
 
 /**

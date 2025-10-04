@@ -1,6 +1,6 @@
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { cn } from '@/lib/utils';
-import { useAuction, useAuctionVotes, useAuctions } from '@/resources/auctions';
+import { useAuction, useAuctionVotes, useAuctions } from '@/hooks';
 import { useMemo, useState } from 'react';
 
 interface VoteStatsProps {
@@ -28,7 +28,7 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
     } = {};
 
     // Group votes by transaction to detect bulk votes
-    const votesByTx = votes.reduce((acc, vote) => {
+    const votesByTx = votes.items.reduce((acc, vote) => {
       const txKey = `${vote.voter.address}-${vote.blockNumber}-${vote.transactionHash}`;
       if (!acc[txKey]) {
         acc[txKey] = [];

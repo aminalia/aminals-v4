@@ -1,7 +1,7 @@
 import AuctionCard from '@/components/auction-card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { useAuctions } from '@/resources/auctions';
+import { useAuctions } from '@/hooks';
 import type { NextPage } from 'next';
 import { useState } from 'react';
 import Layout from '../_layout';

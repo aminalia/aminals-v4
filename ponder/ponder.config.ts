@@ -1,11 +1,17 @@
-import { createConfig } from "ponder";
-import { http } from "viem";
+import { createConfig, factory } from "ponder";
+import { http, parseAbiItem } from "viem";
 
-import AminalFactoryAbi from "./abis/AminalFactory.json";
-import AminalAbi from "./abis/Aminal.json";
-import GeneAuctionAbi from "./abis/GeneAuction.json";
-import GenesAbi from "./abis/Genes.json";
-import GeneRegistryAbi from "./abis/GeneRegistry.json";
+import {
+  aminalAbi,
+  aminalFactoryAbi,
+  aminalFactoryAddress,
+  geneAuctionAbi,
+  geneAuctionAddress,
+  geneRegistryAbi,
+  geneRegistryAddress,
+  genesAbi,
+  genesAddress,
+} from "../frontend/src/contracts/generated";
 
 export default createConfig({
   chains: {
@@ -17,39 +23,39 @@ export default createConfig({
   contracts: {
     AminalFactory: {
       chain: "sepolia",
-      abi: AminalFactoryAbi.abi,
-      address: "0xfd69b3285974f11ac0e8490d86a2dc4ee7d2ce9c",
-      startBlock: 8828041,
+      abi: aminalFactoryAbi,
+      address: aminalFactoryAddress,
+      startBlock: 9343099,
     },
     Aminal: {
       chain: "sepolia",
-      abi: AminalAbi.abi,
-      factory: {
-        address: "0xfd69b3285974f11ac0e8490d86a2dc4ee7d2ce9c",
-        event: AminalFactoryAbi.abi.find(
-          (item: any) => item.type === "event" && item.name === "AminalSpawned"
-        )!,
+      abi: aminalAbi,
+      address: factory({
+        address: aminalFactoryAddress,
+        event: parseAbiItem(
+          "event AminalSpawned(address indexed child, address indexed parentOne, address indexed parentTwo, uint256 auctionId, uint256[8] geneIds)"
+        ),
         parameter: "child",
-      },
-      startBlock: 8828041,
+      }),
+      startBlock: 9343099,
     },
     GeneAuction: {
       chain: "sepolia",
-      abi: GeneAuctionAbi.abi,
-      address: "0x96bd719eb8d32a1210e4e2eb77b5ce6ff157325d",
-      startBlock: 8828041,
+      abi: geneAuctionAbi,
+      address: geneAuctionAddress,
+      startBlock: 9343099,
     },
     Genes: {
       chain: "sepolia",
-      abi: GenesAbi.abi,
-      address: "0xb70c1d4ab9e90eb73b7f8972bd3eeb139201cd43",
-      startBlock: 8828041,
+      abi: genesAbi,
+      address: genesAddress,
+      startBlock: 9343099,
     },
     GeneRegistry: {
       chain: "sepolia",
-      abi: GeneRegistryAbi.abi,
-      address: "0x2706cf8e08f6cbfd8a0fc32637d0289ab6ed2ca4",
-      startBlock: 8828041,
+      abi: geneRegistryAbi,
+      address: geneRegistryAddress,
+      startBlock: 9343099,
     },
   },
 });

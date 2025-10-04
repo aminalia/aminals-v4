@@ -1,5 +1,15 @@
-import type { Aminal, AminalWithRelations } from '../types/ponder';
+/**
+ * Data Transformers for Aminals
+ *
+ * Updated for Ponder schema with traits array instead of individual fields.
+ */
+
+import * as schema from '../../../ponder/ponder.schema';
 import { traitsArrayToFields, type AminalWithTraitsArray } from './trait-helpers';
+
+// Type inference from Ponder schema
+type Aminal = typeof schema.aminal.$inferSelect;
+type Relationship = typeof schema.relationship.$inferSelect;
 
 export type AminalFilter = 'all' | 'loved';
 export type AminalSort =
@@ -10,39 +20,49 @@ export type AminalSort =
   | 'richest'
   | 'poorest';
 
+// Extended type with relationships (matches hook return type)
+export interface AminalWithRelations extends Aminal {
+  lovers?: Relationship[];
+  userLove?: bigint;
+  parentOne?: Aminal | null;
+  parentTwo?: Aminal | null;
+}
+
 /**
  * Transform and filter aminals based on user preferences
+ *
+ * Note: With Ponder, most filtering/sorting is done in the hooks.
+ * This function is kept for backward compatibility and additional client-side processing.
  */
 export const transformAminals = (
-  aminals: Aminal[],
+  aminals: AminalWithRelations[],
   filter: AminalFilter = 'all',
   sort: AminalSort = 'most-loved'
-): Aminal[] => {
+): AminalWithRelations[] => {
   let processedAminals = [...aminals];
 
   // Apply filter
   if (filter === 'loved') {
-    processedAminals = processedAminals.filter((aminal: Aminal) => {
-      const lovers = aminal.lovers?.items || [];
-      return lovers.length > 0 && lovers[0]?.love && Number(lovers[0].love) > 0;
+    processedAminals = processedAminals.filter((aminal) => {
+      return aminal.userLove && aminal.userLove > 0n;
     });
   }
 
   // Apply sort
-  processedAminals.sort((a: Aminal, b: Aminal) => {
+  processedAminals.sort((a, b) => {
     switch (sort) {
       case 'most-loved':
-        return Number(b.totalLove) - Number(a.totalLove);
+        return Number(b.totalLove - a.totalLove);
       case 'least-loved':
-        return Number(a.totalLove) - Number(b.totalLove);
+        return Number(a.totalLove - b.totalLove);
       case 'oldest':
-        return Number(a.blockTimestamp) - Number(b.blockTimestamp);
+        return Number(a.blockTimestamp - b.blockTimestamp);
       case 'youngest':
-        return Number(b.blockTimestamp) - Number(a.blockTimestamp);
+        return Number(b.blockTimestamp - a.blockTimestamp);
       case 'richest':
-        return Number(b.ethBalance) - Number(a.ethBalance);
+        return Number(b.ethBalance - a.ethBalance);
       case 'poorest':
-        return Number(a.ethBalance) - Number(b.ethBalance);
+        return Number(a.ethBalance - b.ethBalance);
       default:
         return 0;
     }
@@ -54,13 +74,11 @@ export const transformAminals = (
 /**
  * Calculate derived stats for an aminal
  */
-export const calculateAminalStats = (aminal: Aminal) => {
-  const totalLove = Number(aminal.totalLove || 0);
-  const energy = Number(aminal.energy || 0);
-  const ethBalance = Number(aminal.ethBalance || 0);
-  const lovers = aminal.lovers?.items || [];
-  const userLove =
-    lovers.length > 0 && lovers[0] ? Number(lovers[0].love || 0) : 0;
+export const calculateAminalStats = (aminal: AminalWithRelations) => {
+  const totalLove = Number(aminal.totalLove || 0n);
+  const energy = Number(aminal.energy || 0n);
+  const ethBalance = Number(aminal.ethBalance || 0n);
+  const userLove = Number(aminal.userLove || 0n);
 
   return {
     totalLove,
@@ -75,8 +93,10 @@ export const calculateAminalStats = (aminal: Aminal) => {
 
 /**
  * Format aminal display data
+ *
+ * Converts traits array to individual fields for backward compatibility
  */
-export const formatAminalForDisplay = (aminal: Aminal) => {
+export const formatAminalForDisplay = (aminal: AminalWithRelations) => {
   const stats = calculateAminalStats(aminal);
 
   // Convert traits array to individual fields for backward compatibility
@@ -108,8 +128,8 @@ export const formatAminalForDisplay = (aminal: Aminal) => {
       parentTwoAddress: aminal.parentTwo?.contractAddress || null,
     },
     metadata: {
-      blockTimestamp: Number(aminal.blockTimestamp || 0),
-      createdAt: new Date(Number(aminal.blockTimestamp || 0) * 1000),
+      blockTimestamp: Number(aminal.blockTimestamp || 0n),
+      createdAt: new Date(Number(aminal.blockTimestamp || 0n) * 1000),
     },
   };
 };
@@ -117,7 +137,7 @@ export const formatAminalForDisplay = (aminal: Aminal) => {
 /**
  * Validate aminal data structure
  */
-export const validateAminal = (aminal: any): aminal is Aminal => {
+export const validateAminal = (aminal: any): aminal is AminalWithRelations => {
   return (
     aminal &&
     typeof aminal === 'object' &&
@@ -131,9 +151,9 @@ export const validateAminal = (aminal: any): aminal is Aminal => {
  * Filter aminals by search term
  */
 export const filterAminalsBySearch = (
-  aminals: Aminal[],
+  aminals: AminalWithRelations[],
   searchTerm: string
-): Aminal[] => {
+): AminalWithRelations[] => {
   if (!searchTerm.trim()) {
     return aminals;
   }
@@ -154,15 +174,15 @@ export const filterAminalsBySearch = (
 /**
  * Group aminals by a specific criteria
  */
-export const groupAminalsByLoveRange = (aminals: Aminal[]) => {
+export const groupAminalsByLoveRange = (aminals: AminalWithRelations[]) => {
   const groups = {
-    high: [] as Aminal[], // > 10 love
-    medium: [] as Aminal[], // 1-10 love
-    low: [] as Aminal[], // 0-1 love
+    high: [] as AminalWithRelations[], // > 10 love
+    medium: [] as AminalWithRelations[], // 1-10 love
+    low: [] as AminalWithRelations[], // 0-1 love
   };
 
   aminals.forEach((aminal) => {
-    const totalLove = Number(aminal.totalLove || 0);
+    const totalLove = Number(aminal.totalLove || 0n);
 
     if (totalLove > 10) {
       groups.high.push(aminal);
@@ -179,14 +199,14 @@ export const groupAminalsByLoveRange = (aminals: Aminal[]) => {
 /**
  * Calculate collection statistics
  */
-export const calculateCollectionStats = (aminals: Aminal[]) => {
+export const calculateCollectionStats = (aminals: AminalWithRelations[]) => {
   const totalAminals = aminals.length;
   const totalLove = aminals.reduce(
-    (sum, aminal) => sum + Number(aminal.totalLove || 0),
+    (sum, aminal) => sum + Number(aminal.totalLove || 0n),
     0
   );
   const totalEnergy = aminals.reduce(
-    (sum, aminal) => sum + Number(aminal.energy || 0),
+    (sum, aminal) => sum + Number(aminal.energy || 0n),
     0
   );
   const averageLove = totalAminals > 0 ? totalLove / totalAminals : 0;
@@ -194,13 +214,13 @@ export const calculateCollectionStats = (aminals: Aminal[]) => {
 
   const mostLoved = aminals.reduce(
     (max, aminal) =>
-      Number(aminal.totalLove || 0) > Number(max.totalLove || 0) ? aminal : max,
+      Number(aminal.totalLove || 0n) > Number(max.totalLove || 0n) ? aminal : max,
     aminals[0]
   );
 
   const mostEnergetic = aminals.reduce(
     (max, aminal) =>
-      Number(aminal.energy || 0) > Number(max.energy || 0) ? aminal : max,
+      Number(aminal.energy || 0n) > Number(max.energy || 0n) ? aminal : max,
     aminals[0]
   );
 

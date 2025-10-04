@@ -11,20 +11,22 @@ interface TraitCardProps {
     creator: {
       address: string;
     };
-    proposalsUsingGene?: {
-      id: string;
-      auction: {
+    proposals?: {
+      items: {
         id: string;
-        aminalOne: {
+        auction?: {
           id: string;
-          aminalIndex: string;
+          aminalOne?: {
+            id: string;
+            aminalIndex: string;
+          };
+          aminalTwo?: {
+            id: string;
+            aminalIndex: string;
+          };
         };
-        aminalTwo: {
-          id: string;
-          aminalIndex: string;
-        };
-      };
-    }[];
+      }[];
+    };
   };
   aminalCount?: number;
 }

@@ -2,15 +2,6 @@
 
 Aminals is a sophisticated decentralized digital pet platform that combines NFT ownership with complex interaction mechanics, autonomous contract behavior, and community governance. Each Aminal is deployed as its own ERC721 contract, enabling them to hold funds and interact autonomously with other contracts.
 
-## Architecture Overview
-
-The project uses a factory-based architecture where:
-
-- **AminalFactory**: Creates and manages individual Aminal contracts
-- **Individual Aminals**: Each Aminal is its own contract with autonomous capabilities
-- **Global Skills**: Skills are globally accessible without registration
-- **Gene NFTs**: Permissionless trait creation system
-
 ## Development
 
 ### Building and Testing
@@ -43,12 +34,7 @@ cp .env.example .env
 forge script script/DeployAminals.s.sol --rpc-url $RPC_URL --broadcast
 ```
 
-This deploys the entire Aminals ecosystem:
-
-- AminalFactory with dependencies (GeneAuction, AminalProposals, Genes)
-- Initial skills (Move2D, MoveTwice)
-- Initial traits and Aminals
-- Sets up all contract relationships
+This deploys the entire Aminals ecosystem.
 
 **Deploy Individual Skill**
 

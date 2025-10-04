@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { useAminals } from '@/resources/aminals';
+import { useAminals } from '@/hooks';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';

@@ -1,17 +1,15 @@
 import { Button } from '@/components/ui/button';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { CategoryFilter, GeneFilter, GeneSort } from '@/hooks';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { cn } from '@/lib/utils';
-import {
-  CategoryFilter,
-  GeneFilter,
-  GeneSort,
-  useGenes,
-} from '@/resources/genes';
+import { eq } from '@ponder/client';
+import { usePonderQuery } from '@ponder/react';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
+import * as schema from '../../../ponder/ponder.schema';
 import Layout from '../_layout';
 
 // Import dynamically to avoid module resolution issues
@@ -37,12 +35,31 @@ const TraitsPage: NextPage = () => {
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // const {
+  //   data: genes,
+  //   isLoading: isLoadingGenes,
+  //   error: genesError,
+  //   isError: isGenesError,
+  // } = useGenes(filter, sort, category);
+  //
   const {
     data: genes,
     isLoading: isLoadingGenes,
     error: genesError,
     isError: isGenesError,
-  } = useGenes(filter, sort, category);
+  } = usePonderQuery({
+    queryFn: (db) => {
+      // Apply category filter at SQL level for efficiency
+      if (category !== 'all') {
+        return db
+          .select()
+          .from(schema.geneNFT)
+          .where(eq(schema.geneNFT.traitType, Number(category)));
+      }
+
+      return db.select().from(schema.geneNFT);
+    },
+  });
 
   console.log('Genes data:', genes);
   console.log('Genes loading:', isLoadingGenes);
@@ -186,15 +203,15 @@ const TraitsPage: NextPage = () => {
                   key={gene.id}
                   trait={gene}
                   aminalCount={
-                    gene.proposalsUsingGene
+                    gene.proposals?.items
                       ? // Extract unique Aminals from proposals (each proposal has 2 Aminals)
                         new Set([
-                          ...gene.proposalsUsingGene.map(
-                            (p: any) => p.auction.aminalOne.id
-                          ),
-                          ...gene.proposalsUsingGene.map(
-                            (p: any) => p.auction.aminalTwo.id
-                          ),
+                          ...gene.proposals.items
+                            .map((p: any) => p.auction?.aminalOne?.id)
+                            .filter(Boolean),
+                          ...gene.proposals.items
+                            .map((p: any) => p.auction?.aminalTwo?.id)
+                            .filter(Boolean),
                         ]).size
                       : 0
                   }
