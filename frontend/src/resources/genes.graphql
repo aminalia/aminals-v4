@@ -1,58 +1,63 @@
-# Updated for new schema: Added totalEarnings and payouts fields, removed aminalIndex
 query GeneNftsList {
-  geneNFTs(orderBy: tokenId, orderDirection: asc) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
-    owner {
+  geneNFTs(orderBy: "tokenId", orderDirection: "asc", limit: 100) {
+    items {
       id
-      address
-    }
-    creator {
-      id
-      address
-    }
-    totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+      tokenId
+      traitType
+      name
+      description
+      svg
+      owner {
         id
-        aminalOne {
+        address
+      }
+      creator {
+        id
+        address
+      }
+      totalEarnings
+      proposals(limit: 100) {
+        items {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          auction {
+            id
+            aminalOne {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+            aminalTwo {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+          }
         }
       }
-    }
-    payouts {
-      id
-      amount
-      auctionId
+      payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+        items {
+          id
+          amount
+          auctionId
+          blockTimestamp
+          auction {
+            id
+            auctionId
+          }
+        }
+      }
       blockTimestamp
-      auction {
-        id
-        auctionId
-      }
     }
-    blockTimestamp
   }
 }
 
-query GeneNftById($id: ID!) {
+query GeneNftById($id: String!) {
   geneNFT(id: $id) {
     id
     tokenId
@@ -69,36 +74,40 @@ query GeneNftById($id: ID!) {
       address
     }
     totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+    proposals(limit: 100) {
+      items {
         id
-        aminalOne {
+        auction {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          aminalOne {
+            id
+            contractAddress
+            aminalIndex
+            tokenURI
+            energy
+            totalLove
+          }
+          aminalTwo {
+            id
+            contractAddress
+            aminalIndex
+            tokenURI
+            energy
+            totalLove
+          }
         }
       }
     }
-    payouts {
-      id
-      amount
-      auctionId
-      blockTimestamp
-      auction {
+    payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
         id
+        amount
         auctionId
+        blockTimestamp
+        auction {
+          id
+          auctionId
+        }
       }
     }
     blockTimestamp
@@ -108,67 +117,76 @@ query GeneNftById($id: ID!) {
 query GenesByTraitType($traitType: Int!) {
   geneNFTs(
     where: { traitType: $traitType }
-    orderBy: tokenId
-    orderDirection: asc
+    orderBy: "tokenId"
+    orderDirection: "asc"
+    limit: 100
   ) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
-    owner {
+    items {
       id
-      address
-    }
-    creator {
-      id
-      address
-    }
-    totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+      tokenId
+      traitType
+      name
+      description
+      svg
+      owner {
         id
-        aminalOne {
+        address
+      }
+      creator {
+        id
+        address
+      }
+      totalEarnings
+      proposals(limit: 100) {
+        items {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          auction {
+            id
+            aminalOne {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+            aminalTwo {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+          }
         }
       }
-    }
-    payouts {
-      id
-      amount
-      auctionId
+      payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+        items {
+          id
+          amount
+          auctionId
+          blockTimestamp
+          auction {
+            id
+            auctionId
+          }
+        }
+      }
       blockTimestamp
-      auction {
-        id
-        auctionId
-      }
     }
-    blockTimestamp
   }
 }
 
 query GenesByIds($ids: [BigInt!]!) {
-  geneNFTs(where: { tokenId_in: $ids }) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
+  geneNFTs(where: { tokenId_in: $ids }, limit: 100) {
+    items {
+      id
+      tokenId
+      traitType
+      name
+      description
+      svg
+    }
   }
 }

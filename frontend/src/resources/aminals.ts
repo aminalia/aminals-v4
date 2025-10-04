@@ -39,7 +39,7 @@ export const useAminals = (
           throw handleGraphQLError(response.errors);
         }
 
-        const aminals = response.data?.aminals || [];
+        const aminals = response.data?.aminals?.items || [];
 
         // Use data transformer to apply filter and sort
         return transformAminals(aminals, filter, sort);
@@ -52,7 +52,7 @@ export const useAminals = (
 };
 
 export const useAminal = (aminalId: string) => {
-  return useQuery<AminalByIdQuery['aminals'][0] | undefined>({
+  return useQuery<AminalByIdQuery['aminal'] | undefined>({
     queryKey: queryKeys.aminals.detail(aminalId),
     queryFn: async () => {
       try {
@@ -69,10 +69,9 @@ export const useAminal = (aminalId: string) => {
           throw handleGraphQLError(response.errors);
         }
 
-        console.log('Aminals array:', response.data.aminals);
-        console.log('First aminal:', response.data.aminals[0]);
+        console.log('Aminal:', response.data.aminal);
 
-        return response.data.aminals[0];
+        return response.data.aminal;
       } catch (error) {
         console.error('Failed to fetch aminal:', error);
         throw error;
@@ -83,7 +82,7 @@ export const useAminal = (aminalId: string) => {
 };
 
 export const useAminalForChat = (contractAddress: string, userAddress: string) => {
-  return useQuery<AminalForChatQuery['aminals'][0] | undefined>({
+  return useQuery<AminalForChatQuery['aminal'] | undefined>({
     queryKey: queryKeys.aminals.chat(contractAddress, userAddress),
     queryFn: async () => {
       try {
@@ -97,8 +96,7 @@ export const useAminalForChat = (contractAddress: string, userAddress: string) =
           throw handleGraphQLError(response.errors);
         }
 
-        const aminals = response.data?.aminals || [];
-        return aminals.length > 0 ? aminals[0] : undefined;
+        return response.data?.aminal;
       } catch (error) {
         console.error('Failed to fetch aminal for chat:', error);
         throw error;
@@ -109,7 +107,7 @@ export const useAminalForChat = (contractAddress: string, userAddress: string) =
 };
 
 export const useAminalByContractAddress = (contractAddress: string, userAddress: string) => {
-  return useQuery<AminalByContractAddressQuery['aminals'][0] | undefined>({
+  return useQuery<AminalByContractAddressQuery['aminal'] | undefined>({
     queryKey: queryKeys.aminals.detail(contractAddress),
     queryFn: async () => {
       try {
@@ -123,8 +121,7 @@ export const useAminalByContractAddress = (contractAddress: string, userAddress:
           throw handleGraphQLError(response.errors);
         }
 
-        const aminals = response.data?.aminals || [];
-        return aminals.length > 0 ? aminals[0] : undefined;
+        return response.data?.aminal;
       } catch (error) {
         console.error('Failed to fetch aminal by contract address:', error);
         throw error;

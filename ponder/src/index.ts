@@ -8,17 +8,17 @@
 import { ponder } from "ponder:registry";
 import type { Address, Hex } from "viem";
 import {
-  factories,
-  aminals,
-  users,
-  relationships,
-  geneNFTs,
-  geneAuctions,
-  geneProposals,
-  geneVotes,
-  geneCreatorPayouts,
-  feedEvents,
-  skillUsedEvents,
+  factory,
+  aminal,
+  user,
+  relationship,
+  geneNFT,
+  geneAuction,
+  geneProposal,
+  geneVote,
+  geneCreatorPayout,
+  feedEvent,
+  skillUsedEvent,
 } from "../ponder.schema";
 import {
   makeEventId,
@@ -51,7 +51,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
 
   // Create or load factory
   await db
-    .insert(factories)
+    .insert(factory)
     .values({
       id: factoryId,
       totalAminals: 0n,
@@ -62,12 +62,12 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Get current total to use as index
-  const factory = await db.find(factories, { id: factoryId });
-  const aminalIndex = factory?.totalAminals ?? 0n;
+  const factoryRecord = await db.find(factory, { id: factoryId });
+  const aminalIndex = factoryRecord?.totalAminals ?? 0n;
 
   // Increment factory total
   await db
-    .update(factories, { id: factoryId })
+    .update(factory, { id: factoryId })
     .set((row) => ({ totalAminals: row.totalAminals + 1n }));
 
   // Check if parents are zero addresses (genesis Aminal)
@@ -100,7 +100,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   }
 
   // Create Aminal entity
-  await db.insert(aminals).values({
+  await db.insert(aminal).values({
     id: normalizeAddress(child),
     contractAddress: normalizeAddress(child),
     aminalIndex,
@@ -136,7 +136,7 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
 
   // Ensure user exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: senderId,
       address: senderId,
@@ -145,7 +145,7 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
 
   // Update Aminal state
   await db
-    .update(aminals, { id: aminalId })
+    .update(aminal, { id: aminalId })
     .set({
       energy: energy,
       totalLove: totalLove,
@@ -156,7 +156,7 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
   const relationshipId = makeRelationshipId(sender, event.log.address);
 
   await db
-    .insert(relationships)
+    .insert(relationship)
     .values({
       id: relationshipId,
       userId: senderId,
@@ -170,7 +170,7 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
     }));
 
   // Create feed event
-  await db.insert(feedEvents).values({
+  await db.insert(feedEvent).values({
     id: makeEventId(event.transaction.hash, event.log.logIndex),
     aminalId,
     senderId,
@@ -197,7 +197,7 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
 
   // Ensure user exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: callerId,
       address: callerId,
@@ -205,20 +205,20 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Get current energy and subtract cost
-  const aminal = await db.find(aminals, { id: aminalId });
+  const aminalRecord = await db.find(aminal, { id: aminalId });
 
-  const newEnergy = (aminal?.energy ?? 0n) - energyCost;
+  const newEnergy = (aminalRecord?.energy ?? 0n) - energyCost;
   const finalEnergy = newEnergy < 0n ? 0n : newEnergy;
 
   // Update Aminal energy
   await db
-    .update(aminals, { id: aminalId })
+    .update(aminal, { id: aminalId })
     .set({
       energy: finalEnergy,
     });
 
   // Create skill used event
-  await db.insert(skillUsedEvents).values({
+  await db.insert(skillUsedEvent).values({
     id: makeEventId(event.transaction.hash, event.log.logIndex),
     aminalId,
     callerId,
@@ -243,7 +243,7 @@ ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
 
   // Update Aminal energy
   await db
-    .update(aminals, { id: aminalId })
+    .update(aminal, { id: aminalId })
     .set({
       energy: newEnergy,
     });
@@ -265,7 +265,7 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
 
   // Ensure creator user exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: creatorId,
       address: creatorId,
@@ -306,7 +306,7 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
   }
 
   // Create GeneNFT entity
-  await db.insert(geneNFTs).values({
+  await db.insert(geneNFT).values({
     id: makeGeneNFTId(tokenId),
     tokenId,
     traitType: Number(traitType),
@@ -348,7 +348,7 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
 
   // Ensure new owner exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: newOwnerId,
       address: newOwnerId,
@@ -357,7 +357,7 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
 
   // Update GeneNFT owner
   await db
-    .update(geneNFTs, { id: makeGeneNFTId(tokenId) })
+    .update(geneNFT, { id: makeGeneNFTId(tokenId) })
     .set({
       ownerId: newOwnerId,
     });
@@ -387,13 +387,13 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
       abi: [
         {
           type: "function",
-          name: "aminalsByIndex",
+          name: "aminalByIndex",
           inputs: [{ name: "index", type: "uint256" }],
           outputs: [{ name: "", type: "address" }],
           stateMutability: "view",
         },
       ],
-      functionName: "aminalsByIndex",
+      functionName: "aminalByIndex",
       args: [aminalOne],
     })) as Address;
 
@@ -402,13 +402,13 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
       abi: [
         {
           type: "function",
-          name: "aminalsByIndex",
+          name: "aminalByIndex",
           inputs: [{ name: "index", type: "uint256" }],
           outputs: [{ name: "", type: "address" }],
           stateMutability: "view",
         },
       ],
-      functionName: "aminalsByIndex",
+      functionName: "aminalByIndex",
       args: [aminalTwo],
     })) as Address;
   } catch (error) {
@@ -420,8 +420,8 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
   const aminalTwoId = normalizeAddress(aminalTwoAddress);
 
   // Load parent Aminals to get their traits
-  const aminal1 = await db.find(aminals, { id: aminalOneId });
-  const aminal2 = await db.find(aminals, { id: aminalTwoId });
+  const aminal1 = await db.find(aminal, { id: aminalOneId });
+  const aminal2 = await db.find(aminal, { id: aminalTwoId });
 
   if (!aminal1 || !aminal2) {
     console.error(`Parent Aminals not found for auction ${auctionId}`);
@@ -438,7 +438,7 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
   assertValidParentGeneIds(parentGeneIds, "VotingCreated");
 
   // Create auction entity
-  await db.insert(geneAuctions).values({
+  await db.insert(geneAuction).values({
     id: makeAuctionId(auctionId),
     auctionId,
     aminalOneId,
@@ -463,7 +463,7 @@ ponder.on("GeneAuction:VotingSettled", async ({ event, context }) => {
 
   // Update auction as finished
   await db
-    .update(geneAuctions, { id: makeAuctionId(auctionId) })
+    .update(geneAuction, { id: makeAuctionId(auctionId) })
     .set({
       finished: true,
     });
@@ -481,7 +481,7 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
 
   // Ensure proposer exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: proposerId,
       address: proposerId,
@@ -489,7 +489,7 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Create proposal
-  await db.insert(geneProposals).values({
+  await db.insert(geneProposal).values({
     id: makeProposalId(auctionId, Number(category), geneId),
     auctionId: makeAuctionId(auctionId),
     geneNFTId: makeGeneNFTId(geneId),
@@ -516,7 +516,7 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
 
   // Ensure voter exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: voterId,
       address: voterId,
@@ -527,7 +527,7 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
   const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
 
   // Create vote entity
-  await db.insert(geneVotes).values({
+  await db.insert(geneVote).values({
     id: voteId,
     auctionId: makeAuctionId(auctionId),
     proposalId,
@@ -541,7 +541,7 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
 
   // Update proposal vote count
   await db
-    .update(geneProposals, { id: proposalId })
+    .update(geneProposal, { id: proposalId })
     .set((row) => ({
       loveVotes: row.loveVotes + voteWeight,
     }));
@@ -559,7 +559,7 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
 
   // Ensure voter exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: voterId,
       address: voterId,
@@ -570,7 +570,7 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
   const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
 
   // Create vote entity
-  await db.insert(geneVotes).values({
+  await db.insert(geneVote).values({
     id: voteId,
     auctionId: makeAuctionId(auctionId),
     proposalId,
@@ -584,7 +584,7 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
 
   // Update proposal remove vote count
   await db
-    .update(geneProposals, { id: proposalId })
+    .update(geneProposal, { id: proposalId })
     .set((row) => ({
       removeVotes: row.removeVotes + voteWeight,
     }));
@@ -602,7 +602,7 @@ ponder.on("GeneAuction:GeneRemoved", async ({ event, context }) => {
 
   // Mark proposal as removed
   await db
-    .update(geneProposals, { id: proposalId })
+    .update(geneProposal, { id: proposalId })
     .set({
       removed: true,
     });
@@ -622,7 +622,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
 
   // Ensure voter exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: voterId,
       address: voterId,
@@ -631,7 +631,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
 
   // Ensure system user exists for implicit proposals
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: zeroAddress as Hex,
       address: zeroAddress as Hex,
@@ -639,7 +639,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Load auction to get cached parent traits
-  const auction = await db.find(geneAuctions, { id: makeAuctionId(auctionId) });
+  const auction = await db.find(geneAuction, { id: makeAuctionId(auctionId) });
 
   if (!auction) {
     console.error(`Auction not found for bulk vote: ${auctionId}`);
@@ -660,9 +660,9 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     const proposalId = makeProposalId(auctionId, i, geneId);
 
     // Check if proposal exists
-    const proposal = await db.find(geneProposals, { id: proposalId });
+    const proposalRecord = await db.find(geneProposal, { id: proposalId });
 
-    if (!proposal) {
+    if (!proposalRecord) {
       // Proposal doesn't exist - check if it's a parent trait
       const parent1TraitId = parentGeneIds[i]; // Parent 1: indices 0-7
       const parent2TraitId = parentGeneIds[i + 8]; // Parent 2: indices 8-15
@@ -677,7 +677,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
       }
 
       // Create implicit proposal for parent trait
-      await db.insert(geneProposals).values({
+      await db.insert(geneProposal).values({
         id: proposalId,
         auctionId: makeAuctionId(auctionId),
         geneNFTId: makeGeneNFTId(geneId),
@@ -699,7 +699,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     // Create vote entity for this trait
     const voteId = makeEventId(event.transaction.hash, BigInt(event.log.logIndex) + BigInt(i));
 
-    await db.insert(geneVotes).values({
+    await db.insert(geneVote).values({
       id: voteId,
       auctionId: makeAuctionId(auctionId),
       proposalId,
@@ -713,7 +713,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
 
     // Update proposal vote count
     await db
-      .update(geneProposals, { id: proposalId })
+      .update(geneProposal, { id: proposalId })
       .set((row) => ({
         loveVotes: row.loveVotes + userVotingPower,
       }));
@@ -732,7 +732,7 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
 
   // Ensure creator exists
   await db
-    .insert(users)
+    .insert(user)
     .values({
       id: creatorId,
       address: creatorId,
@@ -740,7 +740,7 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Create payout entity
-  await db.insert(geneCreatorPayouts).values({
+  await db.insert(geneCreatorPayout).values({
     id: makeEventId(event.transaction.hash, event.log.logIndex),
     auctionId: makeAuctionId(auctionId),
     geneNFTId: makeGeneNFTId(geneId),
@@ -755,7 +755,7 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
 
   // Update gene NFT total earnings
   await db
-    .update(geneNFTs, { id: makeGeneNFTId(geneId) })
+    .update(geneNFT, { id: makeGeneNFTId(geneId) })
     .set((row) => ({
       totalEarnings: row.totalEarnings + amount,
     }));

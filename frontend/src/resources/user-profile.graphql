@@ -1,97 +1,61 @@
-query UserProfile($address: ID!) {
+query UserProfile($address: String!) {
   user(id: $address) {
     id
     address
-    lovers {
-      id
-      aminal {
+    lovers(limit: 100) {
+      items {
         id
-        contractAddress
-        tokenURI
-        totalLove
-        energy
-        ethBalance
-        blockTimestamp
-      }
-      love
-    }
-    genesCreated {
-      id
-      tokenId
-      traitType
-      name
-      description
-      svg
-      totalEarnings
-      blockTimestamp
-      payouts {
-        id
-        amount
-        auctionId
-        blockTimestamp
-      }
-    }
-    genesOwned {
-      id
-      tokenId
-      traitType
-      name
-      description
-      svg
-      totalEarnings
-      blockTimestamp
-      creator {
-        id
-        address
-      }
-    }
-    geneVotes {
-      id
-      auction {
-        id
-        auctionId
-        aminalOne {
+        aminal {
           id
           contractAddress
           tokenURI
+          totalLove
+          energy
+          ethBalance
+          blockTimestamp
         }
-        aminalTwo {
-          id
-          contractAddress
-          tokenURI
-        }
+        love
       }
-      proposal {
-        id
-        geneNFT {
-          id
-          tokenId
-          name
-          traitType
-        }
-      }
-      isRemoveVote
-      loveAmount
-      blockTimestamp
     }
-  }
-}
-
-query UserEarnings($address: ID!) {
-  user(id: $address) {
-    id
-    address
-    genesCreated {
-      id
-      tokenId
-      name
-      traitType
-      totalEarnings
-      payouts {
+    genesCreated(limit: 100) {
+      items {
         id
-        amount
-        auctionId
+        tokenId
+        traitType
+        name
+        description
+        svg
+        totalEarnings
         blockTimestamp
+        payouts(limit: 100) {
+          items {
+            id
+            amount
+            auctionId
+            blockTimestamp
+          }
+        }
+      }
+    }
+    genesOwned(limit: 100) {
+      items {
+        id
+        tokenId
+        traitType
+        name
+        description
+        svg
+        totalEarnings
+        blockTimestamp
+        creator {
+          id
+          address
+        }
+      }
+    }
+    geneVotes(limit: 100) {
+      items {
+        id
         auction {
           id
           auctionId
@@ -106,45 +70,97 @@ query UserEarnings($address: ID!) {
             tokenURI
           }
         }
+        proposal {
+          id
+          geneNFT {
+            id
+            tokenId
+            name
+            traitType
+          }
+        }
+        isRemoveVote
+        loveAmount
+        blockTimestamp
       }
     }
   }
 }
 
-query UserActivity($address: ID!) {
+query UserEarnings($address: String!) {
   user(id: $address) {
     id
     address
-    # Recent love activity
-    lovers(orderBy: love, orderDirection: desc, first: 10) {
-      id
-      aminal {
+    genesCreated(limit: 100) {
+      items {
         id
-        contractAddress
-        tokenURI
-        totalLove
-      }
-      love
-    }
-    # Recent gene voting activity
-    geneVotes(orderBy: blockTimestamp, orderDirection: desc, first: 10) {
-      id
-      auction {
-        id
-        auctionId
-      }
-      proposal {
-        id
-        geneNFT {
-          id
-          tokenId
-          name
-          traitType
+        tokenId
+        name
+        traitType
+        totalEarnings
+        payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+          items {
+            id
+            amount
+            auctionId
+            blockTimestamp
+            auction {
+              id
+              auctionId
+              aminalOne {
+                id
+                contractAddress
+                tokenURI
+              }
+              aminalTwo {
+                id
+                contractAddress
+                tokenURI
+              }
+            }
+          }
         }
       }
-      isRemoveVote
-      loveAmount
-      blockTimestamp
+    }
+  }
+}
+
+query UserActivity($address: String!) {
+  user(id: $address) {
+    id
+    address
+    lovers(orderBy: "love", orderDirection: "desc", limit: 10) {
+      items {
+        id
+        aminal {
+          id
+          contractAddress
+          tokenURI
+          totalLove
+        }
+        love
+      }
+    }
+    geneVotes(orderBy: "blockTimestamp", orderDirection: "desc", limit: 10) {
+      items {
+        id
+        auction {
+          id
+          auctionId
+        }
+        proposal {
+          id
+          geneNFT {
+            id
+            tokenId
+            name
+            traitType
+          }
+        }
+        isRemoveVote
+        loveAmount
+        blockTimestamp
+      }
     }
   }
 }

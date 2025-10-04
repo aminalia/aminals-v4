@@ -1,8 +1,8 @@
 sources:
-  - name: aminalsv3
+  - name: ponder
     handler:
       graphql:
-        endpoint: https://api.studio.thegraph.com/query/57078/aminals-3/version/latest
+        endpoint: http://localhost:42069/graphql
 
 documents:
   - ./src/**/*.graphql

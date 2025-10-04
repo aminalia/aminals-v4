@@ -20,7 +20,7 @@ import { handleGraphQLError, queryKeys } from '../lib/query-client';
 export type { CategoryFilter, GeneFilter, GeneSort };
 export { GenesByIdsDocument, GenesByIdsQuery };
 
-type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
+type GeneNFT = GeneNftsListQuery['geneNFTs']['items'][number];
 
 export const useGenes = (
   filter: GeneFilter = 'all',
@@ -29,7 +29,7 @@ export const useGenes = (
 ) => {
   const { address } = useAccount();
 
-  return useQuery<GeneNftsListQuery['geneNFTs']>({
+  return useQuery<GeneNftsListQuery['geneNFTs']['items']>({
     queryKey: queryKeys.genes.list({ filter, sort, category, address }),
     queryFn: async () => {
       try {
@@ -45,7 +45,7 @@ export const useGenes = (
           throw new Error('No data returned from GraphQL query');
         }
 
-        const geneNFTs = response.data?.geneNFTs || [];
+        const geneNFTs = response.data?.geneNFTs?.items || [];
 
         // Use data transformer to apply filter, sort, and category
         return transformGenes(geneNFTs, filter, sort, category, address);
@@ -82,7 +82,7 @@ export const useGene = (id: string) => {
 };
 
 export const useGenesByIds = (ids: string[]) => {
-  return useQuery<GenesByIdsQuery['geneNFTs']>({
+  return useQuery<GenesByIdsQuery['geneNFTs']['items']>({
     queryKey: queryKeys.genes.list({ ids: ids.sort() }),
     queryFn: async () => {
       if (ids.length === 0) return [];
@@ -100,7 +100,7 @@ export const useGenesByIds = (ids: string[]) => {
           throw handleGraphQLError(response.errors);
         }
 
-        return response.data?.geneNFTs || [];
+        return response.data?.geneNFTs?.items || [];
       } catch (error) {
         console.error('Error fetching genes by IDs:', error);
         throw error;

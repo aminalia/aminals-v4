@@ -21,8 +21,8 @@ import { getMesh, ExecuteMeshFn, SubscribeMeshFn, MeshContext as BaseMeshContext
 import { MeshStore, FsStoreStorageAdapter } from '@graphql-mesh/store';
 import { path as pathModule } from '@graphql-mesh/cross-helpers';
 import { ImportFn } from '@graphql-mesh/types';
-import type { Aminalsv3Types } from './sources/aminalsv3/types';
-import * as importedModule$0 from "./sources/aminalsv3/introspectionSchema";
+import type { PonderTypes } from './sources/ponder/types';
+import * as importedModule$0 from "./sources/ponder/introspectionSchema";
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -41,2609 +41,1572 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
-  BigDecimal: { input: any; output: any; }
+  JSON: { input: any; output: any; }
   BigInt: { input: any; output: any; }
-  Bytes: { input: any; output: any; }
-  Int8: { input: any; output: any; }
-  Timestamp: { input: any; output: any; }
 };
 
-export type Aggregation_interval =
-  | 'hour'
-  | 'day';
-
-export type Aminal = {
-  id: Scalars['Bytes']['output'];
-  contractAddress: Scalars['Bytes']['output'];
-  aminalIndex: Scalars['BigInt']['output'];
-  factory: AminalFactory;
-  parentOne?: Maybe<Aminal>;
-  parentTwo?: Maybe<Aminal>;
-  auctionId?: Maybe<Scalars['BigInt']['output']>;
-  childrenAsParentOne: Array<Aminal>;
-  childrenAsParentTwo: Array<Aminal>;
-  backId: Scalars['BigInt']['output'];
-  armId: Scalars['BigInt']['output'];
-  tailId: Scalars['BigInt']['output'];
-  earsId: Scalars['BigInt']['output'];
-  bodyId: Scalars['BigInt']['output'];
-  faceId: Scalars['BigInt']['output'];
-  mouthId: Scalars['BigInt']['output'];
-  miscId: Scalars['BigInt']['output'];
-  tokenURI?: Maybe<Scalars['String']['output']>;
-  energy: Scalars['BigInt']['output'];
-  totalLove: Scalars['BigInt']['output'];
-  ethBalance: Scalars['BigInt']['output'];
-  lovers: Array<Maybe<Relationship>>;
-  skillUsed: Array<SkillUsed>;
-  feeds: Array<FeedAminalEvent>;
-  breedingEventsAsParentOne: Array<BreedAminalEvent>;
-  breedingEventsAsParentTwo: Array<BreedAminalEvent>;
-  auctions: Array<GeneAuction>;
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
+export type PageInfo = {
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor?: Maybe<Scalars['String']['output']>;
+  endCursor?: Maybe<Scalars['String']['output']>;
 };
 
-
-export type AminalchildrenAsParentOneArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Aminal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Aminal_filter>;
+export type Meta = {
+  status?: Maybe<Scalars['JSON']['output']>;
 };
-
-
-export type AminalchildrenAsParentTwoArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Aminal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Aminal_filter>;
-};
-
-
-export type AminalloversArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Relationship_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Relationship_filter>;
-};
-
-
-export type AminalskillUsedArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<SkillUsed_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<SkillUsed_filter>;
-};
-
-
-export type AminalfeedsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<FeedAminalEvent_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<FeedAminalEvent_filter>;
-};
-
-
-export type AminalbreedingEventsAsParentOneArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BreedAminalEvent_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<BreedAminalEvent_filter>;
-};
-
-
-export type AminalbreedingEventsAsParentTwoArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BreedAminalEvent_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<BreedAminalEvent_filter>;
-};
-
-
-export type AminalauctionsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneAuction_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneAuction_filter>;
-};
-
-export type AminalFactory = {
-  id: Scalars['Bytes']['output'];
-  totalAminals: Scalars['BigInt']['output'];
-  geneAuction: Scalars['Bytes']['output'];
-  genes: Scalars['Bytes']['output'];
-  loveVRGDA: Scalars['Bytes']['output'];
-  initialAminalSpawned: Scalars['Boolean']['output'];
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-  aminals: Array<Aminal>;
-};
-
-
-export type AminalFactoryaminalsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Aminal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Aminal_filter>;
-};
-
-export type AminalFactory_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  totalAminals?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_not?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalAminals_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalAminals_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  geneAuction?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_not?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  geneAuction_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  geneAuction_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  geneAuction_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  genes?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_not?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  genes_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  genes_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  genes_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_not?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  loveVRGDA_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  loveVRGDA_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  loveVRGDA_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  initialAminalSpawned?: InputMaybe<Scalars['Boolean']['input']>;
-  initialAminalSpawned_not?: InputMaybe<Scalars['Boolean']['input']>;
-  initialAminalSpawned_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  initialAminalSpawned_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  aminals_?: InputMaybe<Aminal_filter>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<AminalFactory_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<AminalFactory_filter>>>;
-};
-
-export type AminalFactory_orderBy =
-  | 'id'
-  | 'totalAminals'
-  | 'geneAuction'
-  | 'genes'
-  | 'loveVRGDA'
-  | 'initialAminalSpawned'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash'
-  | 'aminals';
-
-export type Aminal_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_not?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  contractAddress_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  contractAddress_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  contractAddress_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  aminalIndex?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_not?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  aminalIndex_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  aminalIndex_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  factory?: InputMaybe<Scalars['String']['input']>;
-  factory_not?: InputMaybe<Scalars['String']['input']>;
-  factory_gt?: InputMaybe<Scalars['String']['input']>;
-  factory_lt?: InputMaybe<Scalars['String']['input']>;
-  factory_gte?: InputMaybe<Scalars['String']['input']>;
-  factory_lte?: InputMaybe<Scalars['String']['input']>;
-  factory_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  factory_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  factory_contains?: InputMaybe<Scalars['String']['input']>;
-  factory_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_not_contains?: InputMaybe<Scalars['String']['input']>;
-  factory_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_starts_with?: InputMaybe<Scalars['String']['input']>;
-  factory_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  factory_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_ends_with?: InputMaybe<Scalars['String']['input']>;
-  factory_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  factory_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  factory_?: InputMaybe<AminalFactory_filter>;
-  parentOne?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not?: InputMaybe<Scalars['String']['input']>;
-  parentOne_gt?: InputMaybe<Scalars['String']['input']>;
-  parentOne_lt?: InputMaybe<Scalars['String']['input']>;
-  parentOne_gte?: InputMaybe<Scalars['String']['input']>;
-  parentOne_lte?: InputMaybe<Scalars['String']['input']>;
-  parentOne_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  parentOne_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  parentOne_contains?: InputMaybe<Scalars['String']['input']>;
-  parentOne_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_contains?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_starts_with?: InputMaybe<Scalars['String']['input']>;
-  parentOne_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_ends_with?: InputMaybe<Scalars['String']['input']>;
-  parentOne_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  parentOne_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentOne_?: InputMaybe<Aminal_filter>;
-  parentTwo?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_gt?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_lt?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_gte?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_lte?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  parentTwo_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  parentTwo_contains?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_contains?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_starts_with?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_ends_with?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  parentTwo_?: InputMaybe<Aminal_filter>;
-  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auctionId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  childrenAsParentOne_?: InputMaybe<Aminal_filter>;
-  childrenAsParentTwo_?: InputMaybe<Aminal_filter>;
-  backId?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  backId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  backId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  armId?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  armId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  armId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  tailId?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  tailId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  tailId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  earsId?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  earsId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  earsId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  bodyId?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  bodyId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  bodyId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  faceId?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  faceId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  faceId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  mouthId?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  mouthId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  mouthId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  miscId?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  miscId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  miscId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  tokenURI?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_gt?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_lt?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_gte?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_lte?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  tokenURI_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  tokenURI_contains?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_contains?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_starts_with?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_ends_with?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  tokenURI_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  energy?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_not?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  energy_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalLove_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  ethBalance?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_not?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  ethBalance_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  ethBalance_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  lovers_?: InputMaybe<Relationship_filter>;
-  skillUsed_?: InputMaybe<SkillUsed_filter>;
-  feeds_?: InputMaybe<FeedAminalEvent_filter>;
-  breedingEventsAsParentOne_?: InputMaybe<BreedAminalEvent_filter>;
-  breedingEventsAsParentTwo_?: InputMaybe<BreedAminalEvent_filter>;
-  auctions_?: InputMaybe<GeneAuction_filter>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<Aminal_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<Aminal_filter>>>;
-};
-
-export type Aminal_orderBy =
-  | 'id'
-  | 'contractAddress'
-  | 'aminalIndex'
-  | 'factory'
-  | 'factory__id'
-  | 'factory__totalAminals'
-  | 'factory__geneAuction'
-  | 'factory__genes'
-  | 'factory__loveVRGDA'
-  | 'factory__initialAminalSpawned'
-  | 'factory__blockNumber'
-  | 'factory__blockTimestamp'
-  | 'factory__transactionHash'
-  | 'parentOne'
-  | 'parentOne__id'
-  | 'parentOne__contractAddress'
-  | 'parentOne__aminalIndex'
-  | 'parentOne__auctionId'
-  | 'parentOne__backId'
-  | 'parentOne__armId'
-  | 'parentOne__tailId'
-  | 'parentOne__earsId'
-  | 'parentOne__bodyId'
-  | 'parentOne__faceId'
-  | 'parentOne__mouthId'
-  | 'parentOne__miscId'
-  | 'parentOne__tokenURI'
-  | 'parentOne__energy'
-  | 'parentOne__totalLove'
-  | 'parentOne__ethBalance'
-  | 'parentOne__blockNumber'
-  | 'parentOne__blockTimestamp'
-  | 'parentOne__transactionHash'
-  | 'parentTwo'
-  | 'parentTwo__id'
-  | 'parentTwo__contractAddress'
-  | 'parentTwo__aminalIndex'
-  | 'parentTwo__auctionId'
-  | 'parentTwo__backId'
-  | 'parentTwo__armId'
-  | 'parentTwo__tailId'
-  | 'parentTwo__earsId'
-  | 'parentTwo__bodyId'
-  | 'parentTwo__faceId'
-  | 'parentTwo__mouthId'
-  | 'parentTwo__miscId'
-  | 'parentTwo__tokenURI'
-  | 'parentTwo__energy'
-  | 'parentTwo__totalLove'
-  | 'parentTwo__ethBalance'
-  | 'parentTwo__blockNumber'
-  | 'parentTwo__blockTimestamp'
-  | 'parentTwo__transactionHash'
-  | 'auctionId'
-  | 'childrenAsParentOne'
-  | 'childrenAsParentTwo'
-  | 'backId'
-  | 'armId'
-  | 'tailId'
-  | 'earsId'
-  | 'bodyId'
-  | 'faceId'
-  | 'mouthId'
-  | 'miscId'
-  | 'tokenURI'
-  | 'energy'
-  | 'totalLove'
-  | 'ethBalance'
-  | 'lovers'
-  | 'skillUsed'
-  | 'feeds'
-  | 'breedingEventsAsParentOne'
-  | 'breedingEventsAsParentTwo'
-  | 'auctions'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type BlockChangedFilter = {
-  number_gte: Scalars['Int']['input'];
-};
-
-export type Block_height = {
-  hash?: InputMaybe<Scalars['Bytes']['input']>;
-  number?: InputMaybe<Scalars['Int']['input']>;
-  number_gte?: InputMaybe<Scalars['Int']['input']>;
-};
-
-export type BreedAminalEvent = {
-  id: Scalars['Bytes']['output'];
-  aminalOne: Aminal;
-  aminalTwo: Aminal;
-  auctionId: Scalars['BigInt']['output'];
-  auction?: Maybe<GeneAuction>;
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-export type BreedAminalEvent_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  aminalOne?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_gt?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_lt?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_gte?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_lte?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalOne_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalOne_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_?: InputMaybe<Aminal_filter>;
-  aminalTwo?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_gt?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_lt?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_gte?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_lte?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalTwo_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalTwo_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_?: InputMaybe<Aminal_filter>;
-  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auctionId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auction?: InputMaybe<Scalars['String']['input']>;
-  auction_not?: InputMaybe<Scalars['String']['input']>;
-  auction_gt?: InputMaybe<Scalars['String']['input']>;
-  auction_lt?: InputMaybe<Scalars['String']['input']>;
-  auction_gte?: InputMaybe<Scalars['String']['input']>;
-  auction_lte?: InputMaybe<Scalars['String']['input']>;
-  auction_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_?: InputMaybe<GeneAuction_filter>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<BreedAminalEvent_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<BreedAminalEvent_filter>>>;
-};
-
-export type BreedAminalEvent_orderBy =
-  | 'id'
-  | 'aminalOne'
-  | 'aminalOne__id'
-  | 'aminalOne__contractAddress'
-  | 'aminalOne__aminalIndex'
-  | 'aminalOne__auctionId'
-  | 'aminalOne__backId'
-  | 'aminalOne__armId'
-  | 'aminalOne__tailId'
-  | 'aminalOne__earsId'
-  | 'aminalOne__bodyId'
-  | 'aminalOne__faceId'
-  | 'aminalOne__mouthId'
-  | 'aminalOne__miscId'
-  | 'aminalOne__tokenURI'
-  | 'aminalOne__energy'
-  | 'aminalOne__totalLove'
-  | 'aminalOne__ethBalance'
-  | 'aminalOne__blockNumber'
-  | 'aminalOne__blockTimestamp'
-  | 'aminalOne__transactionHash'
-  | 'aminalTwo'
-  | 'aminalTwo__id'
-  | 'aminalTwo__contractAddress'
-  | 'aminalTwo__aminalIndex'
-  | 'aminalTwo__auctionId'
-  | 'aminalTwo__backId'
-  | 'aminalTwo__armId'
-  | 'aminalTwo__tailId'
-  | 'aminalTwo__earsId'
-  | 'aminalTwo__bodyId'
-  | 'aminalTwo__faceId'
-  | 'aminalTwo__mouthId'
-  | 'aminalTwo__miscId'
-  | 'aminalTwo__tokenURI'
-  | 'aminalTwo__energy'
-  | 'aminalTwo__totalLove'
-  | 'aminalTwo__ethBalance'
-  | 'aminalTwo__blockNumber'
-  | 'aminalTwo__blockTimestamp'
-  | 'aminalTwo__transactionHash'
-  | 'auctionId'
-  | 'auction'
-  | 'auction__id'
-  | 'auction__auctionId'
-  | 'auction__totalLove'
-  | 'auction__finished'
-  | 'auction__blockNumber'
-  | 'auction__blockTimestamp'
-  | 'auction__transactionHash'
-  | 'auction__endBlockNumber'
-  | 'auction__endBlockTimestamp'
-  | 'auction__endTransactionHash'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type FeedAminalEvent = {
-  id: Scalars['Bytes']['output'];
-  aminal: Aminal;
-  sender: User;
-  amount: Scalars['BigInt']['output'];
-  love: Scalars['BigInt']['output'];
-  totalLove: Scalars['BigInt']['output'];
-  energy: Scalars['BigInt']['output'];
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-export type FeedAminalEvent_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  aminal?: InputMaybe<Scalars['String']['input']>;
-  aminal_not?: InputMaybe<Scalars['String']['input']>;
-  aminal_gt?: InputMaybe<Scalars['String']['input']>;
-  aminal_lt?: InputMaybe<Scalars['String']['input']>;
-  aminal_gte?: InputMaybe<Scalars['String']['input']>;
-  aminal_lte?: InputMaybe<Scalars['String']['input']>;
-  aminal_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_?: InputMaybe<Aminal_filter>;
-  sender?: InputMaybe<Scalars['String']['input']>;
-  sender_not?: InputMaybe<Scalars['String']['input']>;
-  sender_gt?: InputMaybe<Scalars['String']['input']>;
-  sender_lt?: InputMaybe<Scalars['String']['input']>;
-  sender_gte?: InputMaybe<Scalars['String']['input']>;
-  sender_lte?: InputMaybe<Scalars['String']['input']>;
-  sender_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  sender_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  sender_contains?: InputMaybe<Scalars['String']['input']>;
-  sender_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_not_contains?: InputMaybe<Scalars['String']['input']>;
-  sender_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_starts_with?: InputMaybe<Scalars['String']['input']>;
-  sender_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  sender_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_ends_with?: InputMaybe<Scalars['String']['input']>;
-  sender_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  sender_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  sender_?: InputMaybe<User_filter>;
-  amount?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_not?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  amount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  love?: InputMaybe<Scalars['BigInt']['input']>;
-  love_not?: InputMaybe<Scalars['BigInt']['input']>;
-  love_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  love_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  love_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  love_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  love_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  love_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalLove_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  energy?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_not?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  energy_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  energy_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<FeedAminalEvent_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<FeedAminalEvent_filter>>>;
-};
-
-export type FeedAminalEvent_orderBy =
-  | 'id'
-  | 'aminal'
-  | 'aminal__id'
-  | 'aminal__contractAddress'
-  | 'aminal__aminalIndex'
-  | 'aminal__auctionId'
-  | 'aminal__backId'
-  | 'aminal__armId'
-  | 'aminal__tailId'
-  | 'aminal__earsId'
-  | 'aminal__bodyId'
-  | 'aminal__faceId'
-  | 'aminal__mouthId'
-  | 'aminal__miscId'
-  | 'aminal__tokenURI'
-  | 'aminal__energy'
-  | 'aminal__totalLove'
-  | 'aminal__ethBalance'
-  | 'aminal__blockNumber'
-  | 'aminal__blockTimestamp'
-  | 'aminal__transactionHash'
-  | 'sender'
-  | 'sender__id'
-  | 'sender__address'
-  | 'amount'
-  | 'love'
-  | 'totalLove'
-  | 'energy'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type GeneAuction = {
-  id: Scalars['Bytes']['output'];
-  auctionId: Scalars['BigInt']['output'];
-  aminalOne: Aminal;
-  aminalTwo: Aminal;
-  totalLove: Scalars['BigInt']['output'];
-  finished: Scalars['Boolean']['output'];
-  childAminal?: Maybe<Aminal>;
-  winningGeneIds?: Maybe<Array<Scalars['BigInt']['output']>>;
-  proposals: Array<GeneProposal>;
-  votes: Array<GeneVote>;
-  payouts: Array<GeneCreatorPayout>;
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-  endBlockNumber?: Maybe<Scalars['BigInt']['output']>;
-  endBlockTimestamp?: Maybe<Scalars['BigInt']['output']>;
-  endTransactionHash?: Maybe<Scalars['Bytes']['output']>;
-};
-
-
-export type GeneAuctionproposalsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneProposal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneProposal_filter>;
-};
-
-
-export type GeneAuctionvotesArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneVote_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneVote_filter>;
-};
-
-
-export type GeneAuctionpayoutsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneCreatorPayout_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneCreatorPayout_filter>;
-};
-
-export type GeneAuction_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auctionId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  aminalOne?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_gt?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_lt?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_gte?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_lte?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalOne_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalOne_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalOne_?: InputMaybe<Aminal_filter>;
-  aminalTwo?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_gt?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_lt?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_gte?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_lte?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalTwo_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminalTwo_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminalTwo_?: InputMaybe<Aminal_filter>;
-  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalLove_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalLove_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  finished?: InputMaybe<Scalars['Boolean']['input']>;
-  finished_not?: InputMaybe<Scalars['Boolean']['input']>;
-  finished_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  finished_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  childAminal?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not?: InputMaybe<Scalars['String']['input']>;
-  childAminal_gt?: InputMaybe<Scalars['String']['input']>;
-  childAminal_lt?: InputMaybe<Scalars['String']['input']>;
-  childAminal_gte?: InputMaybe<Scalars['String']['input']>;
-  childAminal_lte?: InputMaybe<Scalars['String']['input']>;
-  childAminal_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  childAminal_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  childAminal_contains?: InputMaybe<Scalars['String']['input']>;
-  childAminal_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_contains?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_starts_with?: InputMaybe<Scalars['String']['input']>;
-  childAminal_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_ends_with?: InputMaybe<Scalars['String']['input']>;
-  childAminal_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  childAminal_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  childAminal_?: InputMaybe<Aminal_filter>;
-  winningGeneIds?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  winningGeneIds_not?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  winningGeneIds_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  winningGeneIds_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  winningGeneIds_not_contains?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  winningGeneIds_not_contains_nocase?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  proposals_?: InputMaybe<GeneProposal_filter>;
-  votes_?: InputMaybe<GeneVote_filter>;
-  payouts_?: InputMaybe<GeneCreatorPayout_filter>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  endBlockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  endBlockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  endBlockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  endBlockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  endBlockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  endTransactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  endTransactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  endTransactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  endTransactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<GeneAuction_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<GeneAuction_filter>>>;
-};
-
-export type GeneAuction_orderBy =
-  | 'id'
-  | 'auctionId'
-  | 'aminalOne'
-  | 'aminalOne__id'
-  | 'aminalOne__contractAddress'
-  | 'aminalOne__aminalIndex'
-  | 'aminalOne__auctionId'
-  | 'aminalOne__backId'
-  | 'aminalOne__armId'
-  | 'aminalOne__tailId'
-  | 'aminalOne__earsId'
-  | 'aminalOne__bodyId'
-  | 'aminalOne__faceId'
-  | 'aminalOne__mouthId'
-  | 'aminalOne__miscId'
-  | 'aminalOne__tokenURI'
-  | 'aminalOne__energy'
-  | 'aminalOne__totalLove'
-  | 'aminalOne__ethBalance'
-  | 'aminalOne__blockNumber'
-  | 'aminalOne__blockTimestamp'
-  | 'aminalOne__transactionHash'
-  | 'aminalTwo'
-  | 'aminalTwo__id'
-  | 'aminalTwo__contractAddress'
-  | 'aminalTwo__aminalIndex'
-  | 'aminalTwo__auctionId'
-  | 'aminalTwo__backId'
-  | 'aminalTwo__armId'
-  | 'aminalTwo__tailId'
-  | 'aminalTwo__earsId'
-  | 'aminalTwo__bodyId'
-  | 'aminalTwo__faceId'
-  | 'aminalTwo__mouthId'
-  | 'aminalTwo__miscId'
-  | 'aminalTwo__tokenURI'
-  | 'aminalTwo__energy'
-  | 'aminalTwo__totalLove'
-  | 'aminalTwo__ethBalance'
-  | 'aminalTwo__blockNumber'
-  | 'aminalTwo__blockTimestamp'
-  | 'aminalTwo__transactionHash'
-  | 'totalLove'
-  | 'finished'
-  | 'childAminal'
-  | 'childAminal__id'
-  | 'childAminal__contractAddress'
-  | 'childAminal__aminalIndex'
-  | 'childAminal__auctionId'
-  | 'childAminal__backId'
-  | 'childAminal__armId'
-  | 'childAminal__tailId'
-  | 'childAminal__earsId'
-  | 'childAminal__bodyId'
-  | 'childAminal__faceId'
-  | 'childAminal__mouthId'
-  | 'childAminal__miscId'
-  | 'childAminal__tokenURI'
-  | 'childAminal__energy'
-  | 'childAminal__totalLove'
-  | 'childAminal__ethBalance'
-  | 'childAminal__blockNumber'
-  | 'childAminal__blockTimestamp'
-  | 'childAminal__transactionHash'
-  | 'winningGeneIds'
-  | 'proposals'
-  | 'votes'
-  | 'payouts'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash'
-  | 'endBlockNumber'
-  | 'endBlockTimestamp'
-  | 'endTransactionHash';
-
-export type GeneCreatorPayout = {
-  id: Scalars['Bytes']['output'];
-  auction: GeneAuction;
-  geneNFT: GeneNFT;
-  creator: User;
-  amount: Scalars['BigInt']['output'];
-  auctionId: Scalars['BigInt']['output'];
-  geneId: Scalars['BigInt']['output'];
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-export type GeneCreatorPayout_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  auction?: InputMaybe<Scalars['String']['input']>;
-  auction_not?: InputMaybe<Scalars['String']['input']>;
-  auction_gt?: InputMaybe<Scalars['String']['input']>;
-  auction_lt?: InputMaybe<Scalars['String']['input']>;
-  auction_gte?: InputMaybe<Scalars['String']['input']>;
-  auction_lte?: InputMaybe<Scalars['String']['input']>;
-  auction_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_?: InputMaybe<GeneAuction_filter>;
-  geneNFT?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_gt?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_lt?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_gte?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_lte?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  geneNFT_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  geneNFT_contains?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_contains?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_starts_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_ends_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_?: InputMaybe<GeneNFT_filter>;
-  creator?: InputMaybe<Scalars['String']['input']>;
-  creator_not?: InputMaybe<Scalars['String']['input']>;
-  creator_gt?: InputMaybe<Scalars['String']['input']>;
-  creator_lt?: InputMaybe<Scalars['String']['input']>;
-  creator_gte?: InputMaybe<Scalars['String']['input']>;
-  creator_lte?: InputMaybe<Scalars['String']['input']>;
-  creator_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  creator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  creator_contains?: InputMaybe<Scalars['String']['input']>;
-  creator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_contains?: InputMaybe<Scalars['String']['input']>;
-  creator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_starts_with?: InputMaybe<Scalars['String']['input']>;
-  creator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  creator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_ends_with?: InputMaybe<Scalars['String']['input']>;
-  creator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  creator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_?: InputMaybe<User_filter>;
-  amount?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_not?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  amount_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  amount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  auctionId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  auctionId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  geneId?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  geneId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  geneId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<GeneCreatorPayout_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<GeneCreatorPayout_filter>>>;
-};
-
-export type GeneCreatorPayout_orderBy =
-  | 'id'
-  | 'auction'
-  | 'auction__id'
-  | 'auction__auctionId'
-  | 'auction__totalLove'
-  | 'auction__finished'
-  | 'auction__blockNumber'
-  | 'auction__blockTimestamp'
-  | 'auction__transactionHash'
-  | 'auction__endBlockNumber'
-  | 'auction__endBlockTimestamp'
-  | 'auction__endTransactionHash'
-  | 'geneNFT'
-  | 'geneNFT__id'
-  | 'geneNFT__tokenId'
-  | 'geneNFT__traitType'
-  | 'geneNFT__svg'
-  | 'geneNFT__name'
-  | 'geneNFT__description'
-  | 'geneNFT__totalEarnings'
-  | 'geneNFT__blockNumber'
-  | 'geneNFT__blockTimestamp'
-  | 'geneNFT__transactionHash'
-  | 'creator'
-  | 'creator__id'
-  | 'creator__address'
-  | 'amount'
-  | 'auctionId'
-  | 'geneId'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type GeneNFT = {
-  id: Scalars['Bytes']['output'];
-  tokenId: Scalars['BigInt']['output'];
-  traitType: Scalars['Int']['output'];
-  owner: User;
-  creator: User;
-  svg?: Maybe<Scalars['String']['output']>;
-  name?: Maybe<Scalars['String']['output']>;
-  description?: Maybe<Scalars['String']['output']>;
-  proposalsUsingGene: Array<GeneProposal>;
-  totalEarnings: Scalars['BigInt']['output'];
-  payouts: Array<GeneCreatorPayout>;
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-
-export type GeneNFTproposalsUsingGeneArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneProposal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneProposal_filter>;
-};
-
-
-export type GeneNFTpayoutsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneCreatorPayout_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneCreatorPayout_filter>;
-};
-
-export type GeneNFT_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  tokenId?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_not?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  tokenId_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  tokenId_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  traitType?: InputMaybe<Scalars['Int']['input']>;
-  traitType_not?: InputMaybe<Scalars['Int']['input']>;
-  traitType_gt?: InputMaybe<Scalars['Int']['input']>;
-  traitType_lt?: InputMaybe<Scalars['Int']['input']>;
-  traitType_gte?: InputMaybe<Scalars['Int']['input']>;
-  traitType_lte?: InputMaybe<Scalars['Int']['input']>;
-  traitType_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-  traitType_not_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-  owner?: InputMaybe<Scalars['String']['input']>;
-  owner_not?: InputMaybe<Scalars['String']['input']>;
-  owner_gt?: InputMaybe<Scalars['String']['input']>;
-  owner_lt?: InputMaybe<Scalars['String']['input']>;
-  owner_gte?: InputMaybe<Scalars['String']['input']>;
-  owner_lte?: InputMaybe<Scalars['String']['input']>;
-  owner_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  owner_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  owner_contains?: InputMaybe<Scalars['String']['input']>;
-  owner_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_not_contains?: InputMaybe<Scalars['String']['input']>;
-  owner_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_starts_with?: InputMaybe<Scalars['String']['input']>;
-  owner_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  owner_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_ends_with?: InputMaybe<Scalars['String']['input']>;
-  owner_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  owner_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  owner_?: InputMaybe<User_filter>;
-  creator?: InputMaybe<Scalars['String']['input']>;
-  creator_not?: InputMaybe<Scalars['String']['input']>;
-  creator_gt?: InputMaybe<Scalars['String']['input']>;
-  creator_lt?: InputMaybe<Scalars['String']['input']>;
-  creator_gte?: InputMaybe<Scalars['String']['input']>;
-  creator_lte?: InputMaybe<Scalars['String']['input']>;
-  creator_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  creator_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  creator_contains?: InputMaybe<Scalars['String']['input']>;
-  creator_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_contains?: InputMaybe<Scalars['String']['input']>;
-  creator_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_starts_with?: InputMaybe<Scalars['String']['input']>;
-  creator_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  creator_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_ends_with?: InputMaybe<Scalars['String']['input']>;
-  creator_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  creator_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  creator_?: InputMaybe<User_filter>;
-  svg?: InputMaybe<Scalars['String']['input']>;
-  svg_not?: InputMaybe<Scalars['String']['input']>;
-  svg_gt?: InputMaybe<Scalars['String']['input']>;
-  svg_lt?: InputMaybe<Scalars['String']['input']>;
-  svg_gte?: InputMaybe<Scalars['String']['input']>;
-  svg_lte?: InputMaybe<Scalars['String']['input']>;
-  svg_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  svg_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  svg_contains?: InputMaybe<Scalars['String']['input']>;
-  svg_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  svg_not_contains?: InputMaybe<Scalars['String']['input']>;
-  svg_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  svg_starts_with?: InputMaybe<Scalars['String']['input']>;
-  svg_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  svg_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  svg_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  svg_ends_with?: InputMaybe<Scalars['String']['input']>;
-  svg_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  svg_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  svg_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  name?: InputMaybe<Scalars['String']['input']>;
-  name_not?: InputMaybe<Scalars['String']['input']>;
-  name_gt?: InputMaybe<Scalars['String']['input']>;
-  name_lt?: InputMaybe<Scalars['String']['input']>;
-  name_gte?: InputMaybe<Scalars['String']['input']>;
-  name_lte?: InputMaybe<Scalars['String']['input']>;
-  name_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  name_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  name_contains?: InputMaybe<Scalars['String']['input']>;
-  name_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  name_not_contains?: InputMaybe<Scalars['String']['input']>;
-  name_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  name_starts_with?: InputMaybe<Scalars['String']['input']>;
-  name_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  name_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  name_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  name_ends_with?: InputMaybe<Scalars['String']['input']>;
-  name_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  name_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  name_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  description?: InputMaybe<Scalars['String']['input']>;
-  description_not?: InputMaybe<Scalars['String']['input']>;
-  description_gt?: InputMaybe<Scalars['String']['input']>;
-  description_lt?: InputMaybe<Scalars['String']['input']>;
-  description_gte?: InputMaybe<Scalars['String']['input']>;
-  description_lte?: InputMaybe<Scalars['String']['input']>;
-  description_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  description_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  description_contains?: InputMaybe<Scalars['String']['input']>;
-  description_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  description_not_contains?: InputMaybe<Scalars['String']['input']>;
-  description_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  description_starts_with?: InputMaybe<Scalars['String']['input']>;
-  description_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  description_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  description_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  description_ends_with?: InputMaybe<Scalars['String']['input']>;
-  description_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  description_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  description_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposalsUsingGene_?: InputMaybe<GeneProposal_filter>;
-  totalEarnings?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_not?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  totalEarnings_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  totalEarnings_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  payouts_?: InputMaybe<GeneCreatorPayout_filter>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<GeneNFT_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<GeneNFT_filter>>>;
-};
-
-export type GeneNFT_orderBy =
-  | 'id'
-  | 'tokenId'
-  | 'traitType'
-  | 'owner'
-  | 'owner__id'
-  | 'owner__address'
-  | 'creator'
-  | 'creator__id'
-  | 'creator__address'
-  | 'svg'
-  | 'name'
-  | 'description'
-  | 'proposalsUsingGene'
-  | 'totalEarnings'
-  | 'payouts'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type GeneProposal = {
-  id: Scalars['Bytes']['output'];
-  auction: GeneAuction;
-  geneNFT: GeneNFT;
-  traitType: Scalars['Int']['output'];
-  proposer: User;
-  loveVotes: Scalars['BigInt']['output'];
-  removeVotes: Scalars['BigInt']['output'];
-  removed: Scalars['Boolean']['output'];
-  votes: Array<GeneVote>;
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-
-export type GeneProposalvotesArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneVote_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneVote_filter>;
-};
-
-export type GeneProposal_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  auction?: InputMaybe<Scalars['String']['input']>;
-  auction_not?: InputMaybe<Scalars['String']['input']>;
-  auction_gt?: InputMaybe<Scalars['String']['input']>;
-  auction_lt?: InputMaybe<Scalars['String']['input']>;
-  auction_gte?: InputMaybe<Scalars['String']['input']>;
-  auction_lte?: InputMaybe<Scalars['String']['input']>;
-  auction_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_?: InputMaybe<GeneAuction_filter>;
-  geneNFT?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_gt?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_lt?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_gte?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_lte?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  geneNFT_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  geneNFT_contains?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_contains?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_starts_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_ends_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  geneNFT_?: InputMaybe<GeneNFT_filter>;
-  traitType?: InputMaybe<Scalars['Int']['input']>;
-  traitType_not?: InputMaybe<Scalars['Int']['input']>;
-  traitType_gt?: InputMaybe<Scalars['Int']['input']>;
-  traitType_lt?: InputMaybe<Scalars['Int']['input']>;
-  traitType_gte?: InputMaybe<Scalars['Int']['input']>;
-  traitType_lte?: InputMaybe<Scalars['Int']['input']>;
-  traitType_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-  traitType_not_in?: InputMaybe<Array<Scalars['Int']['input']>>;
-  proposer?: InputMaybe<Scalars['String']['input']>;
-  proposer_not?: InputMaybe<Scalars['String']['input']>;
-  proposer_gt?: InputMaybe<Scalars['String']['input']>;
-  proposer_lt?: InputMaybe<Scalars['String']['input']>;
-  proposer_gte?: InputMaybe<Scalars['String']['input']>;
-  proposer_lte?: InputMaybe<Scalars['String']['input']>;
-  proposer_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  proposer_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  proposer_contains?: InputMaybe<Scalars['String']['input']>;
-  proposer_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_contains?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_starts_with?: InputMaybe<Scalars['String']['input']>;
-  proposer_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_ends_with?: InputMaybe<Scalars['String']['input']>;
-  proposer_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  proposer_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposer_?: InputMaybe<User_filter>;
-  loveVotes?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_not?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  loveVotes_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  loveVotes_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  removeVotes?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_not?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  removeVotes_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  removeVotes_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  removed?: InputMaybe<Scalars['Boolean']['input']>;
-  removed_not?: InputMaybe<Scalars['Boolean']['input']>;
-  removed_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  removed_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  votes_?: InputMaybe<GeneVote_filter>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<GeneProposal_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<GeneProposal_filter>>>;
-};
-
-export type GeneProposal_orderBy =
-  | 'id'
-  | 'auction'
-  | 'auction__id'
-  | 'auction__auctionId'
-  | 'auction__totalLove'
-  | 'auction__finished'
-  | 'auction__blockNumber'
-  | 'auction__blockTimestamp'
-  | 'auction__transactionHash'
-  | 'auction__endBlockNumber'
-  | 'auction__endBlockTimestamp'
-  | 'auction__endTransactionHash'
-  | 'geneNFT'
-  | 'geneNFT__id'
-  | 'geneNFT__tokenId'
-  | 'geneNFT__traitType'
-  | 'geneNFT__svg'
-  | 'geneNFT__name'
-  | 'geneNFT__description'
-  | 'geneNFT__totalEarnings'
-  | 'geneNFT__blockNumber'
-  | 'geneNFT__blockTimestamp'
-  | 'geneNFT__transactionHash'
-  | 'traitType'
-  | 'proposer'
-  | 'proposer__id'
-  | 'proposer__address'
-  | 'loveVotes'
-  | 'removeVotes'
-  | 'removed'
-  | 'votes'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-export type GeneVote = {
-  id: Scalars['Bytes']['output'];
-  auction: GeneAuction;
-  proposal: GeneProposal;
-  voter: User;
-  isRemoveVote: Scalars['Boolean']['output'];
-  loveAmount: Scalars['BigInt']['output'];
-  blockNumber: Scalars['BigInt']['output'];
-  blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
-};
-
-export type GeneVote_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  auction?: InputMaybe<Scalars['String']['input']>;
-  auction_not?: InputMaybe<Scalars['String']['input']>;
-  auction_gt?: InputMaybe<Scalars['String']['input']>;
-  auction_lt?: InputMaybe<Scalars['String']['input']>;
-  auction_gte?: InputMaybe<Scalars['String']['input']>;
-  auction_lte?: InputMaybe<Scalars['String']['input']>;
-  auction_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  auction_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains?: InputMaybe<Scalars['String']['input']>;
-  auction_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  auction_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  auction_?: InputMaybe<GeneAuction_filter>;
-  proposal?: InputMaybe<Scalars['String']['input']>;
-  proposal_not?: InputMaybe<Scalars['String']['input']>;
-  proposal_gt?: InputMaybe<Scalars['String']['input']>;
-  proposal_lt?: InputMaybe<Scalars['String']['input']>;
-  proposal_gte?: InputMaybe<Scalars['String']['input']>;
-  proposal_lte?: InputMaybe<Scalars['String']['input']>;
-  proposal_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  proposal_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  proposal_contains?: InputMaybe<Scalars['String']['input']>;
-  proposal_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_contains?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_starts_with?: InputMaybe<Scalars['String']['input']>;
-  proposal_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_ends_with?: InputMaybe<Scalars['String']['input']>;
-  proposal_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  proposal_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  proposal_?: InputMaybe<GeneProposal_filter>;
-  voter?: InputMaybe<Scalars['String']['input']>;
-  voter_not?: InputMaybe<Scalars['String']['input']>;
-  voter_gt?: InputMaybe<Scalars['String']['input']>;
-  voter_lt?: InputMaybe<Scalars['String']['input']>;
-  voter_gte?: InputMaybe<Scalars['String']['input']>;
-  voter_lte?: InputMaybe<Scalars['String']['input']>;
-  voter_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  voter_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  voter_contains?: InputMaybe<Scalars['String']['input']>;
-  voter_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_not_contains?: InputMaybe<Scalars['String']['input']>;
-  voter_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_starts_with?: InputMaybe<Scalars['String']['input']>;
-  voter_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  voter_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_ends_with?: InputMaybe<Scalars['String']['input']>;
-  voter_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  voter_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  voter_?: InputMaybe<User_filter>;
-  isRemoveVote?: InputMaybe<Scalars['Boolean']['input']>;
-  isRemoveVote_not?: InputMaybe<Scalars['Boolean']['input']>;
-  isRemoveVote_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  isRemoveVote_not_in?: InputMaybe<Array<Scalars['Boolean']['input']>>;
-  loveAmount?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_not?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  loveAmount_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  loveAmount_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<GeneVote_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<GeneVote_filter>>>;
-};
-
-export type GeneVote_orderBy =
-  | 'id'
-  | 'auction'
-  | 'auction__id'
-  | 'auction__auctionId'
-  | 'auction__totalLove'
-  | 'auction__finished'
-  | 'auction__blockNumber'
-  | 'auction__blockTimestamp'
-  | 'auction__transactionHash'
-  | 'auction__endBlockNumber'
-  | 'auction__endBlockTimestamp'
-  | 'auction__endTransactionHash'
-  | 'proposal'
-  | 'proposal__id'
-  | 'proposal__traitType'
-  | 'proposal__loveVotes'
-  | 'proposal__removeVotes'
-  | 'proposal__removed'
-  | 'proposal__blockNumber'
-  | 'proposal__blockTimestamp'
-  | 'proposal__transactionHash'
-  | 'voter'
-  | 'voter__id'
-  | 'voter__address'
-  | 'isRemoveVote'
-  | 'loveAmount'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
-
-/** Defines the order direction, either ascending or descending */
-export type OrderDirection =
-  | 'asc'
-  | 'desc';
 
 export type Query = {
-  aminalFactory?: Maybe<AminalFactory>;
-  aminalFactories: Array<AminalFactory>;
-  aminal?: Maybe<Aminal>;
-  aminals: Array<Aminal>;
-  user?: Maybe<User>;
-  users: Array<User>;
-  relationship?: Maybe<Relationship>;
-  relationships: Array<Relationship>;
-  breedAminalEvent?: Maybe<BreedAminalEvent>;
-  breedAminalEvents: Array<BreedAminalEvent>;
-  feedAminalEvent?: Maybe<FeedAminalEvent>;
-  feedAminalEvents: Array<FeedAminalEvent>;
-  skillUsed?: Maybe<SkillUsed>;
-  skillUseds: Array<SkillUsed>;
-  geneAuction?: Maybe<GeneAuction>;
-  geneAuctions: Array<GeneAuction>;
-  geneNFT?: Maybe<GeneNFT>;
-  geneNFTs: Array<GeneNFT>;
-  geneProposal?: Maybe<GeneProposal>;
-  geneProposals: Array<GeneProposal>;
-  geneVote?: Maybe<GeneVote>;
-  geneVotes: Array<GeneVote>;
-  geneCreatorPayout?: Maybe<GeneCreatorPayout>;
-  geneCreatorPayouts: Array<GeneCreatorPayout>;
-  /** Access to subgraph metadata */
-  _meta?: Maybe<_Meta_>;
+  factory?: Maybe<factory>;
+  factorys: factoryPage;
+  aminal?: Maybe<aminal>;
+  aminals: aminalPage;
+  user?: Maybe<user>;
+  users: userPage;
+  relationship?: Maybe<relationship>;
+  relationships: relationshipPage;
+  geneNFT?: Maybe<geneNFT>;
+  geneNFTs: geneNFTPage;
+  geneAuction?: Maybe<geneAuction>;
+  geneAuctions: geneAuctionPage;
+  geneProposal?: Maybe<geneProposal>;
+  geneProposals: geneProposalPage;
+  geneVote?: Maybe<geneVote>;
+  geneVotes: geneVotePage;
+  geneCreatorPayout?: Maybe<geneCreatorPayout>;
+  geneCreatorPayouts: geneCreatorPayoutPage;
+  feedEvent?: Maybe<feedEvent>;
+  feedEvents: feedEventPage;
+  skillUsedEvent?: Maybe<skillUsedEvent>;
+  skillUsedEvents: skillUsedEventPage;
+  _meta?: Maybe<Meta>;
 };
 
 
-export type QueryaminalFactoryArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+export type QueryfactoryArgs = {
+  id: Scalars['String']['input'];
 };
 
 
-export type QueryaminalFactoriesArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<AminalFactory_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<AminalFactory_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+export type QueryfactorysArgs = {
+  where?: InputMaybe<factoryFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QueryaminalArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QueryaminalsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Aminal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Aminal_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<aminalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QueryuserArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QueryusersArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<User_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<User_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<userFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QueryrelationshipArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QueryrelationshipsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Relationship_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Relationship_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QuerybreedAminalEventArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QuerybreedAminalEventsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<BreedAminalEvent_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<BreedAminalEvent_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QueryfeedAminalEventArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QueryfeedAminalEventsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<FeedAminalEvent_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<FeedAminalEvent_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QueryskillUsedArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QueryskillUsedsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<SkillUsed_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<SkillUsed_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QuerygeneAuctionArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
-};
-
-
-export type QuerygeneAuctionsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneAuction_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneAuction_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<relationshipFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QuerygeneNFTArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QuerygeneNFTsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneNFT_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneNFT_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<geneNFTFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type QuerygeneAuctionArgs = {
+  id: Scalars['String']['input'];
+};
+
+
+export type QuerygeneAuctionsArgs = {
+  where?: InputMaybe<geneAuctionFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QuerygeneProposalArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QuerygeneProposalsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneProposal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneProposal_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<geneProposalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QuerygeneVoteArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QuerygeneVotesArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneVote_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneVote_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<geneVoteFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
 export type QuerygeneCreatorPayoutArgs = {
-  id: Scalars['ID']['input'];
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  id: Scalars['String']['input'];
 };
 
 
 export type QuerygeneCreatorPayoutsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneCreatorPayout_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneCreatorPayout_filter>;
-  block?: InputMaybe<Block_height>;
-  subgraphError?: _SubgraphErrorPolicy_;
+  where?: InputMaybe<geneCreatorPayoutFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
-export type Query_metaArgs = {
-  block?: InputMaybe<Block_height>;
+export type QueryfeedEventArgs = {
+  id: Scalars['String']['input'];
 };
 
-export type Relationship = {
-  id: Scalars['Bytes']['output'];
-  user: User;
-  aminal: Aminal;
-  love: Scalars['BigInt']['output'];
+
+export type QueryfeedEventsArgs = {
+  where?: InputMaybe<feedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type Relationship_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  user?: InputMaybe<Scalars['String']['input']>;
-  user_not?: InputMaybe<Scalars['String']['input']>;
-  user_gt?: InputMaybe<Scalars['String']['input']>;
-  user_lt?: InputMaybe<Scalars['String']['input']>;
-  user_gte?: InputMaybe<Scalars['String']['input']>;
-  user_lte?: InputMaybe<Scalars['String']['input']>;
-  user_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  user_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  user_contains?: InputMaybe<Scalars['String']['input']>;
-  user_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_not_contains?: InputMaybe<Scalars['String']['input']>;
-  user_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_starts_with?: InputMaybe<Scalars['String']['input']>;
-  user_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  user_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_ends_with?: InputMaybe<Scalars['String']['input']>;
-  user_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  user_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  user_?: InputMaybe<User_filter>;
-  aminal?: InputMaybe<Scalars['String']['input']>;
-  aminal_not?: InputMaybe<Scalars['String']['input']>;
-  aminal_gt?: InputMaybe<Scalars['String']['input']>;
-  aminal_lt?: InputMaybe<Scalars['String']['input']>;
-  aminal_gte?: InputMaybe<Scalars['String']['input']>;
-  aminal_lte?: InputMaybe<Scalars['String']['input']>;
-  aminal_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_?: InputMaybe<Aminal_filter>;
-  love?: InputMaybe<Scalars['BigInt']['input']>;
-  love_not?: InputMaybe<Scalars['BigInt']['input']>;
-  love_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  love_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  love_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  love_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  love_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  love_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<Relationship_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<Relationship_filter>>>;
+
+export type QueryskillUsedEventArgs = {
+  id: Scalars['String']['input'];
 };
 
-export type Relationship_orderBy =
-  | 'id'
-  | 'user'
-  | 'user__id'
-  | 'user__address'
-  | 'aminal'
-  | 'aminal__id'
-  | 'aminal__contractAddress'
-  | 'aminal__aminalIndex'
-  | 'aminal__auctionId'
-  | 'aminal__backId'
-  | 'aminal__armId'
-  | 'aminal__tailId'
-  | 'aminal__earsId'
-  | 'aminal__bodyId'
-  | 'aminal__faceId'
-  | 'aminal__mouthId'
-  | 'aminal__miscId'
-  | 'aminal__tokenURI'
-  | 'aminal__energy'
-  | 'aminal__totalLove'
-  | 'aminal__ethBalance'
-  | 'aminal__blockNumber'
-  | 'aminal__blockTimestamp'
-  | 'aminal__transactionHash'
-  | 'love';
 
-export type SkillUsed = {
-  id: Scalars['Bytes']['output'];
-  aminal: Aminal;
-  caller: User;
-  skillAddress: Scalars['Bytes']['output'];
-  selector: Scalars['Bytes']['output'];
-  newEnergy: Scalars['BigInt']['output'];
+export type QueryskillUsedEventsArgs = {
+  where?: InputMaybe<skillUsedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type factory = {
+  id: Scalars['String']['output'];
+  totalAminals: Scalars['BigInt']['output'];
   blockNumber: Scalars['BigInt']['output'];
   blockTimestamp: Scalars['BigInt']['output'];
-  transactionHash: Scalars['Bytes']['output'];
+  transactionHash: Scalars['String']['output'];
+  aminals?: Maybe<aminalPage>;
 };
 
-export type SkillUsed_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  aminal?: InputMaybe<Scalars['String']['input']>;
-  aminal_not?: InputMaybe<Scalars['String']['input']>;
-  aminal_gt?: InputMaybe<Scalars['String']['input']>;
-  aminal_lt?: InputMaybe<Scalars['String']['input']>;
-  aminal_gte?: InputMaybe<Scalars['String']['input']>;
-  aminal_lte?: InputMaybe<Scalars['String']['input']>;
-  aminal_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  aminal_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  aminal_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  aminal_?: InputMaybe<Aminal_filter>;
-  caller?: InputMaybe<Scalars['String']['input']>;
-  caller_not?: InputMaybe<Scalars['String']['input']>;
-  caller_gt?: InputMaybe<Scalars['String']['input']>;
-  caller_lt?: InputMaybe<Scalars['String']['input']>;
-  caller_gte?: InputMaybe<Scalars['String']['input']>;
-  caller_lte?: InputMaybe<Scalars['String']['input']>;
-  caller_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  caller_not_in?: InputMaybe<Array<Scalars['String']['input']>>;
-  caller_contains?: InputMaybe<Scalars['String']['input']>;
-  caller_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_not_contains?: InputMaybe<Scalars['String']['input']>;
-  caller_not_contains_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_starts_with?: InputMaybe<Scalars['String']['input']>;
-  caller_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_not_starts_with?: InputMaybe<Scalars['String']['input']>;
-  caller_not_starts_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_ends_with?: InputMaybe<Scalars['String']['input']>;
-  caller_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_not_ends_with?: InputMaybe<Scalars['String']['input']>;
-  caller_not_ends_with_nocase?: InputMaybe<Scalars['String']['input']>;
-  caller_?: InputMaybe<User_filter>;
-  skillAddress?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_not?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  skillAddress_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  skillAddress_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  skillAddress_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  selector?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_not?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  selector_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  selector_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  selector_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  newEnergy?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_not?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_gt?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_lt?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_gte?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  newEnergy_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  newEnergy_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
+
+export type factoryaminalsArgs = {
+  where?: InputMaybe<aminalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type aminalPage = {
+  items: Array<aminal>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type aminal = {
+  id: Scalars['String']['output'];
+  contractAddress: Scalars['String']['output'];
+  aminalIndex: Scalars['BigInt']['output'];
+  factoryId: Scalars['String']['output'];
+  parentOneId?: Maybe<Scalars['String']['output']>;
+  parentTwoId?: Maybe<Scalars['String']['output']>;
+  auctionId?: Maybe<Scalars['BigInt']['output']>;
+  traits: Array<Scalars['BigInt']['output']>;
+  energy: Scalars['BigInt']['output'];
+  totalLove: Scalars['BigInt']['output'];
+  ethBalance: Scalars['BigInt']['output'];
+  tokenURI?: Maybe<Scalars['String']['output']>;
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  factory?: Maybe<factory>;
+  parentOne?: Maybe<aminal>;
+  parentTwo?: Maybe<aminal>;
+  childrenAsParentOne?: Maybe<aminalPage>;
+  childrenAsParentTwo?: Maybe<aminalPage>;
+  lovers?: Maybe<relationshipPage>;
+  feeds?: Maybe<feedEventPage>;
+  skillsUsed?: Maybe<skillUsedEventPage>;
+};
+
+
+export type aminalchildrenAsParentOneArgs = {
+  where?: InputMaybe<aminalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type aminalchildrenAsParentTwoArgs = {
+  where?: InputMaybe<aminalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type aminalloversArgs = {
+  where?: InputMaybe<relationshipFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type aminalfeedsArgs = {
+  where?: InputMaybe<feedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type aminalskillsUsedArgs = {
+  where?: InputMaybe<skillUsedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type aminalFilter = {
+  AND?: InputMaybe<Array<InputMaybe<aminalFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<aminalFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  contractAddress?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_not?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  contractAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  contractAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_starts_with?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_ends_with?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  contractAddress_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalIndex?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalIndex_not?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalIndex_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  aminalIndex_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  aminalIndex_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalIndex_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalIndex_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalIndex_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  factoryId?: InputMaybe<Scalars['String']['input']>;
+  factoryId_not?: InputMaybe<Scalars['String']['input']>;
+  factoryId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  factoryId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  factoryId_contains?: InputMaybe<Scalars['String']['input']>;
+  factoryId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  factoryId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  factoryId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  factoryId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  factoryId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  parentOneId?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_not?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  parentOneId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  parentOneId_contains?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  parentOneId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_not?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  parentTwoId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  parentTwoId_contains?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  parentTwoId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionId_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  traits?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  traits_not?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  traits_has?: InputMaybe<Scalars['BigInt']['input']>;
+  traits_not_has?: InputMaybe<Scalars['BigInt']['input']>;
+  energy?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_not?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  energy_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  energy_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance_not?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  ethBalance_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  ethBalance_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  ethBalance_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenURI?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_not?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tokenURI_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  tokenURI_contains?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_not_contains?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_starts_with?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_ends_with?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  tokenURI_not_ends_with?: InputMaybe<Scalars['String']['input']>;
   blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
   blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
   blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
   blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
   blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
   blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockNumber_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockNumber_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
   blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
   blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
   blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
   blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
   blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
   blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
-  blockTimestamp_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  blockTimestamp_not_in?: InputMaybe<Array<Scalars['BigInt']['input']>>;
-  transactionHash?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  transactionHash_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  transactionHash_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<SkillUsed_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<SkillUsed_filter>>>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type SkillUsed_orderBy =
-  | 'id'
-  | 'aminal'
-  | 'aminal__id'
-  | 'aminal__contractAddress'
-  | 'aminal__aminalIndex'
-  | 'aminal__auctionId'
-  | 'aminal__backId'
-  | 'aminal__armId'
-  | 'aminal__tailId'
-  | 'aminal__earsId'
-  | 'aminal__bodyId'
-  | 'aminal__faceId'
-  | 'aminal__mouthId'
-  | 'aminal__miscId'
-  | 'aminal__tokenURI'
-  | 'aminal__energy'
-  | 'aminal__totalLove'
-  | 'aminal__ethBalance'
-  | 'aminal__blockNumber'
-  | 'aminal__blockTimestamp'
-  | 'aminal__transactionHash'
-  | 'caller'
-  | 'caller__id'
-  | 'caller__address'
-  | 'skillAddress'
-  | 'selector'
-  | 'newEnergy'
-  | 'blockNumber'
-  | 'blockTimestamp'
-  | 'transactionHash';
+export type relationshipPage = {
+  items: Array<relationship>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
 
-export type User = {
-  id: Scalars['Bytes']['output'];
-  address: Scalars['Bytes']['output'];
-  lovers: Array<Maybe<Relationship>>;
-  geneProposals: Array<Maybe<GeneProposal>>;
-  genesCreated: Array<Maybe<GeneNFT>>;
-  genesOwned: Array<Maybe<GeneNFT>>;
-  geneVotes: Array<Maybe<GeneVote>>;
+export type relationship = {
+  id: Scalars['String']['output'];
+  userId: Scalars['String']['output'];
+  aminalId: Scalars['String']['output'];
+  love: Scalars['BigInt']['output'];
+  user?: Maybe<user>;
+  aminal?: Maybe<aminal>;
+};
+
+export type user = {
+  id: Scalars['String']['output'];
+  address: Scalars['String']['output'];
+  lovers?: Maybe<relationshipPage>;
+  genesCreated?: Maybe<geneNFTPage>;
+  genesOwned?: Maybe<geneNFTPage>;
+  geneVotes?: Maybe<geneVotePage>;
+  proposedGenes?: Maybe<geneProposalPage>;
+  receivedPayouts?: Maybe<geneCreatorPayoutPage>;
+  feedEvents?: Maybe<feedEventPage>;
+  skillEvents?: Maybe<skillUsedEventPage>;
 };
 
 
-export type UserloversArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<Relationship_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<Relationship_filter>;
+export type userloversArgs = {
+  where?: InputMaybe<relationshipFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
-export type UsergeneProposalsArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneProposal_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneProposal_filter>;
+export type usergenesCreatedArgs = {
+  where?: InputMaybe<geneNFTFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
-export type UsergenesCreatedArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneNFT_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneNFT_filter>;
+export type usergenesOwnedArgs = {
+  where?: InputMaybe<geneNFTFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
-export type UsergenesOwnedArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneNFT_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneNFT_filter>;
+export type usergeneVotesArgs = {
+  where?: InputMaybe<geneVoteFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
 
-export type UsergeneVotesArgs = {
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  first?: InputMaybe<Scalars['Int']['input']>;
-  orderBy?: InputMaybe<GeneVote_orderBy>;
-  orderDirection?: InputMaybe<OrderDirection>;
-  where?: InputMaybe<GeneVote_filter>;
+export type userproposedGenesArgs = {
+  where?: InputMaybe<geneProposalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type User_filter = {
-  id?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  id_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  id_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  id_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  id_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  address?: InputMaybe<Scalars['Bytes']['input']>;
-  address_not?: InputMaybe<Scalars['Bytes']['input']>;
-  address_gt?: InputMaybe<Scalars['Bytes']['input']>;
-  address_lt?: InputMaybe<Scalars['Bytes']['input']>;
-  address_gte?: InputMaybe<Scalars['Bytes']['input']>;
-  address_lte?: InputMaybe<Scalars['Bytes']['input']>;
-  address_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  address_not_in?: InputMaybe<Array<Scalars['Bytes']['input']>>;
-  address_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  address_not_contains?: InputMaybe<Scalars['Bytes']['input']>;
-  lovers_?: InputMaybe<Relationship_filter>;
-  geneProposals_?: InputMaybe<GeneProposal_filter>;
-  genesCreated_?: InputMaybe<GeneNFT_filter>;
-  genesOwned_?: InputMaybe<GeneNFT_filter>;
-  geneVotes_?: InputMaybe<GeneVote_filter>;
-  /** Filter for the block changed event. */
-  _change_block?: InputMaybe<BlockChangedFilter>;
-  and?: InputMaybe<Array<InputMaybe<User_filter>>>;
-  or?: InputMaybe<Array<InputMaybe<User_filter>>>;
+
+export type userreceivedPayoutsArgs = {
+  where?: InputMaybe<geneCreatorPayoutFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type User_orderBy =
-  | 'id'
-  | 'address'
-  | 'lovers'
-  | 'geneProposals'
-  | 'genesCreated'
-  | 'genesOwned'
-  | 'geneVotes';
 
-export type _Block_ = {
-  /** The hash of the block */
-  hash?: Maybe<Scalars['Bytes']['output']>;
-  /** The block number */
-  number: Scalars['Int']['output'];
-  /** Integer representation of the timestamp stored in blocks for the chain */
-  timestamp?: Maybe<Scalars['Int']['output']>;
-  /** The hash of the parent block */
-  parentHash?: Maybe<Scalars['Bytes']['output']>;
+export type userfeedEventsArgs = {
+  where?: InputMaybe<feedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
-/** The type for the top-level _meta field */
-export type _Meta_ = {
-  /**
-   * Information about a specific subgraph block. The hash of the block
-   * will be null if the _meta field has a block constraint that asks for
-   * a block number. It will be filled if the _meta field has no block constraint
-   * and therefore asks for the latest  block
-   *
-   */
-  block: _Block_;
-  /** The deployment ID */
-  deployment: Scalars['String']['output'];
-  /** If `true`, the subgraph encountered indexing errors at some past block */
-  hasIndexingErrors: Scalars['Boolean']['output'];
+
+export type userskillEventsArgs = {
+  where?: InputMaybe<skillUsedEventFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
 };
 
-export type _SubgraphErrorPolicy_ =
-  /** Data will be returned even if the subgraph has indexing errors */
-  | 'allow'
-  /** If the subgraph has indexing errors, data will be omitted. The default. */
-  | 'deny';
+export type relationshipFilter = {
+  AND?: InputMaybe<Array<InputMaybe<relationshipFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<relationshipFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  userId?: InputMaybe<Scalars['String']['input']>;
+  userId_not?: InputMaybe<Scalars['String']['input']>;
+  userId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  userId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  userId_contains?: InputMaybe<Scalars['String']['input']>;
+  userId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  userId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  userId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  userId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  userId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not?: InputMaybe<Scalars['String']['input']>;
+  aminalId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  love?: InputMaybe<Scalars['BigInt']['input']>;
+  love_not?: InputMaybe<Scalars['BigInt']['input']>;
+  love_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  love_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  love_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  love_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  love_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  love_lte?: InputMaybe<Scalars['BigInt']['input']>;
+};
+
+export type geneNFTPage = {
+  items: Array<geneNFT>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type geneNFT = {
+  id: Scalars['String']['output'];
+  tokenId: Scalars['BigInt']['output'];
+  traitType: Scalars['Int']['output'];
+  ownerId: Scalars['String']['output'];
+  creatorId: Scalars['String']['output'];
+  svg?: Maybe<Scalars['String']['output']>;
+  name?: Maybe<Scalars['String']['output']>;
+  description?: Maybe<Scalars['String']['output']>;
+  totalEarnings: Scalars['BigInt']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  owner?: Maybe<user>;
+  creator?: Maybe<user>;
+  proposals?: Maybe<geneProposalPage>;
+  payouts?: Maybe<geneCreatorPayoutPage>;
+};
+
+
+export type geneNFTproposalsArgs = {
+  where?: InputMaybe<geneProposalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type geneNFTpayoutsArgs = {
+  where?: InputMaybe<geneCreatorPayoutFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type geneProposalPage = {
+  items: Array<geneProposal>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type geneProposal = {
+  id: Scalars['String']['output'];
+  auctionId: Scalars['String']['output'];
+  geneNFTId: Scalars['String']['output'];
+  traitType: Scalars['Int']['output'];
+  proposerId: Scalars['String']['output'];
+  loveVotes: Scalars['BigInt']['output'];
+  removeVotes: Scalars['BigInt']['output'];
+  removed: Scalars['Boolean']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  auction?: Maybe<geneAuction>;
+  geneNFT?: Maybe<geneNFT>;
+  proposer?: Maybe<user>;
+  votes?: Maybe<geneVotePage>;
+};
+
+
+export type geneProposalvotesArgs = {
+  where?: InputMaybe<geneVoteFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type geneAuction = {
+  id: Scalars['String']['output'];
+  auctionId: Scalars['BigInt']['output'];
+  aminalOneId: Scalars['String']['output'];
+  aminalTwoId: Scalars['String']['output'];
+  totalLove: Scalars['BigInt']['output'];
+  parentGeneIds: Array<Scalars['BigInt']['output']>;
+  finished: Scalars['Boolean']['output'];
+  childAminalId?: Maybe<Scalars['String']['output']>;
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  aminalOne?: Maybe<aminal>;
+  aminalTwo?: Maybe<aminal>;
+  childAminal?: Maybe<aminal>;
+  proposals?: Maybe<geneProposalPage>;
+  votes?: Maybe<geneVotePage>;
+  payouts?: Maybe<geneCreatorPayoutPage>;
+};
+
+
+export type geneAuctionproposalsArgs = {
+  where?: InputMaybe<geneProposalFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type geneAuctionvotesArgs = {
+  where?: InputMaybe<geneVoteFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+
+export type geneAuctionpayoutsArgs = {
+  where?: InputMaybe<geneCreatorPayoutFilter>;
+  orderBy?: InputMaybe<Scalars['String']['input']>;
+  orderDirection?: InputMaybe<Scalars['String']['input']>;
+  before?: InputMaybe<Scalars['String']['input']>;
+  after?: InputMaybe<Scalars['String']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+};
+
+export type geneProposalFilter = {
+  AND?: InputMaybe<Array<InputMaybe<geneProposalFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<geneProposalFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not?: InputMaybe<Scalars['String']['input']>;
+  auctionId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  geneNFTId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  geneNFTId_contains?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  traitType?: InputMaybe<Scalars['Int']['input']>;
+  traitType_not?: InputMaybe<Scalars['Int']['input']>;
+  traitType_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  traitType_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  traitType_gt?: InputMaybe<Scalars['Int']['input']>;
+  traitType_lt?: InputMaybe<Scalars['Int']['input']>;
+  traitType_gte?: InputMaybe<Scalars['Int']['input']>;
+  traitType_lte?: InputMaybe<Scalars['Int']['input']>;
+  proposerId?: InputMaybe<Scalars['String']['input']>;
+  proposerId_not?: InputMaybe<Scalars['String']['input']>;
+  proposerId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  proposerId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  proposerId_contains?: InputMaybe<Scalars['String']['input']>;
+  proposerId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  proposerId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  proposerId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  proposerId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  proposerId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  loveVotes?: InputMaybe<Scalars['BigInt']['input']>;
+  loveVotes_not?: InputMaybe<Scalars['BigInt']['input']>;
+  loveVotes_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  loveVotes_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  loveVotes_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  loveVotes_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  loveVotes_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  loveVotes_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes_not?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  removeVotes_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  removeVotes_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  removeVotes_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  removed?: InputMaybe<Scalars['Boolean']['input']>;
+  removed_not?: InputMaybe<Scalars['Boolean']['input']>;
+  removed_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  removed_not_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type geneVotePage = {
+  items: Array<geneVote>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type geneVote = {
+  id: Scalars['String']['output'];
+  auctionId: Scalars['String']['output'];
+  proposalId: Scalars['String']['output'];
+  voterId: Scalars['String']['output'];
+  isRemoveVote: Scalars['Boolean']['output'];
+  loveAmount: Scalars['BigInt']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  auction?: Maybe<geneAuction>;
+  proposal?: Maybe<geneProposal>;
+  voter?: Maybe<user>;
+};
+
+export type geneVoteFilter = {
+  AND?: InputMaybe<Array<InputMaybe<geneVoteFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<geneVoteFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not?: InputMaybe<Scalars['String']['input']>;
+  auctionId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  proposalId?: InputMaybe<Scalars['String']['input']>;
+  proposalId_not?: InputMaybe<Scalars['String']['input']>;
+  proposalId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  proposalId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  proposalId_contains?: InputMaybe<Scalars['String']['input']>;
+  proposalId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  proposalId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  proposalId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  proposalId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  proposalId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  voterId?: InputMaybe<Scalars['String']['input']>;
+  voterId_not?: InputMaybe<Scalars['String']['input']>;
+  voterId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  voterId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  voterId_contains?: InputMaybe<Scalars['String']['input']>;
+  voterId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  voterId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  voterId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  voterId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  voterId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  isRemoveVote?: InputMaybe<Scalars['Boolean']['input']>;
+  isRemoveVote_not?: InputMaybe<Scalars['Boolean']['input']>;
+  isRemoveVote_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  isRemoveVote_not_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  loveAmount?: InputMaybe<Scalars['BigInt']['input']>;
+  loveAmount_not?: InputMaybe<Scalars['BigInt']['input']>;
+  loveAmount_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  loveAmount_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  loveAmount_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  loveAmount_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  loveAmount_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  loveAmount_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type geneCreatorPayoutPage = {
+  items: Array<geneCreatorPayout>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type geneCreatorPayout = {
+  id: Scalars['String']['output'];
+  auctionId: Scalars['String']['output'];
+  geneNFTId: Scalars['String']['output'];
+  creatorId: Scalars['String']['output'];
+  amount: Scalars['BigInt']['output'];
+  auctionIdRaw: Scalars['BigInt']['output'];
+  geneIdRaw: Scalars['BigInt']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  auction?: Maybe<geneAuction>;
+  geneNFT?: Maybe<geneNFT>;
+  creator?: Maybe<user>;
+};
+
+export type geneCreatorPayoutFilter = {
+  AND?: InputMaybe<Array<InputMaybe<geneCreatorPayoutFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<geneCreatorPayoutFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not?: InputMaybe<Scalars['String']['input']>;
+  auctionId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  auctionId_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  auctionId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  geneNFTId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  geneNFTId_contains?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  geneNFTId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not?: InputMaybe<Scalars['String']['input']>;
+  creatorId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  creatorId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  creatorId_contains?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  creatorId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  amount?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_not?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  amount_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  amount_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw_not?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionIdRaw_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionIdRaw_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionIdRaw_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw_not?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  geneIdRaw_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  geneIdRaw_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  geneIdRaw_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type geneNFTFilter = {
+  AND?: InputMaybe<Array<InputMaybe<geneNFTFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<geneNFTFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  tokenId?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenId_not?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenId_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  tokenId_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  tokenId_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenId_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenId_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  tokenId_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  traitType?: InputMaybe<Scalars['Int']['input']>;
+  traitType_not?: InputMaybe<Scalars['Int']['input']>;
+  traitType_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  traitType_not_in?: InputMaybe<Array<InputMaybe<Scalars['Int']['input']>>>;
+  traitType_gt?: InputMaybe<Scalars['Int']['input']>;
+  traitType_lt?: InputMaybe<Scalars['Int']['input']>;
+  traitType_gte?: InputMaybe<Scalars['Int']['input']>;
+  traitType_lte?: InputMaybe<Scalars['Int']['input']>;
+  ownerId?: InputMaybe<Scalars['String']['input']>;
+  ownerId_not?: InputMaybe<Scalars['String']['input']>;
+  ownerId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  ownerId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  ownerId_contains?: InputMaybe<Scalars['String']['input']>;
+  ownerId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  ownerId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  ownerId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  ownerId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  ownerId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not?: InputMaybe<Scalars['String']['input']>;
+  creatorId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  creatorId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  creatorId_contains?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  creatorId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  creatorId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  svg?: InputMaybe<Scalars['String']['input']>;
+  svg_not?: InputMaybe<Scalars['String']['input']>;
+  svg_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  svg_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  svg_contains?: InputMaybe<Scalars['String']['input']>;
+  svg_not_contains?: InputMaybe<Scalars['String']['input']>;
+  svg_starts_with?: InputMaybe<Scalars['String']['input']>;
+  svg_ends_with?: InputMaybe<Scalars['String']['input']>;
+  svg_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  svg_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+  name_not?: InputMaybe<Scalars['String']['input']>;
+  name_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  name_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  name_contains?: InputMaybe<Scalars['String']['input']>;
+  name_not_contains?: InputMaybe<Scalars['String']['input']>;
+  name_starts_with?: InputMaybe<Scalars['String']['input']>;
+  name_ends_with?: InputMaybe<Scalars['String']['input']>;
+  name_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  name_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  description?: InputMaybe<Scalars['String']['input']>;
+  description_not?: InputMaybe<Scalars['String']['input']>;
+  description_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  description_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  description_contains?: InputMaybe<Scalars['String']['input']>;
+  description_not_contains?: InputMaybe<Scalars['String']['input']>;
+  description_starts_with?: InputMaybe<Scalars['String']['input']>;
+  description_ends_with?: InputMaybe<Scalars['String']['input']>;
+  description_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  description_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  totalEarnings?: InputMaybe<Scalars['BigInt']['input']>;
+  totalEarnings_not?: InputMaybe<Scalars['BigInt']['input']>;
+  totalEarnings_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalEarnings_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalEarnings_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalEarnings_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalEarnings_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalEarnings_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type feedEventPage = {
+  items: Array<feedEvent>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type feedEvent = {
+  id: Scalars['String']['output'];
+  aminalId: Scalars['String']['output'];
+  senderId: Scalars['String']['output'];
+  amount: Scalars['BigInt']['output'];
+  love: Scalars['BigInt']['output'];
+  totalLove: Scalars['BigInt']['output'];
+  energy: Scalars['BigInt']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  aminal?: Maybe<aminal>;
+  sender?: Maybe<user>;
+};
+
+export type feedEventFilter = {
+  AND?: InputMaybe<Array<InputMaybe<feedEventFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<feedEventFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not?: InputMaybe<Scalars['String']['input']>;
+  aminalId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  senderId?: InputMaybe<Scalars['String']['input']>;
+  senderId_not?: InputMaybe<Scalars['String']['input']>;
+  senderId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  senderId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  senderId_contains?: InputMaybe<Scalars['String']['input']>;
+  senderId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  senderId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  senderId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  senderId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  senderId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  amount?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_not?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  amount_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  amount_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  amount_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  love?: InputMaybe<Scalars['BigInt']['input']>;
+  love_not?: InputMaybe<Scalars['BigInt']['input']>;
+  love_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  love_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  love_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  love_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  love_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  love_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  energy?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_not?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  energy_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  energy_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  energy_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type skillUsedEventPage = {
+  items: Array<skillUsedEvent>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type skillUsedEvent = {
+  id: Scalars['String']['output'];
+  aminalId: Scalars['String']['output'];
+  callerId: Scalars['String']['output'];
+  skillAddress: Scalars['String']['output'];
+  selector: Scalars['String']['output'];
+  newEnergy: Scalars['BigInt']['output'];
+  blockNumber: Scalars['BigInt']['output'];
+  blockTimestamp: Scalars['BigInt']['output'];
+  transactionHash: Scalars['String']['output'];
+  aminal?: Maybe<aminal>;
+  caller?: Maybe<user>;
+};
+
+export type skillUsedEventFilter = {
+  AND?: InputMaybe<Array<InputMaybe<skillUsedEventFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<skillUsedEventFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not?: InputMaybe<Scalars['String']['input']>;
+  aminalId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalId_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  callerId?: InputMaybe<Scalars['String']['input']>;
+  callerId_not?: InputMaybe<Scalars['String']['input']>;
+  callerId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  callerId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  callerId_contains?: InputMaybe<Scalars['String']['input']>;
+  callerId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  callerId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  callerId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  callerId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  callerId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  skillAddress?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_not?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  skillAddress_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  skillAddress_contains?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_not_contains?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_starts_with?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_ends_with?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  skillAddress_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  selector?: InputMaybe<Scalars['String']['input']>;
+  selector_not?: InputMaybe<Scalars['String']['input']>;
+  selector_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  selector_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  selector_contains?: InputMaybe<Scalars['String']['input']>;
+  selector_not_contains?: InputMaybe<Scalars['String']['input']>;
+  selector_starts_with?: InputMaybe<Scalars['String']['input']>;
+  selector_ends_with?: InputMaybe<Scalars['String']['input']>;
+  selector_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  selector_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  newEnergy?: InputMaybe<Scalars['BigInt']['input']>;
+  newEnergy_not?: InputMaybe<Scalars['BigInt']['input']>;
+  newEnergy_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  newEnergy_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  newEnergy_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  newEnergy_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  newEnergy_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  newEnergy_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type factoryPage = {
+  items: Array<factory>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type factoryFilter = {
+  AND?: InputMaybe<Array<InputMaybe<factoryFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<factoryFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  totalAminals?: InputMaybe<Scalars['BigInt']['input']>;
+  totalAminals_not?: InputMaybe<Scalars['BigInt']['input']>;
+  totalAminals_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalAminals_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalAminals_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalAminals_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalAminals_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalAminals_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type userPage = {
+  items: Array<user>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type userFilter = {
+  AND?: InputMaybe<Array<InputMaybe<userFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<userFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  address?: InputMaybe<Scalars['String']['input']>;
+  address_not?: InputMaybe<Scalars['String']['input']>;
+  address_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  address_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  address_contains?: InputMaybe<Scalars['String']['input']>;
+  address_not_contains?: InputMaybe<Scalars['String']['input']>;
+  address_starts_with?: InputMaybe<Scalars['String']['input']>;
+  address_ends_with?: InputMaybe<Scalars['String']['input']>;
+  address_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  address_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type geneAuctionPage = {
+  items: Array<geneAuction>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int']['output'];
+};
+
+export type geneAuctionFilter = {
+  AND?: InputMaybe<Array<InputMaybe<geneAuctionFilter>>>;
+  OR?: InputMaybe<Array<InputMaybe<geneAuctionFilter>>>;
+  id?: InputMaybe<Scalars['String']['input']>;
+  id_not?: InputMaybe<Scalars['String']['input']>;
+  id_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  id_contains?: InputMaybe<Scalars['String']['input']>;
+  id_not_contains?: InputMaybe<Scalars['String']['input']>;
+  id_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_ends_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  id_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  auctionId?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_not?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionId_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  auctionId_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  auctionId_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  aminalOneId?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_not?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalOneId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalOneId_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalOneId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_not?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalTwoId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  aminalTwoId_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  aminalTwoId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  totalLove?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_not?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  totalLove_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  totalLove_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  parentGeneIds?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  parentGeneIds_not?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  parentGeneIds_has?: InputMaybe<Scalars['BigInt']['input']>;
+  parentGeneIds_not_has?: InputMaybe<Scalars['BigInt']['input']>;
+  finished?: InputMaybe<Scalars['Boolean']['input']>;
+  finished_not?: InputMaybe<Scalars['Boolean']['input']>;
+  finished_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  finished_not_in?: InputMaybe<Array<InputMaybe<Scalars['Boolean']['input']>>>;
+  childAminalId?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_not?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  childAminalId_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  childAminalId_contains?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_not_contains?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_starts_with?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_ends_with?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  childAminalId_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+  blockNumber?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockNumber_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockNumber_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_not?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_not_in?: InputMaybe<Array<InputMaybe<Scalars['BigInt']['input']>>>;
+  blockTimestamp_gt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lt?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_gte?: InputMaybe<Scalars['BigInt']['input']>;
+  blockTimestamp_lte?: InputMaybe<Scalars['BigInt']['input']>;
+  transactionHash?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_not_in?: InputMaybe<Array<InputMaybe<Scalars['String']['input']>>>;
+  transactionHash_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_contains?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_ends_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_starts_with?: InputMaybe<Scalars['String']['input']>;
+  transactionHash_not_ends_with?: InputMaybe<Scalars['String']['input']>;
+};
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -2731,402 +1694,435 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  Aggregation_interval: Aggregation_interval;
-  Aminal: ResolverTypeWrapper<Aminal>;
-  AminalFactory: ResolverTypeWrapper<AminalFactory>;
-  AminalFactory_filter: AminalFactory_filter;
-  AminalFactory_orderBy: AminalFactory_orderBy;
-  Aminal_filter: Aminal_filter;
-  Aminal_orderBy: Aminal_orderBy;
-  BigDecimal: ResolverTypeWrapper<Scalars['BigDecimal']['output']>;
+  JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   BigInt: ResolverTypeWrapper<Scalars['BigInt']['output']>;
-  BlockChangedFilter: BlockChangedFilter;
-  Block_height: Block_height;
+  PageInfo: ResolverTypeWrapper<PageInfo>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
-  BreedAminalEvent: ResolverTypeWrapper<BreedAminalEvent>;
-  BreedAminalEvent_filter: BreedAminalEvent_filter;
-  BreedAminalEvent_orderBy: BreedAminalEvent_orderBy;
-  Bytes: ResolverTypeWrapper<Scalars['Bytes']['output']>;
-  FeedAminalEvent: ResolverTypeWrapper<FeedAminalEvent>;
-  FeedAminalEvent_filter: FeedAminalEvent_filter;
-  FeedAminalEvent_orderBy: FeedAminalEvent_orderBy;
-  Float: ResolverTypeWrapper<Scalars['Float']['output']>;
-  GeneAuction: ResolverTypeWrapper<GeneAuction>;
-  GeneAuction_filter: GeneAuction_filter;
-  GeneAuction_orderBy: GeneAuction_orderBy;
-  GeneCreatorPayout: ResolverTypeWrapper<GeneCreatorPayout>;
-  GeneCreatorPayout_filter: GeneCreatorPayout_filter;
-  GeneCreatorPayout_orderBy: GeneCreatorPayout_orderBy;
-  GeneNFT: ResolverTypeWrapper<GeneNFT>;
-  GeneNFT_filter: GeneNFT_filter;
-  GeneNFT_orderBy: GeneNFT_orderBy;
-  GeneProposal: ResolverTypeWrapper<GeneProposal>;
-  GeneProposal_filter: GeneProposal_filter;
-  GeneProposal_orderBy: GeneProposal_orderBy;
-  GeneVote: ResolverTypeWrapper<GeneVote>;
-  GeneVote_filter: GeneVote_filter;
-  GeneVote_orderBy: GeneVote_orderBy;
-  ID: ResolverTypeWrapper<Scalars['ID']['output']>;
-  Int: ResolverTypeWrapper<Scalars['Int']['output']>;
-  Int8: ResolverTypeWrapper<Scalars['Int8']['output']>;
-  OrderDirection: OrderDirection;
-  Query: ResolverTypeWrapper<{}>;
-  Relationship: ResolverTypeWrapper<Relationship>;
-  Relationship_filter: Relationship_filter;
-  Relationship_orderBy: Relationship_orderBy;
-  SkillUsed: ResolverTypeWrapper<SkillUsed>;
-  SkillUsed_filter: SkillUsed_filter;
-  SkillUsed_orderBy: SkillUsed_orderBy;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
-  Timestamp: ResolverTypeWrapper<Scalars['Timestamp']['output']>;
-  User: ResolverTypeWrapper<User>;
-  User_filter: User_filter;
-  User_orderBy: User_orderBy;
-  _Block_: ResolverTypeWrapper<_Block_>;
-  _Meta_: ResolverTypeWrapper<_Meta_>;
-  _SubgraphErrorPolicy_: _SubgraphErrorPolicy_;
+  Meta: ResolverTypeWrapper<Meta>;
+  Query: ResolverTypeWrapper<{}>;
+  factory: ResolverTypeWrapper<factory>;
+  aminalPage: ResolverTypeWrapper<aminalPage>;
+  aminal: ResolverTypeWrapper<aminal>;
+  aminalFilter: aminalFilter;
+  Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  relationshipPage: ResolverTypeWrapper<relationshipPage>;
+  relationship: ResolverTypeWrapper<relationship>;
+  user: ResolverTypeWrapper<user>;
+  relationshipFilter: relationshipFilter;
+  geneNFTPage: ResolverTypeWrapper<geneNFTPage>;
+  geneNFT: ResolverTypeWrapper<geneNFT>;
+  geneProposalPage: ResolverTypeWrapper<geneProposalPage>;
+  geneProposal: ResolverTypeWrapper<geneProposal>;
+  geneAuction: ResolverTypeWrapper<geneAuction>;
+  geneProposalFilter: geneProposalFilter;
+  geneVotePage: ResolverTypeWrapper<geneVotePage>;
+  geneVote: ResolverTypeWrapper<geneVote>;
+  geneVoteFilter: geneVoteFilter;
+  geneCreatorPayoutPage: ResolverTypeWrapper<geneCreatorPayoutPage>;
+  geneCreatorPayout: ResolverTypeWrapper<geneCreatorPayout>;
+  geneCreatorPayoutFilter: geneCreatorPayoutFilter;
+  geneNFTFilter: geneNFTFilter;
+  feedEventPage: ResolverTypeWrapper<feedEventPage>;
+  feedEvent: ResolverTypeWrapper<feedEvent>;
+  feedEventFilter: feedEventFilter;
+  skillUsedEventPage: ResolverTypeWrapper<skillUsedEventPage>;
+  skillUsedEvent: ResolverTypeWrapper<skillUsedEvent>;
+  skillUsedEventFilter: skillUsedEventFilter;
+  factoryPage: ResolverTypeWrapper<factoryPage>;
+  factoryFilter: factoryFilter;
+  userPage: ResolverTypeWrapper<userPage>;
+  userFilter: userFilter;
+  geneAuctionPage: ResolverTypeWrapper<geneAuctionPage>;
+  geneAuctionFilter: geneAuctionFilter;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  Aminal: Aminal;
-  AminalFactory: AminalFactory;
-  AminalFactory_filter: AminalFactory_filter;
-  Aminal_filter: Aminal_filter;
-  BigDecimal: Scalars['BigDecimal']['output'];
+  JSON: Scalars['JSON']['output'];
   BigInt: Scalars['BigInt']['output'];
-  BlockChangedFilter: BlockChangedFilter;
-  Block_height: Block_height;
+  PageInfo: PageInfo;
   Boolean: Scalars['Boolean']['output'];
-  BreedAminalEvent: BreedAminalEvent;
-  BreedAminalEvent_filter: BreedAminalEvent_filter;
-  Bytes: Scalars['Bytes']['output'];
-  FeedAminalEvent: FeedAminalEvent;
-  FeedAminalEvent_filter: FeedAminalEvent_filter;
-  Float: Scalars['Float']['output'];
-  GeneAuction: GeneAuction;
-  GeneAuction_filter: GeneAuction_filter;
-  GeneCreatorPayout: GeneCreatorPayout;
-  GeneCreatorPayout_filter: GeneCreatorPayout_filter;
-  GeneNFT: GeneNFT;
-  GeneNFT_filter: GeneNFT_filter;
-  GeneProposal: GeneProposal;
-  GeneProposal_filter: GeneProposal_filter;
-  GeneVote: GeneVote;
-  GeneVote_filter: GeneVote_filter;
-  ID: Scalars['ID']['output'];
-  Int: Scalars['Int']['output'];
-  Int8: Scalars['Int8']['output'];
-  Query: {};
-  Relationship: Relationship;
-  Relationship_filter: Relationship_filter;
-  SkillUsed: SkillUsed;
-  SkillUsed_filter: SkillUsed_filter;
   String: Scalars['String']['output'];
-  Timestamp: Scalars['Timestamp']['output'];
-  User: User;
-  User_filter: User_filter;
-  _Block_: _Block_;
-  _Meta_: _Meta_;
+  Meta: Meta;
+  Query: {};
+  factory: factory;
+  aminalPage: aminalPage;
+  aminal: aminal;
+  aminalFilter: aminalFilter;
+  Int: Scalars['Int']['output'];
+  relationshipPage: relationshipPage;
+  relationship: relationship;
+  user: user;
+  relationshipFilter: relationshipFilter;
+  geneNFTPage: geneNFTPage;
+  geneNFT: geneNFT;
+  geneProposalPage: geneProposalPage;
+  geneProposal: geneProposal;
+  geneAuction: geneAuction;
+  geneProposalFilter: geneProposalFilter;
+  geneVotePage: geneVotePage;
+  geneVote: geneVote;
+  geneVoteFilter: geneVoteFilter;
+  geneCreatorPayoutPage: geneCreatorPayoutPage;
+  geneCreatorPayout: geneCreatorPayout;
+  geneCreatorPayoutFilter: geneCreatorPayoutFilter;
+  geneNFTFilter: geneNFTFilter;
+  feedEventPage: feedEventPage;
+  feedEvent: feedEvent;
+  feedEventFilter: feedEventFilter;
+  skillUsedEventPage: skillUsedEventPage;
+  skillUsedEvent: skillUsedEvent;
+  skillUsedEventFilter: skillUsedEventFilter;
+  factoryPage: factoryPage;
+  factoryFilter: factoryFilter;
+  userPage: userPage;
+  userFilter: userFilter;
+  geneAuctionPage: geneAuctionPage;
+  geneAuctionFilter: geneAuctionFilter;
 }>;
 
-export type entityDirectiveArgs = { };
-
-export type entityDirectiveResolver<Result, Parent, ContextType = MeshContext, Args = entityDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
-export type subgraphIdDirectiveArgs = {
-  id: Scalars['String']['input'];
-};
-
-export type subgraphIdDirectiveResolver<Result, Parent, ContextType = MeshContext, Args = subgraphIdDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
-export type derivedFromDirectiveArgs = {
-  field: Scalars['String']['input'];
-};
-
-export type derivedFromDirectiveResolver<Result, Parent, ContextType = MeshContext, Args = derivedFromDirectiveArgs> = DirectiveResolverFn<Result, Parent, ContextType, Args>;
-
-export type AminalResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['Aminal'] = ResolversParentTypes['Aminal']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  contractAddress?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  aminalIndex?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  factory?: Resolver<ResolversTypes['AminalFactory'], ParentType, ContextType>;
-  parentOne?: Resolver<Maybe<ResolversTypes['Aminal']>, ParentType, ContextType>;
-  parentTwo?: Resolver<Maybe<ResolversTypes['Aminal']>, ParentType, ContextType>;
-  auctionId?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
-  childrenAsParentOne?: Resolver<Array<ResolversTypes['Aminal']>, ParentType, ContextType, RequireFields<AminalchildrenAsParentOneArgs, 'skip' | 'first'>>;
-  childrenAsParentTwo?: Resolver<Array<ResolversTypes['Aminal']>, ParentType, ContextType, RequireFields<AminalchildrenAsParentTwoArgs, 'skip' | 'first'>>;
-  backId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  armId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  tailId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  earsId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  bodyId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  faceId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  mouthId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  miscId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  tokenURI?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  energy?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  totalLove?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  ethBalance?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  lovers?: Resolver<Array<Maybe<ResolversTypes['Relationship']>>, ParentType, ContextType, RequireFields<AminalloversArgs, 'skip' | 'first'>>;
-  skillUsed?: Resolver<Array<ResolversTypes['SkillUsed']>, ParentType, ContextType, RequireFields<AminalskillUsedArgs, 'skip' | 'first'>>;
-  feeds?: Resolver<Array<ResolversTypes['FeedAminalEvent']>, ParentType, ContextType, RequireFields<AminalfeedsArgs, 'skip' | 'first'>>;
-  breedingEventsAsParentOne?: Resolver<Array<ResolversTypes['BreedAminalEvent']>, ParentType, ContextType, RequireFields<AminalbreedingEventsAsParentOneArgs, 'skip' | 'first'>>;
-  breedingEventsAsParentTwo?: Resolver<Array<ResolversTypes['BreedAminalEvent']>, ParentType, ContextType, RequireFields<AminalbreedingEventsAsParentTwoArgs, 'skip' | 'first'>>;
-  auctions?: Resolver<Array<ResolversTypes['GeneAuction']>, ParentType, ContextType, RequireFields<AminalauctionsArgs, 'skip' | 'first'>>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type AminalFactoryResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['AminalFactory'] = ResolversParentTypes['AminalFactory']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  totalAminals?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  geneAuction?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  genes?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  loveVRGDA?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  initialAminalSpawned?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  aminals?: Resolver<Array<ResolversTypes['Aminal']>, ParentType, ContextType, RequireFields<AminalFactoryaminalsArgs, 'skip' | 'first'>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export interface BigDecimalScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['BigDecimal'], any> {
-  name: 'BigDecimal';
+export interface JSONScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
+  name: 'JSON';
 }
 
 export interface BigIntScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['BigInt'], any> {
   name: 'BigInt';
 }
 
-export type BreedAminalEventResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['BreedAminalEvent'] = ResolversParentTypes['BreedAminalEvent']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  aminalOne?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  aminalTwo?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  auctionId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  auction?: Resolver<Maybe<ResolversTypes['GeneAuction']>, ParentType, ContextType>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+export type PageInfoResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['PageInfo'] = ResolversParentTypes['PageInfo']> = ResolversObject<{
+  hasNextPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  hasPreviousPage?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  startCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  endCursor?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export interface BytesScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Bytes'], any> {
-  name: 'Bytes';
-}
+export type MetaResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['Meta'] = ResolversParentTypes['Meta']> = ResolversObject<{
+  status?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
 
-export type FeedAminalEventResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['FeedAminalEvent'] = ResolversParentTypes['FeedAminalEvent']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  aminal?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  sender?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+export type QueryResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  factory?: Resolver<Maybe<ResolversTypes['factory']>, ParentType, ContextType, RequireFields<QueryfactoryArgs, 'id'>>;
+  factorys?: Resolver<ResolversTypes['factoryPage'], ParentType, ContextType, Partial<QueryfactorysArgs>>;
+  aminal?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType, RequireFields<QueryaminalArgs, 'id'>>;
+  aminals?: Resolver<ResolversTypes['aminalPage'], ParentType, ContextType, Partial<QueryaminalsArgs>>;
+  user?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType, RequireFields<QueryuserArgs, 'id'>>;
+  users?: Resolver<ResolversTypes['userPage'], ParentType, ContextType, Partial<QueryusersArgs>>;
+  relationship?: Resolver<Maybe<ResolversTypes['relationship']>, ParentType, ContextType, RequireFields<QueryrelationshipArgs, 'id'>>;
+  relationships?: Resolver<ResolversTypes['relationshipPage'], ParentType, ContextType, Partial<QueryrelationshipsArgs>>;
+  geneNFT?: Resolver<Maybe<ResolversTypes['geneNFT']>, ParentType, ContextType, RequireFields<QuerygeneNFTArgs, 'id'>>;
+  geneNFTs?: Resolver<ResolversTypes['geneNFTPage'], ParentType, ContextType, Partial<QuerygeneNFTsArgs>>;
+  geneAuction?: Resolver<Maybe<ResolversTypes['geneAuction']>, ParentType, ContextType, RequireFields<QuerygeneAuctionArgs, 'id'>>;
+  geneAuctions?: Resolver<ResolversTypes['geneAuctionPage'], ParentType, ContextType, Partial<QuerygeneAuctionsArgs>>;
+  geneProposal?: Resolver<Maybe<ResolversTypes['geneProposal']>, ParentType, ContextType, RequireFields<QuerygeneProposalArgs, 'id'>>;
+  geneProposals?: Resolver<ResolversTypes['geneProposalPage'], ParentType, ContextType, Partial<QuerygeneProposalsArgs>>;
+  geneVote?: Resolver<Maybe<ResolversTypes['geneVote']>, ParentType, ContextType, RequireFields<QuerygeneVoteArgs, 'id'>>;
+  geneVotes?: Resolver<ResolversTypes['geneVotePage'], ParentType, ContextType, Partial<QuerygeneVotesArgs>>;
+  geneCreatorPayout?: Resolver<Maybe<ResolversTypes['geneCreatorPayout']>, ParentType, ContextType, RequireFields<QuerygeneCreatorPayoutArgs, 'id'>>;
+  geneCreatorPayouts?: Resolver<ResolversTypes['geneCreatorPayoutPage'], ParentType, ContextType, Partial<QuerygeneCreatorPayoutsArgs>>;
+  feedEvent?: Resolver<Maybe<ResolversTypes['feedEvent']>, ParentType, ContextType, RequireFields<QueryfeedEventArgs, 'id'>>;
+  feedEvents?: Resolver<ResolversTypes['feedEventPage'], ParentType, ContextType, Partial<QueryfeedEventsArgs>>;
+  skillUsedEvent?: Resolver<Maybe<ResolversTypes['skillUsedEvent']>, ParentType, ContextType, RequireFields<QueryskillUsedEventArgs, 'id'>>;
+  skillUsedEvents?: Resolver<ResolversTypes['skillUsedEventPage'], ParentType, ContextType, Partial<QueryskillUsedEventsArgs>>;
+  _meta?: Resolver<Maybe<ResolversTypes['Meta']>, ParentType, ContextType>;
+}>;
+
+export type factoryResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['factory'] = ResolversParentTypes['factory']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  totalAminals?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminals?: Resolver<Maybe<ResolversTypes['aminalPage']>, ParentType, ContextType, Partial<factoryaminalsArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type aminalPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['aminalPage'] = ResolversParentTypes['aminalPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['aminal']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type aminalResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['aminal'] = ResolversParentTypes['aminal']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  contractAddress?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalIndex?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  factoryId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  parentOneId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  parentTwoId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  auctionId?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
+  traits?: Resolver<Array<ResolversTypes['BigInt']>, ParentType, ContextType>;
+  energy?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  totalLove?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  ethBalance?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  tokenURI?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  factory?: Resolver<Maybe<ResolversTypes['factory']>, ParentType, ContextType>;
+  parentOne?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  parentTwo?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  childrenAsParentOne?: Resolver<Maybe<ResolversTypes['aminalPage']>, ParentType, ContextType, Partial<aminalchildrenAsParentOneArgs>>;
+  childrenAsParentTwo?: Resolver<Maybe<ResolversTypes['aminalPage']>, ParentType, ContextType, Partial<aminalchildrenAsParentTwoArgs>>;
+  lovers?: Resolver<Maybe<ResolversTypes['relationshipPage']>, ParentType, ContextType, Partial<aminalloversArgs>>;
+  feeds?: Resolver<Maybe<ResolversTypes['feedEventPage']>, ParentType, ContextType, Partial<aminalfeedsArgs>>;
+  skillsUsed?: Resolver<Maybe<ResolversTypes['skillUsedEventPage']>, ParentType, ContextType, Partial<aminalskillsUsedArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type relationshipPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['relationshipPage'] = ResolversParentTypes['relationshipPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['relationship']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type relationshipResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['relationship'] = ResolversParentTypes['relationship']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  love?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  user?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  aminal?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type userResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['user'] = ResolversParentTypes['user']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  address?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lovers?: Resolver<Maybe<ResolversTypes['relationshipPage']>, ParentType, ContextType, Partial<userloversArgs>>;
+  genesCreated?: Resolver<Maybe<ResolversTypes['geneNFTPage']>, ParentType, ContextType, Partial<usergenesCreatedArgs>>;
+  genesOwned?: Resolver<Maybe<ResolversTypes['geneNFTPage']>, ParentType, ContextType, Partial<usergenesOwnedArgs>>;
+  geneVotes?: Resolver<Maybe<ResolversTypes['geneVotePage']>, ParentType, ContextType, Partial<usergeneVotesArgs>>;
+  proposedGenes?: Resolver<Maybe<ResolversTypes['geneProposalPage']>, ParentType, ContextType, Partial<userproposedGenesArgs>>;
+  receivedPayouts?: Resolver<Maybe<ResolversTypes['geneCreatorPayoutPage']>, ParentType, ContextType, Partial<userreceivedPayoutsArgs>>;
+  feedEvents?: Resolver<Maybe<ResolversTypes['feedEventPage']>, ParentType, ContextType, Partial<userfeedEventsArgs>>;
+  skillEvents?: Resolver<Maybe<ResolversTypes['skillUsedEventPage']>, ParentType, ContextType, Partial<userskillEventsArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneNFTPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneNFTPage'] = ResolversParentTypes['geneNFTPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['geneNFT']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneNFTResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneNFT'] = ResolversParentTypes['geneNFT']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  tokenId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  traitType?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  ownerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  creatorId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  svg?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  totalEarnings?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  owner?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  proposals?: Resolver<Maybe<ResolversTypes['geneProposalPage']>, ParentType, ContextType, Partial<geneNFTproposalsArgs>>;
+  payouts?: Resolver<Maybe<ResolversTypes['geneCreatorPayoutPage']>, ParentType, ContextType, Partial<geneNFTpayoutsArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneProposalPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneProposalPage'] = ResolversParentTypes['geneProposalPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['geneProposal']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneProposalResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneProposal'] = ResolversParentTypes['geneProposal']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auctionId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  geneNFTId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  traitType?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  proposerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  loveVotes?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  removeVotes?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  removed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auction?: Resolver<Maybe<ResolversTypes['geneAuction']>, ParentType, ContextType>;
+  geneNFT?: Resolver<Maybe<ResolversTypes['geneNFT']>, ParentType, ContextType>;
+  proposer?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  votes?: Resolver<Maybe<ResolversTypes['geneVotePage']>, ParentType, ContextType, Partial<geneProposalvotesArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneAuctionResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneAuction'] = ResolversParentTypes['geneAuction']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auctionId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  aminalOneId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalTwoId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  totalLove?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  parentGeneIds?: Resolver<Array<ResolversTypes['BigInt']>, ParentType, ContextType>;
+  finished?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  childAminalId?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalOne?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  aminalTwo?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  childAminal?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  proposals?: Resolver<Maybe<ResolversTypes['geneProposalPage']>, ParentType, ContextType, Partial<geneAuctionproposalsArgs>>;
+  votes?: Resolver<Maybe<ResolversTypes['geneVotePage']>, ParentType, ContextType, Partial<geneAuctionvotesArgs>>;
+  payouts?: Resolver<Maybe<ResolversTypes['geneCreatorPayoutPage']>, ParentType, ContextType, Partial<geneAuctionpayoutsArgs>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneVotePageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneVotePage'] = ResolversParentTypes['geneVotePage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['geneVote']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneVoteResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneVote'] = ResolversParentTypes['geneVote']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auctionId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  proposalId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  voterId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  isRemoveVote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  loveAmount?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auction?: Resolver<Maybe<ResolversTypes['geneAuction']>, ParentType, ContextType>;
+  proposal?: Resolver<Maybe<ResolversTypes['geneProposal']>, ParentType, ContextType>;
+  voter?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneCreatorPayoutPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneCreatorPayoutPage'] = ResolversParentTypes['geneCreatorPayoutPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['geneCreatorPayout']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type geneCreatorPayoutResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneCreatorPayout'] = ResolversParentTypes['geneCreatorPayout']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auctionId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  geneNFTId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  creatorId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  amount?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  auctionIdRaw?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  geneIdRaw?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  auction?: Resolver<Maybe<ResolversTypes['geneAuction']>, ParentType, ContextType>;
+  geneNFT?: Resolver<Maybe<ResolversTypes['geneNFT']>, ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type feedEventPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['feedEventPage'] = ResolversParentTypes['feedEventPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['feedEvent']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type feedEventResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['feedEvent'] = ResolversParentTypes['feedEvent']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  senderId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   amount?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   love?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   totalLove?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   energy?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminal?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  sender?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type GeneAuctionResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['GeneAuction'] = ResolversParentTypes['GeneAuction']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  auctionId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  aminalOne?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  aminalTwo?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  totalLove?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  finished?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  childAminal?: Resolver<Maybe<ResolversTypes['Aminal']>, ParentType, ContextType>;
-  winningGeneIds?: Resolver<Maybe<Array<ResolversTypes['BigInt']>>, ParentType, ContextType>;
-  proposals?: Resolver<Array<ResolversTypes['GeneProposal']>, ParentType, ContextType, RequireFields<GeneAuctionproposalsArgs, 'skip' | 'first'>>;
-  votes?: Resolver<Array<ResolversTypes['GeneVote']>, ParentType, ContextType, RequireFields<GeneAuctionvotesArgs, 'skip' | 'first'>>;
-  payouts?: Resolver<Array<ResolversTypes['GeneCreatorPayout']>, ParentType, ContextType, RequireFields<GeneAuctionpayoutsArgs, 'skip' | 'first'>>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  endBlockNumber?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
-  endBlockTimestamp?: Resolver<Maybe<ResolversTypes['BigInt']>, ParentType, ContextType>;
-  endTransactionHash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
+export type skillUsedEventPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['skillUsedEventPage'] = ResolversParentTypes['skillUsedEventPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['skillUsedEvent']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type GeneCreatorPayoutResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['GeneCreatorPayout'] = ResolversParentTypes['GeneCreatorPayout']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  auction?: Resolver<ResolversTypes['GeneAuction'], ParentType, ContextType>;
-  geneNFT?: Resolver<ResolversTypes['GeneNFT'], ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  amount?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  auctionId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  geneId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type GeneNFTResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['GeneNFT'] = ResolversParentTypes['GeneNFT']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  tokenId?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  traitType?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  owner?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  creator?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  svg?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  proposalsUsingGene?: Resolver<Array<ResolversTypes['GeneProposal']>, ParentType, ContextType, RequireFields<GeneNFTproposalsUsingGeneArgs, 'skip' | 'first'>>;
-  totalEarnings?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  payouts?: Resolver<Array<ResolversTypes['GeneCreatorPayout']>, ParentType, ContextType, RequireFields<GeneNFTpayoutsArgs, 'skip' | 'first'>>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type GeneProposalResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['GeneProposal'] = ResolversParentTypes['GeneProposal']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  auction?: Resolver<ResolversTypes['GeneAuction'], ParentType, ContextType>;
-  geneNFT?: Resolver<ResolversTypes['GeneNFT'], ParentType, ContextType>;
-  traitType?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  proposer?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  loveVotes?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  removeVotes?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  removed?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  votes?: Resolver<Array<ResolversTypes['GeneVote']>, ParentType, ContextType, RequireFields<GeneProposalvotesArgs, 'skip' | 'first'>>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type GeneVoteResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['GeneVote'] = ResolversParentTypes['GeneVote']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  auction?: Resolver<ResolversTypes['GeneAuction'], ParentType, ContextType>;
-  proposal?: Resolver<ResolversTypes['GeneProposal'], ParentType, ContextType>;
-  voter?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  isRemoveVote?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  loveAmount?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export interface Int8ScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Int8'], any> {
-  name: 'Int8';
-}
-
-export type QueryResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  aminalFactory?: Resolver<Maybe<ResolversTypes['AminalFactory']>, ParentType, ContextType, RequireFields<QueryaminalFactoryArgs, 'id' | 'subgraphError'>>;
-  aminalFactories?: Resolver<Array<ResolversTypes['AminalFactory']>, ParentType, ContextType, RequireFields<QueryaminalFactoriesArgs, 'skip' | 'first' | 'subgraphError'>>;
-  aminal?: Resolver<Maybe<ResolversTypes['Aminal']>, ParentType, ContextType, RequireFields<QueryaminalArgs, 'id' | 'subgraphError'>>;
-  aminals?: Resolver<Array<ResolversTypes['Aminal']>, ParentType, ContextType, RequireFields<QueryaminalsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryuserArgs, 'id' | 'subgraphError'>>;
-  users?: Resolver<Array<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryusersArgs, 'skip' | 'first' | 'subgraphError'>>;
-  relationship?: Resolver<Maybe<ResolversTypes['Relationship']>, ParentType, ContextType, RequireFields<QueryrelationshipArgs, 'id' | 'subgraphError'>>;
-  relationships?: Resolver<Array<ResolversTypes['Relationship']>, ParentType, ContextType, RequireFields<QueryrelationshipsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  breedAminalEvent?: Resolver<Maybe<ResolversTypes['BreedAminalEvent']>, ParentType, ContextType, RequireFields<QuerybreedAminalEventArgs, 'id' | 'subgraphError'>>;
-  breedAminalEvents?: Resolver<Array<ResolversTypes['BreedAminalEvent']>, ParentType, ContextType, RequireFields<QuerybreedAminalEventsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  feedAminalEvent?: Resolver<Maybe<ResolversTypes['FeedAminalEvent']>, ParentType, ContextType, RequireFields<QueryfeedAminalEventArgs, 'id' | 'subgraphError'>>;
-  feedAminalEvents?: Resolver<Array<ResolversTypes['FeedAminalEvent']>, ParentType, ContextType, RequireFields<QueryfeedAminalEventsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  skillUsed?: Resolver<Maybe<ResolversTypes['SkillUsed']>, ParentType, ContextType, RequireFields<QueryskillUsedArgs, 'id' | 'subgraphError'>>;
-  skillUseds?: Resolver<Array<ResolversTypes['SkillUsed']>, ParentType, ContextType, RequireFields<QueryskillUsedsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  geneAuction?: Resolver<Maybe<ResolversTypes['GeneAuction']>, ParentType, ContextType, RequireFields<QuerygeneAuctionArgs, 'id' | 'subgraphError'>>;
-  geneAuctions?: Resolver<Array<ResolversTypes['GeneAuction']>, ParentType, ContextType, RequireFields<QuerygeneAuctionsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  geneNFT?: Resolver<Maybe<ResolversTypes['GeneNFT']>, ParentType, ContextType, RequireFields<QuerygeneNFTArgs, 'id' | 'subgraphError'>>;
-  geneNFTs?: Resolver<Array<ResolversTypes['GeneNFT']>, ParentType, ContextType, RequireFields<QuerygeneNFTsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  geneProposal?: Resolver<Maybe<ResolversTypes['GeneProposal']>, ParentType, ContextType, RequireFields<QuerygeneProposalArgs, 'id' | 'subgraphError'>>;
-  geneProposals?: Resolver<Array<ResolversTypes['GeneProposal']>, ParentType, ContextType, RequireFields<QuerygeneProposalsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  geneVote?: Resolver<Maybe<ResolversTypes['GeneVote']>, ParentType, ContextType, RequireFields<QuerygeneVoteArgs, 'id' | 'subgraphError'>>;
-  geneVotes?: Resolver<Array<ResolversTypes['GeneVote']>, ParentType, ContextType, RequireFields<QuerygeneVotesArgs, 'skip' | 'first' | 'subgraphError'>>;
-  geneCreatorPayout?: Resolver<Maybe<ResolversTypes['GeneCreatorPayout']>, ParentType, ContextType, RequireFields<QuerygeneCreatorPayoutArgs, 'id' | 'subgraphError'>>;
-  geneCreatorPayouts?: Resolver<Array<ResolversTypes['GeneCreatorPayout']>, ParentType, ContextType, RequireFields<QuerygeneCreatorPayoutsArgs, 'skip' | 'first' | 'subgraphError'>>;
-  _meta?: Resolver<Maybe<ResolversTypes['_Meta_']>, ParentType, ContextType, Partial<Query_metaArgs>>;
-}>;
-
-export type RelationshipResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['Relationship'] = ResolversParentTypes['Relationship']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  aminal?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  love?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type SkillUsedResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['SkillUsed'] = ResolversParentTypes['SkillUsed']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  aminal?: Resolver<ResolversTypes['Aminal'], ParentType, ContextType>;
-  caller?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  skillAddress?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  selector?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+export type skillUsedEventResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['skillUsedEvent'] = ResolversParentTypes['skillUsedEvent']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminalId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  callerId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  skillAddress?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  selector?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   newEnergy?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   blockNumber?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
   blockTimestamp?: Resolver<ResolversTypes['BigInt'], ParentType, ContextType>;
-  transactionHash?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
+  transactionHash?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  aminal?: Resolver<Maybe<ResolversTypes['aminal']>, ParentType, ContextType>;
+  caller?: Resolver<Maybe<ResolversTypes['user']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export interface TimestampScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['Timestamp'], any> {
-  name: 'Timestamp';
-}
-
-export type UserResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  address?: Resolver<ResolversTypes['Bytes'], ParentType, ContextType>;
-  lovers?: Resolver<Array<Maybe<ResolversTypes['Relationship']>>, ParentType, ContextType, RequireFields<UserloversArgs, 'skip' | 'first'>>;
-  geneProposals?: Resolver<Array<Maybe<ResolversTypes['GeneProposal']>>, ParentType, ContextType, RequireFields<UsergeneProposalsArgs, 'skip' | 'first'>>;
-  genesCreated?: Resolver<Array<Maybe<ResolversTypes['GeneNFT']>>, ParentType, ContextType, RequireFields<UsergenesCreatedArgs, 'skip' | 'first'>>;
-  genesOwned?: Resolver<Array<Maybe<ResolversTypes['GeneNFT']>>, ParentType, ContextType, RequireFields<UsergenesOwnedArgs, 'skip' | 'first'>>;
-  geneVotes?: Resolver<Array<Maybe<ResolversTypes['GeneVote']>>, ParentType, ContextType, RequireFields<UsergeneVotesArgs, 'skip' | 'first'>>;
+export type factoryPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['factoryPage'] = ResolversParentTypes['factoryPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['factory']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type _Block_Resolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['_Block_'] = ResolversParentTypes['_Block_']> = ResolversObject<{
-  hash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
-  number?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
-  timestamp?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  parentHash?: Resolver<Maybe<ResolversTypes['Bytes']>, ParentType, ContextType>;
+export type userPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['userPage'] = ResolversParentTypes['userPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['user']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type _Meta_Resolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['_Meta_'] = ResolversParentTypes['_Meta_']> = ResolversObject<{
-  block?: Resolver<ResolversTypes['_Block_'], ParentType, ContextType>;
-  deployment?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  hasIndexingErrors?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+export type geneAuctionPageResolvers<ContextType = MeshContext, ParentType extends ResolversParentTypes['geneAuctionPage'] = ResolversParentTypes['geneAuctionPage']> = ResolversObject<{
+  items?: Resolver<Array<ResolversTypes['geneAuction']>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  totalCount?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type Resolvers<ContextType = MeshContext> = ResolversObject<{
-  Aminal?: AminalResolvers<ContextType>;
-  AminalFactory?: AminalFactoryResolvers<ContextType>;
-  BigDecimal?: GraphQLScalarType;
+  JSON?: GraphQLScalarType;
   BigInt?: GraphQLScalarType;
-  BreedAminalEvent?: BreedAminalEventResolvers<ContextType>;
-  Bytes?: GraphQLScalarType;
-  FeedAminalEvent?: FeedAminalEventResolvers<ContextType>;
-  GeneAuction?: GeneAuctionResolvers<ContextType>;
-  GeneCreatorPayout?: GeneCreatorPayoutResolvers<ContextType>;
-  GeneNFT?: GeneNFTResolvers<ContextType>;
-  GeneProposal?: GeneProposalResolvers<ContextType>;
-  GeneVote?: GeneVoteResolvers<ContextType>;
-  Int8?: GraphQLScalarType;
+  PageInfo?: PageInfoResolvers<ContextType>;
+  Meta?: MetaResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
-  Relationship?: RelationshipResolvers<ContextType>;
-  SkillUsed?: SkillUsedResolvers<ContextType>;
-  Timestamp?: GraphQLScalarType;
-  User?: UserResolvers<ContextType>;
-  _Block_?: _Block_Resolvers<ContextType>;
-  _Meta_?: _Meta_Resolvers<ContextType>;
+  factory?: factoryResolvers<ContextType>;
+  aminalPage?: aminalPageResolvers<ContextType>;
+  aminal?: aminalResolvers<ContextType>;
+  relationshipPage?: relationshipPageResolvers<ContextType>;
+  relationship?: relationshipResolvers<ContextType>;
+  user?: userResolvers<ContextType>;
+  geneNFTPage?: geneNFTPageResolvers<ContextType>;
+  geneNFT?: geneNFTResolvers<ContextType>;
+  geneProposalPage?: geneProposalPageResolvers<ContextType>;
+  geneProposal?: geneProposalResolvers<ContextType>;
+  geneAuction?: geneAuctionResolvers<ContextType>;
+  geneVotePage?: geneVotePageResolvers<ContextType>;
+  geneVote?: geneVoteResolvers<ContextType>;
+  geneCreatorPayoutPage?: geneCreatorPayoutPageResolvers<ContextType>;
+  geneCreatorPayout?: geneCreatorPayoutResolvers<ContextType>;
+  feedEventPage?: feedEventPageResolvers<ContextType>;
+  feedEvent?: feedEventResolvers<ContextType>;
+  skillUsedEventPage?: skillUsedEventPageResolvers<ContextType>;
+  skillUsedEvent?: skillUsedEventResolvers<ContextType>;
+  factoryPage?: factoryPageResolvers<ContextType>;
+  userPage?: userPageResolvers<ContextType>;
+  geneAuctionPage?: geneAuctionPageResolvers<ContextType>;
 }>;
 
-export type DirectiveResolvers<ContextType = MeshContext> = ResolversObject<{
-  entity?: entityDirectiveResolver<any, any, ContextType>;
-  subgraphId?: subgraphIdDirectiveResolver<any, any, ContextType>;
-  derivedFrom?: derivedFromDirectiveResolver<any, any, ContextType>;
-}>;
 
-export type MeshContext = Aminalsv3Types.Context & BaseMeshContext;
+export type MeshContext = PonderTypes.Context & BaseMeshContext;
 
 
 import { fileURLToPath } from '@graphql-mesh/utils';
@@ -3135,7 +2131,7 @@ const baseDir = pathModule.join(pathModule.dirname(fileURLToPath(import.meta.url
 const importFn: ImportFn = <T>(moduleId: string) => {
   const relativeModuleId = (pathModule.isAbsolute(moduleId) ? pathModule.relative(baseDir, moduleId) : moduleId).split('\\').join('/').replace(baseDir + '/', '');
   switch(relativeModuleId) {
-    case ".graphclient/sources/aminalsv3/introspectionSchema":
+    case ".graphclient/sources/ponder/introspectionSchema":
       return Promise.resolve(importedModule$0) as T;
     
     default:
@@ -3168,22 +2164,22 @@ const cache = new (MeshCache as any)({
 const sources: MeshResolvedSource[] = [];
 const transforms: MeshTransform[] = [];
 const additionalEnvelopPlugins: MeshPlugin<any>[] = [];
-const aminalsv3Transforms = [];
+const ponderTransforms = [];
 const additionalTypeDefs = [] as any[];
-const aminalsv3Handler = new GraphqlHandler({
-              name: "aminalsv3",
-              config: {"endpoint":"https://api.studio.thegraph.com/query/57078/aminals-3/version/latest"},
+const ponderHandler = new GraphqlHandler({
+              name: "ponder",
+              config: {"endpoint":"http://localhost:42069/graphql"},
               baseDir,
               cache,
               pubsub,
-              store: sourcesStore.child("aminalsv3"),
-              logger: logger.child("aminalsv3"),
+              store: sourcesStore.child("ponder"),
+              logger: logger.child("ponder"),
               importFn,
             });
 sources[0] = {
-          name: 'aminalsv3',
-          handler: aminalsv3Handler,
-          transforms: aminalsv3Transforms
+          name: 'ponder',
+          handler: ponderHandler,
+          transforms: ponderTransforms
         }
 const additionalResolvers = [] as any[]
 const merger = new(BareMerger as any)({
@@ -3193,26 +2189,26 @@ const merger = new(BareMerger as any)({
         store: rootStore.child('bareMerger')
       })
 const documentHashMap = {
-        "0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalsListDocument,
-"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalByIdDocument,
-"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalForChatDocument,
-"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalByContractAddressDocument,
-"0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7": AminalFactoryDocument,
-"cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionsListDocument,
-"cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneAuctionDocument,
-"cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneProposalsListDocument,
-"cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesListDocument,
-"cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e": GeneVotesByAuctionDocument,
-"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GeneNftsListDocument,
-"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GeneNftByIdDocument,
-"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GenesByTraitTypeDocument,
-"149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969": GenesByIdsDocument,
-"c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedListDocument,
-"c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedByAminalDocument,
-"c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14": SkillUsedBySkillDocument,
-"d02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7": UserProfileDocument,
-"d02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7": UserEarningsDocument,
-"d02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7": UserActivityDocument
+        "4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018": AminalsListDocument,
+"4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018": AminalByIdDocument,
+"4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018": AminalForChatDocument,
+"4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018": AminalByContractAddressDocument,
+"4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018": AminalFactoryDocument,
+"ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a": GeneAuctionsListDocument,
+"ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a": GeneAuctionDocument,
+"ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a": GeneProposalsListDocument,
+"ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a": GeneVotesListDocument,
+"ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a": GeneVotesByAuctionDocument,
+"2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361": GeneNftsListDocument,
+"2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361": GeneNftByIdDocument,
+"2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361": GenesByTraitTypeDocument,
+"2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361": GenesByIdsDocument,
+"e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b": SkillUsedListDocument,
+"e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b": SkillUsedByAminalDocument,
+"e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b": SkillUsedBySkillDocument,
+"72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93": UserProfileDocument,
+"72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93": UserEarningsDocument,
+"72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93": UserActivityDocument
       }
 additionalEnvelopPlugins.push(usePersistedOperations({
         getPersistedOperation(key) {
@@ -3239,140 +2235,140 @@ additionalEnvelopPlugins.push(usePersistedOperations({
           return printWithCache(AminalsListDocument);
         },
         location: 'AminalsListDocument.graphql',
-        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+        sha256Hash: '4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018'
       },{
         document: AminalByIdDocument,
         get rawSDL() {
           return printWithCache(AminalByIdDocument);
         },
         location: 'AminalByIdDocument.graphql',
-        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+        sha256Hash: '4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018'
       },{
         document: AminalForChatDocument,
         get rawSDL() {
           return printWithCache(AminalForChatDocument);
         },
         location: 'AminalForChatDocument.graphql',
-        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+        sha256Hash: '4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018'
       },{
         document: AminalByContractAddressDocument,
         get rawSDL() {
           return printWithCache(AminalByContractAddressDocument);
         },
         location: 'AminalByContractAddressDocument.graphql',
-        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+        sha256Hash: '4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018'
       },{
         document: AminalFactoryDocument,
         get rawSDL() {
           return printWithCache(AminalFactoryDocument);
         },
         location: 'AminalFactoryDocument.graphql',
-        sha256Hash: '0cb937533beaf6fbf57bf6ba877b49626c1bd74c53f04a7f4d6ed06b3d8fb5e7'
+        sha256Hash: '4ac62f5a0982250bc67851e8bbd8a38d17cc277ec923dbdc1a99ef936770f018'
       },{
         document: GeneAuctionsListDocument,
         get rawSDL() {
           return printWithCache(GeneAuctionsListDocument);
         },
         location: 'GeneAuctionsListDocument.graphql',
-        sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+        sha256Hash: 'ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a'
       },{
         document: GeneAuctionDocument,
         get rawSDL() {
           return printWithCache(GeneAuctionDocument);
         },
         location: 'GeneAuctionDocument.graphql',
-        sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+        sha256Hash: 'ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a'
       },{
         document: GeneProposalsListDocument,
         get rawSDL() {
           return printWithCache(GeneProposalsListDocument);
         },
         location: 'GeneProposalsListDocument.graphql',
-        sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+        sha256Hash: 'ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a'
       },{
         document: GeneVotesListDocument,
         get rawSDL() {
           return printWithCache(GeneVotesListDocument);
         },
         location: 'GeneVotesListDocument.graphql',
-        sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+        sha256Hash: 'ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a'
       },{
         document: GeneVotesByAuctionDocument,
         get rawSDL() {
           return printWithCache(GeneVotesByAuctionDocument);
         },
         location: 'GeneVotesByAuctionDocument.graphql',
-        sha256Hash: 'cfb4d7042dd02663f5395d18b836e3109d79692089cdd146ecf56626e98e6c6e'
+        sha256Hash: 'ac659dba00c7acb3c516b6327e9067de2fc079ce797555ef39b9bfa6586ab32a'
       },{
         document: GeneNftsListDocument,
         get rawSDL() {
           return printWithCache(GeneNftsListDocument);
         },
         location: 'GeneNftsListDocument.graphql',
-        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+        sha256Hash: '2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361'
       },{
         document: GeneNftByIdDocument,
         get rawSDL() {
           return printWithCache(GeneNftByIdDocument);
         },
         location: 'GeneNftByIdDocument.graphql',
-        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+        sha256Hash: '2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361'
       },{
         document: GenesByTraitTypeDocument,
         get rawSDL() {
           return printWithCache(GenesByTraitTypeDocument);
         },
         location: 'GenesByTraitTypeDocument.graphql',
-        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+        sha256Hash: '2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361'
       },{
         document: GenesByIdsDocument,
         get rawSDL() {
           return printWithCache(GenesByIdsDocument);
         },
         location: 'GenesByIdsDocument.graphql',
-        sha256Hash: '149d47efc9a8eaba93175759b78c4a33f30541dd65749c12bbd23ca5bc420969'
+        sha256Hash: '2fd45b040f83cf62b38abfdbfc8ee0663cc123e511f12eeb28ba835944c92361'
       },{
         document: SkillUsedListDocument,
         get rawSDL() {
           return printWithCache(SkillUsedListDocument);
         },
         location: 'SkillUsedListDocument.graphql',
-        sha256Hash: 'c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14'
+        sha256Hash: 'e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b'
       },{
         document: SkillUsedByAminalDocument,
         get rawSDL() {
           return printWithCache(SkillUsedByAminalDocument);
         },
         location: 'SkillUsedByAminalDocument.graphql',
-        sha256Hash: 'c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14'
+        sha256Hash: 'e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b'
       },{
         document: SkillUsedBySkillDocument,
         get rawSDL() {
           return printWithCache(SkillUsedBySkillDocument);
         },
         location: 'SkillUsedBySkillDocument.graphql',
-        sha256Hash: 'c74ae288e6306c3c09b321f4f0058dcd4d94d1427857ec2ca85fbff0c5fe3b14'
+        sha256Hash: 'e2527b9798dd3ae376b858290a32b34006831de5efb7aa63c854e1af6a5aad6b'
       },{
         document: UserProfileDocument,
         get rawSDL() {
           return printWithCache(UserProfileDocument);
         },
         location: 'UserProfileDocument.graphql',
-        sha256Hash: 'd02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7'
+        sha256Hash: '72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93'
       },{
         document: UserEarningsDocument,
         get rawSDL() {
           return printWithCache(UserEarningsDocument);
         },
         location: 'UserEarningsDocument.graphql',
-        sha256Hash: 'd02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7'
+        sha256Hash: '72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93'
       },{
         document: UserActivityDocument,
         get rawSDL() {
           return printWithCache(UserActivityDocument);
         },
         location: 'UserActivityDocument.graphql',
-        sha256Hash: 'd02d3b2a07e80480d50b462927abe4607954fd9559c8dbdcc6e25df4f75915a7'
+        sha256Hash: '72243d5d571e29e7c72441fdfafd00988a97fb43fb7fd9c8570057b912331b93'
       }
     ];
     },
@@ -3429,109 +2425,108 @@ export function getBuiltGraphSDK<TGlobalContext = any, TOperationContext = any>(
 }
 export type AminalsListQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
-  address?: InputMaybe<Scalars['Bytes']['input']>;
+  address?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type AminalsListQuery = { aminals: Array<(
-    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
-    & { parentOne?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, parentTwo?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, lovers: Array<Maybe<Pick<Relationship, 'love'>>> }
-  )> };
+export type AminalsListQuery = { aminals: { items: Array<(
+      Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'traits'>
+      & { parentOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, parentTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, lovers?: Maybe<{ items: Array<Pick<relationship, 'love'>> }> }
+    )> } };
 
 export type AminalByIdQueryVariables = Exact<{
-  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
-  address?: InputMaybe<Scalars['Bytes']['input']>;
+  contractAddress: Scalars['String']['input'];
+  address?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type AminalByIdQuery = { aminals: Array<(
-    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
-    & { parentOne?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, parentTwo?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, lovers: Array<Maybe<Pick<Relationship, 'love'>>>, feeds: Array<(
-      Pick<FeedAminalEvent, 'id' | 'amount' | 'love' | 'totalLove' | 'energy' | 'blockTimestamp'>
-      & { sender: Pick<User, 'id' | 'address'> }
-    )>, skillUsed: Array<(
-      Pick<SkillUsed, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
-      & { caller: Pick<User, 'id' | 'address'> }
-    )> }
+export type AminalByIdQuery = { aminal?: Maybe<(
+    Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'traits'>
+    & { parentOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, parentTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex'>>, lovers?: Maybe<{ items: Array<Pick<relationship, 'love'>> }>, feeds?: Maybe<{ items: Array<(
+        Pick<feedEvent, 'id' | 'amount' | 'love' | 'totalLove' | 'energy' | 'blockTimestamp'>
+        & { sender?: Maybe<Pick<user, 'id' | 'address'>> }
+      )> }>, skillsUsed?: Maybe<{ items: Array<(
+        Pick<skillUsedEvent, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
+        & { caller?: Maybe<Pick<user, 'id' | 'address'>> }
+      )> }> }
   )> };
 
 export type AminalForChatQueryVariables = Exact<{
-  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
-  address?: InputMaybe<Scalars['Bytes']['input']>;
+  contractAddress: Scalars['String']['input'];
+  address?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type AminalForChatQuery = { aminals: Array<(
-    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
-    & { lovers: Array<Maybe<Pick<Relationship, 'love'>>> }
+export type AminalForChatQuery = { aminal?: Maybe<(
+    Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'tokenURI' | 'traits'>
+    & { lovers?: Maybe<{ items: Array<Pick<relationship, 'love'>> }> }
   )> };
 
 export type AminalByContractAddressQueryVariables = Exact<{
-  contractAddress?: InputMaybe<Scalars['Bytes']['input']>;
-  address?: InputMaybe<Scalars['Bytes']['input']>;
+  contractAddress: Scalars['String']['input'];
+  address?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type AminalByContractAddressQuery = { aminals: Array<(
-    Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>
-    & { parentOne?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, parentTwo?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, lovers: Array<Maybe<Pick<Relationship, 'love'>>>, feeds: Array<(
-      Pick<FeedAminalEvent, 'id' | 'amount' | 'love' | 'blockTimestamp'>
-      & { sender: Pick<User, 'address'> }
-    )>, skillUsed: Array<(
-      Pick<SkillUsed, 'id' | 'skillAddress' | 'blockTimestamp'>
-      & { caller: Pick<User, 'address'> }
-    )> }
+export type AminalByContractAddressQuery = { aminal?: Maybe<(
+    Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'blockTimestamp' | 'tokenURI' | 'traits'>
+    & { parentOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, parentTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'tokenURI'>>, lovers?: Maybe<{ items: Array<Pick<relationship, 'love'>> }>, feeds?: Maybe<{ items: Array<(
+        Pick<feedEvent, 'id' | 'amount' | 'love' | 'blockTimestamp'>
+        & { sender?: Maybe<Pick<user, 'address'>> }
+      )> }>, skillsUsed?: Maybe<{ items: Array<(
+        Pick<skillUsedEvent, 'id' | 'skillAddress' | 'blockTimestamp'>
+        & { caller?: Maybe<Pick<user, 'address'>> }
+      )> }> }
   )> };
 
-export type AminalFactoryQueryVariables = Exact<{ [key: string]: never; }>;
+export type AminalFactoryQueryVariables = Exact<{
+  factoryId: Scalars['String']['input'];
+}>;
 
 
-export type AminalFactoryQuery = { aminalFactories: Array<(
-    Pick<AminalFactory, 'id' | 'totalAminals'>
-    & { aminals: Array<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'tokenURI'>> }
+export type AminalFactoryQuery = { factory?: Maybe<(
+    Pick<factory, 'id' | 'totalAminals'>
+    & { aminals?: Maybe<{ items: Array<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'energy' | 'totalLove' | 'ethBalance' | 'tokenURI'>> }> }
   )> };
 
 export type GeneAuctionsListQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GeneAuctionsListQuery = { geneAuctions: Array<(
-    Pick<GeneAuction, 'id' | 'auctionId' | 'finished' | 'totalLove' | 'blockTimestamp'>
-    & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>, childAminal?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>> }
-  )> };
+export type GeneAuctionsListQuery = { geneAuctions: { items: Array<(
+      Pick<geneAuction, 'id' | 'auctionId' | 'finished' | 'totalLove' | 'blockTimestamp'>
+      & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'traits'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'traits'>>, childAminal?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove' | 'traits'>> }
+    )> } };
 
 export type GeneAuctionQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
 }>;
 
 
 export type GeneAuctionQuery = { geneAuction?: Maybe<(
-    Pick<GeneAuction, 'id' | 'auctionId' | 'finished' | 'totalLove' | 'blockTimestamp'>
-    & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>, childAminal?: Maybe<Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove' | 'backId' | 'armId' | 'tailId' | 'earsId' | 'bodyId' | 'faceId' | 'mouthId' | 'miscId'>>, proposals: Array<(
-      Pick<GeneProposal, 'id' | 'traitType' | 'loveVotes' | 'removeVotes' | 'removed' | 'blockTimestamp'>
-      & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'svg'>, proposer: Pick<User, 'id' | 'address'> }
-    )>, votes: Array<(
-      Pick<GeneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
-      & { proposal: (
-        Pick<GeneProposal, 'id' | 'traitType'>
-        & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId'> }
-      ), voter: Pick<User, 'id' | 'address'> }
-    )> }
+    Pick<geneAuction, 'id' | 'auctionId' | 'finished' | 'totalLove' | 'blockTimestamp'>
+    & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'traits'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'traits'>>, childAminal?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove' | 'traits'>>, proposals?: Maybe<{ items: Array<(
+        Pick<geneProposal, 'id' | 'traitType' | 'loveVotes' | 'removeVotes' | 'removed' | 'blockTimestamp'>
+        & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'svg'>>, proposer?: Maybe<Pick<user, 'id' | 'address'>> }
+      )> }>, votes?: Maybe<{ items: Array<(
+        Pick<geneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
+        & { proposal?: Maybe<(
+          Pick<geneProposal, 'id' | 'traitType'>
+          & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId'>> }
+        )>, voter?: Maybe<Pick<user, 'id' | 'address'>> }
+      )> }> }
   )> };
 
 export type GeneProposalsListQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type GeneProposalsListQuery = { geneProposals: Array<(
-    Pick<GeneProposal, 'id' | 'traitType' | 'loveVotes' | 'removeVotes' | 'removed' | 'blockTimestamp'>
-    & { auction: Pick<GeneAuction, 'id' | 'auctionId'>, geneNFT: Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'svg'>, proposer: Pick<User, 'id' | 'address'> }
-  )> };
+export type GeneProposalsListQuery = { geneProposals: { items: Array<(
+      Pick<geneProposal, 'id' | 'traitType' | 'loveVotes' | 'removeVotes' | 'removed' | 'blockTimestamp'>
+      & { auction?: Maybe<Pick<geneAuction, 'id' | 'auctionId'>>, geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'svg'>>, proposer?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type GeneVotesListQueryVariables = Exact<{
   auctionId: Scalars['String']['input'];
@@ -3539,61 +2534,61 @@ export type GeneVotesListQueryVariables = Exact<{
 }>;
 
 
-export type GeneVotesListQuery = { geneVotes: Array<(
-    Pick<GeneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
-    & { proposal: (
-      Pick<GeneProposal, 'id' | 'traitType'>
-      & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId'> }
-    ), voter: Pick<User, 'id' | 'address'> }
-  )> };
+export type GeneVotesListQuery = { geneVotes: { items: Array<(
+      Pick<geneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
+      & { proposal?: Maybe<(
+        Pick<geneProposal, 'id' | 'traitType'>
+        & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId'>> }
+      )>, voter?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type GeneVotesByAuctionQueryVariables = Exact<{
   auctionId: Scalars['String']['input'];
 }>;
 
 
-export type GeneVotesByAuctionQuery = { geneVotes: Array<(
-    Pick<GeneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
-    & { proposal: (
-      Pick<GeneProposal, 'id' | 'traitType'>
-      & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'svg'> }
-    ), voter: Pick<User, 'id' | 'address'> }
-  )> };
+export type GeneVotesByAuctionQuery = { geneVotes: { items: Array<(
+      Pick<geneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
+      & { proposal?: Maybe<(
+        Pick<geneProposal, 'id' | 'traitType'>
+        & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'svg'>> }
+      )>, voter?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type GeneNftsListQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GeneNftsListQuery = { geneNFTs: Array<(
-    Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
-    & { owner: Pick<User, 'id' | 'address'>, creator: Pick<User, 'id' | 'address'>, proposalsUsingGene: Array<(
-      Pick<GeneProposal, 'id'>
-      & { auction: (
-        Pick<GeneAuction, 'id'>
-        & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'> }
-      ) }
-    )>, payouts: Array<(
-      Pick<GeneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
-      & { auction: Pick<GeneAuction, 'id' | 'auctionId'> }
-    )> }
-  )> };
+export type GeneNftsListQuery = { geneNFTs: { items: Array<(
+      Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
+      & { owner?: Maybe<Pick<user, 'id' | 'address'>>, creator?: Maybe<Pick<user, 'id' | 'address'>>, proposals?: Maybe<{ items: Array<(
+          Pick<geneProposal, 'id'>
+          & { auction?: Maybe<(
+            Pick<geneAuction, 'id'>
+            & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>> }
+          )> }
+        )> }>, payouts?: Maybe<{ items: Array<(
+          Pick<geneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
+          & { auction?: Maybe<Pick<geneAuction, 'id' | 'auctionId'>> }
+        )> }> }
+    )> } };
 
 export type GeneNftByIdQueryVariables = Exact<{
-  id: Scalars['ID']['input'];
+  id: Scalars['String']['input'];
 }>;
 
 
 export type GeneNftByIdQuery = { geneNFT?: Maybe<(
-    Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
-    & { owner: Pick<User, 'id' | 'address'>, creator: Pick<User, 'id' | 'address'>, proposalsUsingGene: Array<(
-      Pick<GeneProposal, 'id'>
-      & { auction: (
-        Pick<GeneAuction, 'id'>
-        & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'> }
-      ) }
-    )>, payouts: Array<(
-      Pick<GeneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
-      & { auction: Pick<GeneAuction, 'id' | 'auctionId'> }
-    )> }
+    Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
+    & { owner?: Maybe<Pick<user, 'id' | 'address'>>, creator?: Maybe<Pick<user, 'id' | 'address'>>, proposals?: Maybe<{ items: Array<(
+        Pick<geneProposal, 'id'>
+        & { auction?: Maybe<(
+          Pick<geneAuction, 'id'>
+          & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>> }
+        )> }
+      )> }>, payouts?: Maybe<{ items: Array<(
+        Pick<geneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
+        & { auction?: Maybe<Pick<geneAuction, 'id' | 'auctionId'>> }
+      )> }> }
   )> };
 
 export type GenesByTraitTypeQueryVariables = Exact<{
@@ -3601,163 +2596,159 @@ export type GenesByTraitTypeQueryVariables = Exact<{
 }>;
 
 
-export type GenesByTraitTypeQuery = { geneNFTs: Array<(
-    Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
-    & { owner: Pick<User, 'id' | 'address'>, creator: Pick<User, 'id' | 'address'>, proposalsUsingGene: Array<(
-      Pick<GeneProposal, 'id'>
-      & { auction: (
-        Pick<GeneAuction, 'id'>
-        & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'> }
-      ) }
-    )>, payouts: Array<(
-      Pick<GeneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
-      & { auction: Pick<GeneAuction, 'id' | 'auctionId'> }
-    )> }
-  )> };
+export type GenesByTraitTypeQuery = { geneNFTs: { items: Array<(
+      Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
+      & { owner?: Maybe<Pick<user, 'id' | 'address'>>, creator?: Maybe<Pick<user, 'id' | 'address'>>, proposals?: Maybe<{ items: Array<(
+          Pick<geneProposal, 'id'>
+          & { auction?: Maybe<(
+            Pick<geneAuction, 'id'>
+            & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'aminalIndex' | 'tokenURI' | 'energy' | 'totalLove'>> }
+          )> }
+        )> }>, payouts?: Maybe<{ items: Array<(
+          Pick<geneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
+          & { auction?: Maybe<Pick<geneAuction, 'id' | 'auctionId'>> }
+        )> }> }
+    )> } };
 
 export type GenesByIdsQueryVariables = Exact<{
   ids: Array<Scalars['BigInt']['input']> | Scalars['BigInt']['input'];
 }>;
 
 
-export type GenesByIdsQuery = { geneNFTs: Array<Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg'>> };
+export type GenesByIdsQuery = { geneNFTs: { items: Array<Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg'>> } };
 
 export type SkillUsedListQueryVariables = Exact<{
   first?: InputMaybe<Scalars['Int']['input']>;
-  skip?: InputMaybe<Scalars['Int']['input']>;
 }>;
 
 
-export type SkillUsedListQuery = { skillUseds: Array<(
-    Pick<SkillUsed, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
-    & { aminal: Pick<Aminal, 'id'>, caller: Pick<User, 'id' | 'address'> }
-  )> };
+export type SkillUsedListQuery = { skillUsedEvents: { items: Array<(
+      Pick<skillUsedEvent, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
+      & { aminal?: Maybe<Pick<aminal, 'id'>>, caller?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type SkillUsedByAminalQueryVariables = Exact<{
   aminalId: Scalars['String']['input'];
 }>;
 
 
-export type SkillUsedByAminalQuery = { skillUseds: Array<(
-    Pick<SkillUsed, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
-    & { caller: Pick<User, 'id' | 'address'> }
-  )> };
+export type SkillUsedByAminalQuery = { skillUsedEvents: { items: Array<(
+      Pick<skillUsedEvent, 'id' | 'skillAddress' | 'selector' | 'newEnergy' | 'blockTimestamp'>
+      & { caller?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type SkillUsedBySkillQueryVariables = Exact<{
-  skillAddress: Scalars['Bytes']['input'];
+  skillAddress: Scalars['String']['input'];
 }>;
 
 
-export type SkillUsedBySkillQuery = { skillUseds: Array<(
-    Pick<SkillUsed, 'id' | 'selector' | 'newEnergy' | 'blockTimestamp'>
-    & { aminal: Pick<Aminal, 'id'>, caller: Pick<User, 'id' | 'address'> }
-  )> };
+export type SkillUsedBySkillQuery = { skillUsedEvents: { items: Array<(
+      Pick<skillUsedEvent, 'id' | 'selector' | 'newEnergy' | 'blockTimestamp'>
+      & { aminal?: Maybe<Pick<aminal, 'id'>>, caller?: Maybe<Pick<user, 'id' | 'address'>> }
+    )> } };
 
 export type UserProfileQueryVariables = Exact<{
-  address: Scalars['ID']['input'];
+  address: Scalars['String']['input'];
 }>;
 
 
 export type UserProfileQuery = { user?: Maybe<(
-    Pick<User, 'id' | 'address'>
-    & { lovers: Array<Maybe<(
-      Pick<Relationship, 'id' | 'love'>
-      & { aminal: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI' | 'totalLove' | 'energy' | 'ethBalance' | 'blockTimestamp'> }
-    )>>, genesCreated: Array<Maybe<(
-      Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
-      & { payouts: Array<Pick<GeneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>> }
-    )>>, genesOwned: Array<Maybe<(
-      Pick<GeneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
-      & { creator: Pick<User, 'id' | 'address'> }
-    )>>, geneVotes: Array<Maybe<(
-      Pick<GeneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
-      & { auction: (
-        Pick<GeneAuction, 'id' | 'auctionId'>
-        & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI'> }
-      ), proposal: (
-        Pick<GeneProposal, 'id'>
-        & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'traitType'> }
-      ) }
-    )>> }
+    Pick<user, 'id' | 'address'>
+    & { lovers?: Maybe<{ items: Array<(
+        Pick<relationship, 'id' | 'love'>
+        & { aminal?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI' | 'totalLove' | 'energy' | 'ethBalance' | 'blockTimestamp'>> }
+      )> }>, genesCreated?: Maybe<{ items: Array<(
+        Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
+        & { payouts?: Maybe<{ items: Array<Pick<geneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>> }> }
+      )> }>, genesOwned?: Maybe<{ items: Array<(
+        Pick<geneNFT, 'id' | 'tokenId' | 'traitType' | 'name' | 'description' | 'svg' | 'totalEarnings' | 'blockTimestamp'>
+        & { creator?: Maybe<Pick<user, 'id' | 'address'>> }
+      )> }>, geneVotes?: Maybe<{ items: Array<(
+        Pick<geneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
+        & { auction?: Maybe<(
+          Pick<geneAuction, 'id' | 'auctionId'>
+          & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI'>> }
+        )>, proposal?: Maybe<(
+          Pick<geneProposal, 'id'>
+          & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'traitType'>> }
+        )> }
+      )> }> }
   )> };
 
 export type UserEarningsQueryVariables = Exact<{
-  address: Scalars['ID']['input'];
+  address: Scalars['String']['input'];
 }>;
 
 
 export type UserEarningsQuery = { user?: Maybe<(
-    Pick<User, 'id' | 'address'>
-    & { genesCreated: Array<Maybe<(
-      Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'traitType' | 'totalEarnings'>
-      & { payouts: Array<(
-        Pick<GeneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
-        & { auction: (
-          Pick<GeneAuction, 'id' | 'auctionId'>
-          & { aminalOne: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI'>, aminalTwo: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI'> }
-        ) }
-      )> }
-    )>> }
+    Pick<user, 'id' | 'address'>
+    & { genesCreated?: Maybe<{ items: Array<(
+        Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'traitType' | 'totalEarnings'>
+        & { payouts?: Maybe<{ items: Array<(
+            Pick<geneCreatorPayout, 'id' | 'amount' | 'auctionId' | 'blockTimestamp'>
+            & { auction?: Maybe<(
+              Pick<geneAuction, 'id' | 'auctionId'>
+              & { aminalOne?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI'>>, aminalTwo?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI'>> }
+            )> }
+          )> }> }
+      )> }> }
   )> };
 
 export type UserActivityQueryVariables = Exact<{
-  address: Scalars['ID']['input'];
+  address: Scalars['String']['input'];
 }>;
 
 
 export type UserActivityQuery = { user?: Maybe<(
-    Pick<User, 'id' | 'address'>
-    & { lovers: Array<Maybe<(
-      Pick<Relationship, 'id' | 'love'>
-      & { aminal: Pick<Aminal, 'id' | 'contractAddress' | 'tokenURI' | 'totalLove'> }
-    )>>, geneVotes: Array<Maybe<(
-      Pick<GeneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
-      & { auction: Pick<GeneAuction, 'id' | 'auctionId'>, proposal: (
-        Pick<GeneProposal, 'id'>
-        & { geneNFT: Pick<GeneNFT, 'id' | 'tokenId' | 'name' | 'traitType'> }
-      ) }
-    )>> }
+    Pick<user, 'id' | 'address'>
+    & { lovers?: Maybe<{ items: Array<(
+        Pick<relationship, 'id' | 'love'>
+        & { aminal?: Maybe<Pick<aminal, 'id' | 'contractAddress' | 'tokenURI' | 'totalLove'>> }
+      )> }>, geneVotes?: Maybe<{ items: Array<(
+        Pick<geneVote, 'id' | 'isRemoveVote' | 'loveAmount' | 'blockTimestamp'>
+        & { auction?: Maybe<Pick<geneAuction, 'id' | 'auctionId'>>, proposal?: Maybe<(
+          Pick<geneProposal, 'id'>
+          & { geneNFT?: Maybe<Pick<geneNFT, 'id' | 'tokenId' | 'name' | 'traitType'>> }
+        )> }
+      )> }> }
   )> };
 
 
 export const AminalsListDocument = gql`
-    query AminalsList($first: Int = 100, $skip: Int = 0, $address: Bytes = "") {
-  aminals(first: $first, skip: $skip) {
-    id
-    contractAddress
-    aminalIndex
-    parentOne {
+    query AminalsList($first: Int = 100, $address: String = "") {
+  aminals(limit: $first, orderBy: "aminalIndex", orderDirection: "asc") {
+    items {
       id
       contractAddress
       aminalIndex
-    }
-    parentTwo {
-      id
-      contractAddress
-      aminalIndex
-    }
-    energy
-    totalLove
-    ethBalance
-    blockTimestamp
-    tokenURI
-    backId
-    armId
-    tailId
-    earsId
-    bodyId
-    faceId
-    mouthId
-    miscId
-    lovers(where: {user_: {address: $address}}) {
-      love
+      parentOne {
+        id
+        contractAddress
+        aminalIndex
+      }
+      parentTwo {
+        id
+        contractAddress
+        aminalIndex
+      }
+      energy
+      totalLove
+      ethBalance
+      blockTimestamp
+      tokenURI
+      traits
+      lovers(where: {userId: $address}, limit: 1) {
+        items {
+          love
+        }
+      }
     }
   }
 }
     ` as unknown as DocumentNode<AminalsListQuery, AminalsListQueryVariables>;
 export const AminalByIdDocument = gql`
-    query AminalById($contractAddress: Bytes, $address: Bytes = "") {
-  aminals(where: {contractAddress: $contractAddress}) {
+    query AminalById($contractAddress: String!, $address: String = "") {
+  aminal(id: $contractAddress) {
     id
     contractAddress
     aminalIndex
@@ -3776,46 +2767,45 @@ export const AminalByIdDocument = gql`
     ethBalance
     blockTimestamp
     tokenURI
-    backId
-    armId
-    tailId
-    earsId
-    bodyId
-    faceId
-    mouthId
-    miscId
-    lovers(where: {user_: {address: $address}}) {
-      love
-    }
-    feeds {
-      id
-      sender {
-        id
-        address
+    traits
+    lovers(where: {userId: $address}, limit: 1) {
+      items {
+        love
       }
-      amount
-      love
-      totalLove
-      energy
-      blockTimestamp
     }
-    skillUsed {
-      id
-      caller {
+    feeds(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
         id
-        address
+        sender {
+          id
+          address
+        }
+        amount
+        love
+        totalLove
+        energy
+        blockTimestamp
       }
-      skillAddress
-      selector
-      newEnergy
-      blockTimestamp
+    }
+    skillsUsed(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
+        id
+        caller {
+          id
+          address
+        }
+        skillAddress
+        selector
+        newEnergy
+        blockTimestamp
+      }
     }
   }
 }
     ` as unknown as DocumentNode<AminalByIdQuery, AminalByIdQueryVariables>;
 export const AminalForChatDocument = gql`
-    query AminalForChat($contractAddress: Bytes, $address: Bytes = "") {
-  aminals(where: {contractAddress: $contractAddress}) {
+    query AminalForChat($contractAddress: String!, $address: String = "") {
+  aminal(id: $contractAddress) {
     id
     contractAddress
     aminalIndex
@@ -3823,23 +2813,18 @@ export const AminalForChatDocument = gql`
     totalLove
     ethBalance
     tokenURI
-    backId
-    armId
-    tailId
-    earsId
-    bodyId
-    faceId
-    mouthId
-    miscId
-    lovers(where: {user_: {address: $address}}) {
-      love
+    traits
+    lovers(where: {userId: $address}, limit: 1) {
+      items {
+        love
+      }
     }
   }
 }
     ` as unknown as DocumentNode<AminalForChatQuery, AminalForChatQueryVariables>;
 export const AminalByContractAddressDocument = gql`
-    query AminalByContractAddress($contractAddress: Bytes, $address: Bytes = "") {
-  aminals(where: {contractAddress: $contractAddress}) {
+    query AminalByContractAddress($contractAddress: String!, $address: String = "") {
+  aminal(id: $contractAddress) {
     id
     contractAddress
     aminalIndex
@@ -3864,111 +2849,93 @@ export const AminalByContractAddressDocument = gql`
     ethBalance
     blockTimestamp
     tokenURI
-    backId
-    armId
-    tailId
-    earsId
-    bodyId
-    faceId
-    mouthId
-    miscId
-    lovers(where: {user_: {address: $address}}) {
-      love
-    }
-    feeds(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
-      id
-      sender {
-        address
+    traits
+    lovers(where: {userId: $address}, limit: 1) {
+      items {
+        love
       }
-      amount
-      love
-      blockTimestamp
     }
-    skillUsed(first: 10, orderBy: blockTimestamp, orderDirection: desc) {
-      id
-      caller {
-        address
+    feeds(limit: 10, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
+        id
+        sender {
+          address
+        }
+        amount
+        love
+        blockTimestamp
       }
-      skillAddress
-      blockTimestamp
+    }
+    skillsUsed(limit: 10, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
+        id
+        caller {
+          address
+        }
+        skillAddress
+        blockTimestamp
+      }
     }
   }
 }
     ` as unknown as DocumentNode<AminalByContractAddressQuery, AminalByContractAddressQueryVariables>;
 export const AminalFactoryDocument = gql`
-    query AminalFactory {
-  aminalFactories(first: 1) {
+    query AminalFactory($factoryId: String!) {
+  factory(id: $factoryId) {
     id
     totalAminals
-    aminals {
-      id
-      contractAddress
-      aminalIndex
-      energy
-      totalLove
-      ethBalance
-      tokenURI
+    aminals(limit: 100, orderBy: "aminalIndex", orderDirection: "asc") {
+      items {
+        id
+        contractAddress
+        aminalIndex
+        energy
+        totalLove
+        ethBalance
+        tokenURI
+      }
     }
   }
 }
     ` as unknown as DocumentNode<AminalFactoryQuery, AminalFactoryQueryVariables>;
 export const GeneAuctionsListDocument = gql`
-    query GeneAuctionsList($first: Int = 100, $skip: Int = 0) {
-  geneAuctions(first: $first, skip: $skip, orderBy: id, orderDirection: desc) {
-    id
-    auctionId
-    aminalOne {
+    query GeneAuctionsList($first: Int = 100) {
+  geneAuctions(limit: $first, orderBy: "auctionId", orderDirection: "desc") {
+    items {
       id
-      contractAddress
-      aminalIndex
-      tokenURI
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
-    }
-    aminalTwo {
-      id
-      contractAddress
-      aminalIndex
-      tokenURI
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
-    }
-    childAminal {
-      id
-      contractAddress
-      aminalIndex
-      tokenURI
-      energy
+      auctionId
+      aminalOne {
+        id
+        contractAddress
+        aminalIndex
+        tokenURI
+        traits
+      }
+      aminalTwo {
+        id
+        contractAddress
+        aminalIndex
+        tokenURI
+        traits
+      }
+      childAminal {
+        id
+        contractAddress
+        aminalIndex
+        tokenURI
+        energy
+        totalLove
+        traits
+      }
+      finished
       totalLove
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
+      blockTimestamp
     }
-    finished
-    totalLove
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<GeneAuctionsListQuery, GeneAuctionsListQueryVariables>;
 export const GeneAuctionDocument = gql`
-    query GeneAuction($id: ID!) {
+    query GeneAuction($id: String!) {
   geneAuction(id: $id) {
     id
     auctionId
@@ -3977,28 +2944,14 @@ export const GeneAuctionDocument = gql`
       contractAddress
       aminalIndex
       tokenURI
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
+      traits
     }
     aminalTwo {
       id
       contractAddress
       aminalIndex
       tokenURI
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
+      traits
     }
     childAminal {
       id
@@ -4007,20 +2960,63 @@ export const GeneAuctionDocument = gql`
       tokenURI
       energy
       totalLove
-      backId
-      armId
-      tailId
-      earsId
-      bodyId
-      faceId
-      mouthId
-      miscId
+      traits
     }
     finished
     totalLove
     blockTimestamp
-    proposals {
+    proposals(limit: 100) {
+      items {
+        id
+        geneNFT {
+          id
+          tokenId
+          name
+          svg
+        }
+        traitType
+        proposer {
+          id
+          address
+        }
+        loveVotes
+        removeVotes
+        removed
+        blockTimestamp
+      }
+    }
+    votes(limit: 100, orderBy: "loveAmount", orderDirection: "desc") {
+      items {
+        id
+        proposal {
+          id
+          geneNFT {
+            id
+            tokenId
+          }
+          traitType
+        }
+        voter {
+          id
+          address
+        }
+        isRemoveVote
+        loveAmount
+        blockTimestamp
+      }
+    }
+  }
+}
+    ` as unknown as DocumentNode<GeneAuctionQuery, GeneAuctionQueryVariables>;
+export const GeneProposalsListDocument = gql`
+    query GeneProposalsList($first: Int = 100) {
+  geneProposals(limit: $first, orderBy: "blockTimestamp", orderDirection: "desc") {
+    items {
       id
+      auction {
+        id
+        auctionId
+      }
       geneNFT {
         id
         tokenId
@@ -4037,7 +3033,18 @@ export const GeneAuctionDocument = gql`
       removed
       blockTimestamp
     }
-    votes {
+  }
+}
+    ` as unknown as DocumentNode<GeneProposalsListQuery, GeneProposalsListQueryVariables>;
+export const GeneVotesListDocument = gql`
+    query GeneVotesList($auctionId: String!, $traitType: Int!) {
+  geneVotes(
+    where: {auctionId: $auctionId}
+    orderBy: "loveAmount"
+    orderDirection: "desc"
+    limit: 100
+  ) {
+    items {
       id
       proposal {
         id
@@ -4057,148 +3064,100 @@ export const GeneAuctionDocument = gql`
     }
   }
 }
-    ` as unknown as DocumentNode<GeneAuctionQuery, GeneAuctionQueryVariables>;
-export const GeneProposalsListDocument = gql`
-    query GeneProposalsList($first: Int = 100, $skip: Int = 0) {
-  geneProposals(
-    first: $first
-    skip: $skip
-    orderBy: blockTimestamp
-    orderDirection: desc
-  ) {
-    id
-    auction {
-      id
-      auctionId
-    }
-    geneNFT {
-      id
-      tokenId
-      name
-      svg
-    }
-    traitType
-    proposer {
-      id
-      address
-    }
-    loveVotes
-    removeVotes
-    removed
-    blockTimestamp
-  }
-}
-    ` as unknown as DocumentNode<GeneProposalsListQuery, GeneProposalsListQueryVariables>;
-export const GeneVotesListDocument = gql`
-    query GeneVotesList($auctionId: String!, $traitType: Int!) {
-  geneVotes(
-    where: {auction: $auctionId, proposal_: {traitType: $traitType}}
-    orderBy: loveAmount
-    orderDirection: desc
-  ) {
-    id
-    proposal {
-      id
-      geneNFT {
-        id
-        tokenId
-      }
-      traitType
-    }
-    voter {
-      id
-      address
-    }
-    isRemoveVote
-    loveAmount
-    blockTimestamp
-  }
-}
     ` as unknown as DocumentNode<GeneVotesListQuery, GeneVotesListQueryVariables>;
 export const GeneVotesByAuctionDocument = gql`
     query GeneVotesByAuction($auctionId: String!) {
   geneVotes(
-    where: {auction: $auctionId}
-    orderBy: loveAmount
-    orderDirection: desc
+    where: {auctionId: $auctionId}
+    orderBy: "loveAmount"
+    orderDirection: "desc"
+    limit: 100
   ) {
-    id
-    proposal {
+    items {
       id
-      geneNFT {
+      proposal {
         id
-        tokenId
-        name
-        svg
+        geneNFT {
+          id
+          tokenId
+          name
+          svg
+        }
+        traitType
       }
-      traitType
+      voter {
+        id
+        address
+      }
+      isRemoveVote
+      loveAmount
+      blockTimestamp
     }
-    voter {
-      id
-      address
-    }
-    isRemoveVote
-    loveAmount
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<GeneVotesByAuctionQuery, GeneVotesByAuctionQueryVariables>;
 export const GeneNftsListDocument = gql`
     query GeneNftsList {
-  geneNFTs(orderBy: tokenId, orderDirection: asc) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
-    owner {
+  geneNFTs(orderBy: "tokenId", orderDirection: "asc", limit: 100) {
+    items {
       id
-      address
-    }
-    creator {
-      id
-      address
-    }
-    totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+      tokenId
+      traitType
+      name
+      description
+      svg
+      owner {
         id
-        aminalOne {
+        address
+      }
+      creator {
+        id
+        address
+      }
+      totalEarnings
+      proposals(limit: 100) {
+        items {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          auction {
+            id
+            aminalOne {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+            aminalTwo {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+          }
         }
       }
-    }
-    payouts {
-      id
-      amount
-      auctionId
+      payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+        items {
+          id
+          amount
+          auctionId
+          blockTimestamp
+          auction {
+            id
+            auctionId
+          }
+        }
+      }
       blockTimestamp
-      auction {
-        id
-        auctionId
-      }
     }
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<GeneNftsListQuery, GeneNftsListQueryVariables>;
 export const GeneNftByIdDocument = gql`
-    query GeneNftById($id: ID!) {
+    query GeneNftById($id: String!) {
   geneNFT(id: $id) {
     id
     tokenId
@@ -4215,36 +3174,40 @@ export const GeneNftByIdDocument = gql`
       address
     }
     totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+    proposals(limit: 100) {
+      items {
         id
-        aminalOne {
+        auction {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          aminalOne {
+            id
+            contractAddress
+            aminalIndex
+            tokenURI
+            energy
+            totalLove
+          }
+          aminalTwo {
+            id
+            contractAddress
+            aminalIndex
+            tokenURI
+            energy
+            totalLove
+          }
         }
       }
     }
-    payouts {
-      id
-      amount
-      auctionId
-      blockTimestamp
-      auction {
+    payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+      items {
         id
+        amount
         auctionId
+        blockTimestamp
+        auction {
+          id
+          auctionId
+        }
       }
     }
     blockTimestamp
@@ -4253,229 +3216,212 @@ export const GeneNftByIdDocument = gql`
     ` as unknown as DocumentNode<GeneNftByIdQuery, GeneNftByIdQueryVariables>;
 export const GenesByTraitTypeDocument = gql`
     query GenesByTraitType($traitType: Int!) {
-  geneNFTs(where: {traitType: $traitType}, orderBy: tokenId, orderDirection: asc) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
-    owner {
+  geneNFTs(
+    where: {traitType: $traitType}
+    orderBy: "tokenId"
+    orderDirection: "asc"
+    limit: 100
+  ) {
+    items {
       id
-      address
-    }
-    creator {
-      id
-      address
-    }
-    totalEarnings
-    proposalsUsingGene {
-      id
-      auction {
+      tokenId
+      traitType
+      name
+      description
+      svg
+      owner {
         id
-        aminalOne {
+        address
+      }
+      creator {
+        id
+        address
+      }
+      totalEarnings
+      proposals(limit: 100) {
+        items {
           id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
-        }
-        aminalTwo {
-          id
-          contractAddress
-          aminalIndex
-          tokenURI
-          energy
-          totalLove
+          auction {
+            id
+            aminalOne {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+            aminalTwo {
+              id
+              contractAddress
+              aminalIndex
+              tokenURI
+              energy
+              totalLove
+            }
+          }
         }
       }
-    }
-    payouts {
-      id
-      amount
-      auctionId
+      payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+        items {
+          id
+          amount
+          auctionId
+          blockTimestamp
+          auction {
+            id
+            auctionId
+          }
+        }
+      }
       blockTimestamp
-      auction {
-        id
-        auctionId
-      }
     }
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<GenesByTraitTypeQuery, GenesByTraitTypeQueryVariables>;
 export const GenesByIdsDocument = gql`
     query GenesByIds($ids: [BigInt!]!) {
-  geneNFTs(where: {tokenId_in: $ids}) {
-    id
-    tokenId
-    traitType
-    name
-    description
-    svg
+  geneNFTs(where: {tokenId_in: $ids}, limit: 100) {
+    items {
+      id
+      tokenId
+      traitType
+      name
+      description
+      svg
+    }
   }
 }
     ` as unknown as DocumentNode<GenesByIdsQuery, GenesByIdsQueryVariables>;
 export const SkillUsedListDocument = gql`
-    query SkillUsedList($first: Int = 100, $skip: Int = 0) {
-  skillUseds(
-    first: $first
-    skip: $skip
-    orderBy: blockTimestamp
-    orderDirection: desc
+    query SkillUsedList($first: Int = 100) {
+  skillUsedEvents(
+    limit: $first
+    orderBy: "blockTimestamp"
+    orderDirection: "desc"
   ) {
-    id
-    aminal {
+    items {
       id
+      aminal {
+        id
+      }
+      caller {
+        id
+        address
+      }
+      skillAddress
+      selector
+      newEnergy
+      blockTimestamp
     }
-    caller {
-      id
-      address
-    }
-    skillAddress
-    selector
-    newEnergy
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<SkillUsedListQuery, SkillUsedListQueryVariables>;
 export const SkillUsedByAminalDocument = gql`
     query SkillUsedByAminal($aminalId: String!) {
-  skillUseds(
-    where: {aminal: $aminalId}
-    orderBy: blockTimestamp
-    orderDirection: desc
+  skillUsedEvents(
+    where: {aminalId: $aminalId}
+    orderBy: "blockTimestamp"
+    orderDirection: "desc"
+    limit: 100
   ) {
-    id
-    caller {
+    items {
       id
-      address
+      caller {
+        id
+        address
+      }
+      skillAddress
+      selector
+      newEnergy
+      blockTimestamp
     }
-    skillAddress
-    selector
-    newEnergy
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<SkillUsedByAminalQuery, SkillUsedByAminalQueryVariables>;
 export const SkillUsedBySkillDocument = gql`
-    query SkillUsedBySkill($skillAddress: Bytes!) {
-  skillUseds(
+    query SkillUsedBySkill($skillAddress: String!) {
+  skillUsedEvents(
     where: {skillAddress: $skillAddress}
-    orderBy: blockTimestamp
-    orderDirection: desc
+    orderBy: "blockTimestamp"
+    orderDirection: "desc"
+    limit: 100
   ) {
-    id
-    aminal {
+    items {
       id
+      aminal {
+        id
+      }
+      caller {
+        id
+        address
+      }
+      selector
+      newEnergy
+      blockTimestamp
     }
-    caller {
-      id
-      address
-    }
-    selector
-    newEnergy
-    blockTimestamp
   }
 }
     ` as unknown as DocumentNode<SkillUsedBySkillQuery, SkillUsedBySkillQueryVariables>;
 export const UserProfileDocument = gql`
-    query UserProfile($address: ID!) {
+    query UserProfile($address: String!) {
   user(id: $address) {
     id
     address
-    lovers {
-      id
-      aminal {
+    lovers(limit: 100) {
+      items {
         id
-        contractAddress
-        tokenURI
-        totalLove
-        energy
-        ethBalance
-        blockTimestamp
-      }
-      love
-    }
-    genesCreated {
-      id
-      tokenId
-      traitType
-      name
-      description
-      svg
-      totalEarnings
-      blockTimestamp
-      payouts {
-        id
-        amount
-        auctionId
-        blockTimestamp
-      }
-    }
-    genesOwned {
-      id
-      tokenId
-      traitType
-      name
-      description
-      svg
-      totalEarnings
-      blockTimestamp
-      creator {
-        id
-        address
-      }
-    }
-    geneVotes {
-      id
-      auction {
-        id
-        auctionId
-        aminalOne {
+        aminal {
           id
           contractAddress
           tokenURI
+          totalLove
+          energy
+          ethBalance
+          blockTimestamp
         }
-        aminalTwo {
-          id
-          contractAddress
-          tokenURI
-        }
+        love
       }
-      proposal {
-        id
-        geneNFT {
-          id
-          tokenId
-          name
-          traitType
-        }
-      }
-      isRemoveVote
-      loveAmount
-      blockTimestamp
     }
-  }
-}
-    ` as unknown as DocumentNode<UserProfileQuery, UserProfileQueryVariables>;
-export const UserEarningsDocument = gql`
-    query UserEarnings($address: ID!) {
-  user(id: $address) {
-    id
-    address
-    genesCreated {
-      id
-      tokenId
-      name
-      traitType
-      totalEarnings
-      payouts {
+    genesCreated(limit: 100) {
+      items {
         id
-        amount
-        auctionId
+        tokenId
+        traitType
+        name
+        description
+        svg
+        totalEarnings
         blockTimestamp
+        payouts(limit: 100) {
+          items {
+            id
+            amount
+            auctionId
+            blockTimestamp
+          }
+        }
+      }
+    }
+    genesOwned(limit: 100) {
+      items {
+        id
+        tokenId
+        traitType
+        name
+        description
+        svg
+        totalEarnings
+        blockTimestamp
+        creator {
+          id
+          address
+        }
+      }
+    }
+    geneVotes(limit: 100) {
+      items {
+        id
         auction {
           id
           auctionId
@@ -4490,44 +3436,99 @@ export const UserEarningsDocument = gql`
             tokenURI
           }
         }
+        proposal {
+          id
+          geneNFT {
+            id
+            tokenId
+            name
+            traitType
+          }
+        }
+        isRemoveVote
+        loveAmount
+        blockTimestamp
+      }
+    }
+  }
+}
+    ` as unknown as DocumentNode<UserProfileQuery, UserProfileQueryVariables>;
+export const UserEarningsDocument = gql`
+    query UserEarnings($address: String!) {
+  user(id: $address) {
+    id
+    address
+    genesCreated(limit: 100) {
+      items {
+        id
+        tokenId
+        name
+        traitType
+        totalEarnings
+        payouts(limit: 100, orderBy: "blockTimestamp", orderDirection: "desc") {
+          items {
+            id
+            amount
+            auctionId
+            blockTimestamp
+            auction {
+              id
+              auctionId
+              aminalOne {
+                id
+                contractAddress
+                tokenURI
+              }
+              aminalTwo {
+                id
+                contractAddress
+                tokenURI
+              }
+            }
+          }
+        }
       }
     }
   }
 }
     ` as unknown as DocumentNode<UserEarningsQuery, UserEarningsQueryVariables>;
 export const UserActivityDocument = gql`
-    query UserActivity($address: ID!) {
+    query UserActivity($address: String!) {
   user(id: $address) {
     id
     address
-    lovers(orderBy: love, orderDirection: desc, first: 10) {
-      id
-      aminal {
+    lovers(orderBy: "love", orderDirection: "desc", limit: 10) {
+      items {
         id
-        contractAddress
-        tokenURI
-        totalLove
-      }
-      love
-    }
-    geneVotes(orderBy: blockTimestamp, orderDirection: desc, first: 10) {
-      id
-      auction {
-        id
-        auctionId
-      }
-      proposal {
-        id
-        geneNFT {
+        aminal {
           id
-          tokenId
-          name
-          traitType
+          contractAddress
+          tokenURI
+          totalLove
         }
+        love
       }
-      isRemoveVote
-      loveAmount
-      blockTimestamp
+    }
+    geneVotes(orderBy: "blockTimestamp", orderDirection: "desc", limit: 10) {
+      items {
+        id
+        auction {
+          id
+          auctionId
+        }
+        proposal {
+          id
+          geneNFT {
+            id
+            tokenId
+            name
+            traitType
+          }
+        }
+        isRemoveVote
+        loveAmount
+        blockTimestamp
+      }
     }
   }
 }
@@ -4559,16 +3560,16 @@ export function getSdk<C, E>(requester: Requester<C, E>) {
     AminalsList(variables?: AminalsListQueryVariables, options?: C): Promise<AminalsListQuery> {
       return requester<AminalsListQuery, AminalsListQueryVariables>(AminalsListDocument, variables, options) as Promise<AminalsListQuery>;
     },
-    AminalById(variables?: AminalByIdQueryVariables, options?: C): Promise<AminalByIdQuery> {
+    AminalById(variables: AminalByIdQueryVariables, options?: C): Promise<AminalByIdQuery> {
       return requester<AminalByIdQuery, AminalByIdQueryVariables>(AminalByIdDocument, variables, options) as Promise<AminalByIdQuery>;
     },
-    AminalForChat(variables?: AminalForChatQueryVariables, options?: C): Promise<AminalForChatQuery> {
+    AminalForChat(variables: AminalForChatQueryVariables, options?: C): Promise<AminalForChatQuery> {
       return requester<AminalForChatQuery, AminalForChatQueryVariables>(AminalForChatDocument, variables, options) as Promise<AminalForChatQuery>;
     },
-    AminalByContractAddress(variables?: AminalByContractAddressQueryVariables, options?: C): Promise<AminalByContractAddressQuery> {
+    AminalByContractAddress(variables: AminalByContractAddressQueryVariables, options?: C): Promise<AminalByContractAddressQuery> {
       return requester<AminalByContractAddressQuery, AminalByContractAddressQueryVariables>(AminalByContractAddressDocument, variables, options) as Promise<AminalByContractAddressQuery>;
     },
-    AminalFactory(variables?: AminalFactoryQueryVariables, options?: C): Promise<AminalFactoryQuery> {
+    AminalFactory(variables: AminalFactoryQueryVariables, options?: C): Promise<AminalFactoryQuery> {
       return requester<AminalFactoryQuery, AminalFactoryQueryVariables>(AminalFactoryDocument, variables, options) as Promise<AminalFactoryQuery>;
     },
     GeneAuctionsList(variables?: GeneAuctionsListQueryVariables, options?: C): Promise<GeneAuctionsListQuery> {

@@ -13,7 +13,7 @@ export type CategoryFilter =
   | '6'
   | '7';
 
-type GeneNFT = GeneNftsListQuery['geneNFTs'][number];
+type GeneNFT = GeneNftsListQuery['geneNFTs']['items'][number];
 
 /**
  * Transform and filter genes based on user preferences

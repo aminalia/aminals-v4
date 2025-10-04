@@ -1,4 +1,5 @@
 import { Aminal } from '../../.graphclient';
+import { traitsArrayToFields, type AminalWithTraitsArray } from './trait-helpers';
 
 export type AminalFilter = 'all' | 'loved';
 export type AminalSort =
@@ -21,13 +22,10 @@ export const transformAminals = (
 
   // Apply filter
   if (filter === 'loved') {
-    processedAminals = processedAminals.filter(
-      (aminal: Aminal) =>
-        aminal.lovers &&
-        aminal.lovers.length > 0 &&
-        aminal.lovers[0]?.love &&
-        Number(aminal.lovers[0].love) > 0
-    );
+    processedAminals = processedAminals.filter((aminal: Aminal) => {
+      const lovers = aminal.lovers?.items || [];
+      return lovers.length > 0 && lovers[0]?.love && Number(lovers[0].love) > 0;
+    });
   }
 
   // Apply sort
@@ -60,10 +58,9 @@ export const calculateAminalStats = (aminal: Aminal) => {
   const totalLove = Number(aminal.totalLove || 0);
   const energy = Number(aminal.energy || 0);
   const ethBalance = Number(aminal.ethBalance || 0);
+  const lovers = aminal.lovers?.items || [];
   const userLove =
-    aminal.lovers && aminal.lovers.length > 0 && aminal.lovers[0]
-      ? Number(aminal.lovers[0].love || 0)
-      : 0;
+    lovers.length > 0 && lovers[0] ? Number(lovers[0].love || 0) : 0;
 
   return {
     totalLove,
@@ -82,6 +79,9 @@ export const calculateAminalStats = (aminal: Aminal) => {
 export const formatAminalForDisplay = (aminal: Aminal) => {
   const stats = calculateAminalStats(aminal);
 
+  // Convert traits array to individual fields for backward compatibility
+  const aminalWithFields = traitsArrayToFields(aminal as unknown as AminalWithTraitsArray);
+
   return {
     id: aminal.id,
     contractAddress: aminal.contractAddress,
@@ -94,14 +94,14 @@ export const formatAminalForDisplay = (aminal: Aminal) => {
     hasUserLove: stats.hasUserLove,
     tokenURI: aminal.tokenURI,
     traits: {
-      backId: aminal.backId?.toString() || '0',
-      armId: aminal.armId?.toString() || '0',
-      tailId: aminal.tailId?.toString() || '0',
-      earsId: aminal.earsId?.toString() || '0',
-      bodyId: aminal.bodyId?.toString() || '0',
-      faceId: aminal.faceId?.toString() || '0',
-      mouthId: aminal.mouthId?.toString() || '0',
-      miscId: aminal.miscId?.toString() || '0',
+      backId: aminalWithFields.backId,
+      armId: aminalWithFields.armId,
+      tailId: aminalWithFields.tailId,
+      earsId: aminalWithFields.earsId,
+      bodyId: aminalWithFields.bodyId,
+      faceId: aminalWithFields.faceId,
+      mouthId: aminalWithFields.mouthId,
+      miscId: aminalWithFields.miscId,
     },
     breeding: {
       parentOneAddress: aminal.parentOne?.contractAddress || null,
