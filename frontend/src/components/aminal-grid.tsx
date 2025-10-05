@@ -1,48 +1,12 @@
-import type { Aminal } from '@/hooks';
+import type { AminalWithRelations } from '@/hooks';
 import AminalCard from './aminal-card';
 
-// Convert Ponder Aminal to component format
-function convertAminalForDisplay(aminal: Aminal) {
-  if (!aminal) {
-    return null;
-  }
-
-  const safeToString = (value: any) => (value ? value.toString() : '0');
-
-  // Extract trait IDs from traits array [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
-  const traits = aminal.traits || [];
-
-  return {
-    id: safeToString(aminal.id),
-    contractAddress: safeToString(aminal.contractAddress),
-    aminalIndex: safeToString(aminal.aminalIndex),
-    energy: safeToString(aminal.energy),
-    totalLove: safeToString(aminal.totalLove),
-    ethBalance: safeToString(aminal.ethBalance),
-    tokenURI: aminal.tokenURI || undefined,
-    momAddress: aminal.parentOneId
-      ? safeToString(aminal.parentOneId)
-      : '0x0000000000000000000000000000000000000000',
-    dadAddress: aminal.parentTwoId
-      ? safeToString(aminal.parentTwoId)
-      : '0x0000000000000000000000000000000000000000',
-    backId: safeToString(traits[0] || 0n),
-    armId: safeToString(traits[1] || 0n),
-    tailId: safeToString(traits[2] || 0n),
-    earsId: safeToString(traits[3] || 0n),
-    bodyId: safeToString(traits[4] || 0n),
-    faceId: safeToString(traits[5] || 0n),
-    mouthId: safeToString(traits[6] || 0n),
-    miscId: safeToString(traits[7] || 0n),
-    lovers: [], // Lovers not loaded by default in Ponder queries
-  };
-}
-
-export default function AminalGrid({ aminals }: { aminals: (Aminal | any)[] }) {
-  // Convert GraphQL format to display format
-  const validAminals =
-    aminals?.filter(Boolean)?.map(convertAminalForDisplay)?.filter(Boolean) ||
-    [];
+export default function AminalGrid({
+  aminals,
+}: {
+  aminals: AminalWithRelations[];
+}) {
+  const validAminals = aminals?.filter(Boolean) || [];
 
   if (!validAminals.length) {
     return (

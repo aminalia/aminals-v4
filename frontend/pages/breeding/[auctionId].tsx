@@ -54,11 +54,11 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
-  // Get all gene IDs from parent Aminals
+  // Get all gene IDs from parent Aminals and proposals
   const geneIds = useMemo(() => {
-    if (!auction) return [];
+    if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
-    const ids = [
+    const parentIds = [
       auction.aminalOne.backId,
       auction.aminalOne.armId,
       auction.aminalOne.tailId,
@@ -80,9 +80,17 @@ const AuctionPage: NextPage = () => {
         const idStr = id ? id.toString() : '';
         return idStr !== '' && idStr !== '0';
       })
-      .map((id) => id.toString());
-    return Array.from(new Set(ids)); // Remove duplicates
-  }, [auction]);
+      .map((id) => id!.toString());
+
+    // Add proposal gene NFT IDs
+    const proposalIds = proposeGenes
+      ? proposeGenes
+          .map((p) => p.geneNFTId.toString())
+          .filter((id) => id && id !== '0')
+      : [];
+
+    return Array.from(new Set([...parentIds, ...proposalIds])); // Remove duplicates
+  }, [auction, proposeGenes]);
 
   // Fetch gene NFT data for the gene IDs
   const { data: geneData, isLoading: isLoadingGenes } = useGenesByIds(geneIds);
@@ -112,7 +120,7 @@ const AuctionPage: NextPage = () => {
     const map: { [key: string]: any } = {};
     geneData.forEach((gene) => {
       if (gene && gene.tokenId) {
-        map[gene.tokenId] = gene;
+        map[gene.tokenId.toString()] = gene;
       }
     });
     return map;
@@ -120,7 +128,7 @@ const AuctionPage: NextPage = () => {
 
   // Define the gene parts from the auction data with community proposals
   const parts: TraitParts = useMemo(() => {
-    if (!auction) {
+    if (!auction?.aminalOne || !auction?.aminalTwo) {
       return {
         background: [],
         body: [],
@@ -209,11 +217,13 @@ const AuctionPage: NextPage = () => {
       proposeGenes.forEach((proposal) => {
         const traitKey =
           traitMapping[proposal.traitType as keyof typeof traitMapping];
-        if (traitKey && proposal.geneNFT) {
+        // Look up the gene NFT data from geneMap using geneNFTId
+        const geneNFT = geneMap[proposal.geneNFTId.toString()];
+        if (traitKey && geneNFT) {
           (communityGenes as any)[traitKey].push({
-            ...proposal.geneNFT,
-            visualId: proposal.geneNFT.tokenId,
-            svg: proposal.geneNFT.svg,
+            ...geneNFT,
+            visualId: geneNFT.tokenId,
+            svg: geneNFT.svg,
             isCommunityGene: true,
           });
         }
@@ -256,7 +266,7 @@ const AuctionPage: NextPage = () => {
 
   // Parent genes only (for randomization)
   const parentParts: TraitParts = useMemo(() => {
-    if (!auction) {
+    if (!auction?.aminalOne || !auction?.aminalTwo) {
       return {
         background: [],
         body: [],
@@ -353,7 +363,8 @@ const AuctionPage: NextPage = () => {
 
   // Function to get parent Aminal contract addresses
   const getParentAddresses = () => {
-    if (!auction) return { parentOne: '?', parentTwo: '?' };
+    if (!auction?.aminalOne || !auction?.aminalTwo)
+      return { parentOne: '?', parentTwo: '?' };
     return {
       parentOne:
         auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
@@ -487,44 +498,7 @@ const AuctionPage: NextPage = () => {
                         <div className="flex justify-center">
                           <div className="relative">
                             <div className="w-80 h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 border-4 border-green-300 shadow-2xl">
-                              <AminalVisualImage
-                                aminal={{
-                                  id: auction.childAminal.id,
-                                  contractAddress:
-                                    auction.childAminal.contractAddress,
-                                  aminalIndex:
-                                    auction.childAminal.aminalIndex.toString(),
-                                  energy: auction.childAminal.energy.toString(),
-                                  totalLove:
-                                    auction.childAminal.totalLove.toString(),
-                                  tokenURI:
-                                    auction.childAminal.tokenURI || undefined,
-                                  backId:
-                                    auction.childAminal.backId?.toString() ||
-                                    '0',
-                                  armId:
-                                    auction.childAminal.armId?.toString() ||
-                                    '0',
-                                  tailId:
-                                    auction.childAminal.tailId?.toString() ||
-                                    '0',
-                                  earsId:
-                                    auction.childAminal.earsId?.toString() ||
-                                    '0',
-                                  bodyId:
-                                    auction.childAminal.bodyId?.toString() ||
-                                    '0',
-                                  faceId:
-                                    auction.childAminal.faceId?.toString() ||
-                                    '0',
-                                  mouthId:
-                                    auction.childAminal.mouthId?.toString() ||
-                                    '0',
-                                  miscId:
-                                    auction.childAminal.miscId?.toString() ||
-                                    '0',
-                                }}
-                              />
+                              <AminalVisualImage aminal={auction.childAminal} />
                             </div>
                             <div className="absolute -top-4 -right-4 bg-green-500 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg animate-bounce">
                               👶
@@ -545,8 +519,8 @@ const AuctionPage: NextPage = () => {
                               Has been born!
                             </p>
                             <p className="text-green-600 mt-1">
-                              Child of #{auction.aminalOne.aminalIndex} × #
-                              {auction.aminalTwo.aminalIndex}
+                              Child of #{auction.aminalOne?.aminalIndex} × #
+                              {auction.aminalTwo?.aminalIndex}
                             </p>
                           </div>
 
@@ -739,10 +713,10 @@ const AuctionPage: NextPage = () => {
                             Parent A
                           </span>
                           <Link
-                            href={`/aminals/${auction.aminalOne.contractAddress}`}
+                            href={`/aminals/${auction.aminalOne?.contractAddress}`}
                             className="text-sm font-medium text-blue-600 hover:text-blue-800"
                           >
-                            Aminal #{auction.aminalOne.aminalIndex}
+                            Aminal #{auction.aminalOne?.aminalIndex}
                           </Link>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -750,10 +724,10 @@ const AuctionPage: NextPage = () => {
                             Parent B
                           </span>
                           <Link
-                            href={`/aminals/${auction.aminalTwo.contractAddress}`}
+                            href={`/aminals/${auction.aminalTwo?.contractAddress}`}
                             className="text-sm font-medium text-blue-600 hover:text-blue-800"
                           >
-                            Aminal #{auction.aminalTwo.aminalIndex}
+                            Aminal #{auction.aminalTwo?.aminalIndex}
                           </Link>
                         </div>
                       </div>

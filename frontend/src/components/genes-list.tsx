@@ -1,5 +1,8 @@
 import { useAccount } from 'wagmi';
-import { useGeneProposalsByAuctionId } from '../resources/gene-proposals';
+import {
+  useGeneProposalsByAuctionId,
+  type GeneProposalWithRelations,
+} from '../hooks/useGeneProposals';
 import GeneCard from './gene-card';
 
 interface GenesListProps {
@@ -44,9 +47,9 @@ const GenesList = ({ auctionId }: GenesListProps) => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {genes.map((gene) => (
+      {genes.map((gene: GeneProposalWithRelations) => (
         <GeneCard
-          key={`${gene.auction.auctionId}-${gene.geneNFT.tokenId}`}
+          key={`${gene.auctionId}-${gene.geneNFTId}`}
           gene={gene}
         />
       ))}

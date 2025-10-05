@@ -7,32 +7,17 @@ import {
   CardSection,
   CardTitle,
 } from '@/components/ui/card';
+import { AminalWithRelations } from '@/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatEther } from 'viem';
 import FeedButton from './actions/feed-button';
 
-// New Aminal type for the refactored architecture
-interface NewAminal {
-  id: string;
-  contractAddress: string;
-  aminalIndex: string;
-  energy: string;
-  totalLove: string;
-  ethBalance?: string;
-  tokenURI?: string;
-  backId: string;
-  armId: string;
-  tailId: string;
-  earsId: string;
-  bodyId: string;
-  faceId: string;
-  mouthId: string;
-  miscId: string;
-  lovers?: { love: string }[];
-}
-
-export default function AminalCard({ aminal }: { aminal: NewAminal }) {
+export default function AminalCard({
+  aminal,
+}: {
+  aminal: AminalWithRelations;
+}) {
   // Add null checks to prevent crashes
   if (!aminal) {
     return (
@@ -60,7 +45,7 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
-                Aminal #{aminal.aminalIndex || 'Unknown'}
+                Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
               </CardTitle>
               <Badge variant="energy" size="sm">
                 <span>⚡</span>
@@ -81,10 +66,10 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
               <div>
                 <div className="text-xs text-muted-foreground">Love 4 U</div>
                 <div className="text-sm font-semibold text-energy-600">
-                  {aminal.lovers && aminal.lovers.length > 0 ? (
-                    <>
-                      💜 {Number(aminal.lovers[0].love || 0).toFixed(1)}
-                    </>
+                  {aminal.lovers &&
+                  aminal.lovers.items &&
+                  aminal.lovers.items.length > 0 ? (
+                    <>💜 {Number(aminal.lovers.items[0].love || 0).toFixed(1)}</>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
@@ -117,7 +102,7 @@ export default function AminalCard({ aminal }: { aminal: NewAminal }) {
 }
 
 interface AminalVisualImageProps {
-  aminal: NewAminal;
+  aminal: AminalWithRelations;
 }
 
 export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
@@ -136,7 +121,10 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
   // If we have tokenURI, try to use it for the actual image
   if (aminal.tokenURI) {
     return (
-      <TokenUriImage tokenUri={aminal.tokenURI} aminalId={aminal.aminalIndex} />
+      <TokenUriImage
+        tokenUri={aminal.tokenURI}
+        aminalId={aminal.aminalIndex.toString()}
+      />
     );
   }
 
@@ -146,7 +134,7 @@ export function AminalVisualImage({ aminal }: AminalVisualImageProps) {
 
 // New component to compose Aminal image from gene traits
 interface ComposedAminalImageProps {
-  aminal: NewAminal;
+  aminal: AminalWithRelations;
 }
 
 function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
@@ -157,7 +145,7 @@ function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
       <div className="text-center space-y-2">
         <div className="text-6xl mb-4">🐾</div>
         <div className="text-sm font-medium">
-          Aminal #{aminal.aminalIndex || 'Unknown'}
+          Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
         </div>
         <div className="text-xs text-gray-500 space-y-1">
           <div>Back: {aminal.backId || '?'}</div>

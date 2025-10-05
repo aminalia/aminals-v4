@@ -7,91 +7,81 @@
 
 // Aminal hooks
 export {
-  useAminals,
   useAminalByContractAddress,
-  useAminalForChat,
+  useAminals,
   type AminalFilter,
   type AminalSort,
 } from './useAminals';
 
 // Auction hooks
 export {
-  useAuctions,
   useAuction,
   useAuctionProposeGenes,
   useAuctionVotes,
+  useAuctions,
 } from './useAuctions';
 
 // Gene hooks
 export {
-  useGenes,
   useGene,
+  useGenes,
   useGenesByIds,
+  type CategoryFilter,
   type GeneFilter,
   type GeneSort,
-  type CategoryFilter,
 } from './useGenes';
 
 // User profile hooks
-export {
-  useUserProfile,
-  useUserEarnings,
-} from './useUser';
+export { useUserEarnings, useUserProfile } from './useUser';
 
 // Gene proposal hooks
-export {
-  useGeneProposalsByAuctionId,
-} from './useGeneProposals';
+export { useGeneProposalsByAuctionId } from './useGeneProposals';
 
 // Trait utilities
 export {
   TraitIndex,
-  getTrait,
-  getBackId,
   getArmId,
-  getTailId,
-  getEarsId,
+  getBackId,
   getBodyId,
+  getEarsId,
   getFaceId,
-  getMouthId,
   getMiscId,
+  getMouthId,
+  getTailId,
+  getTrait,
 } from './traitUtils';
 
 // Re-export all Ponder types for convenience
 export type {
   // Base types
   Aminal,
-  User,
-  Relationship,
-  GeneNFT,
-  GeneAuction,
-  GeneProposal,
-  GeneVote,
-  GeneCreatorPayout,
-  FeedEvent,
-  SkillUsedEvent,
-  Factory,
-
-  // Extended types with relations
-  AminalWithRelations,
-  GeneNFTWithRelations,
-  GeneAuctionWithRelations,
-  GeneProposalWithRelations,
-  UserWithRelations,
-
   // List types
   AminalList,
-  GeneNFTList,
-  GeneAuctionList,
-  GeneProposalList,
-
   // Single item types
   AminalSingle,
-  GeneNFTSingle,
+  // Extended types with relations
+  AminalWithRelations,
+  Factory,
+  FeedEvent,
+  GeneAuction,
+  GeneAuctionList,
   GeneAuctionSingle,
-  UserSingle,
-
+  GeneAuctionWithRelations,
+  GeneCreatorPayout,
+  GeneNFT,
+  GeneNFTList,
+  GeneNFTSingle,
+  GeneNFTWithRelations,
+  GeneProposal,
+  GeneProposalList,
+  GeneProposalWithRelations,
+  GeneVote,
+  Relationship,
+  SkillUsedEvent,
   // Helper types
   TraitArray,
   TraitType,
+  User,
+  UserSingle,
+  UserWithRelations,
 } from '../types/ponder';

@@ -5,7 +5,10 @@
  */
 
 import * as schema from '../../../ponder/ponder.schema';
-import { traitsArrayToFields, type AminalWithTraitsArray } from './trait-helpers';
+import {
+  traitsArrayToFields,
+  type AminalWithTraitsArray,
+} from './traitHelpers';
 
 // Type inference from Ponder schema
 type Aminal = typeof schema.aminal.$inferSelect;
@@ -100,7 +103,9 @@ export const formatAminalForDisplay = (aminal: AminalWithRelations) => {
   const stats = calculateAminalStats(aminal);
 
   // Convert traits array to individual fields for backward compatibility
-  const aminalWithFields = traitsArrayToFields(aminal as unknown as AminalWithTraitsArray);
+  const aminalWithFields = traitsArrayToFields(
+    aminal as unknown as AminalWithTraitsArray
+  );
 
   return {
     id: aminal.id,
@@ -214,7 +219,9 @@ export const calculateCollectionStats = (aminals: AminalWithRelations[]) => {
 
   const mostLoved = aminals.reduce(
     (max, aminal) =>
-      Number(aminal.totalLove || 0n) > Number(max.totalLove || 0n) ? aminal : max,
+      Number(aminal.totalLove || 0n) > Number(max.totalLove || 0n)
+        ? aminal
+        : max,
     aminals[0]
   );
 

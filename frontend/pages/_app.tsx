@@ -12,7 +12,7 @@ import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 import { ErrorBoundary } from '../src/components/error-boundary';
 import { ponderClient } from '../src/lib/ponderClient';
-import { createQueryClient } from '../src/lib/query-client';
+import { createQueryClient } from '../src/lib/queryClient';
 import '../styles/globals.css';
 
 const wagmiConfig = getDefaultConfig({

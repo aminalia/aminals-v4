@@ -7,11 +7,11 @@ import {
   CardSection,
 } from '@/components/ui/card';
 import Link from 'next/link';
-import type { GeneProposal } from '@/hooks';
+import type { GeneProposalWithRelations } from '@/hooks/useGeneProposals';
 import VoteButton from './actions/vote-button';
 
 interface GeneCardProps {
-  gene: GeneProposal;
+  gene: GeneProposalWithRelations;
   userLove?: bigint;
 }
 
@@ -31,6 +31,16 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
 
   // TODO: Add usage count metadata when available
   // const { data: usageCount } = useGeneUsageCount(gene.geneNFT.tokenId);
+
+  // Add null checks for related data
+  if (!gene.geneNFT) {
+    return (
+      <Card className="p-4 text-center text-muted-foreground">
+        <div className="text-4xl mb-2">🧬</div>
+        <div>Gene data not available</div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 border-2 hover:border-primary/20">
@@ -53,7 +63,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
                 <span className="text-xl">{categoryEmoji}</span>
                 <div>
                   <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                    Gene #{gene.geneNFT.tokenId}
+                    Gene #{gene.geneNFT.tokenId.toString()}
                   </h3>
                   {gene.geneNFT.name && (
                     <p className="text-sm text-muted-foreground">
@@ -72,19 +82,21 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
             {/* Metadata */}
             <div className="space-y-2">
               {/* Proposer */}
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Proposed by:</span>
-                <span className="font-mono text-xs">
-                  {gene.proposer.address.slice(0, 6)}...
-                  {gene.proposer.address.slice(-4)}
-                </span>
-              </div>
+              {gene.proposer && (
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Proposed by:</span>
+                  <span className="font-mono text-xs">
+                    {gene.proposer.id.slice(0, 6)}...
+                    {gene.proposer.id.slice(-4)}
+                  </span>
+                </div>
+              )}
 
               {/* Vote count */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Votes:</span>
                 <Badge variant="energy" size="sm">
-                  {gene.loveVotes} ❤️
+                  {gene.loveVotes.toString()} ❤️
                 </Badge>
               </div>
             </div>
@@ -102,7 +114,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
       {/* Actions - positioned outside the link to prevent nested interactivity */}
       <div className="p-4 pt-0 border-t bg-muted/30">
         <VoteButton
-          auctionId={gene.auction.auctionId}
+          auctionId={gene.auctionId}
           catId={gene.traitType}
           vizId={gene.geneNFT.tokenId}
         />

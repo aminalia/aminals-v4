@@ -58,16 +58,7 @@ const AminalPage: NextPage = () => {
   const geneIds = useMemo(() => {
     if (!aminal) return [];
 
-    return [
-      aminal.backId,
-      aminal.armId,
-      aminal.tailId,
-      aminal.earsId,
-      aminal.bodyId,
-      aminal.faceId,
-      aminal.mouthId,
-      aminal.miscId,
-    ]
+    return aminal.traits
       .filter((id) => id && id.toString() !== '0')
       .map((id) => id.toString());
   }, [aminal]);
@@ -182,7 +173,7 @@ const AminalPage: NextPage = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold">
-                Aminal #{aminal.aminalIndex}
+                Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
               </h1>
             </div>
             <Link
@@ -232,17 +223,19 @@ const AminalPage: NextPage = () => {
                 </div>
 
                 {/* Love 4 U section */}
-                {aminal.lovers && aminal.lovers.length > 0 && (
-                  <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                    <div className="text-sm text-gray-500">Love 4 U</div>
-                    <div className="text-xl font-semibold text-purple-600">
-                      💜 {Number(aminal.lovers.items[0].love).toFixed(2)}
+                {aminal.lovers &&
+                  aminal.lovers.items &&
+                  aminal.lovers.items.length > 0 && (
+                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                      <div className="text-sm text-gray-500">Love 4 U</div>
+                      <div className="text-xl font-semibold text-purple-600">
+                        💜 {Number(aminal.lovers.items[0].love).toFixed(2)}
+                      </div>
+                      <div className="text-xs text-purple-500 mt-1">
+                        Your love relationship with this Aminal
+                      </div>
                     </div>
-                    <div className="text-xs text-purple-500 mt-1">
-                      Your love relationship with this Aminal
-                    </div>
-                  </div>
-                )}
+                  )}
 
                 {/* Contract Address */}
                 <div className="hidden md:block p-4 bg-blue-50 rounded-lg border border-blue-100">
@@ -303,7 +296,7 @@ const AminalPage: NextPage = () => {
                               href={`/aminals/${aminal.parentOne.contractAddress}`}
                               className="text-blue-600 hover:text-blue-800 transition-colors underline"
                             >
-                              Aminal #{aminal.parentOne.aminalIndex}
+                              Aminal #{aminal.parentOne.aminalIndex !== undefined ? Number(aminal.parentOne.aminalIndex) : 'Unknown'}
                             </Link>
                           )}
                         </div>
@@ -318,7 +311,7 @@ const AminalPage: NextPage = () => {
                               href={`/aminals/${aminal.parentTwo.contractAddress}`}
                               className="text-blue-600 hover:text-blue-800 transition-colors underline"
                             >
-                              Aminal #{aminal.parentTwo.aminalIndex}
+                              Aminal #{aminal.parentTwo.aminalIndex !== undefined ? Number(aminal.parentTwo.aminalIndex) : 'Unknown'}
                             </Link>
                           )}
                         </div>

@@ -28,12 +28,21 @@ export type SkillUsedEvent = typeof schema.skillUsedEvent.$inferSelect;
 // ============================================================================
 
 export interface AminalWithRelations extends Aminal {
-  lovers?: Relationship[];
+  lovers?: { items: Relationship[] };
   userLove?: bigint;
   parentOne?: Aminal | null;
   parentTwo?: Aminal | null;
   feeds?: FeedEvent[];
   skillsUsed?: SkillUsedEvent[];
+  // Trait helper properties (extracted from traits array for backward compatibility)
+  backId?: bigint;
+  armId?: bigint;
+  tailId?: bigint;
+  earsId?: bigint;
+  bodyId?: bigint;
+  faceId?: bigint;
+  mouthId?: bigint;
+  miscId?: bigint;
 }
 
 export interface GeneNFTWithRelations extends GeneNFT {
@@ -45,9 +54,9 @@ export interface GeneNFTWithRelations extends GeneNFT {
 
 export interface GeneAuctionWithRelations extends GeneAuction {
   proposals?: GeneProposal[];
-  aminalOne?: Aminal;
-  aminalTwo?: Aminal;
-  childAminal?: Aminal | null;
+  aminalOne?: AminalWithRelations;
+  aminalTwo?: AminalWithRelations;
+  childAminal?: AminalWithRelations | null;
   votes?: GeneVote[];
   payouts?: GeneCreatorPayout[];
 }
