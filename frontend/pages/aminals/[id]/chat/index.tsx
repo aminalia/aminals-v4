@@ -43,10 +43,11 @@ const ChatSessionsPage: NextPage = () => {
   const isRouterReady =
     router.isReady && id && typeof id === 'string' && id !== 'undefined';
 
-  const { data: aminal, isLoading: isAminalLoading } = useAminalByContractAddress(
-    isRouterReady ? contractAddress : '',
-    address || ''
-  );
+  const { data: aminal, isLoading: isAminalLoading } =
+    useAminalByContractAddress(
+      isRouterReady ? contractAddress : '',
+      address || ''
+    );
 
   const {
     data: sessions,
@@ -172,7 +173,7 @@ const ChatSessionsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <Link
