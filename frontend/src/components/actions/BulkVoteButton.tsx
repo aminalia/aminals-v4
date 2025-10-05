@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -55,6 +55,9 @@ export default function BulkVoteButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Log transaction initiation
   useEffect(() => {
     if (hash) {
@@ -72,7 +75,8 @@ export default function BulkVoteButton({
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ Bulk vote transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -90,12 +94,16 @@ export default function BulkVoteButton({
         id: 'bulk-vote-tx',
         duration: 4000,
       });
+
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
     }
   }, [isConfirmed, receipt, hash, auctionId, traitIds]);
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -129,7 +137,8 @@ export default function BulkVoteButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -152,7 +161,8 @@ export default function BulkVoteButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ Bulk vote transaction pending...', {
         auctionId,
         traitIds,
@@ -165,7 +175,8 @@ export default function BulkVoteButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 Bulk vote transaction confirming...', {
         hash,
         auctionId,

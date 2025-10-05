@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { decodeEventLog, isAddress } from 'viem';
 import {
@@ -36,6 +36,9 @@ export default function BreedButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Log transaction initiation
   useEffect(() => {
     if (hash) {
@@ -53,7 +56,8 @@ export default function BreedButton({
 
   // Handle transaction success and extract auction ID for redirect
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ Breed transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -110,6 +114,8 @@ export default function BreedButton({
               router.push(`/breeding/${auctionId}`);
             }, 1500); // Small delay to let toast show and ensure subgraph indexing
 
+            // Reset toast state for next transaction
+            toastStateRef.current = null;
             return;
           }
         }
@@ -155,7 +161,8 @@ export default function BreedButton({
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -190,7 +197,8 @@ export default function BreedButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -208,7 +216,8 @@ export default function BreedButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ Breed transaction pending...', {
         aminalAddress: contractAddress,
         partnerAddress,
@@ -221,7 +230,8 @@ export default function BreedButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 Breed transaction confirming...', {
         hash,
         aminalAddress: contractAddress,

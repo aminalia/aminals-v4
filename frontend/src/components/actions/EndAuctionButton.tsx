@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -30,6 +30,9 @@ export default function EndAuctionButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Log transaction initiation
   useEffect(() => {
     if (hash) {
@@ -46,7 +49,8 @@ export default function EndAuctionButton({
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ End auction transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -63,12 +67,16 @@ export default function EndAuctionButton({
         id: 'end-auction-tx',
         duration: 5000,
       });
+
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
     }
   }, [isConfirmed, receipt, hash, auctionId]);
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -103,7 +111,8 @@ export default function EndAuctionButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -125,7 +134,8 @@ export default function EndAuctionButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ End auction transaction pending...', {
         auctionId: auctionId.toString(),
         userAddress: address,
@@ -137,7 +147,8 @@ export default function EndAuctionButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 End auction transaction confirming...', {
         hash,
         auctionId: auctionId.toString(),

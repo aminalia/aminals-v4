@@ -2,7 +2,7 @@ import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { cn } from '@/lib/utils';
 import { CategoryFilter, useGenes } from '@/hooks';
 import { X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -63,10 +63,14 @@ export default function ProposeGeneModal({
     categoryKey
   );
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Handle transaction state changes with proper priority
   useEffect(() => {
     // Priority 1: Handle errors first
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       console.error('Propose gene transaction failed:', error);
       toast.error('Failed to propose gene. Please try again.', {
         id: 'propose-gene-tx',
@@ -74,7 +78,8 @@ export default function ProposeGeneModal({
       return;
     }
 
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       console.error('Transaction receipt error:', receiptError);
       toast.error('Transaction failed. Please try again.', {
         id: 'propose-gene-tx',
@@ -83,7 +88,8 @@ export default function ProposeGeneModal({
     }
 
     // Priority 2: Handle success state
-    if (isConfirmed) {
+    if (isConfirmed && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       toast.success(
         '🧬 Gene proposed successfully! The community can now vote on it.',
         {
@@ -97,17 +103,21 @@ export default function ProposeGeneModal({
       setManualGeneId('');
       setUseManualId(false);
       setSelectedCategory(0);
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
       return;
     }
 
     // Priority 3: Handle confirming state
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       toast.loading('Confirming transaction...', { id: 'propose-gene-tx' });
       return;
     }
 
     // Priority 4: Handle pending state
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       toast.loading('Proposing gene...', { id: 'propose-gene-tx' });
     }
   }, [

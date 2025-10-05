@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -31,6 +31,9 @@ export default function VoteButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Log transaction initiation
   useEffect(() => {
     if (hash) {
@@ -49,7 +52,8 @@ export default function VoteButton({
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ Vote transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -68,12 +72,16 @@ export default function VoteButton({
         id: `vote-${catId}-${vizId}`,
         duration: 3000,
       });
+
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
     }
   }, [isConfirmed, receipt, hash, auctionId, catId, vizId]);
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -110,7 +118,8 @@ export default function VoteButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -131,7 +140,8 @@ export default function VoteButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ Vote transaction pending...', {
         auctionId: auctionId.toString(),
         categoryId: catId,
@@ -145,7 +155,8 @@ export default function VoteButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 Vote transaction confirming...', {
         hash,
         auctionId: auctionId.toString(),

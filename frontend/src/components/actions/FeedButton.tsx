@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { parseEther } from 'viem';
 import {
@@ -29,6 +29,9 @@ export default function FeedButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Log transaction initiation
   useEffect(() => {
     if (hash) {
@@ -44,7 +47,8 @@ export default function FeedButton({
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ Feed aminal transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -67,12 +71,16 @@ export default function FeedButton({
         queryKey: ['aminal-by-address', contractAddress],
       });
       queryClient.invalidateQueries({ queryKey: ['aminals'] });
+
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
     }
   }, [isConfirmed, receipt, hash, contractAddress, queryClient]);
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -103,7 +111,8 @@ export default function FeedButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -123,7 +132,8 @@ export default function FeedButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ Feed aminal transaction pending...', {
         aminalAddress: contractAddress,
         userAddress: address,
@@ -135,7 +145,8 @@ export default function FeedButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 Feed aminal transaction confirming...', {
         hash,
         aminalAddress: contractAddress,

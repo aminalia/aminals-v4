@@ -8,8 +8,6 @@
 
 - Fix aminals with gene not working.
 - Fix traits on Aminals detail page
-- Kill leader board
-- Fix toasts (transparent for some reason?)
 
 ## New Features Ideas
 

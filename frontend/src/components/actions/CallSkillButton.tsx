@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { encodeFunctionData } from 'viem';
 import {
@@ -47,6 +47,9 @@ export default function CallSkillButton({
     hash,
   });
 
+  // Track which toast has been shown to prevent duplicates
+  const toastStateRef = useRef<string | null>(null);
+
   // Get selected skill info
   const selectedSkillInfo = KNOWN_SKILLS.find(
     (skill) => skill.address === selectedSkill
@@ -83,7 +86,8 @@ export default function CallSkillButton({
 
   // Handle transaction success
   useEffect(() => {
-    if (isConfirmed && receipt) {
+    if (isConfirmed && receipt && toastStateRef.current !== 'success') {
+      toastStateRef.current = 'success';
       console.log('✅ Call skill transaction confirmed:', {
         hash,
         blockNumber: receipt.blockNumber,
@@ -102,6 +106,9 @@ export default function CallSkillButton({
         id: 'call-skill-tx',
         duration: 4000,
       });
+
+      // Reset toast state for next transaction
+      toastStateRef.current = null;
     }
   }, [
     isConfirmed,
@@ -114,7 +121,8 @@ export default function CallSkillButton({
 
   // Handle transaction errors
   useEffect(() => {
-    if (error) {
+    if (error && toastStateRef.current !== 'error') {
+      toastStateRef.current = 'error';
       const errorDetails = {
         message: error.message,
         name: error.name,
@@ -157,7 +165,8 @@ export default function CallSkillButton({
 
   // Handle receipt errors
   useEffect(() => {
-    if (receiptError) {
+    if (receiptError && toastStateRef.current !== 'receiptError') {
+      toastStateRef.current = 'receiptError';
       const receiptErrorDetails = {
         message: receiptError.message,
         name: receiptError.name,
@@ -180,7 +189,8 @@ export default function CallSkillButton({
 
   // Handle pending state
   useEffect(() => {
-    if (isPending) {
+    if (isPending && toastStateRef.current !== 'pending') {
+      toastStateRef.current = 'pending';
       console.log('⏳ Call skill transaction pending...', {
         aminalAddress: aminalContractAddress,
         skillAddress: selectedSkill,
@@ -193,7 +203,8 @@ export default function CallSkillButton({
 
   // Handle confirmation state
   useEffect(() => {
-    if (isConfirming) {
+    if (isConfirming && toastStateRef.current !== 'confirming') {
+      toastStateRef.current = 'confirming';
       console.log('🔄 Call skill transaction confirming...', {
         hash,
         aminalAddress: aminalContractAddress,
