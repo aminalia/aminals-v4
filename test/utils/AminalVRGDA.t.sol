@@ -35,8 +35,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
         factory.initialize(address(geneAuction), address(proposals), address(genes));
 
         // Setup contracts properly
-        genes.setup(address(factory));
-        genes.setRegistry(address(geneRegistry));
+        genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory));
         proposals.setup(address(factory));
         factory.setup(); // This deploys the VRGDA

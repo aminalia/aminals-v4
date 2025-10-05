@@ -3,14 +3,10 @@
 - [-] Switch to ponder (will hopefully solve many bugs)
 - [ ] Project cleanup (remove dead docs, graph etc.)
 - [ ] Resolve issues from security audit
-- [ ] fix OG genes are not being indexed
-- [ ] Update minting script to call createGene so they are in the registry
 
 # ponder
 
-- Fix love4u
-- fix genes
-- TEST
+- TEST everything
 
 
 ## New Features Ideas

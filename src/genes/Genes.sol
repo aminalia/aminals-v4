@@ -78,36 +78,27 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
 
     // ============ EVENTS ============
 
-    /// @notice Emitted when the contract is initialized with an Aminal Factory
+    /// @notice Emitted when the contract is initialized with Aminal Factory / Registry
     /// @param aminalFactory Address of the Aminal Factory contract
-    event Setup(address aminalFactory);
-
-    /// @notice Emitted when the Gene Registry address is updated
     /// @param geneRegistry Address of the new Gene Registry contract
-    event RegistrySet(address geneRegistry);
+    event Setup(address aminalFactory, address geneRegistry);
 
     // ============ CONSTRUCTOR ============
 
     /// @notice Initialize the Genes contract
     /// @dev Sets up ERC721 with name "Aminal Genes" and symbol "GENES"
-    constructor() ERC721("Aminal Genes", "GENES") Initializable() Ownable() {}
+    constructor() ERC721("Aminal Genes", "GENES") {}
 
     // ============ EXTERNAL FUNCTIONS ============
 
     /// @notice Initialize the contract with the Aminal Factory address
     /// @dev Can only be called once due to initializer modifier
     /// @param aminalFactory_ Address of the Aminal Factory contract
-    function setup(address aminalFactory_) external initializer onlyOwner {
-        aminalFactory = aminalFactory_;
-        emit Setup(aminalFactory_);
-    }
-
-    /// @notice Set the Gene Registry contract address
-    /// @dev TODO: Consider using a more secure access pattern instead of onlyOwner
     /// @param geneRegistry_ Address of the Gene Registry contract
-    function setRegistry(address geneRegistry_) external onlyOwner {
+    function setup(address aminalFactory_, address geneRegistry_) external initializer onlyOwner {
+        aminalFactory = aminalFactory_;
         geneRegistry = geneRegistry_;
-        emit RegistrySet(geneRegistry_);
+        emit Setup(aminalFactory_, geneRegistry_);
     }
 
     /// @notice Mint a new Gene NFT

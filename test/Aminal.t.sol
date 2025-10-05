@@ -39,8 +39,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         factory.initialize(address(geneAuction), address(proposals), address(genes));
 
         // Setup contracts properly
-        genes.setup(address(factory));
-        genes.setRegistry(address(geneFactory));
+        genes.setup(address(factory), address(geneFactory));
         geneAuction.setup(address(factory));
         proposals.setup(address(factory));
         factory.setup();

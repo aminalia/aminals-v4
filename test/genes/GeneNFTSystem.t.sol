@@ -41,8 +41,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         aminalFactory.initialize(address(geneAuction), address(proposals), address(genes));
 
         // Setup contracts
-        genes.setup(address(aminalFactory)); // AminalFactory acts as Aminals contract
-        genes.setRegistry(address(geneRegistry));
+        genes.setup(address(aminalFactory), address(geneRegistry));
         geneAuction.setup(address(aminalFactory)); // AminalFactory acts as both factory and access control
         proposals.setup(address(aminalFactory));
         aminalFactory.setup();

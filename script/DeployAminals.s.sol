@@ -76,7 +76,7 @@ contract DeployAminals is Script {
         // Setup dependencies
         _geneAuction.setup(address(_factory));
         _proposals.setup(address(_factory));
-        _Genes.setup(address(_factory));
+        _Genes.setup(address(_factory), address(geneRegistry));
 
         return address(_factory);
     }
@@ -112,32 +112,18 @@ contract DeployAminals is Script {
     }
 
     function deployInitialGenes() public {
-        Genes genes = Genes(vm.envAddress("GENES_NFT_CONTRACT"));
-
         // Deploy temporary minter contracts
         InitialGenesMinter minter = new InitialGenesMinter();
         console.log("InitialGenesMinter deployed to:", address(minter));
         InitialGenesMinter2 minter2 = new InitialGenesMinter2();
         console.log("InitialGenesMinter2 deployed to:", address(minter2));
 
-        // Set minter as temporary gene factory
-        genes.setRegistry(address(minter));
-        console.log("Set minter as temporary gene factory");
+        // Mint initial genes through the GeneRegistry (properly emits events for Ponder)
+        minter.mintInitialGenesAnimated(geneRegistry);
+        console.log("Initial genes (set 1) created through GeneRegistry");
 
-        // Mint initial genes
-        minter.mintInitialGenesAnimated(genes, msg.sender);
-        console.log("Initial genes minted to:", msg.sender);
-
-        // Set minter as temporary gene factory
-        genes.setRegistry(address(minter2));
-        console.log("Set minter2 as temporary gene factory");
-
-        minter2.mintInitialGenesAnimated(genes, msg.sender);
-        console.log("Initial genes minted to:", msg.sender);
-
-        // Set the proper GeneRegistry as the registry
-        genes.setRegistry(address(geneRegistry));
-        console.log("Set GeneRegistry as the gene factory:", address(geneRegistry));
+        minter2.mintInitialGenesAnimated(geneRegistry);
+        console.log("Initial genes (set 2) created through GeneRegistry");
     }
 
     function run() external {
