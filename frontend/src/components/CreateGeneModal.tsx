@@ -139,7 +139,9 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold">Create New Gene NFT</h2>
-              <p className="text-muted-foreground">Design a unique trait for Aminals</p>
+              <p className="text-muted-foreground">
+                Design a unique trait for Aminals
+              </p>
             </div>
             <Button variant="outline" onClick={onClose}>
               ✕ Close

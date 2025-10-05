@@ -39,12 +39,6 @@ export default function Header() {
               >
                 <Link href="/genes">🧬 Genes</Link>
               </NavigationMenuLink>
-              <NavigationMenuLink
-                asChild
-                className={navigationMenuTriggerStyle()}
-              >
-                <Link href="/leaderboard">🏆 Leaderboard</Link>
-              </NavigationMenuLink>
               {hasMounted && address && (
                 <NavigationMenuLink
                   asChild
@@ -66,7 +60,7 @@ export default function Header() {
       </header>
 
       {/* Mobile Header */}
-      <header className="md:hidden flex justify-between items-center py-2 px-4">
+      <header className="md:hidden flex justify-between items-center py-2">
         <Link href="/">
           <h1 className="text-xl font-bold">👾 Aminals</h1>
         </Link>
@@ -78,7 +72,7 @@ export default function Header() {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-sm border-t z-50 shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-xl border-t z-50 shadow-lg">
         <div
           className={`grid gap-1 p-2 ${
             hasMounted && address ? 'grid-cols-5' : 'grid-cols-4'
@@ -99,11 +93,11 @@ export default function Header() {
             <span className="text-xs mt-1">Breeding</span>
           </Link>
           <Link
-            href="/leaderboard"
+            href="/about"
             className="flex flex-col items-center justify-center p-2 hover:bg-accent rounded-lg"
           >
-            <span className="text-2xl">🏆</span>
-            <span className="text-xs mt-1">Leaderboard</span>
+            <span className="text-2xl">ℹ️</span>
+            <span className="text-xs mt-1">About</span>
           </Link>
           <Link
             href="/genes"
