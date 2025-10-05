@@ -154,6 +154,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param remainingBalance Treasury balance after transfer
     event TreasuryTransferred(address indexed recipient, uint256 amount, uint256 remainingBalance);
 
+    /// @notice Emitted when a treasury payout fails
+    /// @param recipient Address that was supposed to receive the funds
+    /// @param amount Amount that failed to transfer
+    event PayoutFailed(address indexed recipient, uint256 amount);
+
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
     //////////////////////////////////////////////////////////////*/
@@ -395,18 +400,27 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
      * @return success True if transfer was successful
      *
      * @custom:security Only GeneAuction can call this to pay gene creators
+     * @custom:security-fix Added nonReentrant modifier and gas limit to prevent reentrancy and gas griefing
      */
-    function payout(uint256 amount, address recipient) external returns (bool success) {
+    function payout(uint256 amount, address recipient) external nonReentrant returns (bool success) {
         require(msg.sender == address(factory.geneAuction()), "Only gene auction can call payout");
+        require(recipient != address(0), "Invalid recipient");
 
         if (address(this).balance < amount) revert InsufficientTreasury();
 
-        // Transfer ETH to recipient
-        (success,) = payable(recipient).call{value: amount}("");
-        if (!success) revert TreasuryTransferFailed();
+        // Transfer ETH to recipient with fixed gas limit to prevent griefing
+        // 10000 gas is enough for a simple receive() function but prevents malicious loops
+        (success,) = payable(recipient).call{value: amount, gas: 10000}("");
+
+        if (!success) {
+            // Don't revert on failed transfer - GeneAuction handles partial failures
+            // This prevents griefing attacks where malicious recipients block settlement
+            emit PayoutFailed(recipient, amount);
+            return false;
+        }
 
         emit TreasuryTransferred(recipient, amount, address(this).balance);
-        return success;
+        return true;
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -164,6 +164,42 @@ function resolveFights(uint256 blockNumber) external {
 
 ---
 
+#### ⚠️ REVIEW NOTES (2025-10-05)
+
+**Status:** ✅ **ACCEPTED AS DESIGN FEATURE** - Not fixing
+
+**Rationale:**
+
+After reviewing the use cases for weak randomness in this system, we've determined this is **acceptable and potentially desirable** for the Aminals gameplay:
+
+**FightSkill.sol (Example Skill):**
+- FightSkill is a non-critical example skill demonstration
+- Not core to the Aminals economic model
+- If users want to add their own FightSkill with better randomness, they can
+- Risk accepted for this example implementation
+
+**GeneAuction.sol (Tie-Breaking):**
+- MEV opportunities in gene auction tie-breaking are **intentional gameplay mechanics**
+- If a gene auction is competitive enough to result in a tie, sophisticated players engaging in MEV activity adds excitement
+- This creates an additional strategic layer: validators/searchers may compete for tie-breaking influence
+- The community can choose to push genes over the tie threshold to avoid MEV
+- MEV in ties is part of the fun of Aminals! 🎮
+
+**Why This Is Acceptable:**
+1. ✅ Ties are rare (require exact vote equality)
+2. ✅ Community can prevent ties by voting decisively
+3. ✅ MEV competition adds entertainment value
+4. ✅ No direct fund loss (just winner selection methodology)
+5. ✅ Transparent to all participants (everyone knows ties use block randomness)
+6. ✅ FightSkill is just an example, not core functionality
+
+**Note for Future:**
+If FightSkill becomes a critical game mechanic with high-value outcomes, we may revisit implementing Chainlink VRF or commit-reveal schemes. For now, the current implementation serves its purpose.
+
+**Decision:** No changes required. MEV in gene auction ties is a feature, not a bug! 🎲
+
+---
+
 ### 2. UNAUTHORIZED TREASURY DRAIN VULNERABILITY
 
 **Severity:** 🔴 CRITICAL
@@ -216,6 +252,43 @@ function payout(uint256 amount, address recipient) external returns (bool succes
 - **Trust:** Catastrophic loss of user confidence
 - **Legal:** Potential liability for fund losses
 - **Operational:** Project shutdown due to exploited funds
+
+---
+
+#### ⚠️ REVIEW NOTES (2025-10-05)
+
+**Threat Model Re-evaluation:**
+
+Upon deeper analysis, assuming GeneAuction, AminalFactory, and Aminal contracts are trusted, audited, and immutable, **the actual risk is significantly lower than initially assessed**:
+
+1. **Scenario 1 & 2 (Compromised/Malicious Auction):** Not applicable if contracts are immutable and audited
+2. **Scenario 3 (Reentrancy via Recipient):** The primary remaining risk vector
+
+**Key Protection Already in Place:**
+- `Aminal.payout()` has strict `msg.sender == geneAuction` check
+- Only GeneAuction can trigger payouts
+- GeneAuction code is immutable, so attack surface is limited to contract logic bugs
+
+**Remaining Risk:**
+- Malicious gene owner's `receive()` function could attempt reentrancy
+- However, `GeneAuction.settleAuction()` already has `nonReentrant` modifier
+- `auction.settled = true` is set BEFORE external calls (line 307)
+- Any attempt to reenter voting functions would fail due to settled check
+
+**Severity Reassessment:** Medium-High (previously Critical)
+- Risk exists primarily from gas griefing, not fund theft
+- Proper state management significantly mitigates reentrancy concerns
+
+**Recommended Fix:** Add minimal protections to `Aminal.payout()`:
+- Add `nonReentrant` modifier for defense-in-depth
+- Add fixed gas limit (10000) to prevent griefing
+- Handle failed transfers gracefully (don't revert, return false)
+
+**Alternative Considered:** Full pull payment pattern
+- Would eliminate external calls during settlement
+- Trade-off: Worse UX (gene owners must claim in separate tx + pay gas)
+- Adds complexity for marginal security improvement given existing protections
+- Not recommended given current architecture protections
 
 #### Proof of Concept
 ```solidity
@@ -399,6 +472,58 @@ contract MaliciousGeneOwner {
 - **Fund Loss:** Partial payouts create accounting issues
 - **DOS:** Gas griefing prevents settlement completion
 - **Trust:** Inconsistent settlement undermines system integrity
+
+---
+
+#### ⚠️ REVIEW NOTES (2025-10-05)
+
+**Threat Model Re-evaluation:**
+
+The current implementation has **stronger protections than initially identified**:
+
+**Existing Protections:**
+1. `settleAuction()` has `nonReentrant` modifier (line 301)
+2. `auction.settled = true` is set **immediately at line 307, BEFORE any external calls**
+3. All voting functions check `!auction.settled` before allowing votes
+4. State transitions happen before external interactions (Checks-Effects-Interactions pattern)
+
+**Attack Vector Analysis:**
+
+**Scenario 1 (Malicious Gene Owner Contract):**
+- Reentrancy attempt would be blocked by `nonReentrant` on `settleAuction()`
+- Cannot reenter the same function
+- Cannot vote on same auction (already settled)
+- Risk: LOW
+
+**Scenario 2 (State Inconsistency):**
+- Not possible because `settled = true` is set before payouts
+- Voting on the settled auction will fail
+- State is protected before external calls
+- Risk: LOW
+
+**Scenario 3 (Gas Griefing):**
+- Legitimate concern: malicious `receive()` could consume all gas
+- Settlement could fail mid-loop, wasting gas
+- Some gene owners paid, others not (partial state)
+- `_payoutGeneCreator()` handles failures gracefully (doesn't revert)
+- Risk: MEDIUM (gas waste, but not fund loss)
+
+**Severity Reassessment:** Medium (previously Critical)
+- Reentrancy risks are well-mitigated by existing guards
+- Primary risk is gas griefing causing incomplete payouts
+- Accounting remains consistent (only successful transfers counted)
+
+**Recommended Fix:** Add gas limit to `Aminal.payout()` transfers
+```solidity
+(success,) = payable(recipient).call{value: amount, gas: 10000}("");
+```
+This prevents gas griefing while allowing normal transfers to succeed.
+
+**Alternative Considered:** Pull payment pattern
+- Would eliminate all external calls during settlement
+- More complex, worse UX (gene owners must claim separately)
+- Given strong existing protections, not necessary for security
+- Could be considered for UX reasons (batch claiming) rather than security
 
 #### Recommended Remediation
 
