@@ -1,14 +1,14 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badge';
 import {
   Card,
   CardContent,
   CardHeader,
   CardMedia,
   CardSection,
-} from '@/components/ui/card';
+} from '@/components/ui/Card';
 import Link from 'next/link';
 import type { GeneProposalWithRelations } from '@/hooks/useGeneProposals';
-import VoteButton from './actions/vote-button';
+import VoteButton from './actions/VoteButton';
 
 interface GeneCardProps {
   gene: GeneProposalWithRelations;

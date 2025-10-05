@@ -85,10 +85,11 @@ function processGenes(
 }
 
 /**
- * Fetch a single gene by ID
+ * Fetch a single gene by ID with relations
  */
 export const useGene = (id: string) => {
-  return usePonderQuery({
+  // Fetch the gene
+  const geneResult = usePonderQuery({
     queryFn: (db) => {
       return db
         .select()
@@ -98,6 +99,84 @@ export const useGene = (id: string) => {
     },
     enabled: !!id,
   });
+
+  const gene = (geneResult.data as GeneNFT[] | undefined)?.[0];
+
+  // Fetch proposals for this gene
+  const proposalsResult = usePonderQuery({
+    queryFn: (db) => {
+      return db
+        .select()
+        .from(schema.geneProposal)
+        .where(eq(schema.geneProposal.geneNFTId, id as `0x${string}`));
+    },
+    enabled: !!id,
+  });
+
+  // Fetch payouts for this gene
+  const payoutsResult = usePonderQuery({
+    queryFn: (db) => {
+      return db
+        .select()
+        .from(schema.geneCreatorPayout)
+        .where(eq(schema.geneCreatorPayout.geneNFTId, id as `0x${string}`));
+    },
+    enabled: !!id,
+  });
+
+  // Fetch owner
+  const ownerResult = usePonderQuery({
+    queryFn: (db) => {
+      if (!gene?.ownerId) {
+        return db
+          .select()
+          .from(schema.user)
+          .where(eq(schema.user.id, '0x0' as `0x${string}`))
+          .limit(0);
+      }
+      return db
+        .select()
+        .from(schema.user)
+        .where(eq(schema.user.id, gene.ownerId))
+        .limit(1);
+    },
+    enabled: !!gene?.ownerId,
+  });
+
+  // Fetch creator
+  const creatorResult = usePonderQuery({
+    queryFn: (db) => {
+      if (!gene?.creatorId) {
+        return db
+          .select()
+          .from(schema.user)
+          .where(eq(schema.user.id, '0x0' as `0x${string}`))
+          .limit(0);
+      }
+      return db
+        .select()
+        .from(schema.user)
+        .where(eq(schema.user.id, gene.creatorId))
+        .limit(1);
+    },
+    enabled: !!gene?.creatorId,
+  });
+
+  // Combine data
+  const processedData = gene
+    ? ({
+        ...gene,
+        proposals: { items: proposalsResult.data || [] },
+        payouts: payoutsResult.data || [],
+        owner: (ownerResult.data as User[] | undefined)?.[0],
+        creator: (creatorResult.data as User[] | undefined)?.[0],
+      } as GeneNFTWithRelations)
+    : undefined;
+
+  return {
+    ...geneResult,
+    data: processedData,
+  };
 };
 
 /**

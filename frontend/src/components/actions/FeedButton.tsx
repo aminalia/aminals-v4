@@ -8,7 +8,7 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { aminalAbi } from '../../contracts/generated';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 
 export default function FeedButton({
   contractAddress,

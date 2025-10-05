@@ -6,7 +6,7 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneAuctionAbi, geneAuctionAddress } from '../../contracts/generated';
-import { Button } from '../ui/button';
+import { Button } from '../ui/Button';
 
 export default function BulkVoteButton({
   auctionId,

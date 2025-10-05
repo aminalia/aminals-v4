@@ -1,5 +1,5 @@
-import AuctionCard from '@/components/auction-card';
-import { Button } from '@/components/ui/button';
+import AuctionCard from '@/components/AuctionCard';
+import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { useAuctions } from '@/hooks';
 import type { NextPage } from 'next';

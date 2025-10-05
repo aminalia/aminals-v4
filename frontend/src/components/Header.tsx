@@ -4,7 +4,7 @@ import {
   NavigationMenuLink,
   NavigationMenuList,
   navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+} from '@/components/ui/NavigationMenu';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 import Link from 'next/link';

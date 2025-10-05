@@ -1,6 +1,6 @@
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { useAccount } from 'wagmi';
-import { Button, ButtonProps } from './button';
+import { Button, ButtonProps } from './Button';
 
 interface Web3ButtonProps extends ButtonProps {
   connectMessage?: string;

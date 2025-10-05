@@ -10,7 +10,7 @@ import type { AppProps } from 'next/app';
 import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
-import { ErrorBoundary } from '../src/components/error-boundary';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { ponderClient } from '../src/lib/ponderClient';
 import { createQueryClient } from '../src/lib/queryClient';
 import '../styles/globals.css';

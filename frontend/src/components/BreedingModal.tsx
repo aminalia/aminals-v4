@@ -1,5 +1,5 @@
-import { cn } from '@/lib/utils';
 import { useAminals } from '@/hooks';
+import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -11,8 +11,8 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { aminalFactoryAbi, aminalFactoryAddress } from '../contracts/generated';
-import { AminalVisualImage } from './aminal-card';
-import { Button } from './ui/button';
+import { AminalVisualImage } from './AminalCard';
+import { Button } from './ui/Button';
 
 interface BreedingModalProps {
   aminal: any;

@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badge';
 import {
   Card,
   CardContent,
@@ -8,13 +8,13 @@ import {
   CardMedia,
   CardSection,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/ui/Card';
 import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { GeneAuction } from '@/hooks';
-import ProposeButton from './actions/propose-button';
+import ProposeButton from './actions/ProposeButton';
 
 import '../../styles/index.module.css';
 

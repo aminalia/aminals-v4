@@ -1,7 +1,7 @@
-import AminalGrid from '@/components/aminal-grid';
-import TraitCard from '@/components/trait-card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import AminalGrid from '@/components/AminalGrid';
+import TraitCard from '@/components/TraitCard';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { cn } from '@/lib/utils';
@@ -158,8 +158,9 @@ const ProfilePage: NextPage = () => {
     return `https://api.dicebear.com/7.x/identicon/svg?seed=${profileAddress}&backgroundColor=e1f5fe,e8f5e8,f3e5f5,fff3e0,fce4ec`;
   };
 
-  const formatTimeAgo = (timestamp: string) => {
-    const date = new Date(parseInt(timestamp) * 1000);
+  const formatTimeAgo = (timestamp: bigint | string) => {
+    const timestampNum = typeof timestamp === 'bigint' ? Number(timestamp) : parseInt(timestamp);
+    const date = new Date(timestampNum * 1000);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -355,7 +356,7 @@ const ProfilePage: NextPage = () => {
                   <AminalGrid
                     aminals={userProfile.lovers.map((lover) => ({
                       ...lover.aminal,
-                      lovers: [{ love: lover.love }],
+                      lovers: { items: [{ ...lover, love: lover.love }] },
                     }))}
                   />
                 ) : (
@@ -384,7 +385,7 @@ const ProfilePage: NextPage = () => {
                         key={gene.id}
                         trait={{
                           id: gene.id,
-                          tokenId: gene.tokenId,
+                          tokenId: gene.tokenId.toString(),
                           traitType: gene.traitType,
                           svg: gene.svg,
                           name: gene.name,

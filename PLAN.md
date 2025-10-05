@@ -3,6 +3,7 @@
 - [-] Switch to ponder (will hopefully solve many bugs)
 - [ ] Project cleanup (remove dead docs, graph etc.)
 - [ ] Resolve issues from security audit
+- [ ] fix OG genes are not being indexed
 
 # ponder
 

@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 import * as React from 'react';
-import { Badge } from './badge';
-import { Button } from './button';
+import { Badge } from './Badge';
+import { Button } from './Button';
 
 export interface FilterOption {
   value: string;

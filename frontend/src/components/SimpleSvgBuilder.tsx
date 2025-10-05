@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card } from './ui/card';
-import { Label } from './ui/label';
+import { Card } from './ui/Card';
+import { Label } from './ui/Label';
 
 interface SimpleSVGBuilderProps {
   onSVGChange: (svg: string) => void;

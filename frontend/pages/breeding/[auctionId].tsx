@@ -1,13 +1,13 @@
-import BulkVoteButton from '@/components/actions/bulk-vote-button';
-import EndAuctionButton from '@/components/actions/endauction-button';
-import { AminalVisualImage } from '@/components/aminal-card';
-import CountdownTimer from '@/components/countdown-timer';
-import ProposeGeneModal from '@/components/propose-gene-modal';
+import BulkVoteButton from '@/components/actions/BulkVoteButton';
+import EndAuctionButton from '@/components/actions/EndAuctionButton';
+import { AminalVisualImage } from '@/components/AminalCard';
+import CountdownTimer from '@/components/CountdownTimer';
+import ProposeGeneModal from '@/components/ProposeGeneModal';
 import TraitSelector, {
   SelectedParts,
   TraitParts,
-} from '@/components/trait-selector';
-import VoteStats from '@/components/vote-stats';
+} from '@/components/TraitSelector';
+import VoteStats from '@/components/VoteStats';
 import { useAuction, useAuctionProposeGenes, useGenesByIds } from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';

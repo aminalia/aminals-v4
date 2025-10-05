@@ -48,7 +48,7 @@ export interface AminalWithRelations extends Aminal {
 export interface GeneNFTWithRelations extends GeneNFT {
   owner?: User;
   creator?: User;
-  proposals?: GeneProposal[];
+  proposals?: { items: GeneProposal[] };
   payouts?: GeneCreatorPayout[];
 }
 
@@ -68,11 +68,22 @@ export interface GeneProposalWithRelations extends GeneProposal {
   votes?: GeneVote[];
 }
 
+export interface RelationshipWithAminal extends Relationship {
+  aminal: Aminal;
+}
+
+export interface GeneVoteWithRelations extends GeneVote {
+  proposal: {
+    geneNFT: GeneNFT;
+  } & GeneProposal;
+  auction: GeneAuction;
+}
+
 export interface UserWithRelations extends User {
-  lovers?: Relationship[];
+  lovers?: RelationshipWithAminal[];
   genesCreated?: GeneNFT[];
   genesOwned?: GeneNFT[];
-  geneVotes?: GeneVote[];
+  geneVotes?: GeneVoteWithRelations[];
   proposedGenes?: GeneProposal[];
   receivedPayouts?: GeneCreatorPayout[];
   feedEvents?: FeedEvent[];

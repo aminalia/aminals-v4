@@ -12,8 +12,8 @@ import {
   geneRegistryAbi,
   geneRegistryAddress,
 } from '../../contracts/generated';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 interface ProposeButtonProps {
   auctionId: bigint | string;

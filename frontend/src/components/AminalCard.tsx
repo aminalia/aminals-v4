@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/components/ui/Badge';
 import {
   Card,
   CardContent,
@@ -6,12 +6,12 @@ import {
   CardMedia,
   CardSection,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/components/ui/Card';
 import { AminalWithRelations } from '@/hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatEther } from 'viem';
-import FeedButton from './actions/feed-button';
+import FeedButton from './actions/FeedButton';
 
 export default function AminalCard({
   aminal,

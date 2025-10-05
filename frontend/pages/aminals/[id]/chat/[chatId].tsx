@@ -1,5 +1,5 @@
-import { AminalVisualImage } from '@/components/aminal-card';
-import { Button } from '@/components/ui/button';
+import { AminalVisualImage } from '@/components/AminalCard';
+import { Button } from '@/components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, MessageCircle, Send, Sparkles } from 'lucide-react';
 import type { NextPage } from 'next';
@@ -9,7 +9,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { Message } from '../../../../lib/chat-storage';
-import { useAminalForChat } from '../../../../src/hooks/useAminals';
+import { useAminalByContractAddress } from '../../../../src/hooks/useAminals';
 import Layout from '../../../_layout';
 
 const useChatSession = (sessionId: string) => {
@@ -48,7 +48,7 @@ const ChatSessionPage: NextPage = () => {
 
   const isRouterReady = router.isReady && !!id && !!chatId;
 
-  const { data: aminal, isLoading: isAminalLoading } = useAminalForChat(
+  const { data: aminal, isLoading: isAminalLoading } = useAminalByContractAddress(
     isRouterReady ? contractAddress : '',
     address || ''
   );

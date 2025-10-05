@@ -9,11 +9,11 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneRegistryAbi, geneRegistryAddress } from '../contracts/generated';
-import { SimpleSVGBuilder } from './simple-svg-builder';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
-import { Input } from './ui/input';
-import { Label } from './ui/label';
+import { SimpleSVGBuilder } from './SimpleSvgBuilder';
+import { Button } from './ui/Button';
+import { Card } from './ui/Card';
+import { Input } from './ui/Input';
+import { Label } from './ui/Label';
 
 interface CreateGeneModalProps {
   isOpen: boolean;

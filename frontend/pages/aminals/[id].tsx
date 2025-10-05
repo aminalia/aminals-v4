@@ -1,7 +1,7 @@
-import CallSkillButton from '@/components/actions/call-skill-button';
-import FeedButton from '@/components/actions/feed-button';
-import { AminalVisualImage } from '@/components/aminal-card';
-import BreedingModal from '@/components/breeding-modal';
+import CallSkillButton from '@/components/actions/CallSkillButton';
+import FeedButton from '@/components/actions/FeedButton';
+import { AminalVisualImage } from '@/components/AminalCard';
+import BreedingModal from '@/components/BreedingModal';
 import { useAminalByContractAddress, useGenesByIds } from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
@@ -364,7 +364,53 @@ const AminalPage: NextPage = () => {
                     Traits
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {[
+                    {((traits: Array<{ name: string; id: any; traitType: number }>) => traits.map((gene, i) => {
+                      // Find gene data for this trait
+                      const traitId = (gene as any).id;
+                      const geneInfo = geneData?.find(
+                        (g: any) => g?.tokenId === traitId?.toString()
+                      );
+                      const geneId = geneInfo?.id || traitId || '';
+
+                      return (
+                        <Link
+                          key={i}
+                          href={`/genes/${geneId}`}
+                          className="p-3 rounded-lg border bg-blue-50 border-blue-100 hover:bg-blue-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-white rounded border border-blue-200 overflow-hidden flex-shrink-0">
+                              {geneInfo?.svg ? (
+                                <svg
+                                  viewBox="0 0 1000 1000"
+                                  className="w-full h-full"
+                                  dangerouslySetInnerHTML={{
+                                    __html: geneInfo.svg,
+                                  }}
+                                />
+                              ) : (
+                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                                  ?
+                                </div>
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-medium truncate">
+                                {gene.name}
+                              </div>
+                              <div className="text-xs text-blue-700 font-medium hover:text-blue-800 truncate">
+                                Gene #{gene.id}
+                              </div>
+                              {geneInfo?.name && (
+                                <div className="text-xs text-gray-600 truncate">
+                                  {geneInfo.name}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    }))([
                       {
                         name: 'Background',
                         id: aminal.backId,
@@ -405,51 +451,7 @@ const AminalPage: NextPage = () => {
                         id: aminal.miscId,
                         traitType: 7,
                       },
-                    ].map((gene, i) => {
-                      // Find gene data for this trait
-                      const geneInfo = geneData?.find(
-                        (g: any) => g?.tokenId === gene.id?.toString()
-                      );
-
-                      return (
-                        <Link
-                          key={i}
-                          href={`/genes/${geneInfo?.id || gene.id}`}
-                          className="p-3 rounded-lg border bg-blue-50 border-blue-100 hover:bg-blue-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-white rounded border border-blue-200 overflow-hidden flex-shrink-0">
-                              {geneInfo?.svg ? (
-                                <svg
-                                  viewBox="0 0 1000 1000"
-                                  className="w-full h-full"
-                                  dangerouslySetInnerHTML={{
-                                    __html: geneInfo.svg,
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                                  ?
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-sm font-medium truncate">
-                                {gene.name}
-                              </div>
-                              <div className="text-xs text-blue-700 font-medium hover:text-blue-800 truncate">
-                                Gene #{gene.id}
-                              </div>
-                              {geneInfo?.name && (
-                                <div className="text-xs text-gray-600 truncate">
-                                  {geneInfo.name}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </Link>
-                      );
-                    })}
+                    ])}
                   </div>
                 </div>
               </div>

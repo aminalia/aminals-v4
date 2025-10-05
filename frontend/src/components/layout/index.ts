@@ -8,7 +8,7 @@
 export {
   default as ContentContainer,
   ContentSection,
-} from './content-container';
-export type {} from './content-container';
-export { default as SectionHeader } from './section-header';
-export type {} from './section-header';
+} from './ContentContainer';
+export type {} from './ContentContainer';
+export { default as SectionHeader } from './SectionHeader';
+export type {} from './SectionHeader';

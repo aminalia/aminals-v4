@@ -25,7 +25,7 @@ export default createConfig({
       chain: "sepolia",
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
-      startBlock: 9343099,
+      startBlock: 9344676,
     },
     Aminal: {
       chain: "sepolia",
@@ -37,25 +37,25 @@ export default createConfig({
         ),
         parameter: "child",
       }),
-      startBlock: 9343099,
+      startBlock: 9344676,
     },
     GeneAuction: {
       chain: "sepolia",
       abi: geneAuctionAbi,
       address: geneAuctionAddress,
-      startBlock: 9343099,
+      startBlock: 9344676,
     },
     Genes: {
       chain: "sepolia",
       abi: genesAbi,
       address: genesAddress,
-      startBlock: 9343099,
+      startBlock: 9344676,
     },
     GeneRegistry: {
       chain: "sepolia",
       abi: geneRegistryAbi,
       address: geneRegistryAddress,
-      startBlock: 9343099,
+      startBlock: 9344676,
     },
   },
 });

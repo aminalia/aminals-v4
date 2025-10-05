@@ -7,8 +7,8 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { aminalAbi, move2DAbi, move2DAddress } from '../../contracts/generated';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
 
 // Known skill addresses (these would be loaded from a registry or config in production)
 const KNOWN_SKILLS = [

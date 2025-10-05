@@ -1,8 +1,8 @@
-import AminalCard from '@/components/aminal-card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
+import AminalCard from '@/components/AminalCard';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
 import { genesAddress } from '@/contracts/generated';
 import { useGene } from '@/hooks';
@@ -173,7 +173,7 @@ const GeneDetailPage: NextPage = () => {
                   <div>
                     <div className="font-medium">Address</div>
                     <div className="font-mono text-sm text-muted-foreground">
-                      {gene.creator.address}
+                      {gene.creator?.address || 'Unknown'}
                     </div>
                   </div>
                 </div>
@@ -189,7 +189,7 @@ const GeneDetailPage: NextPage = () => {
                   <div>
                     <div className="font-medium">Address</div>
                     <div className="font-mono text-sm text-muted-foreground">
-                      {gene.owner.address}
+                      {gene.owner?.address || 'Unknown'}
                     </div>
                   </div>
                 </div>

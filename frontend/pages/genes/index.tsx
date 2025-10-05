@@ -1,25 +1,22 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { CategoryFilter, GeneFilter, GeneSort } from '@/hooks';
+import { CategoryFilter, GeneFilter, GeneSort, useGenes } from '@/hooks';
 import { useHasMounted } from '@/hooks/useHasMounted';
 import { cn } from '@/lib/utils';
-import { eq } from '@ponder/client';
-import { usePonderQuery } from '@ponder/react';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';
 import { useAccount } from 'wagmi';
-import * as schema from '../../../ponder/ponder.schema';
 import Layout from '../_layout';
 
 // Import dynamically to avoid module resolution issues
-const TraitCard = dynamic(() => import('../../src/components/trait-card'), {
+const TraitCard = dynamic(() => import('../../src/components/TraitCard'), {
   ssr: false,
 });
 
 const CreateGeneModal = dynamic(
   () =>
-    import('../../src/components/create-gene-modal').then((mod) => ({
+    import('../../src/components/CreateGeneModal').then((mod) => ({
       default: mod.default,
     })),
   {
@@ -35,31 +32,12 @@ const TraitsPage: NextPage = () => {
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  // const {
-  //   data: genes,
-  //   isLoading: isLoadingGenes,
-  //   error: genesError,
-  //   isError: isGenesError,
-  // } = useGenes(filter, sort, category);
-  //
   const {
     data: genes,
     isLoading: isLoadingGenes,
     error: genesError,
     isError: isGenesError,
-  } = usePonderQuery({
-    queryFn: (db) => {
-      // Apply category filter at SQL level for efficiency
-      if (category !== 'all') {
-        return db
-          .select()
-          .from(schema.geneNFT)
-          .where(eq(schema.geneNFT.traitType, Number(category)));
-      }
-
-      return db.select().from(schema.geneNFT);
-    },
-  });
+  } = useGenes(filter, sort, category);
 
   console.log('Genes data:', genes);
   console.log('Genes loading:', isLoadingGenes);
