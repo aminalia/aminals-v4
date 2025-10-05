@@ -530,44 +530,49 @@ const ProfilePage: NextPage = () => {
                     <h3 className="text-lg font-semibold text-gray-800 mb-4">
                       Recent Gene Votes
                     </h3>
-                    {userProfile.geneVotes.slice(0, 5).map((vote) => (
-                      <div
-                        key={vote.id}
-                        className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-4"
-                      >
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                          <div className="flex-1">
-                            <div className="font-medium">
-                              {vote.isRemoveVote
-                                ? 'Voted to remove'
-                                : 'Voted for'}{' '}
-                              {vote.proposal.geneNFT.name ||
-                                `Gene #${vote.proposal.geneNFT.tokenId}`}
+                    {userProfile.geneVotes.slice(0, 5).map((vote) => {
+                      // Skip votes without proposal or gene data
+                      if (!vote.proposal?.geneNFT) return null;
+
+                      return (
+                        <div
+                          key={vote.id}
+                          className="bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow p-4"
+                        >
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium">
+                                {vote.isRemoveVote
+                                  ? 'Voted to remove'
+                                  : 'Voted for'}{' '}
+                                {vote.proposal.geneNFT.name ||
+                                  `Gene #${vote.proposal.geneNFT.tokenId}`}
+                              </div>
+                              <div className="text-sm text-gray-500 mt-1">
+                                Auction #{vote.auction?.auctionId ?? 'Unknown'} •{' '}
+                                {formatTimeAgo(vote.blockTimestamp)}
+                              </div>
                             </div>
-                            <div className="text-sm text-gray-500 mt-1">
-                              Auction #{vote.auction.auctionId} •{' '}
-                              {formatTimeAgo(vote.blockTimestamp)}
+                            <div className="text-right mt-2 sm:mt-0">
+                              <div className="text-sm font-medium text-purple-600">
+                                {Number(
+                                  formatEther(BigInt(vote.loveAmount))
+                                ).toFixed(2)}{' '}
+                                Love
+                              </div>
+                              <Badge
+                                variant={
+                                  vote.isRemoveVote ? 'destructive' : 'default'
+                                }
+                                className="mt-1"
+                              >
+                                {vote.isRemoveVote ? 'Remove' : 'Support'}
+                              </Badge>
                             </div>
-                          </div>
-                          <div className="text-right mt-2 sm:mt-0">
-                            <div className="text-sm font-medium text-purple-600">
-                              {Number(
-                                formatEther(BigInt(vote.loveAmount))
-                              ).toFixed(2)}{' '}
-                              Love
-                            </div>
-                            <Badge
-                              variant={
-                                vote.isRemoveVote ? 'destructive' : 'default'
-                              }
-                              className="mt-1"
-                            >
-                              {vote.isRemoveVote ? 'Remove' : 'Support'}
-                            </Badge>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-16">

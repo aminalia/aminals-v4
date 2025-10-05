@@ -28,8 +28,8 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
     } = {};
 
     // Group votes by transaction to detect bulk votes
-    const votesByTx = votes.items.reduce((acc, vote) => {
-      const txKey = `${vote.voter.address}-${vote.blockNumber}-${vote.transactionHash}`;
+    const votesByTx = votes.reduce((acc, vote) => {
+      const txKey = `${vote.voterId}-${vote.blockNumber}-${vote.transactionHash}`;
       if (!acc[txKey]) {
         acc[txKey] = [];
       }
@@ -43,8 +43,11 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
       const bulkVoteSize = nonRemoveVotes.length;
 
       txVotes.forEach((vote) => {
+        // Skip votes without proposal data
+        if (!vote.proposal || !vote.proposal.geneNFT) return;
+
         const traitType = vote.proposal.traitType;
-        const geneId = vote.proposal.geneNFT.tokenId;
+        const geneId = String(vote.proposal.geneNFT.tokenId);
         const geneName = vote.proposal.geneNFT.name || `Gene #${geneId}`;
         const svg = vote.proposal.geneNFT.svg || '';
         const loveAmount = Number(vote.loveAmount);
@@ -125,6 +128,8 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
     // Group votes by voter and transaction to avoid double counting bulk votes
     const votesByVoterAndTx = votes.reduce((acc, vote) => {
       if (vote.isRemoveVote) return acc;
+      // Skip votes without voter or proposal data
+      if (!vote.voter || !vote.proposal) return acc;
 
       const key = `${vote.voter.address}-${vote.blockNumber}-${vote.transactionHash}`;
       if (!acc[key]) {

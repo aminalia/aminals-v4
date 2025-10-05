@@ -203,7 +203,7 @@ const GeneDetailPage: NextPage = () => {
                     Total Earnings
                   </div>
                   <div className="text-2xl font-semibold text-green-600">
-                    {formatEarnings(gene.totalEarnings)} ETH
+                    {formatEarnings(gene.totalEarnings.toString())} ETH
                   </div>
                 </div>
               </div>
@@ -232,25 +232,30 @@ const GeneDetailPage: NextPage = () => {
 
                   // Transform the data to match AminalCard's expected interface
                   const transformedAminal = {
-                    id: aminalWithDetails.id,
-                    contractAddress: aminalWithDetails.contractAddress,
-                    aminalIndex: aminalWithDetails.aminalIndex,
-                    energy: (
-                      Number(aminalWithDetails.energy) / 1e18
-                    ).toString(),
-                    totalLove: (
-                      Number(aminalWithDetails.totalLove) / 1e18
-                    ).toString(),
+                    id: aminalWithDetails.id as `0x${string}`,
+                    contractAddress: aminalWithDetails.contractAddress as `0x${string}`,
+                    aminalIndex: BigInt(aminalWithDetails.aminalIndex),
+                    factoryId: '0x0' as `0x${string}`,
+                    parentOneId: null,
+                    parentTwoId: null,
+                    auctionId: null,
+                    traits: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
+                    energy: BigInt(aminalWithDetails.energy),
+                    totalLove: BigInt(aminalWithDetails.totalLove),
+                    ethBalance: 0n,
                     tokenURI: aminalWithDetails.tokenURI,
-                    backId: '',
-                    armId: '',
-                    tailId: '',
-                    earsId: '',
-                    bodyId: '',
-                    faceId: '',
-                    mouthId: '',
-                    miscId: '',
-                    lovers: [],
+                    blockNumber: 0n,
+                    blockTimestamp: 0n,
+                    transactionHash: '0x0' as `0x${string}`,
+                    backId: 0n,
+                    armId: 0n,
+                    tailId: 0n,
+                    earsId: 0n,
+                    bodyId: 0n,
+                    faceId: 0n,
+                    mouthId: 0n,
+                    miscId: 0n,
+                    lovers: { items: [] },
                   };
 
                   return (

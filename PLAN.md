@@ -4,6 +4,7 @@
 - [ ] Project cleanup (remove dead docs, graph etc.)
 - [ ] Resolve issues from security audit
 - [ ] fix OG genes are not being indexed
+- [ ] Update minting script to call createGene so they are in the registry
 
 # ponder
 

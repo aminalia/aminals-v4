@@ -1,8 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
 import { getOrGenerateAminalPersonality } from '../../lib/gene-personality-storage';
-import { execute } from '../../.graphclient';
-import { GenesByIdsDocument, GenesByIdsQuery } from '../../src/resources/genes';
+import { ponderClient } from '../../src/lib/ponderClient';
+import { eq, inArray } from '@ponder/client';
+import * as schema from '../../../ponder/ponder.schema';
 
 interface ChatRequest {
   message: string;
@@ -113,14 +114,15 @@ export default async function handler(
         const existingGeneIds = Object.values(geneIds).filter(Boolean) as string[];
 
         if (existingGeneIds.length > 0) {
-          // Fetch gene data from GraphQL
-          const response = await execute(GenesByIdsDocument, {
-            ids: existingGeneIds
-          });
+          // Fetch gene data from Ponder
+          const genes = await ponderClient.db
+            .select()
+            .from(schema.geneNFT)
+            .where(inArray(schema.geneNFT.tokenId, existingGeneIds.map(id => BigInt(id))));
 
-          if (response.data?.geneNFTs && response.data.geneNFTs.length > 0) {
+          if (genes && genes.length > 0) {
             // Transform to expected format
-            const geneData = response.data.geneNFTs.map((gene: any) => {
+            const geneData = genes.map((gene: any) => {
               // Map gene to trait type based on gene ID position
               const geneIdEntries = Object.entries(geneIds);
               let traitType = 7; // default to misc

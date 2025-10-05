@@ -1,7 +1,9 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createChatSession, getUserChatSessions, deleteChatSession, deleteAllUserSessions, ChatSession } from '../../../lib/chat-storage';
 import { getOrGenerateAminalPersonality } from '../../../lib/gene-personality-storage';
-import { execute, GenesByIdsDocument } from '../../../.graphclient';
+import { ponderClient } from '../../../src/lib/ponderClient';
+import { eq, inArray } from '@ponder/client';
+import * as schema from '../../../../ponder/ponder.schema';
 
 interface CreateSessionRequest {
   aminalAddress: string;
@@ -48,13 +50,13 @@ export default async function handler(
           .map(([_, id]) => id as string);
 
         if (geneIdArray.length > 0) {
-          // Fetch gene data from GraphQL
-          const response = await execute(GenesByIdsDocument, {
-            ids: geneIdArray,
-          });
+          // Fetch gene data from Ponder
+          const genes = await ponderClient.db
+            .select()
+            .from(schema.geneNFT)
+            .where(inArray(schema.geneNFT.tokenId, geneIdArray.map(id => BigInt(id))));
 
-          if (!response.errors && response.data?.geneNFTs) {
-            const genes = response.data.geneNFTs;
+          if (genes && genes.length > 0) {
             
             // Map genes to trait types
             const traitTypeMap: Record<string, number> = {
@@ -65,7 +67,7 @@ export default async function handler(
             const geneData = Object.entries(geneIds)
               .filter(([_, geneId]) => geneId && geneId !== '0')
               .map(([geneKey, geneId]) => {
-                const gene = genes.find(g => g.tokenId === geneId);
+                const gene = genes.find((g: any) => g.tokenId.toString() === geneId);
                 return gene && gene.svg ? {
                   geneId: geneId!,
                   traitType: traitTypeMap[geneKey],

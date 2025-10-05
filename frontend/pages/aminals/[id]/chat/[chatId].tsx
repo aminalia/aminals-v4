@@ -132,13 +132,13 @@ const ChatSessionPage: NextPage = () => {
         body: JSON.stringify({
           message: initialMessage,
           sessionId: sessionId,
-          loveAmount: Number(aminal?.lovers?.[0]?.love || 0),
+          loveAmount: Number(aminal?.lovers?.items?.[0]?.love || 0),
           aminalAddress: contractAddress,
           geneIds,
           aminalStats: {
             energy: Number(aminal?.energy || 0),
             totalLove: Number(aminal?.totalLove || 0),
-            ethBalance: aminal?.ethBalance || '0',
+            ethBalance: aminal?.ethBalance ? aminal.ethBalance.toString() : '0',
             aminalIndex: Number(aminal?.aminalIndex || 0),
           },
         }),
@@ -223,13 +223,13 @@ const ChatSessionPage: NextPage = () => {
         body: JSON.stringify({
           message: inputMessage,
           sessionId: sessionId,
-          loveAmount: Number(aminal.lovers.items?.[0]?.love || 0),
+          loveAmount: Number(aminal.lovers?.items?.[0]?.love || 0),
           aminalAddress: contractAddress,
           geneIds,
           aminalStats: {
             energy: Number(aminal.energy || 0),
             totalLove: Number(aminal.totalLove || 0),
-            ethBalance: aminal.ethBalance || '0',
+            ethBalance: aminal.ethBalance ? aminal.ethBalance.toString() : '0',
             aminalIndex: Number(aminal.aminalIndex || 0),
           },
         }),
@@ -341,14 +341,14 @@ const ChatSessionPage: NextPage = () => {
           </div>
           <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
             <span className="hidden sm:inline">
-              {aminal.lovers.items?.[0]?.love
+              {aminal.lovers?.items?.[0]?.love
                 ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
                     1
                   )} 💜`
                 : 'New friend 👋'}
             </span>
             <span className="sm:hidden">
-              {aminal.lovers.items?.[0]?.love
+              {aminal.lovers?.items?.[0]?.love
                 ? `${Number(aminal.lovers.items[0].love).toFixed(1)} 💜`
                 : '👋'}
             </span>

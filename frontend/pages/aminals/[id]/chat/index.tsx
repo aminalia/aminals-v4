@@ -189,7 +189,7 @@ const ChatSessionsPage: NextPage = () => {
               Chat with Aminal #{aminal.aminalIndex}
             </h1>
             <p className="text-sm sm:text-base text-gray-600">
-              {aminal.lovers.items?.[0]?.love
+              {aminal.lovers?.items?.[0]?.love
                 ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
                     1
                   )} 💜`

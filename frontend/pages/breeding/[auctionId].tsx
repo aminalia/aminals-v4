@@ -8,7 +8,7 @@ import TraitSelector, {
   TraitParts,
 } from '@/components/TraitSelector';
 import VoteStats from '@/components/VoteStats';
-import { useAuction, useAuctionProposeGenes, useGenesByIds } from '@/hooks';
+import { useAuction, useAuctionProposeGenes, useGenesByIds, makeGeneNFTId } from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -58,6 +58,7 @@ const AuctionPage: NextPage = () => {
   const geneIds = useMemo(() => {
     if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
+    // Convert parent trait token IDs to geneNFT ID format
     const parentIds = [
       auction.aminalOne.backId,
       auction.aminalOne.armId,
@@ -80,13 +81,13 @@ const AuctionPage: NextPage = () => {
         const idStr = id ? id.toString() : '';
         return idStr !== '' && idStr !== '0';
       })
-      .map((id) => id!.toString());
+      .map((id) => makeGeneNFTId(id!)); // Convert token ID to geneNFT ID format
 
-    // Add proposal gene NFT IDs
+    // Proposal gene NFT IDs are already in the correct format
     const proposalIds = proposeGenes
       ? proposeGenes
           .map((p) => p.geneNFTId.toString())
-          .filter((id) => id && id !== '0')
+          .filter((id) => id && id !== '0x0')
       : [];
 
     return Array.from(new Set([...parentIds, ...proposalIds])); // Remove duplicates

@@ -73,10 +73,11 @@ export interface RelationshipWithAminal extends Relationship {
 }
 
 export interface GeneVoteWithRelations extends GeneVote {
-  proposal: {
-    geneNFT: GeneNFT;
+  proposal?: {
+    geneNFT?: GeneNFT;
   } & GeneProposal;
-  auction: GeneAuction;
+  voter?: User;
+  auction?: GeneAuction;
 }
 
 export interface UserWithRelations extends User {

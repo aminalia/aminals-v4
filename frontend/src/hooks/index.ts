@@ -51,6 +51,9 @@ export {
   getTrait,
 } from './traitUtils';
 
+// Gene utilities
+export { makeGeneNFTId } from '../lib/geneTransformers';
+
 // Re-export all Ponder types for convenience
 export type {
   // Base types

@@ -5,6 +5,7 @@
  */
 
 import * as schema from '../../../ponder/ponder.schema';
+import { genesAddress } from '../contracts/generated';
 
 // Type inference from Ponder schema
 type GeneNFT = typeof schema.geneNFT.$inferSelect;
@@ -210,4 +211,15 @@ export const validateGene = (gene: any): gene is GeneNFTWithRelations => {
     'tokenId' in gene &&
     'traitType' in gene
   );
+};
+
+/**
+ * Convert a gene token ID (bigint) to geneNFT ID format
+ * Format: 0x{genesAddress}-{tokenId}
+ *
+ * This matches the ID format used in the Ponder indexer.
+ */
+export const makeGeneNFTId = (tokenId: bigint | string): string => {
+  const tokenIdStr = typeof tokenId === 'bigint' ? tokenId.toString() : tokenId;
+  return `0x${genesAddress.toLowerCase().replace('0x', '')}-${tokenIdStr}`;
 };
