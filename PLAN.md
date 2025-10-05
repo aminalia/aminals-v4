@@ -1,13 +1,15 @@
 # Plan
 
 - [-] Switch to ponder (will hopefully solve many bugs)
-- [ ] Project cleanup (remove dead docs, graph etc.)
-- [ ] Resolve issues from security audit
+- [x] Project cleanup (remove dead docs, graph etc.)
+- [-] Resolve issues from security audit
 
 # ponder
 
-- TEST everything
-
+- Fix aminals with gene not working.
+- Fix traits on Aminals detail page
+- Kill leader board
+- Fix toasts (transparent for some reason?)
 
 ## New Features Ideas
 

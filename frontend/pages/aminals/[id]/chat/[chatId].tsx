@@ -317,7 +317,7 @@ const ChatSessionPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 h-screen flex flex-col">
+      <div className="container mx-auto my-auto px-2 sm:px-4 py-2 sm:py-4 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border bg-card rounded-t-lg">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
@@ -332,7 +332,10 @@ const ChatSessionPage: NextPage = () => {
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-base sm:text-lg font-semibold truncate">
-                Aminal #{aminal.aminalIndex}
+                Aminal #
+                {aminal.aminalIndex !== undefined
+                  ? Number(aminal.aminalIndex)
+                  : 'Unknown'}
               </h1>
               <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 sm:gap-2">
                 <MessageCircle className="w-3 h-3 flex-shrink-0" />
@@ -383,7 +386,7 @@ const ChatSessionPage: NextPage = () => {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-muted">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-muted border border-border">
           {messages.map((message: Message) => (
             <div
               key={message.id}

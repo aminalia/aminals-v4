@@ -167,7 +167,7 @@ const AminalPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col gap-8">
           {/* Header */}
           <div className="flex items-center justify-between">
@@ -258,19 +258,35 @@ const AminalPage: NextPage = () => {
               </div>
 
               {/* Actions */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <FeedButton
                   contractAddress={aminal.contractAddress as `0x${string}`}
                 />
 
-                <Link
-                  href={`/aminals/${aminal.contractAddress}/chat`}
+                <Button
+                  variant="default"
                   className="w-full"
+                  disabled={
+                    !aminal?.lovers ||
+                    aminal.lovers.items.length === 0 ||
+                    Number(aminal.lovers.items[0]?.love || 0) <= 0
+                  }
+                  asChild={
+                    aminal?.lovers &&
+                    aminal.lovers.items.length > 0 &&
+                    Number(aminal.lovers.items[0]?.love || 0) > 0
+                  }
                 >
-                  <Button variant="default" className="w-full">
-                    💬 Chat with Aminal
-                  </Button>
-                </Link>
+                  {aminal?.lovers &&
+                  aminal.lovers.items.length > 0 &&
+                  Number(aminal.lovers.items[0]?.love || 0) > 0 ? (
+                    <Link href={`/aminals/${aminal.contractAddress}/chat`}>
+                      💬 Chat with Aminal
+                    </Link>
+                  ) : (
+                    <span>💬 Chat with Aminal</span>
+                  )}
+                </Button>
 
                 {/* Auction functionality removed from schema */}
               </div>

@@ -173,7 +173,7 @@ const ChatSessionsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="py-8 sm:py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <Link
@@ -187,7 +187,10 @@ const ChatSessionsPage: NextPage = () => {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-2xl font-bold truncate">
-              Chat with Aminal #{aminal.aminalIndex}
+              Chat with Aminal #
+              {aminal.aminalIndex !== undefined
+                ? Number(aminal.aminalIndex)
+                : 'Unknown'}
             </h1>
             <p className="text-sm sm:text-base text-muted-foreground">
               {aminal.lovers?.items?.[0]?.love
@@ -197,26 +200,26 @@ const ChatSessionsPage: NextPage = () => {
                 : 'New friend 👋'}
             </p>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mb-4 sm:mb-6 space-y-3">
           <Button
             onClick={createNewSession}
             disabled={isCreating || !address}
             variant="energy"
-            className="w-full py-3 sm:py-2 text-sm sm:text-base"
+            className="flex-shrink-0"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            {isCreating ? 'Creating...' : 'Start New Conversation'}
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">
+              {isCreating ? 'Creating...' : 'New Chat'}
+            </span>
           </Button>
+        </div>
 
-          {!address && (
+        {!address && (
+          <div className="mb-4 sm:mb-6">
             <p className="text-sm text-muted-foreground text-center">
               Connect your wallet to start chatting
             </p>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Chat Sessions List */}
         <div className="space-y-3 sm:space-y-4">

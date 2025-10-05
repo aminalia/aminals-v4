@@ -46,7 +46,7 @@ const TraitsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col gap-6">
           {/* Header Section */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

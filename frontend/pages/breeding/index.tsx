@@ -43,7 +43,7 @@ const AuctionsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col gap-8">
           {/* Hero Section */}
           <div className="text-center space-y-4">

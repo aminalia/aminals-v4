@@ -103,7 +103,7 @@ const ProfilePage: NextPage = () => {
           <link href="/favicon.ico" rel="icon" />
         </Head>
         <Layout>
-          <div className="container mx-auto px-4 py-8">
+          <div className="py-8">
             <div className="text-center py-20">
               <div className="text-4xl mb-4">🔍</div>
               <div className="text-muted-foreground">

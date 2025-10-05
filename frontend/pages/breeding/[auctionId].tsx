@@ -397,7 +397,7 @@ const AuctionPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="space-y-8">
           {/* Header Section */}
           <div className="flex items-center justify-between">
@@ -430,7 +430,9 @@ const AuctionPage: NextPage = () => {
             <div className="flex justify-center items-center h-64">
               <div className="flex flex-col items-center gap-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-love"></div>
-                <div className="text-muted-foreground">Loading breeding data...</div>
+                <div className="text-muted-foreground">
+                  Loading breeding data...
+                </div>
               </div>
             </div>
           ) : (
@@ -754,7 +756,9 @@ const AuctionPage: NextPage = () => {
                           </span>
                         </div>
                         <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm text-muted-foreground">Status</span>
+                          <span className="text-sm text-muted-foreground">
+                            Status
+                          </span>
                           <span className="text-sm font-medium text-success">
                             ✅ Completed
                           </span>

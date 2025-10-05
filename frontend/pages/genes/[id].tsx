@@ -107,7 +107,7 @@ const GeneDetailPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-5xl mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col gap-8">
           {/* Header */}
           <div className="flex items-center justify-between">
