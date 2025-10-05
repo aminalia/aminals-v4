@@ -207,7 +207,7 @@ const GeneDetailPage: NextPage = () => {
                   <div className="text-sm text-muted-foreground">
                     Total Earnings
                   </div>
-                  <div className="text-2xl font-semibold text-green-600">
+                  <div className="text-2xl font-semibold text-success">
                     {formatEarnings(gene.totalEarnings.toString())} ETH
                   </div>
                 </div>

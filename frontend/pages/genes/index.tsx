@@ -52,7 +52,7 @@ const TraitsPage: NextPage = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-3xl font-bold">Genes Gallery</h1>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Browse and discover unique genes for Aminals
               </p>
             </div>
@@ -66,21 +66,21 @@ const TraitsPage: NextPage = () => {
 
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 flex-wrap">
             {/* Count */}
-            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
+            <div className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
               {genes?.length || 0} Genes found
             </div>
 
             <div className="flex flex-wrap gap-3">
               {/* Filter Buttons */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Filter:</span>
+                <span className="text-sm text-muted-foreground">Filter:</span>
                 <div className="flex gap-2">
                   <button
                     className={cn(
                       'px-3 py-1.5 text-sm rounded-full font-medium transition-colors',
                       filter === 'all'
-                        ? 'bg-gray-900 text-white hover:bg-gray-800'
-                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-card border border-border text-foreground hover:bg-muted'
                     )}
                     onClick={() => setFilter('all')}
                   >
@@ -90,8 +90,8 @@ const TraitsPage: NextPage = () => {
                     className={cn(
                       'px-3 py-1.5 text-sm rounded-full font-medium transition-colors',
                       filter === 'yours'
-                        ? 'bg-gray-900 text-white hover:bg-gray-800'
-                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100',
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-card border border-border text-foreground hover:bg-muted',
                       // Only apply disabled styles after mount to prevent hydration mismatch
                       hasMounted && !address && 'opacity-50 cursor-not-allowed'
                     )}
@@ -105,9 +105,9 @@ const TraitsPage: NextPage = () => {
 
               {/* Sort */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Sort by:</span>
+                <span className="text-sm text-muted-foreground">Sort by:</span>
                 <select
-                  className="px-3 py-1.5 text-sm rounded-full border border-gray-200 bg-white text-gray-700 font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-gray-200"
+                  className="px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
                   value={sort}
                   onChange={(e) => setSort(e.target.value as GeneSort)}
                 >
@@ -125,8 +125,8 @@ const TraitsPage: NextPage = () => {
                 className={cn(
                   'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
                   category === 'all'
-                    ? 'bg-gray-900 text-white hover:bg-gray-800'
-                    : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'bg-card border border-border text-foreground hover:bg-muted'
                 )}
                 onClick={() => setCategory('all')}
               >
@@ -142,8 +142,8 @@ const TraitsPage: NextPage = () => {
                     className={cn(
                       'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
                       category === key
-                        ? 'bg-gray-900 text-white hover:bg-gray-800'
-                        : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                        : 'bg-card border border-border text-foreground hover:bg-muted'
                     )}
                     onClick={() => setCategory(key as CategoryFilter)}
                   >
@@ -160,17 +160,17 @@ const TraitsPage: NextPage = () => {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
           ) : isGenesError ? (
-            <div className="text-center py-12 bg-red-50 rounded-lg">
-              <p className="text-red-600">
+            <div className="text-center py-12 bg-destructive/10 rounded-lg">
+              <p className="text-destructive">
                 Error loading genes: {genesError?.message || 'Unknown error'}
               </p>
-              <p className="text-sm text-red-500 mt-2">
+              <p className="text-sm text-destructive mt-2">
                 Check the console for more details.
               </p>
             </div>
           ) : !genes || genes.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-600">
+            <div className="text-center py-12 bg-muted rounded-lg">
+              <p className="text-muted-foreground">
                 No genes found matching your filter.
               </p>
             </div>

@@ -3,9 +3,8 @@ import TraitCard from '@/components/TraitCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { useHasMounted } from '@/hooks/useHasMounted';
-import { cn } from '@/lib/utils';
 import { useUserEarnings, useUserProfile } from '@/hooks';
+import { useHasMounted } from '@/hooks/useHasMounted';
 import { Check, Copy } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
@@ -85,7 +84,7 @@ const ProfilePage: NextPage = () => {
           <link href="/favicon.ico" rel="icon" />
         </Head>
         <Layout>
-          <div className="container max-w-5xl mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-8">
             <div className="text-center py-20">
               <div className="text-4xl mb-4">⏳</div>
               <div className="text-muted-foreground">Loading...</div>
@@ -104,7 +103,7 @@ const ProfilePage: NextPage = () => {
           <link href="/favicon.ico" rel="icon" />
         </Head>
         <Layout>
-          <div className="container max-w-5xl mx-auto px-4 py-8">
+          <div className="container mx-auto px-4 py-8">
             <div className="text-center py-20">
               <div className="text-4xl mb-4">🔍</div>
               <div className="text-muted-foreground">
@@ -159,7 +158,8 @@ const ProfilePage: NextPage = () => {
   };
 
   const formatTimeAgo = (timestamp: bigint | string) => {
-    const timestampNum = typeof timestamp === 'bigint' ? Number(timestamp) : parseInt(timestamp);
+    const timestampNum =
+      typeof timestamp === 'bigint' ? Number(timestamp) : parseInt(timestamp);
     const date = new Date(timestampNum * 1000);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
@@ -179,7 +179,7 @@ const ProfilePage: NextPage = () => {
         <link href="/favicon.ico" rel="icon" />
       </Head>
       <Layout>
-        <div className="container max-w-5xl mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col gap-8">
             {/* Hero Section */}
             <div className="text-center space-y-4">
@@ -529,8 +529,8 @@ const ProfilePage: NextPage = () => {
                                   `Gene #${vote.proposal.geneNFT.tokenId}`}
                               </div>
                               <div className="text-sm text-muted-foreground mt-1">
-                                Auction #{vote.auction?.auctionId ?? 'Unknown'} •{' '}
-                                {formatTimeAgo(vote.blockTimestamp)}
+                                Auction #{vote.auction?.auctionId ?? 'Unknown'}{' '}
+                                • {formatTimeAgo(vote.blockTimestamp)}
                               </div>
                             </div>
                             <div className="text-right mt-2 sm:mt-0">
