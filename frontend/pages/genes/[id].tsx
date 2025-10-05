@@ -59,7 +59,7 @@ const GeneDetailPage: NextPage = () => {
   if (!gene) {
     return (
       <Layout>
-        <div className="container max-w-5xl mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
           <EmptyState
             icon="🧬"
             title="Gene not found"
@@ -74,21 +74,26 @@ const GeneDetailPage: NextPage = () => {
     TRAIT_CATEGORIES[gene.traitType as keyof typeof TRAIT_CATEGORIES];
   // Extract unique Aminals from proposals (each proposal has 2 Aminals)
   const proposals = gene.proposals?.items || [];
-  const uniqueAminals = proposals.length > 0
-    ? Array.from(
-        new Set(
+  const uniqueAminals =
+    proposals.length > 0
+      ? Array.from(
+          new Set(
+            [
+              ...proposals
+                .map((p: any) => p.auction?.aminalOne)
+                .filter(Boolean),
+              ...proposals
+                .map((p: any) => p.auction?.aminalTwo)
+                .filter(Boolean),
+            ].map((a) => a.id)
+          )
+        ).map((id) =>
           [
             ...proposals.map((p: any) => p.auction?.aminalOne).filter(Boolean),
             ...proposals.map((p: any) => p.auction?.aminalTwo).filter(Boolean),
-          ].map((a) => a.id)
+          ].find((a) => a.id === id)
         )
-      ).map((id) =>
-        [
-          ...proposals.map((p: any) => p.auction?.aminalOne).filter(Boolean),
-          ...proposals.map((p: any) => p.auction?.aminalTwo).filter(Boolean),
-        ].find((a) => a.id === id)
-      )
-    : [];
+      : [];
   const aminalCount = uniqueAminals.length;
 
   // Format total earnings from wei to ETH
@@ -233,7 +238,8 @@ const GeneDetailPage: NextPage = () => {
                   // Transform the data to match AminalCard's expected interface
                   const transformedAminal = {
                     id: aminalWithDetails.id as `0x${string}`,
-                    contractAddress: aminalWithDetails.contractAddress as `0x${string}`,
+                    contractAddress:
+                      aminalWithDetails.contractAddress as `0x${string}`,
                     aminalIndex: BigInt(aminalWithDetails.aminalIndex),
                     factoryId: '0x0' as `0x${string}`,
                     parentOneId: null,

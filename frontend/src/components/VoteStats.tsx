@@ -185,35 +185,35 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
         {/* High-level Stats */}
         {highLevelStats && (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="bg-blue-50 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-blue-600">
+            <div className="bg-energy/10 border border-energy/30 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-energy">
                 {highLevelStats.activeAuctions}
               </div>
-              <div className="text-xs text-blue-700">Active Auctions</div>
+              <div className="text-xs text-energy">Active Auctions</div>
             </div>
-            <div className="bg-green-50 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-green-600">
+            <div className="bg-success/10 border border-success/30 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-success">
                 {highLevelStats.completedAuctions}
               </div>
-              <div className="text-xs text-green-700">Completed</div>
+              <div className="text-xs text-success">Completed</div>
             </div>
-            <div className="bg-purple-50 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-purple-600">
+            <div className="bg-warning/10 border border-warning/30 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-warning">
                 {highLevelStats.turnoutPercentage}%
               </div>
-              <div className="text-xs text-purple-700">Turnout</div>
+              <div className="text-xs text-warning">Turnout</div>
             </div>
-            <div className="bg-pink-50 rounded-lg p-3 text-center">
-              <div className="text-lg font-bold text-pink-600">
+            <div className="bg-love/10 border border-love/30 rounded-lg p-3 text-center">
+              <div className="text-lg font-bold text-love">
                 {highLevelStats.uniqueVoters}
               </div>
-              <div className="text-xs text-pink-700">Unique Voters</div>
+              <div className="text-xs text-love">Unique Voters</div>
             </div>
           </div>
         )}
 
-        <div className="text-center py-6 bg-gray-50 rounded-lg">
-          <div className="text-gray-600">
+        <div className="text-center py-6 bg-muted rounded-lg">
+          <div className="text-muted-foreground">
             <div className="text-lg mb-2">📊</div>
             <div className="font-medium">No votes cast yet</div>
             <div className="text-sm mt-1">
@@ -230,12 +230,12 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-bold">Vote Statistics</h3>
         {highLevelStats && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>{highLevelStats.uniqueVoters} voters</span>
             <span>•</span>
             <span>{highLevelStats.totalLoveSpent} ❤️ votes</span>
             <span>•</span>
-            <span className="font-medium text-blue-600">
+            <span className="font-medium text-energy">
               {highLevelStats.turnoutPercentage}% turnout
             </span>
           </div>
@@ -244,20 +244,20 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
 
       {/* Preview of current winning combination - only show if auction is not finished */}
       {Object.keys(winningGenes).length > 0 && !currentAuction?.finished && (
-        <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
+        <div className="bg-love/10 border border-love/30 rounded-lg p-4">
           <div className="flex items-start gap-4">
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">🏆</span>
-                <h4 className="font-semibold text-purple-700">
+                <h4 className="font-semibold text-love">
                   Current Winning Combination
                 </h4>
               </div>
-              <div className="text-sm text-purple-600">
+              <div className="text-sm text-love">
                 What the offspring would look like if the auction closed now
               </div>
             </div>
-            <div className="w-64 h-64 bg-white rounded-lg overflow-hidden border border-purple-200 flex-shrink-0">
+            <div className="w-64 h-64 bg-card rounded-lg overflow-hidden border border-love/30 flex-shrink-0">
               <svg
                 viewBox="0 0 1000 1000"
                 className="w-full h-full"
@@ -275,8 +275,8 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
             className={cn(
               'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
               selectedCategory === 'all'
-                ? 'bg-gray-900 text-white hover:bg-gray-800'
-                : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                : 'bg-card border border-border text-foreground hover:bg-muted'
             )}
             onClick={() => setSelectedCategory('all')}
           >
@@ -290,8 +290,8 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
               className={cn(
                 'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
                 selectedCategory === key
-                  ? 'bg-gray-900 text-white hover:bg-gray-800'
-                  : 'bg-white border border-gray-200 text-gray-700 hover:bg-gray-100'
+                  ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                  : 'bg-card border border-border text-foreground hover:bg-muted'
               )}
               onClick={() => setSelectedCategory(key)}
             >
@@ -306,8 +306,8 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
       <div className="space-y-3">
         {Object.keys(filteredVoteStats).length === 0 &&
         selectedCategory !== 'all' ? (
-          <div className="text-center py-6 bg-gray-50 rounded-lg">
-            <div className="text-gray-600">
+          <div className="text-center py-6 bg-muted rounded-lg">
+            <div className="text-muted-foreground">
               <span className="text-lg block mb-2">
                 {
                   TRAIT_CATEGORIES[
@@ -339,7 +339,7 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
             return (
               <div
                 key={traitType}
-                className="border border-gray-200 rounded-lg p-3"
+                className="border border-border rounded-lg p-3"
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span>{category?.emoji}</span>
@@ -355,12 +355,12 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
                         key={geneId}
                         className={`flex items-center justify-between p-2 rounded transition-all ${
                           index === 0
-                            ? 'bg-green-50 border border-green-200'
-                            : 'bg-gray-50'
+                            ? 'bg-success/10 border border-success/30'
+                            : 'bg-muted'
                         }`}
                       >
                         <div className="flex items-center gap-2">
-                          <div className="w-10 h-10 bg-white rounded overflow-hidden border border-gray-200">
+                          <div className="w-10 h-10 bg-card rounded overflow-hidden border border-border">
                             {stats.svg ? (
                               <svg
                                 viewBox="0 0 1000 1000"
@@ -368,7 +368,7 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
                                 dangerouslySetInnerHTML={{ __html: stats.svg }}
                               />
                             ) : (
-                              <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
+                              <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
                                 ?
                               </div>
                             )}
@@ -377,12 +377,12 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
                             <div className="text-sm font-medium flex items-center gap-1">
                               {stats.geneName}
                               {index === 0 && (
-                                <span className="text-xs bg-green-600 text-white px-1 rounded">
+                                <span className="text-xs bg-success text-success-foreground px-1 rounded">
                                   🏆
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-gray-600">
+                            <div className="text-xs text-muted-foreground">
                               #{geneId}
                             </div>
                           </div>
@@ -392,7 +392,7 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
                           <div className="text-sm font-bold">
                             {Math.round(stats.totalLove)} ❤️
                           </div>
-                          <div className="text-xs text-gray-600">
+                          <div className="text-xs text-muted-foreground">
                             {stats.votes}v
                           </div>
                         </div>

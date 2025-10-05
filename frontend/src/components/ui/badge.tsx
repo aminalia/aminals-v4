@@ -14,22 +14,18 @@ const badgeVariants = cva(
         destructive:
           'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80',
         outline: 'text-foreground',
-        // Aminals-specific variants
+        // Aminals-specific semantic variants (lighter backgrounds for badges)
         success:
-          'border-transparent bg-success-100 text-success-700 hover:bg-success-200',
+          'border-transparent bg-success/20 text-success hover:bg-success/30',
         warning:
-          'border-transparent bg-warning-100 text-warning-700 hover:bg-warning-200',
-        error:
-          'border-transparent bg-error-100 text-error-700 hover:bg-error-200',
-        love: 'border-transparent bg-love-100 text-love-700 hover:bg-love-200',
+          'border-transparent bg-warning/20 text-warning hover:bg-warning/30',
+        love: 'border-transparent bg-love/20 text-love hover:bg-love/30',
         energy:
-          'border-transparent bg-energy-100 text-energy-700 hover:bg-energy-200',
-        neutral:
-          'border-transparent bg-neutral-100 text-neutral-700 hover:bg-neutral-200',
+          'border-transparent bg-energy/20 text-energy hover:bg-energy/30',
         // Status badges
-        active: 'border-transparent bg-success-100 text-success-700',
-        inactive: 'border-transparent bg-neutral-100 text-neutral-500',
-        pending: 'border-transparent bg-warning-100 text-warning-700',
+        active: 'border-transparent bg-success/20 text-success',
+        inactive: 'border-transparent bg-muted text-muted-foreground',
+        pending: 'border-transparent bg-warning/20 text-warning',
       },
       size: {
         default: 'px-2.5 py-0.5 text-xs',

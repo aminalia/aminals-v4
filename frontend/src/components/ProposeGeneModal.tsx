@@ -137,18 +137,18 @@ export default function ProposeGeneModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+      <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
             <h2 className="text-xl font-bold">Propose New Gene</h2>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Select a gene from the registry or enter a specific ID
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className="p-2 hover:bg-muted rounded-full transition-colors"
           >
             <X size={20} />
           </button>
@@ -171,8 +171,8 @@ export default function ProposeGeneModal({
                     className={cn(
                       'px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
                       selectedCategory === category.id
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                        ? 'bg-energy text-energy-foreground'
+                        : 'bg-muted hover:bg-muted/80 text-foreground'
                     )}
                   >
                     <span>{emoji}</span>
@@ -192,8 +192,8 @@ export default function ProposeGeneModal({
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   !useManualId
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    ? 'bg-energy/20 text-energy border border-energy/30'
+                    : 'bg-muted hover:bg-muted/80 text-foreground'
                 )}
               >
                 Browse Registry
@@ -203,8 +203,8 @@ export default function ProposeGeneModal({
                 className={cn(
                   'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
                   useManualId
-                    ? 'bg-blue-100 text-blue-700 border border-blue-200'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                    ? 'bg-energy/20 text-energy border border-energy/30'
+                    : 'bg-muted hover:bg-muted/80 text-foreground'
                 )}
               >
                 Enter ID Manually
@@ -213,7 +213,7 @@ export default function ProposeGeneModal({
 
             {useManualId ? (
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
+                <label className="text-sm font-medium text-foreground">
                   Gene ID
                 </label>
                 <Input
@@ -228,10 +228,10 @@ export default function ProposeGeneModal({
               <div>
                 {isLoadingGenes ? (
                   <div className="flex justify-center items-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-energy"></div>
                   </div>
                 ) : !genes || genes.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
+                  <div className="text-center py-8 text-muted-foreground">
                     No genes found for this category
                   </div>
                 ) : (
@@ -242,12 +242,12 @@ export default function ProposeGeneModal({
                         className={cn(
                           'border-2 rounded-lg p-3 cursor-pointer transition-all',
                           selectedGeneId === gene.tokenId
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-gray-200 hover:border-gray-300'
+                            ? 'border-energy bg-energy/10'
+                            : 'border-border hover:border-energy/50'
                         )}
                         onClick={() => setSelectedGeneId(gene.tokenId)}
                       >
-                        <div className="aspect-square mb-2 bg-gray-50 rounded-lg overflow-hidden">
+                        <div className="aspect-square mb-2 bg-secondary rounded-lg overflow-hidden">
                           <svg
                             viewBox="0 0 1000 1000"
                             className="w-full h-full"
@@ -269,8 +269,8 @@ export default function ProposeGeneModal({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 p-6 flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+        <div className="border-t border-border p-6 flex items-center justify-between">
+          <div className="text-sm text-muted-foreground">
             {useManualId
               ? `Manual ID: ${manualGeneId || 'Not entered'}`
               : `Selected: ${
@@ -289,7 +289,7 @@ export default function ProposeGeneModal({
                 isPending ||
                 isConfirming
               }
-              className="bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+              variant="energy"
             >
               {!enabled
                 ? 'Connect Wallet'

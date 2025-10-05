@@ -11,7 +11,6 @@ import type {
   GeneProposal,
   GeneProposalWithRelations,
   GeneVote,
-  User,
 } from '../types/ponder';
 
 // Re-export types
@@ -32,10 +31,6 @@ export const useAuctions = () => {
   });
 
   const auctions = auctionsResult.data || [];
-
-  console.log('useAuctions - raw auctions:', auctions);
-  console.log('useAuctions - loading:', auctionsResult.isLoading);
-  console.log('useAuctions - error:', auctionsResult.error);
 
   // Get all unique aminal IDs from auctions
   const aminalIds = auctions.length
@@ -117,11 +112,9 @@ export const useAuction = (
 
   // Get all aminal IDs we need to fetch
   const aminalIds = auction
-    ? [
-        auction.aminalOneId,
-        auction.aminalTwoId,
-        auction.childAminalId,
-      ].filter(Boolean) as `0x${string}`[]
+    ? ([auction.aminalOneId, auction.aminalTwoId, auction.childAminalId].filter(
+        Boolean
+      ) as `0x${string}`[])
     : [];
 
   // Fetch all aminals in a single query
@@ -151,9 +144,15 @@ export const useAuction = (
   const processedData = auction
     ? {
         ...auction,
-        aminalOne: auction.aminalOneId ? aminalMap.get(auction.aminalOneId) : undefined,
-        aminalTwo: auction.aminalTwoId ? aminalMap.get(auction.aminalTwoId) : undefined,
-        childAminal: auction.childAminalId ? aminalMap.get(auction.childAminalId) || null : null,
+        aminalOne: auction.aminalOneId
+          ? aminalMap.get(auction.aminalOneId)
+          : undefined,
+        aminalTwo: auction.aminalTwoId
+          ? aminalMap.get(auction.aminalTwoId)
+          : undefined,
+        childAminal: auction.childAminalId
+          ? aminalMap.get(auction.childAminalId) || null
+          : null,
       }
     : undefined;
 
@@ -167,7 +166,9 @@ export const useAuction = (
 /**
  * Helper to add trait properties to an aminal
  */
-function addTraitHelpers(aminal: Aminal | undefined): AminalWithRelations | undefined {
+function addTraitHelpers(
+  aminal: Aminal | undefined
+): AminalWithRelations | undefined {
   if (!aminal) return undefined;
 
   return {

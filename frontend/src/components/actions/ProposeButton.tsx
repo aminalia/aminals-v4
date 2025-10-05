@@ -277,7 +277,7 @@ export default function ProposeButton({
     <div className={`space-y-3 ${className}`}>
       <div className="grid grid-cols-2 gap-2">
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-500">Category</label>
+          <label className="text-xs font-medium text-muted-foreground">Category</label>
           <select
             value={catId}
             onChange={(e) => setCatId(Number(e.target.value))}
@@ -293,7 +293,7 @@ export default function ProposeButton({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-xs font-medium text-gray-500">Gene ID</label>
+          <label className="text-xs font-medium text-muted-foreground">Gene ID</label>
           <Input
             type="number"
             min="0"
@@ -309,11 +309,8 @@ export default function ProposeButton({
         type="button"
         onClick={handlePropose}
         disabled={!canPropose || isTransacting}
-        className={`w-full ${
-          canPropose && !isTransacting
-            ? 'bg-blue-600 hover:bg-blue-700 text-white'
-            : 'text-gray-400 cursor-not-allowed'
-        }`}
+        variant="energy"
+        className="w-full"
       >
         {isTransacting
           ? 'Proposing...'
@@ -332,14 +329,14 @@ export default function ProposeButton({
       {vizId > 0 && (
         <div className="mt-2 text-xs">
           {!isValidGene ? (
-            <span className="text-red-600">❌ Gene ID {vizId} not found</span>
+            <span className="text-destructive">❌ Gene ID {vizId} not found</span>
           ) : geneInfo && geneInfo[1] !== catId ? (
-            <span className="text-orange-600">
+            <span className="text-warning">
               ⚠️ Gene is {CATEGORIES[Number(geneInfo[1])]?.label}, not{' '}
               {CATEGORIES[catId]?.label}
             </span>
           ) : (
-            <span className="text-green-600">
+            <span className="text-success">
               ✅ Valid gene for {CATEGORIES[catId]?.label}
             </span>
           )}

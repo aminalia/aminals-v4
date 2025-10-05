@@ -83,12 +83,13 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
     >
       {/* Header with Propose Gene Button */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800">Gene Selection</h3>
+        <h3 className="text-lg font-semibold text-foreground">Gene Selection</h3>
         {showProposeButton && onProposeGene && (
           <Button
             onClick={onProposeGene}
             size="sm"
-            className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 h-auto"
+            variant="success"
+            className="text-xs px-2 py-1 h-auto"
             disabled={disabled}
           >
             + Propose Gene
@@ -122,10 +123,10 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
       {/* Options Grid */}
       <div className="space-y-2">
         <div>
-          <h4 className="text-sm font-medium text-gray-700">
+          <h4 className="text-sm font-medium text-foreground">
             {categoryMap[activeCategory].name} Options
           </h4>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-muted-foreground mt-1">
             P1/P2 = Parent genes, C = Community proposals
           </p>
         </div>
@@ -143,17 +144,17 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                 className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all
                   ${
                     disabled
-                      ? 'border-gray-200 cursor-not-allowed'
-                      : 'cursor-pointer hover:border-gray-400'
+                      ? 'border-border cursor-not-allowed'
+                      : 'cursor-pointer hover:border-primary'
                   }
                   ${
                     selectedParts[activeCategory] === index
-                      ? 'border-blue-500 ring-2 ring-blue-200'
+                      ? 'border-energy ring-2 ring-energy/20'
                       : isParent
-                      ? 'border-blue-300'
+                      ? 'border-energy/50'
                       : isCommunity
-                      ? 'border-purple-300'
-                      : 'border-gray-200'
+                      ? 'border-love/50'
+                      : 'border-border'
                   }`}
                 onClick={() =>
                   !disabled && onPartSelection(activeCategory, index)
@@ -161,12 +162,12 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
               >
                 {/* Source indicator */}
                 {isParent && (
-                  <div className="absolute top-1 left-1 bg-blue-500 text-white text-xs rounded px-1 py-0.5 font-medium">
+                  <div className="absolute top-1 left-1 bg-energy text-energy-foreground text-xs rounded px-1 py-0.5 font-medium">
                     P{parentIndex}
                   </div>
                 )}
                 {isCommunity && (
-                  <div className="absolute top-1 left-1 bg-purple-500 text-white text-xs rounded px-1 py-0.5 font-medium">
+                  <div className="absolute top-1 left-1 bg-love text-love-foreground text-xs rounded px-1 py-0.5 font-medium">
                     C
                   </div>
                 )}
@@ -174,13 +175,13 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
                 {trait?.svg ? (
                   <svg
                     viewBox="0 0 1000 1000"
-                    className="w-full h-full bg-gray-50"
+                    className="w-full h-full bg-secondary"
                     dangerouslySetInnerHTML={{
                       __html: trait.svg,
                     }}
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
+                  <div className="w-full h-full flex items-center justify-center bg-secondary text-muted-foreground">
                     No trait available
                   </div>
                 )}
@@ -193,17 +194,17 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
             className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all
               ${
                 disabled
-                  ? 'border-gray-200 cursor-not-allowed'
-                  : 'cursor-pointer hover:border-gray-400'
+                  ? 'border-border cursor-not-allowed'
+                  : 'cursor-pointer hover:border-primary'
               }
               ${
                 selectedParts[activeCategory] === -1
-                  ? 'border-blue-500 ring-2 ring-blue-200'
-                  : 'border-gray-300'
+                  ? 'border-energy ring-2 ring-energy/20'
+                  : 'border-border'
               }`}
             onClick={() => !disabled && onPartSelection(activeCategory, -1)}
           >
-            <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-600">
+            <div className="w-full h-full flex flex-col items-center justify-center bg-muted text-muted-foreground">
               <div className="text-xl mb-1">∅</div>
               <div className="text-xs font-medium">None</div>
             </div>

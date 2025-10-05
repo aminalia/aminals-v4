@@ -286,12 +286,12 @@ export default function CallSkillButton({
     if (selectedSkillInfo?.type === 'move2d') {
       return (
         <div className="space-y-3">
-          <div className="text-sm font-medium text-gray-700">
+          <div className="text-sm font-medium text-foreground">
             🎯 Move to Coordinates
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">
+              <label className="text-xs font-medium text-muted-foreground">
                 X Coordinate
               </label>
               <Input
@@ -305,7 +305,7 @@ export default function CallSkillButton({
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-gray-600">
+              <label className="text-xs font-medium text-muted-foreground">
                 Y Coordinate
               </label>
               <Input
@@ -320,7 +320,7 @@ export default function CallSkillButton({
             </div>
           </div>
           {move2DX && move2DY && (
-            <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+            <div className="text-xs text-primary bg-primary/10 p-2 rounded">
               📍 Moving to position ({move2DX}, {move2DY})
             </div>
           )}
@@ -344,23 +344,23 @@ export default function CallSkillButton({
   }
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
+    <div className="space-y-4 p-4 border rounded-lg bg-energy/5 border-energy/30">
       <div className="flex items-center gap-2">
-        <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-        <h4 className="font-semibold text-sm text-gray-800">
+        <div className="w-2 h-2 bg-energy rounded-full"></div>
+        <h4 className="font-semibold text-sm text-foreground">
           Call Global Skill
         </h4>
       </div>
 
       <div className="space-y-2">
-        <label className="text-sm font-medium text-gray-700">
+        <label className="text-sm font-medium text-foreground">
           Select Skill
         </label>
         <select
           value={selectedSkill}
           onChange={(e) => setSelectedSkill(e.target.value)}
           disabled={isPending || isConfirming}
-          className="w-full p-2 border border-gray-300 rounded-md text-sm disabled:opacity-50 bg-white focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+          className="w-full p-2 border border-border rounded-md text-sm disabled:opacity-50 bg-card text-foreground focus:ring-2 focus:ring-ring focus:border-ring"
         >
           <option value="">Choose a skill...</option>
           {KNOWN_SKILLS.map((skill) => (
@@ -372,7 +372,7 @@ export default function CallSkillButton({
       </div>
 
       {selectedSkill && (
-        <div className="bg-white p-3 rounded-md border border-gray-200">
+        <div className="bg-card p-3 rounded-md border border-border">
           {renderSkillInputs()}
         </div>
       )}
@@ -386,12 +386,13 @@ export default function CallSkillButton({
           isPending ||
           isConfirming
         }
-        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium transition-all duration-200 transform hover:scale-[1.02] disabled:transform-none disabled:opacity-50"
+        variant="skill"
+        className="w-full"
         size="sm"
       >
         {isPending || isConfirming ? (
           <span className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
             Calling Skill...
           </span>
         ) : (
@@ -400,7 +401,7 @@ export default function CallSkillButton({
       </Button>
 
       {selectedSkill && (
-        <div className="text-xs text-gray-600 bg-gray-50 p-2 rounded border-l-4 border-purple-400">
+        <div className="text-xs text-muted-foreground bg-muted p-2 rounded border-l-4 border-energy">
           <strong>💡 Note:</strong> Skills are globally available and consume
           energy from your Aminal. Make sure your Aminal has enough energy!
         </div>

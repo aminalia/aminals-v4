@@ -273,7 +273,8 @@ export default function BreedButton({
         disabled={
           !enabled || !isAddress(partnerAddress) || isPending || isConfirming
         }
-        className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+        variant="breed"
+        className="w-full"
       >
         {isPending || isConfirming
           ? '⏳ Starting Auction...'

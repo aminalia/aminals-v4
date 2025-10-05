@@ -191,10 +191,7 @@ export default function VoteButton({
       type="button"
       onClick={action}
       disabled={!enabled || isPending || isConfirming}
-      className={cn(
-        enabled ? '' : 'text-neutral-400',
-        (isPending || isConfirming) && 'opacity-50 cursor-not-allowed'
-      )}
+      variant="love"
     >
       {isPending || isConfirming ? 'Voting...' : `Vote on Gene ${vizId}`}
     </Button>

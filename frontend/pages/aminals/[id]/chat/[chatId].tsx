@@ -48,10 +48,11 @@ const ChatSessionPage: NextPage = () => {
 
   const isRouterReady = router.isReady && !!id && !!chatId;
 
-  const { data: aminal, isLoading: isAminalLoading } = useAminalByContractAddress(
-    isRouterReady ? contractAddress : '',
-    address || ''
-  );
+  const { data: aminal, isLoading: isAminalLoading } =
+    useAminalByContractAddress(
+      isRouterReady ? contractAddress : '',
+      address || ''
+    );
 
   const {
     data: session,
@@ -294,7 +295,7 @@ const ChatSessionPage: NextPage = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center h-[50vh] text-gray-500">
+          <div className="flex items-center justify-center h-[50vh] text-muted-foreground">
             Aminal not found
           </div>
         </div>
@@ -306,7 +307,7 @@ const ChatSessionPage: NextPage = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center h-[50vh] text-gray-500">
+          <div className="flex items-center justify-center h-[50vh] text-muted-foreground">
             Chat session not found
           </div>
         </div>
@@ -316,30 +317,30 @@ const ChatSessionPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-4 h-screen flex flex-col">
+      <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-4 h-screen flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-gray-200 bg-white rounded-t-lg">
+        <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border bg-card rounded-t-lg">
           <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
             <Link
               href={`/aminals/${contractAddress}/chat`}
-              className="text-blue-600 hover:text-blue-700 p-1 sm:p-2 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+              className="text-energy hover:text-energy/80 p-1 sm:p-2 hover:bg-energy/10 rounded-lg transition-colors flex-shrink-0"
             >
               <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-indigo-50 border border-gray-200 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
               <AminalVisualImage aminal={aminal} />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-base sm:text-lg font-semibold truncate">
                 Aminal #{aminal.aminalIndex}
               </h1>
-              <div className="text-xs sm:text-sm text-gray-500 flex items-center gap-1 sm:gap-2">
+              <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-1 sm:gap-2">
                 <MessageCircle className="w-3 h-3 flex-shrink-0" />
                 <span className="truncate">{session.title}</span>
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-muted-foreground flex-shrink-0">
             <span className="hidden sm:inline">
               {aminal.lovers?.items?.[0]?.love
                 ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
@@ -355,7 +356,7 @@ const ChatSessionPage: NextPage = () => {
             {displayPersonality && (
               <button
                 onClick={() => setShowPersonality(!showPersonality)}
-                className="flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition-colors text-xs"
+                className="flex items-center gap-1 px-2 py-1 bg-energy/10 text-energy rounded-full hover:bg-energy/20 transition-colors text-xs"
               >
                 <Sparkles className="w-3 h-3" />
                 <span className="hidden sm:inline">Personality</span>
@@ -366,14 +367,14 @@ const ChatSessionPage: NextPage = () => {
 
         {/* Personality Display */}
         {showPersonality && displayPersonality && (
-          <div className="px-3 sm:px-4 py-3 bg-purple-50 border-t border-purple-100">
+          <div className="px-3 sm:px-4 py-3 bg-energy/10 border-t border-energy/30">
             <div className="flex items-start gap-2">
-              <Sparkles className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+              <Sparkles className="w-4 h-4 text-energy mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-purple-900 mb-1">
+                <h4 className="text-sm font-medium text-energy mb-1">
                   Personality
                 </h4>
-                <p className="text-sm text-purple-700 leading-relaxed">
+                <p className="text-sm text-energy leading-relaxed">
                   {displayPersonality}
                 </p>
               </div>
@@ -382,7 +383,7 @@ const ChatSessionPage: NextPage = () => {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-gray-50">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 bg-muted">
           {messages.map((message: Message) => (
             <div
               key={message.id}
@@ -393,8 +394,8 @@ const ChatSessionPage: NextPage = () => {
               <div
                 className={`max-w-[280px] sm:max-w-xs lg:max-w-md px-3 sm:px-4 py-2 rounded-2xl ${
                   message.sender === 'user'
-                    ? 'bg-blue-600 text-white rounded-br-sm'
-                    : 'bg-white text-gray-800 rounded-bl-sm border border-gray-200'
+                    ? 'bg-energy text-white rounded-br-sm'
+                    : 'bg-card text-foreground rounded-bl-sm border border-border'
                 }`}
               >
                 <p className="text-sm leading-relaxed break-words whitespace-pre-wrap font-mono">
@@ -403,8 +404,8 @@ const ChatSessionPage: NextPage = () => {
                 <p
                   className={`text-xs mt-1 ${
                     message.sender === 'user'
-                      ? 'text-blue-100'
-                      : 'text-gray-500'
+                      ? 'text-white/70'
+                      : 'text-muted-foreground'
                   }`}
                 >
                   {new Date(message.timestamp).toLocaleTimeString([], {
@@ -418,15 +419,15 @@ const ChatSessionPage: NextPage = () => {
 
           {isLoading && (
             <div className="flex justify-start">
-              <div className="bg-white text-gray-800 rounded-2xl rounded-bl-sm border border-gray-200 px-3 sm:px-4 py-2">
+              <div className="bg-card text-foreground rounded-2xl rounded-bl-sm border border-border px-3 sm:px-4 py-2">
                 <div className="flex items-center gap-1">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
                     style={{ animationDelay: '0.1s' }}
                   ></div>
                   <div
-                    className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
+                    className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"
                     style={{ animationDelay: '0.2s' }}
                   ></div>
                 </div>
@@ -438,7 +439,7 @@ const ChatSessionPage: NextPage = () => {
         </div>
 
         {/* Input Area */}
-        <div className="p-3 sm:p-4 border-t border-gray-200 bg-white rounded-b-lg">
+        <div className="p-3 sm:p-4 border-t border-border bg-card rounded-b-lg">
           <div className="flex gap-3">
             <div className="flex-1">
               <textarea
@@ -446,7 +447,7 @@ const ChatSessionPage: NextPage = () => {
                 onChange={(e) => setInputMessage(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Type a message..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                className="w-full px-3 py-2 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-energy focus:border-transparent text-sm sm:text-base"
                 rows={1}
                 style={{ minHeight: '40px', maxHeight: '120px' }}
                 disabled={isLoading}
@@ -455,12 +456,13 @@ const ChatSessionPage: NextPage = () => {
             <Button
               onClick={sendMessage}
               disabled={!inputMessage.trim() || isLoading}
-              className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg h-10 w-10 flex touch-manipulation"
+              variant="energy"
+              className="rounded-lg h-10 w-10 flex touch-manipulation"
             >
               <Send />
             </Button>
           </div>
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             Press Enter to send, Shift+Enter for new line
           </p>
         </div>

@@ -43,10 +43,9 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
   }
 
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1 border-2 hover:border-primary/20">
+    <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-1">
       <Link href={`/genes/${gene.geneNFT.tokenId}`} className="block">
-        <CardMedia className="relative aspect-square overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
+        <CardMedia className="relative aspect-square overflow-hidden bg-secondary">
           <svg
             viewBox="0 0 1000 1000"
             className="w-full h-full transition-transform group-hover:scale-105"
@@ -95,7 +94,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
               {/* Vote count */}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Votes:</span>
-                <Badge variant="energy" size="sm">
+                <Badge variant="love" size="sm">
                   {gene.loveVotes.toString()} ❤️
                 </Badge>
               </div>
