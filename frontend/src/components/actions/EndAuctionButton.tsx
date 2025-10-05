@@ -181,9 +181,9 @@ export default function EndAuctionButton({
     <Button
       onClick={handleEndAuction}
       disabled={!enabled || isPending || isConfirming}
-      variant="default"
+      variant="energy"
       size="sm"
-      className={`bg-blue-600 hover:bg-blue-700 text-white border-blue-600 hover:border-blue-700 ${className}`}
+      className={className}
     >
       {isPending || isConfirming
         ? '🍼 Birthing...'

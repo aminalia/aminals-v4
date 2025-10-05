@@ -39,8 +39,8 @@ const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
 
   return (
     <Link href={`/genes/${trait.id}`} className="block">
-      <div className="rounded-xl border border-gray-200 shadow-sm bg-white overflow-hidden transition-all hover:shadow-lg">
-        <div className="aspect-square bg-indigo-50 flex items-center justify-center p-4">
+      <div className="rounded-xl border border-border shadow-sm bg-card overflow-hidden transition-all hover:shadow-lg">
+        <div className="aspect-square bg-secondary flex items-center justify-center p-4">
           <svg
             viewBox="0 0 1000 1000"
             className="w-full h-full"
@@ -56,7 +56,7 @@ const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
               <span className="text-xl">{category?.emoji || '🎨'}</span>
               {category?.name || 'Unknown'} #{trait.tokenId}
             </span>
-            <div className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-full text-xs">
+            <div className="px-2 py-0.5 bg-energy/20 text-energy rounded-full text-xs">
               {aminalCount} {aminalCount === 1 ? 'Aminal' : 'Aminals'}
             </div>
           </div>

@@ -133,13 +133,13 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg max-w-6xl w-full max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-2xl font-bold">Create New Gene NFT</h2>
-              <p className="text-gray-600">Design a unique trait for Aminals</p>
+              <p className="text-muted-foreground">Design a unique trait for Aminals</p>
             </div>
             <Button variant="outline" onClick={onClose}>
               ✕ Close
@@ -176,7 +176,7 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                     placeholder="Describe this gene trait..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-md text-sm resize-none h-20"
+                    className="mt-1 w-full px-3 py-2 border border-border rounded-md text-sm resize-none h-20 bg-background"
                   />
                 </div>
 
@@ -191,7 +191,7 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                     id="gene-category"
                     value={category}
                     onChange={(e) => setCategory(Number(e.target.value))}
-                    className="mt-1 w-full px-3 py-2 border border-gray-200 rounded-md text-sm"
+                    className="mt-1 w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
                   >
                     {Object.entries(TRAIT_CATEGORIES).map(
                       ([key, { name, emoji }]) => (
@@ -201,7 +201,7 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                       )
                     )}
                   </select>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     Choose which part of the Aminal this gene affects
                   </p>
                 </div>
@@ -209,14 +209,14 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                 {/* Preview */}
                 <div>
                   <Label className="text-sm font-medium">Preview</Label>
-                  <div className="mt-2 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                  <div className="mt-2 p-4 border border-border rounded-lg bg-muted">
                     <div className="flex items-center justify-center">
                       <div
-                        className="w-24 h-24 border border-gray-300 rounded bg-white flex items-center justify-center"
+                        className="w-24 h-24 border border-border rounded bg-card flex items-center justify-center"
                         dangerouslySetInnerHTML={{ __html: svg }}
                       />
                     </div>
-                    <div className="text-center mt-2 text-sm text-gray-600">
+                    <div className="text-center mt-2 text-sm text-muted-foreground">
                       {name || 'Unnamed Gene'} •{' '}
                       {
                         TRAIT_CATEGORIES[
@@ -239,11 +239,12 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                         isPending ||
                         isConfirming
                       }
+                      variant="energy"
                       className="flex-1"
                     >
                       {isPending || isConfirming ? (
                         <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
                           {isPending ? 'Creating...' : 'Confirming...'}
                         </>
                       ) : (
@@ -256,13 +257,13 @@ function CreateGeneModal({ isOpen, onClose, onSuccess }: CreateGeneModalProps) {
                   </div>
 
                   {!address && (
-                    <p className="text-sm text-red-600 mt-2">
+                    <p className="text-sm text-destructive mt-2">
                       Please connect your wallet to create a gene
                     </p>
                   )}
 
                   {hash && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                       Transaction: {hash.slice(0, 10)}...{hash.slice(-8)}
                     </p>
                   )}

@@ -105,7 +105,7 @@ export default function About() {
             to approve of the new gene.
           </p>
 
-          <div className="bg-gray-100 p-6 rounded-lg">
+          <div className="bg-secondary p-6 rounded-lg">
             <h3 className="text-lg font-semibold mb-2">
               Current Implementation
             </h3>
@@ -119,7 +119,7 @@ export default function About() {
                 href="https://github.com/aminalia/aminals-v2"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-600 hover:underline"
+                className="text-energy hover:underline"
               >
                 GitHub repository
               </a>

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import {
   Card,
   CardContent,
@@ -78,14 +79,14 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
   console.log(childAminal);
 
   return (
-    <Card className="overflow-hidden bg-white hover:shadow-xl hover:shadow-pink-500/10 hover:-translate-y-1 transition-all duration-300 group border-2 hover:border-pink-200">
+    <Card className="overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group">
       {/* Main container - stack on mobile, row on desktop */}
       <div className="flex flex-col md:flex-row w-full">
         {/* Images Section - Always side by side */}
         <div className="flex w-full md:w-1/2 relative min-h-[200px] md:min-h-[300px]">
           {/* Heart connector between images */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-white rounded-full p-2 shadow-lg border-2 border-pink-200 group-hover:border-pink-300 transition-all">
-            <div className="text-lg text-pink-500 group-hover:scale-110 transition-transform">
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-card rounded-full p-2 shadow-lg border-2 border-love/30 group-hover:border-love transition-all">
+            <div className="text-lg text-love group-hover:scale-110 transition-transform">
               💕
             </div>
           </div>
@@ -95,13 +96,12 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
               {aminalOne ? (
                 <TokenUriImage tokenUri={aminalOne.tokenURI} />
               ) : (
-                <div className="h-full bg-gray-100 flex items-center justify-center">
+                <div className="h-full bg-muted flex items-center justify-center text-muted-foreground">
                   Loading...
                 </div>
               )}
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
-            <div className="absolute top-2 left-2 text-xs sm:text-sm bg-white/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-gray-200">
+            <div className="absolute top-2 left-2 text-xs sm:text-sm bg-card/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-border">
               #{aminalOne?.aminalIndex?.toString() || '?'}
             </div>
           </div>
@@ -110,13 +110,12 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
               {aminalTwo ? (
                 <TokenUriImage tokenUri={aminalTwo.tokenURI} />
               ) : (
-                <div className="h-full bg-gray-100 flex items-center justify-center">
+                <div className="h-full bg-muted flex items-center justify-center text-muted-foreground">
                   Loading...
                 </div>
               )}
             </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover/image:opacity-100 transition-opacity" />
-            <div className="absolute top-2 right-2 text-xs sm:text-sm bg-white/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-gray-200">
+            <div className="absolute top-2 right-2 text-xs sm:text-sm bg-card/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-border">
               #{aminalTwo?.aminalIndex?.toString() || '?'}
             </div>
           </div>
@@ -127,26 +126,23 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
             <div className="flex-1">
               <Link href={`/breeding/${auction.auctionId}`}>
-                <h2 className="text-xl sm:text-2xl font-bold hover:text-pink-600 transition-colors group/title">
-                  <span className="bg-gradient-to-r from-pink-500 to-purple-600 bg-clip-text text-transparent">
-                    #{aminalOne?.aminalIndex?.toString() || '?'} × #{aminalTwo?.aminalIndex?.toString() || '?'}
-                  </span>
+                <h2 className="text-xl sm:text-2xl font-bold hover:text-love transition-colors group/title text-love">
+                  #{aminalOne?.aminalIndex?.toString() || '?'} × #{aminalTwo?.aminalIndex?.toString() || '?'}
                 </h2>
               </Link>
-              <div className="text-sm text-gray-500 mt-1">
+              <div className="text-sm text-muted-foreground mt-1">
                 Breeding Auction #{auction.auctionId}
               </div>
             </div>
             <Badge
-              variant={auction.finished ? 'secondary' : 'default'}
-              className={cn(
-                'transition-all duration-300 px-3 py-2 font-medium text-sm self-start',
+              variant={
                 auction.finished
-                  ? 'bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-700 border-blue-200'
+                  ? 'secondary'
                   : isAuctionEnded
-                  ? 'bg-gradient-to-r from-red-100 to-orange-100 text-red-700 border-red-200'
-                  : 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200'
-              )}
+                  ? 'warning'
+                  : 'success'
+              }
+              className="transition-all duration-300 px-3 py-2 font-medium text-sm self-start"
             >
               {auction.finished
                 ? '🎉 Completed'
@@ -159,17 +155,13 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
           <div className="space-y-4">
             {/* Countdown Timer Row */}
             {!auction.finished && (
-              <div className="bg-gradient-to-r from-orange-50 to-red-50 border border-orange-200 rounded-xl p-4">
+              <div className="bg-warning/10 border border-warning/30 rounded-xl p-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-700 flex items-center gap-2.5 font-medium">
+                  <span className="text-foreground flex items-center gap-2.5 font-medium">
                     <span className="text-xl">⏰</span>
                     Time Left
                   </span>
-                  <span
-                    className={`font-bold text-xl ${
-                      isAuctionEnded ? 'text-red-600' : 'text-orange-600'
-                    }`}
-                  >
+                  <span className="font-bold text-xl text-warning">
                     {formatTime(timeLeft)}
                   </span>
                 </div>
@@ -177,27 +169,27 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-3 sm:p-4 text-center">
+              <div className="bg-energy/10 border border-energy/30 rounded-xl p-3 sm:p-4 text-center">
                 <div className="text-2xl mb-1">👶</div>
-                <div className="text-sm text-gray-600 mb-1">Child</div>
+                <div className="text-sm text-muted-foreground mb-1">Child</div>
                 {childAminal ? (
                   <Link
                     href={`/aminals/${childAminal.contractAddress}`}
-                    className="font-bold text-purple-700 hover:text-purple-800 underline transition-colors"
+                    className="font-bold text-energy hover:text-energy/80 underline transition-colors"
                   >
                     #{childAminal.aminalIndex?.toString()}
                   </Link>
                 ) : (
-                  <div className="font-bold text-gray-500">
+                  <div className="font-bold text-muted-foreground">
                     {isAuctionEnded ? 'Settling...' : 'TBD'}
                   </div>
                 )}
               </div>
 
-              <div className="bg-gradient-to-r from-pink-50 to-red-50 border border-pink-200 rounded-xl p-3 sm:p-4 text-center">
+              <div className="bg-love/10 border border-love/30 rounded-xl p-3 sm:p-4 text-center">
                 <div className="text-2xl mb-1">❤️</div>
-                <div className="text-sm text-gray-600 mb-1">Total Love</div>
-                <div className="font-bold text-pink-700">
+                <div className="text-sm text-muted-foreground mb-1">Total Love</div>
+                <div className="font-bold text-love">
                   {auction.totalLove ? auction.totalLove.toString() : '0'}
                 </div>
               </div>
@@ -205,9 +197,9 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
 
             {/* Call to Action */}
             <Link href={`/breeding/${auction.auctionId}`}>
-              <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-3 text-center font-medium hover:from-blue-600 hover:to-purple-700 transition-all transform hover:scale-105 cursor-pointer mt-4">
+              <Button variant="breed" className="w-full mt-4">
                 {auction.finished ? 'View Results' : 'Join Breeding'} →
-              </div>
+              </Button>
             </Link>
           </div>
         </div>
@@ -317,7 +309,7 @@ function TokenUriImage({ tokenUri }: { tokenUri?: string | null }) {
 
   if (error || !image) {
     return (
-      <div className="flex items-center justify-center w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 text-gray-400 text-sm">
+      <div className="flex items-center justify-center w-full h-full bg-muted text-muted-foreground text-sm">
         <div className="text-center">
           <div className="text-2xl mb-2">🐈</div>
           <div>Unable to load image</div>
@@ -327,7 +319,7 @@ function TokenUriImage({ tokenUri }: { tokenUri?: string | null }) {
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full bg-secondary">
       <Image
         src={image}
         alt="Aminal"

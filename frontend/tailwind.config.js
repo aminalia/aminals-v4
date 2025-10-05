@@ -1,5 +1,3 @@
-const { tailwindTokens } = require('./src/theme/tokens');
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
@@ -21,60 +19,72 @@ module.exports = {
       },
     },
     extend: {
-      // Design system colors
       colors: {
-        ...tailwindTokens.colors,
-        // Keep default Tailwind colors for backward compatibility
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))',
+          DEFAULT: 'var(--card)',
+          foreground: 'var(--card-foreground)',
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))',
+          DEFAULT: 'var(--popover)',
+          foreground: 'var(--popover-foreground)',
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))',
-          ...tailwindTokens.colors.primary,
+          DEFAULT: 'var(--primary)',
+          foreground: 'var(--primary-foreground)',
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))',
+          DEFAULT: 'var(--secondary)',
+          foreground: 'var(--secondary-foreground)',
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))',
+          DEFAULT: 'var(--muted)',
+          foreground: 'var(--muted-foreground)',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))',
+          DEFAULT: 'var(--accent)',
+          foreground: 'var(--accent-foreground)',
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))',
+          DEFAULT: 'var(--destructive)',
+          foreground: 'var(--destructive-foreground)',
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        radius: 'hsl(var(--radius))',
+        border: 'var(--border)',
+        input: 'var(--input)',
+        ring: 'var(--ring)',
+        chart: {
+          1: 'var(--chart-1)',
+          2: 'var(--chart-2)',
+          3: 'var(--chart-3)',
+          4: 'var(--chart-4)',
+          5: 'var(--chart-5)',
+        },
+        // Aminals semantic colors
+        love: {
+          DEFAULT: 'var(--love)',
+          foreground: 'var(--love-foreground)',
+        },
+        energy: {
+          DEFAULT: 'var(--energy)',
+          foreground: 'var(--energy-foreground)',
+        },
+        success: {
+          DEFAULT: 'var(--success)',
+          foreground: 'var(--success-foreground)',
+        },
+        warning: {
+          DEFAULT: 'var(--warning)',
+          foreground: 'var(--warning-foreground)',
+        },
       },
-      // Design system typography
-      fontFamily: tailwindTokens.extend.fontFamily,
-      fontSize: tailwindTokens.extend.fontSize,
-      fontWeight: tailwindTokens.extend.fontWeight,
-      lineHeight: tailwindTokens.extend.lineHeight,
-      letterSpacing: tailwindTokens.extend.letterSpacing,
-      // Design system spacing & layout
       borderRadius: {
-        ...tailwindTokens.extend.borderRadius,
-        DEFAULT: 'var(--radius)',
+        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 2px)',
+        lg: 'var(--radius)',
+        xl: 'calc(var(--radius) + 4px)',
+        DEFAULT: 'calc(var(--radius) - 2px)',
       },
-      boxShadow: tailwindTokens.extend.boxShadow,
-      zIndex: tailwindTokens.extend.zIndex,
-      // Animations
       keyframes: {
         'accordion-down': {
           from: { height: 0 },

@@ -167,18 +167,21 @@ const AminalPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-5xl mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-8">
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <h1 className="text-3xl font-bold">
-                Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
+                Aminal #
+                {aminal.aminalIndex !== undefined
+                  ? Number(aminal.aminalIndex)
+                  : 'Unknown'}
               </h1>
             </div>
             <Link
               href="/"
-              className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
             >
               ← Back to all Aminals
             </Link>
@@ -187,33 +190,37 @@ const AminalPage: NextPage = () => {
           {/* Main Content */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Left Column - Image */}
-            <div className="aspect-square rounded-xl overflow-hidden bg-indigo-50 flex items-center justify-center border border-gray-200">
+            <div className="aspect-square rounded-xl overflow-hidden bg-secondary flex items-center justify-center border border-border">
               <AminalVisualImage aminal={aminal} />
             </div>
 
             {/* Right Column - Details */}
             <div className="space-y-6">
               {/* Stats Section */}
-              <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+              <div className="rounded-xl border border-border bg-card p-5 space-y-4">
                 <h2 className="text-xl font-semibold">Stats</h2>
 
                 {/* Energy, Total Love, and ETH Balance */}
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="text-sm text-gray-500">Energy</div>
-                    <div className="text-xl font-semibold text-purple-600">
+                  <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground">Energy</div>
+                    <div className="text-xl font-semibold text-energy">
                       {Number(aminal.energy).toFixed(2)} ⚡
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="text-sm text-gray-500">Total Love</div>
-                    <div className="text-xl font-semibold text-pink-600">
+                  <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground">
+                      Total Love
+                    </div>
+                    <div className="text-xl font-semibold text-love">
                       {Number(aminal.totalLove).toFixed(2)} ❤️
                     </div>
                   </div>
-                  <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
-                    <div className="text-sm text-gray-500">ETH Balance</div>
-                    <div className="text-xl font-semibold text-blue-600">
+                  <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="text-sm text-muted-foreground">
+                      ETH Balance
+                    </div>
+                    <div className="text-xl font-semibold text-primary">
                       {Number(
                         formatEther(BigInt(aminal.ethBalance || 0))
                       ).toFixed(4)}{' '}
@@ -226,21 +233,25 @@ const AminalPage: NextPage = () => {
                 {aminal.lovers &&
                   aminal.lovers.items &&
                   aminal.lovers.items.length > 0 && (
-                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                      <div className="text-sm text-gray-500">Love 4 U</div>
-                      <div className="text-xl font-semibold text-purple-600">
+                    <div className="p-4 bg-energy/10 rounded-lg border border-energy/30">
+                      <div className="text-sm text-muted-foreground">
+                        Love 4 U
+                      </div>
+                      <div className="text-xl font-semibold text-energy">
                         💜 {Number(aminal.lovers.items[0].love).toFixed(2)}
                       </div>
-                      <div className="text-xs text-purple-500 mt-1">
+                      <div className="text-xs text-muted-foreground mt-1">
                         Your love relationship with this Aminal
                       </div>
                     </div>
                   )}
 
                 {/* Contract Address */}
-                <div className="hidden md:block p-4 bg-blue-50 rounded-lg border border-blue-100">
-                  <div className="text-sm text-gray-500">Contract Address</div>
-                  <div className="text-sm font-mono text-blue-600">
+                <div className="hidden md:block p-4 bg-primary/10 rounded-lg border border-primary/30">
+                  <div className="text-sm text-muted-foreground">
+                    Contract Address
+                  </div>
+                  <div className="text-sm font-mono text-primary">
                     {aminal.contractAddress}
                   </div>
                 </div>
@@ -256,7 +267,7 @@ const AminalPage: NextPage = () => {
                   href={`/aminals/${aminal.contractAddress}/chat`}
                   className="w-full"
                 >
-                  <Button className="w-full rounded-full mt-2  bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200">
+                  <Button variant="default" className="w-full">
                     💬 Chat with Aminal
                   </Button>
                 </Link>
@@ -276,42 +287,56 @@ const AminalPage: NextPage = () => {
                 {/* Lineage */}
                 <div className="space-y-4">
                   <h3 className="font-medium flex items-center gap-2 px-3">
-                    <span className="text-blue-600 text-lg">👪</span>
+                    <span className="text-primary text-lg">👪</span>
                     Lineage
                   </h3>
 
                   {/* Parents */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 mb-2 px-3">
+                    <h4 className="text-sm font-medium text-foreground mb-2 px-3">
                       Parents
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <div className="text-sm text-gray-500">Parent A</div>
+                      <div className="p-3 bg-muted rounded-lg border border-border">
+                        <div className="text-sm text-muted-foreground">
+                          Parent A
+                        </div>
                         <div className="font-medium text-xs">
                           {!aminal.parentOne ? (
-                            <span className="text-gray-400">Genesis</span>
+                            <span className="text-muted-foreground">
+                              Genesis
+                            </span>
                           ) : (
                             <Link
                               href={`/aminals/${aminal.parentOne.contractAddress}`}
-                              className="text-blue-600 hover:text-blue-800 transition-colors underline"
+                              className="text-primary hover:text-primary/80 transition-colors underline"
                             >
-                              Aminal #{aminal.parentOne.aminalIndex !== undefined ? Number(aminal.parentOne.aminalIndex) : 'Unknown'}
+                              Aminal #
+                              {aminal.parentOne.aminalIndex !== undefined
+                                ? Number(aminal.parentOne.aminalIndex)
+                                : 'Unknown'}
                             </Link>
                           )}
                         </div>
                       </div>
-                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
-                        <div className="text-sm text-gray-500">Parent B</div>
+                      <div className="p-3 bg-muted rounded-lg border border-border">
+                        <div className="text-sm text-muted-foreground">
+                          Parent B
+                        </div>
                         <div className="font-medium text-xs">
                           {!aminal.parentTwo ? (
-                            <span className="text-gray-400">Genesis</span>
+                            <span className="text-muted-foreground">
+                              Genesis
+                            </span>
                           ) : (
                             <Link
                               href={`/aminals/${aminal.parentTwo.contractAddress}`}
-                              className="text-blue-600 hover:text-blue-800 transition-colors underline"
+                              className="text-primary hover:text-primary/80 transition-colors underline"
                             >
-                              Aminal #{aminal.parentTwo.aminalIndex !== undefined ? Number(aminal.parentTwo.aminalIndex) : 'Unknown'}
+                              Aminal #
+                              {aminal.parentTwo.aminalIndex !== undefined
+                                ? Number(aminal.parentTwo.aminalIndex)
+                                : 'Unknown'}
                             </Link>
                           )}
                         </div>
@@ -325,18 +350,19 @@ const AminalPage: NextPage = () => {
                 {/* Breeding */}
                 <div className="space-y-3">
                   <h3 className="font-medium flex items-center gap-2 px-3">
-                    <span className="text-blue-600 text-lg">🧬</span>
+                    <span className="text-primary text-lg">🧬</span>
                     Breeding
                   </h3>
 
                   <div className="px-3">
-                    <p className="text-sm text-gray-500 mb-3">
+                    <p className="text-sm text-muted-foreground mb-3">
                       Start a breeding auction to create offspring with another
                       Aminal.
                     </p>
                     <Button
                       onClick={() => setIsBreedingModalOpen(true)}
-                      className="w-full bg-pink-600 hover:bg-pink-700 text-white"
+                      variant="breed"
+                      className="w-full"
                       disabled={
                         !aminal?.lovers ||
                         aminal.lovers.items.length === 0 ||
@@ -348,7 +374,7 @@ const AminalPage: NextPage = () => {
                     {(!aminal?.lovers ||
                       aminal.lovers.items.length === 0 ||
                       Number(aminal.lovers.items[0]?.love || 0) <= 0) && (
-                      <p className="text-xs text-yellow-600 mt-1">
+                      <p className="text-xs text-warning mt-1">
                         You must feed this Aminal first to unlock breeding.
                       </p>
                     )}
@@ -360,57 +386,64 @@ const AminalPage: NextPage = () => {
               <div>
                 <div className="space-y-2">
                   <h3 className="font-medium flex items-center gap-2 px-3">
-                    <span className="text-blue-600 text-lg">🧬</span>
+                    <span className="text-primary text-lg">🧬</span>
                     Traits
                   </h3>
                   <div className="grid grid-cols-2 gap-3">
-                    {((traits: Array<{ name: string; id: any; traitType: number }>) => traits.map((gene, i) => {
-                      // Find gene data for this trait
-                      const traitId = (gene as any).id;
-                      const geneInfo = geneData?.find(
-                        (g: any) => g?.tokenId === traitId?.toString()
-                      );
-                      const geneId = geneInfo?.id || traitId || '';
+                    {((
+                      traits: Array<{
+                        name: string;
+                        id: any;
+                        traitType: number;
+                      }>
+                    ) =>
+                      traits.map((gene, i) => {
+                        // Find gene data for this trait
+                        const traitId = (gene as any).id;
+                        const geneInfo = geneData?.find(
+                          (g: any) => g?.tokenId === traitId?.toString()
+                        );
+                        const geneId = geneInfo?.id || traitId || '';
 
-                      return (
-                        <Link
-                          key={i}
-                          href={`/genes/${geneId}`}
-                          className="p-3 rounded-lg border bg-blue-50 border-blue-100 hover:bg-blue-100 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-white rounded border border-blue-200 overflow-hidden flex-shrink-0">
-                              {geneInfo?.svg ? (
-                                <svg
-                                  viewBox="0 0 1000 1000"
-                                  className="w-full h-full"
-                                  dangerouslySetInnerHTML={{
-                                    __html: geneInfo.svg,
-                                  }}
-                                />
-                              ) : (
-                                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                                  ?
-                                </div>
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="text-sm font-medium truncate">
-                                {gene.name}
+                        return (
+                          <Link
+                            key={i}
+                            href={`/genes/${geneId}`}
+                            className="p-3 rounded-lg border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 bg-card rounded border border-border overflow-hidden flex-shrink-0">
+                                {geneInfo?.svg ? (
+                                  <svg
+                                    viewBox="0 0 1000 1000"
+                                    className="w-full h-full"
+                                    dangerouslySetInnerHTML={{
+                                      __html: geneInfo.svg,
+                                    }}
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                                    ?
+                                  </div>
+                                )}
                               </div>
-                              <div className="text-xs text-blue-700 font-medium hover:text-blue-800 truncate">
-                                Gene #{gene.id}
-                              </div>
-                              {geneInfo?.name && (
-                                <div className="text-xs text-gray-600 truncate">
-                                  {geneInfo.name}
+                              <div className="min-w-0 flex-1">
+                                <div className="text-sm font-medium truncate">
+                                  {gene.name}
                                 </div>
-                              )}
+                                <div className="text-xs text-primary font-medium hover:text-primary/80 truncate">
+                                  Gene #{gene.id}
+                                </div>
+                                {geneInfo?.name && (
+                                  <div className="text-xs text-muted-foreground truncate">
+                                    {geneInfo.name}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        </Link>
-                      );
-                    }))([
+                          </Link>
+                        );
+                      }))([
                       {
                         name: 'Background',
                         id: aminal.backId,
@@ -459,10 +492,10 @@ const AminalPage: NextPage = () => {
           </div>
 
           {/* Global Skills Section */}
-          <div className="mt-4 p-6 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="mt-4 p-6 bg-muted rounded-xl border border-border">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <h2 className="text-2xl font-bold">Skills</h2>
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-muted-foreground">
                 Aminals can <em>do</em> things.
               </div>
             </div>

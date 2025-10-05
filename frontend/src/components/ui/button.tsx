@@ -19,13 +19,15 @@ const buttonVariants = cva(
           'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
-        // Aminals-specific variants
-        success: 'bg-success-600 text-white shadow hover:bg-success-700',
-        love: 'bg-love-600 text-white shadow hover:bg-love-700',
-        energy: 'bg-energy-600 text-white shadow hover:bg-energy-700',
-        feed: 'bg-success-600 text-white shadow hover:bg-success-700',
-        breed: 'bg-love-600 text-white shadow hover:bg-love-700',
-        skill: 'bg-energy-600 text-white shadow hover:bg-energy-700',
+        // Aminals-specific semantic variants
+        success: 'bg-success text-success-foreground shadow hover:bg-success/90',
+        love: 'bg-love text-love-foreground shadow hover:bg-love/90',
+        energy: 'bg-energy text-energy-foreground shadow hover:bg-energy/90',
+        warning: 'bg-warning text-warning-foreground shadow hover:bg-warning/90',
+        // Action-specific aliases (use semantic colors)
+        feed: 'bg-success text-success-foreground shadow hover:bg-success/90',
+        breed: 'bg-love text-love-foreground shadow hover:bg-love/90',
+        skill: 'bg-energy text-energy-foreground shadow hover:bg-energy/90',
       },
       size: {
         default: 'h-9 px-4 py-2',

@@ -43,10 +43,11 @@ const ChatSessionsPage: NextPage = () => {
   const isRouterReady =
     router.isReady && id && typeof id === 'string' && id !== 'undefined';
 
-  const { data: aminal, isLoading: isAminalLoading } = useAminalByContractAddress(
-    isRouterReady ? contractAddress : '',
-    address || ''
-  );
+  const { data: aminal, isLoading: isAminalLoading } =
+    useAminalByContractAddress(
+      isRouterReady ? contractAddress : '',
+      address || ''
+    );
 
   const {
     data: sessions,
@@ -146,7 +147,7 @@ const ChatSessionsPage: NextPage = () => {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center justify-center h-[50vh] text-gray-500">
+          <div className="flex items-center justify-center h-[50vh] text-muted-foreground">
             Aminal not found
           </div>
         </div>
@@ -172,23 +173,23 @@ const ChatSessionsPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-4 sm:mb-6">
           <Link
             href={`/aminals/${contractAddress}`}
-            className="text-blue-600 hover:text-blue-700 p-1 sm:p-2 hover:bg-blue-50 rounded-lg transition-colors flex-shrink-0"
+            className="text-energy hover:text-energy/80 p-1 sm:p-2 hover:bg-energy/10 rounded-lg transition-colors flex-shrink-0"
           >
             <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </Link>
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-indigo-50 border border-gray-200 flex-shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden bg-muted border border-border flex-shrink-0">
             <AminalVisualImage aminal={aminal} />
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-lg sm:text-2xl font-bold truncate">
               Chat with Aminal #{aminal.aminalIndex}
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-sm sm:text-base text-muted-foreground">
               {aminal.lovers?.items?.[0]?.love
                 ? `Love 4 U: ${Number(aminal.lovers.items[0].love).toFixed(
                     1
@@ -203,14 +204,15 @@ const ChatSessionsPage: NextPage = () => {
           <Button
             onClick={createNewSession}
             disabled={isCreating || !address}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 sm:py-2 text-sm sm:text-base"
+            variant="energy"
+            className="w-full py-3 sm:py-2 text-sm sm:text-base"
           >
             <Plus className="w-4 h-4 mr-2" />
             {isCreating ? 'Creating...' : 'Start New Conversation'}
           </Button>
 
           {!address && (
-            <p className="text-sm text-gray-500 text-center">
+            <p className="text-sm text-muted-foreground text-center">
               Connect your wallet to start chatting
             </p>
           )}
@@ -218,21 +220,21 @@ const ChatSessionsPage: NextPage = () => {
 
         {/* Chat Sessions List */}
         <div className="space-y-3 sm:space-y-4">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">
             Your Conversations
           </h2>
 
           {isSessionsLoading ? (
             <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-energy"></div>
             </div>
           ) : !sessions || sessions.length === 0 ? (
-            <div className="text-center py-8 sm:py-12 bg-gray-50 rounded-lg border border-gray-200">
-              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
-              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">
+            <div className="text-center py-8 sm:py-12 bg-muted rounded-lg border border-border">
+              <MessageCircle className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-foreground mb-2">
                 No conversations yet
               </h3>
-              <p className="text-sm sm:text-base text-gray-600 mb-4">
+              <p className="text-sm sm:text-base text-muted-foreground mb-4">
                 Start your first conversation with this Aminal!
               </p>
             </div>
@@ -241,22 +243,22 @@ const ChatSessionsPage: NextPage = () => {
               {sessions.map((session: ChatSession) => (
                 <div
                   key={session.id}
-                  className="p-3 sm:p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors group"
+                  className="p-3 sm:p-4 bg-card border border-border rounded-lg hover:border-border transition-colors group"
                 >
                   <div className="flex items-center justify-between gap-2">
                     <Link
                       href={`/aminals/${contractAddress}/chat/${session.id}`}
-                      className="flex-1 min-w-0 hover:bg-gray-50 -m-2 p-2 rounded transition-colors"
+                      className="flex-1 min-w-0 hover:bg-muted -m-2 p-2 rounded transition-colors"
                     >
-                      <h3 className="font-medium text-gray-900 truncate text-sm sm:text-base">
+                      <h3 className="font-medium text-foreground truncate text-sm sm:text-base">
                         {session.title}
                       </h3>
                       {session.messages.length > 0 && (
-                        <p className="text-xs sm:text-sm text-gray-600 truncate mt-1">
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate mt-1">
                           {session.messages[session.messages.length - 1].text}
                         </p>
                       )}
-                      <div className="flex items-center gap-2 sm:gap-3 text-xs text-gray-500 mt-2">
+                      <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground mt-2">
                         <div className="flex items-center gap-1">
                           <MessageCircle className="w-3 h-3" />
                           <span>{session.messages.length}</span>
@@ -276,11 +278,11 @@ const ChatSessionsPage: NextPage = () => {
                         deleteSession(session.id);
                       }}
                       disabled={deletingSessionId === session.id}
-                      className="ml-1 sm:ml-2 p-1 sm:p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 touch-manipulation"
+                      className="ml-1 sm:ml-2 p-1 sm:p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded transition-colors opacity-0 group-hover:opacity-100 sm:opacity-100 touch-manipulation"
                       title="Delete conversation"
                     >
                       {deletingSessionId === session.id ? (
-                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-300 border-t-red-600"></div>
+                        <div className="w-4 h-4 animate-spin rounded-full border-2 border-destructive/30 border-t-destructive"></div>
                       ) : (
                         <Trash2 className="w-4 h-4" />
                       )}
