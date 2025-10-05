@@ -51,8 +51,7 @@ contract InitialGenesMinter2 {
         );
 
         registry.createGene(
-            '<g id="mouth"> <circle cx="500" cy="354" r="10" fill="#385e5d"/> </g>',
-            IAminalStructs.VisualsCat.MOUTH
+            '<g id="mouth"> <circle cx="500" cy="354" r="10" fill="#385e5d"/> </g>', IAminalStructs.VisualsCat.MOUTH
         );
 
         registry.createGene(
@@ -63,8 +62,7 @@ contract InitialGenesMinter2 {
         // RED ONE
 
         registry.createGene(
-            '<g><rect fill="#00a79d" x="0" y="0" width="1000px" height="1000px"/></g>',
-            IAminalStructs.VisualsCat.BACK
+            '<g><rect fill="#00a79d" x="0" y="0" width="1000px" height="1000px"/></g>', IAminalStructs.VisualsCat.BACK
         );
 
         registry.createGene(
