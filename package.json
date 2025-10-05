@@ -20,13 +20,11 @@
     "build": "yarn workspaces run build",
     "lint": "yarn workspaces run lint",
     "clean": "yarn workspaces run clean && rm -rf node_modules",
-    "graph:codegen": "yarn workspace aminals codegen",
-    "graph:build": "yarn workspace aminals build",
-    "graph:deploy": "yarn workspace aminals deploy",
-    "graph:deploy:sepolia": "yarn workspace aminals deploy:sepolia",
     "frontend:dev": "yarn workspace aminals-frontend dev",
     "frontend:build": "yarn workspace aminals-frontend build",
-    "frontend:start": "yarn workspace aminals-frontend start"
+    "frontend:start": "yarn workspace aminals-frontend start",
+    "ponder:dev": "yarn workspace ponder-aminals dev",
+    "ponder:start": "yarn workspace ponder-aminals start"
   },
   "resolutions": {
     "@adraffy/ens-normalize": "1.11.1"
