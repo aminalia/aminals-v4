@@ -382,13 +382,13 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
       abi: [
         {
           type: "function",
-          name: "aminalByIndex",
+          name: "getAminalByIndex",
           inputs: [{ name: "index", type: "uint256" }],
-          outputs: [{ name: "", type: "address" }],
+          outputs: [{ name: "aminalAddress", type: "address" }],
           stateMutability: "view",
         },
       ],
-      functionName: "aminalByIndex",
+      functionName: "getAminalByIndex",
       args: [aminalOne],
     })) as Address;
 
@@ -397,18 +397,18 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
       abi: [
         {
           type: "function",
-          name: "aminalByIndex",
+          name: "getAminalByIndex",
           inputs: [{ name: "index", type: "uint256" }],
-          outputs: [{ name: "", type: "address" }],
+          outputs: [{ name: "aminalAddress", type: "address" }],
           stateMutability: "view",
         },
       ],
-      functionName: "aminalByIndex",
+      functionName: "getAminalByIndex",
       args: [aminalTwo],
     })) as Address;
   } catch (error) {
     console.error(
-      `Failed to resolve Aminal addresses for auction ${auctionId}:`,
+      `❌ Failed to resolve Aminal addresses for auction ${auctionId}:`,
       error
     );
     return;
@@ -422,7 +422,9 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
   const aminal2 = await db.find(aminal, { id: aminalTwoId });
 
   if (!aminal1 || !aminal2) {
-    console.error(`Parent Aminals not found for auction ${auctionId}`);
+    console.error(`❌ Parent Aminals not found for auction ${auctionId}`);
+    console.error(`   Looking for: ${aminalOneId}, ${aminalTwoId}`);
+    console.error(`   Found aminal1: ${!!aminal1}, aminal2: ${!!aminal2}`);
     return;
   }
 
@@ -435,20 +437,28 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
 
   assertValidParentGeneIds(parentGeneIds, "VotingCreated");
 
+  const auctionIdFormatted = makeAuctionId(auctionId);
+
   // Create auction entity
-  await db.insert(geneAuction).values({
-    id: makeAuctionId(auctionId),
-    auctionId,
-    aminalOneId,
-    aminalTwoId,
-    totalLove,
-    parentGeneIds,
-    finished: false,
-    childAminalId: null,
-    blockNumber: event.block.number,
-    blockTimestamp: event.block.timestamp,
-    transactionHash: event.transaction.hash,
-  });
+  try {
+    await db.insert(geneAuction).values({
+      id: auctionIdFormatted,
+      auctionId,
+      aminalOneId,
+      aminalTwoId,
+      totalLove,
+      parentGeneIds,
+      finished: false,
+      childAminalId: null,
+      blockNumber: event.block.number,
+      blockTimestamp: event.block.timestamp,
+      transactionHash: event.transaction.hash,
+    });
+    console.log(`   ✅ Auction ${auctionId} created successfully!`);
+  } catch (error) {
+    console.error(`❌ Failed to create auction ${auctionId}:`, error);
+    throw error;
+  }
 });
 
 /**
