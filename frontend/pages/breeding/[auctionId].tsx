@@ -8,7 +8,12 @@ import TraitSelector, {
   TraitParts,
 } from '@/components/TraitSelector';
 import VoteStats from '@/components/VoteStats';
-import { useAuction, useAuctionProposeGenes, useGenesByIds, makeGeneNFTId } from '@/hooks';
+import {
+  makeGeneNFTId,
+  useAuction,
+  useAuctionProposeGenes,
+  useGenesByIds,
+} from '@/hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -54,6 +59,8 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
+  console.log(auction, proposeGenes);
+
   // Get all gene IDs from parent Aminals and proposals
   const geneIds = useMemo(() => {
     if (!auction?.aminalOne || !auction?.aminalTwo) return [];
@@ -95,6 +102,13 @@ const AuctionPage: NextPage = () => {
 
   // Fetch gene NFT data for the gene IDs
   const { data: geneData, isLoading: isLoadingGenes } = useGenesByIds(geneIds);
+
+  console.log('geneIds to fetch:', geneIds);
+  console.log('geneData received:', geneData);
+  console.log(
+    'gene SVGs:',
+    geneData?.map((g) => ({ id: g.tokenId, hasSvg: !!g.svg }))
+  );
 
   // State for selected gene parts
   const [selectedParts, setSelectedParts] = useState<SelectedParts>({
@@ -142,11 +156,45 @@ const AuctionPage: NextPage = () => {
       };
     }
 
+    console.log('Parent Aminals loaded:', {
+      aminalOne: {
+        index: auction.aminalOne.aminalIndex,
+        backId: auction.aminalOne.backId,
+        armId: auction.aminalOne.armId,
+        tailId: auction.aminalOne.tailId,
+        earsId: auction.aminalOne.earsId,
+        bodyId: auction.aminalOne.bodyId,
+        faceId: auction.aminalOne.faceId,
+        mouthId: auction.aminalOne.mouthId,
+        miscId: auction.aminalOne.miscId,
+      },
+      aminalTwo: {
+        index: auction.aminalTwo.aminalIndex,
+        traits: [
+          auction.aminalTwo.backId,
+          auction.aminalTwo.armId,
+          auction.aminalTwo.tailId,
+          auction.aminalTwo.earsId,
+          auction.aminalTwo.bodyId,
+          auction.aminalTwo.faceId,
+          auction.aminalTwo.mouthId,
+          auction.aminalTwo.miscId,
+        ],
+      },
+    });
+
     const getGeneForId = (id: any) => {
       if (!id || id.toString() === '0') {
         return null;
       }
-      const gene = geneMap[id.toString()];
+      const idStr = id.toString();
+      const gene = geneMap[idStr];
+      if (!gene) {
+        console.warn(
+          `Gene not found for ID: ${idStr}, available keys:`,
+          Object.keys(geneMap).slice(0, 5)
+        );
+      }
       return gene ? { ...gene, visualId: gene.tokenId } : null;
     };
 
@@ -261,6 +309,21 @@ const AuctionPage: NextPage = () => {
       tail: combineUnique(parentGenes.tail, communityGenes.tail),
       misc: combineUnique(parentGenes.misc, communityGenes.misc),
     };
+
+    console.log('Constructed parts:', {
+      background: result.background.length,
+      body: result.body.length,
+      face: result.face.length,
+      mouth: result.mouth.length,
+      ears: result.ears.length,
+      arm: result.arm.length,
+      tail: result.tail.length,
+      misc: result.misc.length,
+    });
+    console.log(
+      'Sample background genes:',
+      result.background.map((g) => ({ tokenId: g?.tokenId, hasSvg: !!g?.svg }))
+    );
 
     return result;
   }, [auction, geneMap, proposeGenes]);

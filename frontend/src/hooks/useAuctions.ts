@@ -115,76 +115,52 @@ export const useAuction = (
 
   const auction = auctionResult.data?.[0];
 
-  // Fetch aminalOne
-  const aminalOneResult = usePonderQuery({
+  // Get all aminal IDs we need to fetch
+  const aminalIds = auction
+    ? [
+        auction.aminalOneId,
+        auction.aminalTwoId,
+        auction.childAminalId,
+      ].filter(Boolean) as `0x${string}`[]
+    : [];
+
+  // Fetch all aminals in a single query
+  const aminalsResult = usePonderQuery({
     queryFn: (db) => {
-      if (!auction?.aminalOneId) {
+      if (aminalIds.length === 0) {
         return db
           .select()
           .from(schema.aminal)
-          .where(eq(schema.aminal.id, '0x0' as `0x${string}`))
+          .where(eq(schema.aminal.id, '' as `0x${string}`))
           .limit(0);
       }
       return db
         .select()
         .from(schema.aminal)
-        .where(eq(schema.aminal.id, auction.aminalOneId as `0x${string}`))
-        .limit(1);
+        .where(inArray(schema.aminal.id, aminalIds));
     },
-    enabled: Boolean(auction?.aminalOneId),
+    enabled: aminalIds.length > 0,
   }) as UseQueryResult<Aminal[], Error>;
 
-  // Fetch aminalTwo
-  const aminalTwoResult = usePonderQuery({
-    queryFn: (db) => {
-      if (!auction?.aminalTwoId) {
-        return db
-          .select()
-          .from(schema.aminal)
-          .where(eq(schema.aminal.id, '0x0' as `0x${string}`))
-          .limit(0);
-      }
-      return db
-        .select()
-        .from(schema.aminal)
-        .where(eq(schema.aminal.id, auction.aminalTwoId as `0x${string}`))
-        .limit(1);
-    },
-    enabled: Boolean(auction?.aminalTwoId),
-  }) as UseQueryResult<Aminal[], Error>;
+  const aminals = aminalsResult.data || [];
 
-  // Fetch childAminal if it exists
-  const childAminalResult = usePonderQuery({
-    queryFn: (db) => {
-      if (!auction?.childAminalId) {
-        return db
-          .select()
-          .from(schema.aminal)
-          .where(eq(schema.aminal.id, '0x0' as `0x${string}`))
-          .limit(0);
-      }
-      return db
-        .select()
-        .from(schema.aminal)
-        .where(eq(schema.aminal.id, auction.childAminalId as `0x${string}`))
-        .limit(1);
-    },
-    enabled: Boolean(auction?.childAminalId),
-  }) as UseQueryResult<Aminal[], Error>;
+  // Create a lookup map for aminals
+  const aminalMap = new Map(aminals.map((a) => [a.id, addTraitHelpers(a)]));
 
   // Process data to add trait helpers
   const processedData = auction
-    ? processAuctionWithRelations(
-        auction,
-        aminalOneResult.data?.[0],
-        aminalTwoResult.data?.[0],
-        childAminalResult.data?.[0]
-      )
+    ? {
+        ...auction,
+        aminalOne: auction.aminalOneId ? aminalMap.get(auction.aminalOneId) : undefined,
+        aminalTwo: auction.aminalTwoId ? aminalMap.get(auction.aminalTwoId) : undefined,
+        childAminal: auction.childAminalId ? aminalMap.get(auction.childAminalId) || null : null,
+      }
     : undefined;
 
   return {
     ...auctionResult,
     data: processedData,
+    isLoading: auctionResult.isLoading || aminalsResult.isLoading,
   };
 };
 
@@ -205,23 +181,6 @@ function addTraitHelpers(aminal: Aminal | undefined): AminalWithRelations | unde
     faceId: aminal.traits[5],
     mouthId: aminal.traits[6],
     miscId: aminal.traits[7],
-  };
-}
-
-/**
- * Process auction with related aminals
- */
-function processAuctionWithRelations(
-  auction: GeneAuction,
-  aminalOne: Aminal | undefined,
-  aminalTwo: Aminal | undefined,
-  childAminal: Aminal | undefined
-): GeneAuctionWithRelations {
-  return {
-    ...auction,
-    aminalOne: addTraitHelpers(aminalOne),
-    aminalTwo: addTraitHelpers(aminalTwo),
-    childAminal: childAminal ? addTraitHelpers(childAminal) : null,
   };
 }
 
