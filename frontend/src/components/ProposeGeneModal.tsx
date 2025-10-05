@@ -63,8 +63,26 @@ export default function ProposeGeneModal({
     categoryKey
   );
 
-  // Handle transaction success
+  // Handle transaction state changes with proper priority
   useEffect(() => {
+    // Priority 1: Handle errors first
+    if (error) {
+      console.error('Propose gene transaction failed:', error);
+      toast.error('Failed to propose gene. Please try again.', {
+        id: 'propose-gene-tx',
+      });
+      return;
+    }
+
+    if (receiptError) {
+      console.error('Transaction receipt error:', receiptError);
+      toast.error('Transaction failed. Please try again.', {
+        id: 'propose-gene-tx',
+      });
+      return;
+    }
+
+    // Priority 2: Handle success state
     if (isConfirmed) {
       toast.success(
         '🧬 Gene proposed successfully! The community can now vote on it.',
@@ -79,42 +97,27 @@ export default function ProposeGeneModal({
       setManualGeneId('');
       setUseManualId(false);
       setSelectedCategory(0);
+      return;
     }
-  }, [isConfirmed, onClose]);
 
-  // Handle transaction errors
-  useEffect(() => {
-    if (error) {
-      console.error('Propose gene transaction failed:', error);
-      toast.error('Failed to propose gene. Please try again.', {
-        id: 'propose-gene-tx',
-      });
+    // Priority 3: Handle confirming state
+    if (isConfirming) {
+      toast.loading('Confirming transaction...', { id: 'propose-gene-tx' });
+      return;
     }
-  }, [error]);
 
-  // Handle receipt errors
-  useEffect(() => {
-    if (receiptError) {
-      console.error('Transaction receipt error:', receiptError);
-      toast.error('Transaction failed. Please try again.', {
-        id: 'propose-gene-tx',
-      });
-    }
-  }, [receiptError]);
-
-  // Handle transaction pending state
-  useEffect(() => {
+    // Priority 4: Handle pending state
     if (isPending) {
       toast.loading('Proposing gene...', { id: 'propose-gene-tx' });
     }
-  }, [isPending]);
-
-  // Handle confirmation state
-  useEffect(() => {
-    if (isConfirming) {
-      toast.loading('Confirming transaction...', { id: 'propose-gene-tx' });
-    }
-  }, [isConfirming]);
+  }, [
+    isPending,
+    isConfirming,
+    isConfirmed,
+    error,
+    receiptError,
+    onClose,
+  ]);
 
   const handlePropose = () => {
     if (!enabled) return;

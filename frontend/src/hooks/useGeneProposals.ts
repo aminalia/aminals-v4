@@ -22,12 +22,8 @@ export const useGeneProposalsByAuctionId = (
 ): Omit<UseQueryResult<GeneProposal[], Error>, 'data'> & {
   data: GeneProposalWithRelations[] | undefined;
 } => {
-  // Convert auction ID to hex format if needed
-  const hexAuctionId = auctionId?.startsWith('0x')
-    ? auctionId
-    : auctionId
-    ? `0x${parseInt(auctionId).toString(16).padStart(64, '0')}`
-    : '';
+  // Convert auction ID to Ponder format: 0xauction-{auctionId}
+  const hexAuctionId = auctionId ? `0xauction-${auctionId}` : '';
 
   // Fetch proposals
   const proposalsResult = usePonderQuery({

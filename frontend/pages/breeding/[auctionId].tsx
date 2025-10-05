@@ -11,7 +11,7 @@ import VoteStats from '@/components/VoteStats';
 import {
   makeGeneNFTId,
   useAuction,
-  useAuctionProposeGenes,
+  useGeneProposalsByAuctionId,
   useGenesByIds,
 } from '@/hooks';
 import type { NextPage } from 'next';
@@ -43,7 +43,7 @@ const AuctionPage: NextPage = () => {
     data: proposeGenes,
     isLoading: isLoadingProposeGenes,
     error: proposeGenesError,
-  } = useAuctionProposeGenes(isRouterReady ? auctionId : '');
+  } = useGeneProposalsByAuctionId(isRouterReady ? auctionId : '');
 
   // Calculate auction end time
   const auctionEndTime = useMemo(() => {
@@ -59,9 +59,7 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
-  console.log(auction, proposeGenes);
-
-  // Get all gene IDs from parent Aminals and proposals
+  // Get gene IDs from parent Aminals only (proposals already have gene data loaded)
   const geneIds = useMemo(() => {
     if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
@@ -90,25 +88,11 @@ const AuctionPage: NextPage = () => {
       })
       .map((id) => makeGeneNFTId(id!)); // Convert token ID to geneNFT ID format
 
-    // Proposal gene NFT IDs are already in the correct format
-    const proposalIds = proposeGenes
-      ? proposeGenes
-          .map((p) => p.geneNFTId.toString())
-          .filter((id) => id && id !== '0x0')
-      : [];
-
-    return Array.from(new Set([...parentIds, ...proposalIds])); // Remove duplicates
-  }, [auction, proposeGenes]);
+    return Array.from(new Set(parentIds)); // Remove duplicates
+  }, [auction]);
 
   // Fetch gene NFT data for the gene IDs
   const { data: geneData, isLoading: isLoadingGenes } = useGenesByIds(geneIds);
-
-  console.log('geneIds to fetch:', geneIds);
-  console.log('geneData received:', geneData);
-  console.log(
-    'gene SVGs:',
-    geneData?.map((g) => ({ id: g.tokenId, hasSvg: !!g.svg }))
-  );
 
   // State for selected gene parts
   const [selectedParts, setSelectedParts] = useState<SelectedParts>({
@@ -155,33 +139,6 @@ const AuctionPage: NextPage = () => {
         misc: [],
       };
     }
-
-    console.log('Parent Aminals loaded:', {
-      aminalOne: {
-        index: auction.aminalOne.aminalIndex,
-        backId: auction.aminalOne.backId,
-        armId: auction.aminalOne.armId,
-        tailId: auction.aminalOne.tailId,
-        earsId: auction.aminalOne.earsId,
-        bodyId: auction.aminalOne.bodyId,
-        faceId: auction.aminalOne.faceId,
-        mouthId: auction.aminalOne.mouthId,
-        miscId: auction.aminalOne.miscId,
-      },
-      aminalTwo: {
-        index: auction.aminalTwo.aminalIndex,
-        traits: [
-          auction.aminalTwo.backId,
-          auction.aminalTwo.armId,
-          auction.aminalTwo.tailId,
-          auction.aminalTwo.earsId,
-          auction.aminalTwo.bodyId,
-          auction.aminalTwo.faceId,
-          auction.aminalTwo.mouthId,
-          auction.aminalTwo.miscId,
-        ],
-      },
-    });
 
     const getGeneForId = (id: any) => {
       if (!id || id.toString() === '0') {
@@ -266,8 +223,8 @@ const AuctionPage: NextPage = () => {
       proposeGenes.forEach((proposal) => {
         const traitKey =
           traitMapping[proposal.traitType as keyof typeof traitMapping];
-        // Look up the gene NFT data from geneMap using geneNFTId
-        const geneNFT = geneMap[proposal.geneNFTId.toString()];
+        // Use gene NFT data that's already loaded with the proposal
+        const geneNFT = proposal.geneNFT;
         if (traitKey && geneNFT) {
           (communityGenes as any)[traitKey].push({
             ...geneNFT,
@@ -309,21 +266,6 @@ const AuctionPage: NextPage = () => {
       tail: combineUnique(parentGenes.tail, communityGenes.tail),
       misc: combineUnique(parentGenes.misc, communityGenes.misc),
     };
-
-    console.log('Constructed parts:', {
-      background: result.background.length,
-      body: result.body.length,
-      face: result.face.length,
-      mouth: result.mouth.length,
-      ears: result.ears.length,
-      arm: result.arm.length,
-      tail: result.tail.length,
-      misc: result.misc.length,
-    });
-    console.log(
-      'Sample background genes:',
-      result.background.map((g) => ({ tokenId: g?.tokenId, hasSvg: !!g?.svg }))
-    );
 
     return result;
   }, [auction, geneMap, proposeGenes]);
@@ -409,8 +351,6 @@ const AuctionPage: NextPage = () => {
           return acc;
         }, {} as SelectedParts);
 
-        console.log('Randomizing with parent parts:', parentParts);
-        console.log('Setting randomized parts:', randomizedParts);
         setSelectedParts(randomizedParts);
         setHasRandomized(true);
       }
@@ -441,7 +381,6 @@ const AuctionPage: NextPage = () => {
 
   console.log('auction data:', auction, error);
   console.log('propose genes:', proposeGenes, proposeGenesError);
-  console.log(auction);
 
   // Handle fallback state for static export (production only)
   if (router.isFallback) {
@@ -512,7 +451,10 @@ const AuctionPage: NextPage = () => {
                         }`}
                         className="text-lg font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                       >
-                        Aminal #{auction?.aminalOne?.aminalIndex || '?'}
+                        Aminal #
+                        {auction?.aminalOne?.aminalIndex !== undefined
+                          ? Number(auction.aminalOne.aminalIndex)
+                          : '?'}
                       </Link>
                       <div className="text-gray-400">×</div>
                       <Link
@@ -522,7 +464,10 @@ const AuctionPage: NextPage = () => {
                         }`}
                         className="text-lg font-semibold text-blue-600 hover:text-blue-700 transition-colors"
                       >
-                        Aminal #{auction?.aminalTwo?.aminalIndex || '?'}
+                        Aminal #
+                        {auction?.aminalTwo?.aminalIndex !== undefined
+                          ? Number(auction.aminalTwo.aminalIndex)
+                          : '?'}
                       </Link>
                     </div>
 
