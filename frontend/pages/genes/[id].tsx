@@ -12,15 +12,6 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Layout from '../_layout';
 
-interface AminalWithDetails {
-  id: string;
-  aminalIndex: string;
-  contractAddress: string;
-  tokenURI: string;
-  totalLove: string;
-  energy: string;
-}
-
 const GeneDetailPage: NextPage = () => {
   const router = useRouter();
   const { id } = router.query;
@@ -72,29 +63,10 @@ const GeneDetailPage: NextPage = () => {
 
   const category =
     TRAIT_CATEGORIES[gene.traitType as keyof typeof TRAIT_CATEGORIES];
-  // Extract unique Aminals from proposals (each proposal has 2 Aminals)
-  const proposals = gene.proposals?.items || [];
-  const uniqueAminals =
-    proposals.length > 0
-      ? Array.from(
-          new Set(
-            [
-              ...proposals
-                .map((p: any) => p.auction?.aminalOne)
-                .filter(Boolean),
-              ...proposals
-                .map((p: any) => p.auction?.aminalTwo)
-                .filter(Boolean),
-            ].map((a) => a.id)
-          )
-        ).map((id) =>
-          [
-            ...proposals.map((p: any) => p.auction?.aminalOne).filter(Boolean),
-            ...proposals.map((p: any) => p.auction?.aminalTwo).filter(Boolean),
-          ].find((a) => a.id === id)
-        )
-      : [];
-  const aminalCount = uniqueAminals.length;
+
+  // Get aminals that have this gene in their traits
+  const aminalsWithGene = gene.aminals || [];
+  const aminalCount = aminalsWithGene.length;
 
   // Format total earnings from wei to ETH
   const formatEarnings = (totalEarnings: string) => {
@@ -110,17 +82,17 @@ const GeneDetailPage: NextPage = () => {
       <div className="py-8">
         <div className="flex flex-col gap-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <span className="text-3xl">{category.emoji}</span>
-                Gene #{gene.tokenId}
-              </h1>
-              <Badge variant="neutral" size="lg">
-                {category.name}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <span className="text-3xl">{category.emoji}</span>
+                  Gene #{gene.tokenId.toString()}
+                </h1>
+                <Badge variant="neutral" size="lg">
+                  {category.name}
+                </Badge>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -136,13 +108,13 @@ const GeneDetailPage: NextPage = () => {
                   View on OpenSea
                 </Link>
               </Button>
-              <Link
-                href="/genes"
-                className="text-primary hover:text-primary/80 text-sm font-medium"
-              >
-                ← Back to all Genes
-              </Link>
             </div>
+            <Link
+              href="/genes"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
+            >
+              ← Back to all Genes
+            </Link>
           </div>
 
           {/* Main Content */}
@@ -231,46 +203,9 @@ const GeneDetailPage: NextPage = () => {
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {uniqueAminals.map((aminal: any) => {
-                  const aminalWithDetails =
-                    aminal as unknown as AminalWithDetails;
-
-                  // Transform the data to match AminalCard's expected interface
-                  const transformedAminal = {
-                    id: aminalWithDetails.id as `0x${string}`,
-                    contractAddress:
-                      aminalWithDetails.contractAddress as `0x${string}`,
-                    aminalIndex: BigInt(aminalWithDetails.aminalIndex),
-                    factoryId: '0x0' as `0x${string}`,
-                    parentOneId: null,
-                    parentTwoId: null,
-                    auctionId: null,
-                    traits: [0n, 0n, 0n, 0n, 0n, 0n, 0n, 0n],
-                    energy: BigInt(aminalWithDetails.energy),
-                    totalLove: BigInt(aminalWithDetails.totalLove),
-                    ethBalance: 0n,
-                    tokenURI: aminalWithDetails.tokenURI,
-                    blockNumber: 0n,
-                    blockTimestamp: 0n,
-                    transactionHash: '0x0' as `0x${string}`,
-                    backId: 0n,
-                    armId: 0n,
-                    tailId: 0n,
-                    earsId: 0n,
-                    bodyId: 0n,
-                    faceId: 0n,
-                    mouthId: 0n,
-                    miscId: 0n,
-                    lovers: { items: [] },
-                  };
-
-                  return (
-                    <AminalCard
-                      key={aminalWithDetails.id}
-                      aminal={transformedAminal}
-                    />
-                  );
-                })}
+                {aminalsWithGene.map((aminal: any) => (
+                  <AminalCard key={aminal.id} aminal={aminal} />
+                ))}
               </div>
             )}
           </div>

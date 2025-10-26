@@ -4,11 +4,11 @@ import Link from 'next/link';
 interface TraitCardProps {
   trait: {
     id: string;
-    tokenId: string;
+    tokenId: string | bigint;
     traitType: number;
     svg?: string | null;
     name?: string | null;
-    creator: {
+    creator?: {
       address: string;
     };
     proposals?: {
@@ -54,7 +54,7 @@ const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
           <div className="flex justify-between items-center">
             <span className="text-lg font-semibold flex items-center gap-2">
               <span className="text-xl">{category?.emoji || '🎨'}</span>
-              {category?.name || 'Unknown'} #{trait.tokenId}
+              {category?.name || 'Unknown'} #{trait.tokenId.toString()}
             </span>
             <div className="px-2 py-0.5 bg-energy/20 text-energy rounded-full text-xs">
               {aminalCount} {aminalCount === 1 ? 'Aminal' : 'Aminals'}

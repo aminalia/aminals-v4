@@ -131,6 +131,22 @@ export const geneNFT = onchainTable("geneNFT", (t) => ({
 // CREATE INDEX gene_nfts_creator ON gene_nfts(creatorId);
 // CREATE INDEX gene_nfts_owner ON gene_nfts(ownerId);
 
+/**
+ * AminalGene - Join table tracking which Aminals have which genes
+ * This is a many-to-many relationship for efficient querying
+ */
+export const aminalGene = onchainTable("aminalGene", (t) => ({
+  id: t.hex().primaryKey(), // aminal address + gene token ID + trait type
+  aminalId: t.hex().notNull(),
+  geneNFTId: t.hex().notNull(),
+  traitType: t.integer().notNull(), // 0-7 for trait position (BACK, ARM, etc.)
+}));
+
+// Composite indexes for lookups
+// CREATE INDEX aminal_genes_aminal ON aminal_genes(aminalId);
+// CREATE INDEX aminal_genes_gene ON aminal_genes(geneNFTId);
+// CREATE INDEX aminal_genes_trait_type ON aminal_genes(traitType);
+
 // ============================================================================
 // AUCTION SYSTEM
 // ============================================================================
@@ -326,6 +342,7 @@ export const aminalRelations = relations(aminal, ({ one, many }) => ({
   lovers: many(relationship),
   feeds: many(feedEvent),
   skillsUsed: many(skillUsedEvent),
+  genes: many(aminalGene),
 }));
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -367,6 +384,18 @@ export const geneNFTRelations = relations(geneNFT, ({ one, many }) => ({
   }),
   proposals: many(geneProposal),
   payouts: many(geneCreatorPayout),
+  aminalGenes: many(aminalGene),
+}));
+
+export const aminalGeneRelations = relations(aminalGene, ({ one }) => ({
+  aminal: one(aminal, {
+    fields: [aminalGene.aminalId],
+    references: [aminal.id],
+  }),
+  geneNFT: one(geneNFT, {
+    fields: [aminalGene.geneNFTId],
+    references: [geneNFT.id],
+  }),
 }));
 
 export const geneAuctionRelations = relations(geneAuction, ({ one, many }) => ({

@@ -50,6 +50,8 @@ export interface GeneNFTWithRelations extends GeneNFT {
   creator?: User;
   proposals?: { items: GeneProposal[] };
   payouts?: GeneCreatorPayout[];
+  aminals?: Aminal[];
+  aminalCount?: number;
 }
 
 export interface GeneAuctionWithRelations extends GeneAuction {

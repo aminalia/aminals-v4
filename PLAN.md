@@ -6,8 +6,17 @@
 
 # ponder
 
-- Fix aminals with gene not working.
 - Fix traits on Aminals detail page
+- Deploy on railway
+
+# Project
+
+- Switch to pnpm
+
+## Chat Feature
+
+- Use Eigen AI for getting persionalities in a deterministic way
+
 
 ## New Features Ideas
 
@@ -27,31 +36,12 @@
 
 In general we need a review of what things cost (even if the cost is in terms of love or energy).
 
-## TODO
-
-#### UI
+# UI
 
 - Trait links don't work on aminal detail page
 - Fix CI
 - Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
-
-#### Contracts
-
-- setFactory in Genes is not good... maybe use an initializer? Owner can set factory whenever. Need to initialize initial genes, but maybe there is a different pattern we can use?
-- start optimizing for gas (payouts need most work)
-- measure gas (see how this is done in aminalsV3)
-- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
-- Clean up and document scripts
-- Some events might be redundent (squeak vs EnergyChange / LoveChange)
-- Investigate whether there should be some limits on gene proposals during auctions
-- When initializing aminal genes during deployment, gene #0 has issues
-
-#### Do last
-
-- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
-- More docs
-- Landing page about the Aminals project
 
 ### User Testing feedback
 
@@ -108,3 +98,18 @@ Contract Changes:
 ##### General Questions from User Interview
 
 - "Why aren't all genes listed?"
+
+# Contracts
+
+- measure gas (see how this is done in aminalsV3)
+- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
+- Clean up and document scripts
+- Some events might be redundent (squeak vs EnergyChange / LoveChange)
+- Investigate whether there should be some limits on gene proposals during auctions
+- When initializing aminal genes during deployment, gene #0 has issues
+
+# Do last
+
+- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
+- More docs
+- Landing page about the Aminals project

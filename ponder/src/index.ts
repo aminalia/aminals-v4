@@ -9,6 +9,7 @@ import { ponder } from "ponder:registry";
 import type { Address, Hex } from "viem";
 import {
   aminal,
+  aminalGene,
   factory,
   feedEvent,
   geneAuction,
@@ -21,6 +22,7 @@ import {
   user,
 } from "../ponder.schema";
 import {
+  makeAminalGeneId,
   makeAuctionId,
   makeEventId,
   makeGeneNFTId,
@@ -101,16 +103,19 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     console.log(`TokenURI not available yet for ${child}`);
   }
 
+  const aminalId = normalizeAddress(child);
+  const traitsArray = normalizeTraitArray(geneIds);
+
   // Create Aminal entity
   await db.insert(aminal).values({
-    id: normalizeAddress(child),
-    contractAddress: normalizeAddress(child),
+    id: aminalId,
+    contractAddress: aminalId,
     aminalIndex,
     factoryId,
     parentOneId: hasParentOne ? normalizeAddress(parentOne) : null,
     parentTwoId: hasParentTwo ? normalizeAddress(parentTwo) : null,
     auctionId: auctionId > 0n ? auctionId : null,
-    traits: normalizeTraitArray(geneIds),
+    traits: traitsArray,
     energy: 0n,
     totalLove: 0n,
     ethBalance: 0n,
@@ -119,6 +124,22 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,
   });
+
+  // Create AminalGene join table entries for each trait
+  // traits array order: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
+  for (let traitType = 0; traitType < traitsArray.length; traitType++) {
+    const geneTokenId = traitsArray[traitType];
+
+    // Skip if gene is 0 (no gene for this trait)
+    if (geneTokenId === 0n) continue;
+
+    await db.insert(aminalGene).values({
+      id: makeAminalGeneId(child, geneTokenId, traitType),
+      aminalId,
+      geneNFTId: makeGeneNFTId(geneTokenId),
+      traitType,
+    });
+  }
 });
 
 // ============================================================================

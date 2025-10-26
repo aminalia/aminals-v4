@@ -579,7 +579,7 @@ const AuctionPage: NextPage = () => {
                     </div>
                   </div>
                 ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 p-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 p-4">
                     {/* Left Column - Preview */}
                     <div className="xl:col-span-2">
                       <div className="bg-muted rounded-lg p-4 border border-border">
@@ -616,7 +616,7 @@ const AuctionPage: NextPage = () => {
                     </div>
 
                     {/* Right Column - Gene Selector */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 xl:col-span-2I">
                       <TraitSelector
                         parts={parts}
                         selectedParts={selectedParts}

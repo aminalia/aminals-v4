@@ -58,6 +58,18 @@ export function makeRelationshipId(userId: Address, aminalId: Address): Hex {
 }
 
 /**
+ * Generate aminal-gene join table ID
+ * Format: aminalId-geneTokenId-traitType
+ */
+export function makeAminalGeneId(
+  aminalId: Address,
+  geneTokenId: bigint,
+  traitType: number
+): Hex {
+  return makeId(aminalId.toLowerCase(), geneTokenId, traitType);
+}
+
+/**
  * Generate event ID from transaction hash and log index
  * Format: txHash-logIndex
  */

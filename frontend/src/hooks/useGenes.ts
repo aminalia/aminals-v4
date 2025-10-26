@@ -25,7 +25,7 @@ export const useGenes = (
   category: CategoryFilter = 'all',
   userAddress?: string
 ) => {
-  const result = usePonderQuery({
+  const genesResult = usePonderQuery({
     queryFn: (db) => {
       // Apply category filter at SQL level for efficiency
       if (category !== 'all') {
@@ -39,13 +39,30 @@ export const useGenes = (
     },
   });
 
+  // Fetch all aminalGene records to count aminals per gene
+  const aminalGenesResult = usePonderQuery({
+    queryFn: (db) => {
+      return db.select().from(schema.aminalGene);
+    },
+    enabled: !!genesResult.data,
+  });
+
   // Process data after query execution
-  const processedData = result.data
-    ? processGenes(result.data as GeneNFT[], filter, sort, userAddress)
-    : undefined;
+  const processedData =
+    genesResult.data && aminalGenesResult.data
+      ? processGenes(
+          genesResult.data as GeneNFT[],
+          aminalGenesResult.data as any[],
+          filter,
+          sort,
+          userAddress
+        )
+      : genesResult.data
+      ? processGenes(genesResult.data as GeneNFT[], [], filter, sort, userAddress)
+      : undefined;
 
   return {
-    ...result,
+    ...genesResult,
     data: processedData,
   };
 };
@@ -55,11 +72,23 @@ export const useGenes = (
  */
 function processGenes(
   genes: GeneNFT[],
+  aminalGenes: any[],
   filter: GeneFilter,
   sort: GeneSort,
   userAddress?: string
-): GeneNFT[] {
-  let processed = [...genes];
+): Array<GeneNFT & { aminalCount: number }> {
+  // Count aminals per gene
+  const aminalCountByGene = new Map<string, number>();
+  for (const ag of aminalGenes) {
+    const count = aminalCountByGene.get(ag.geneNFTId) || 0;
+    aminalCountByGene.set(ag.geneNFTId, count + 1);
+  }
+
+  // Add aminal count to each gene
+  let processed = genes.map((gene) => ({
+    ...gene,
+    aminalCount: aminalCountByGene.get(gene.id) || 0,
+  }));
 
   // Apply owner filter
   if (filter === 'yours' && userAddress) {
@@ -72,8 +101,8 @@ function processGenes(
   processed.sort((a, b) => {
     switch (sort) {
       case 'aminals-count':
-        // Sort by total earnings as a proxy for usage
-        return Number(b.totalEarnings - a.totalEarnings);
+        // Sort by actual aminal count
+        return b.aminalCount - a.aminalCount;
       case 'created-at':
         return Number(b.blockTimestamp - a.blockTimestamp);
       default:
@@ -85,7 +114,7 @@ function processGenes(
 }
 
 /**
- * Fetch a single gene by ID with relations
+ * Fetch a single gene by ID with relations and aminals that have this gene
  */
 export const useGene = (id: string) => {
   // Fetch the gene
@@ -101,6 +130,41 @@ export const useGene = (id: string) => {
   });
 
   const gene = (geneResult.data as GeneNFT[] | undefined)?.[0];
+
+  // Fetch aminal-gene join table entries for this gene
+  const aminalGenesResult = usePonderQuery({
+    queryFn: (db) => {
+      return db
+        .select()
+        .from(schema.aminalGene)
+        .where(eq(schema.aminalGene.geneNFTId, id as `0x${string}`));
+    },
+    enabled: !!id,
+  });
+
+  // Fetch aminals based on join table
+  const aminalsResult = usePonderQuery({
+    queryFn: (db) => {
+      const aminalIds =
+        (aminalGenesResult.data?.map((ag: any) => ag.aminalId) as
+          | `0x${string}`[]
+          | undefined) || [];
+
+      if (aminalIds.length === 0) {
+        // Return empty query
+        return db
+          .select()
+          .from(schema.aminal)
+          .where(eq(schema.aminal.id, '' as `0x${string}`));
+      }
+
+      return db
+        .select()
+        .from(schema.aminal)
+        .where(inArray(schema.aminal.id, aminalIds));
+    },
+    enabled: !!aminalGenesResult.data && aminalGenesResult.data.length > 0,
+  });
 
   // Fetch proposals for this gene
   const proposalsResult = usePonderQuery({
@@ -162,10 +226,11 @@ export const useGene = (id: string) => {
     enabled: !!gene?.creatorId,
   });
 
-  // Combine data
+  // Combine data client-side
   const processedData = gene
     ? ({
         ...gene,
+        aminals: aminalsResult.data || [],
         proposals: { items: proposalsResult.data || [] },
         payouts: payoutsResult.data || [],
         owner: (ownerResult.data as User[] | undefined)?.[0],
