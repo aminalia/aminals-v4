@@ -5,7 +5,7 @@
  */
 
 import type { Address, Hex } from "viem";
-import { genesAddress } from "../../../frontend/src/contracts/generated";
+import { genesAddress } from "../../abis/generated";
 
 /**
  * Generate a composite ID for entities

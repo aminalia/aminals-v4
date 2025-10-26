@@ -11,7 +11,7 @@ import {
   geneRegistryAddress,
   genesAbi,
   genesAddress,
-} from "aminals-frontend/src/contracts/generated";
+} from "./abis/generated";
 
 export default createConfig({
   chains: {
