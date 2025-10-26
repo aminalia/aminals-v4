@@ -9,10 +9,6 @@
 - Fix traits on Aminals detail page
 - Deploy on railway
 
-# Project
-
-- Switch to pnpm
-
 ## Chat Feature
 
 - Use Eigen AI for getting persionalities in a deterministic way
