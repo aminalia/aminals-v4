@@ -1,43 +1,20 @@
 # Plan
 
-- [-] Switch to ponder (will hopefully solve many bugs)
-- [x] Project cleanup (remove dead docs, graph etc.)
-- [-] Resolve issues from security audit
-
-# ponder
-
-- Fix traits on Aminals detail page
-- Deploy on railway
-
-## Chat Feature
-
-- Use Eigen AI for getting persionalities in a deterministic way
-
-
-## New Features Ideas
-
-- Maybe make this a chat skill (with an AVS that extracts personality traits)
-- Aminal Race
-- Prediction Market
-- Bribing
-- Give love to Aminals (check voting power) on breeding page (if you don't love them yet, it's not too late)
-- Aminals DAO (a DAO of Aminals based on Loveocracy)
-- Poo skill to create a new NFT
-
-## Open Design Questions
-
-- Do we need remove gene?
-- What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
-- Should there be a way of creating an entirely new Aminal?
-
-In general we need a review of what things cost (even if the cost is in terms of love or energy).
-
-# UI
+## UI
 
 - Trait links don't work on aminal detail page
 - Fix CI
+- TOOL TIPS and more info EVERYWHERE
 - Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
+- Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
+
+### Chat Feature Improvements
+
+- Use Eigen AI for getting persionalities in a deterministic way
+- Better prompts for more creative outputs
+- Pass ETH amounts correctly (Aminals think they have more ETH than they actually have)
+- API rate limiting
 
 ### User Testing feedback
 
@@ -78,7 +55,7 @@ Desgin challenges:
 
 Indexer:
 
-- [ ] Total earnings for OG genes are not updating?
+- [?] Total earnings for OG genes are not updating? (maybe fixed)
 - [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
 
 Contract Changes:
@@ -97,12 +74,30 @@ Contract Changes:
 
 # Contracts
 
+- Review vibe coded love bonding curve math
+- Make sure geneNFTs show up well on OpenSea / wallets
 - measure gas (see how this is done in aminalsV3)
 - More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
 - Clean up and document scripts
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
+
+# New Features Ideas
+
+- Aminal Race
+- Bribe system
+- Prediction Market
+- Aminals DAO (a DAO of Aminals based on Loveocracy)
+- Poo skill to create a new NFT
+
+# Open Design Questions
+
+- Do we need remove gene?
+- What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
+- Should there be a way of creating an entirely new Aminal?
+
+In general we need a review of what things cost (even if the cost is in terms of love or energy).
 
 # Do last
 

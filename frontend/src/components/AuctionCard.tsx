@@ -100,9 +100,6 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
                 </div>
               )}
             </div>
-            <div className="absolute top-2 left-2 text-xs sm:text-sm bg-card/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-border">
-              #{aminalOne?.aminalIndex?.toString() || '?'}
-            </div>
           </div>
           <div className="w-1/2 relative group/image">
             <div className="h-full min-h-[200px] md:min-h-[300px]">
@@ -113,9 +110,6 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
                   Loading...
                 </div>
               )}
-            </div>
-            <div className="absolute top-2 right-2 text-xs sm:text-sm bg-card/95 backdrop-blur-sm shadow-lg px-2 py-1 rounded-full font-medium border border-border">
-              #{aminalTwo?.aminalIndex?.toString() || '?'}
             </div>
           </div>
         </div>
