@@ -116,9 +116,6 @@ importers:
 
   ponder:
     dependencies:
-      aminals-frontend:
-        specifier: workspace:*
-        version: link:../frontend
       hono:
         specifier: ^4.5.0
         version: 4.10.3

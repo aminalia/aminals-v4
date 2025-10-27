@@ -1,10 +1,10 @@
-import AminalGrid from '@/components/AminalGrid';
-import TraitCard from '@/components/TraitCard';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { useUserEarnings, useUserProfile } from '@/hooks';
-import { useHasMounted } from '@/hooks/useHasMounted';
+import AminalGrid from '@components/AminalGrid';
+import TraitCard from '@components/TraitCard';
+import { Badge } from '@components/ui/Badge';
+import { Button } from '@components/ui/Button';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { useUserEarnings, useUserProfile } from '@hooks';
+import { useHasMounted } from '@hooks/useHasMounted';
 import { Check, Copy } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';

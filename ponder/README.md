@@ -91,7 +91,7 @@ ponder/
 
 **`src/index.ts`** - Main event handler registry
 ```typescript
-import { ponder } from "@/generated";
+import { ponder } from "@generated";
 
 ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   // Handler logic
@@ -122,7 +122,7 @@ export const TRAIT_NAMES = [
 
 **`src/utils/helpers.ts`** - Reusable utility functions
 ```typescript
-import type { Context } from "@/generated";
+import type { Context } from "@generated";
 
 export async function getOrCreateUser(
   context: Context,
@@ -383,7 +383,7 @@ When ready for production:
 
 ### Generated Files (by Ponder)
 - `.ponder/` - SQLite database, cache, logs (gitignored)
-- `@/generated` - TypeScript types from schema and config
+- `@generated` - TypeScript types from schema and config
 
 ## 🔗 Resources
 

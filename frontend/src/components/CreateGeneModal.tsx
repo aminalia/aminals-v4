@@ -1,6 +1,6 @@
 'use client';
 
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import {

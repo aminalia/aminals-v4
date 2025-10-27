@@ -1,10 +1,10 @@
-import AminalGrid from '@/components/AminalGrid';
-import { ContentContainer } from '@/components/layout/ContentContainer';
-import { NoAminalsFound } from '@/components/ui/EmptyState';
-import { AminalsFilterBar } from '@/components/ui/FilterBar';
-import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { useHasMounted } from '@/hooks/useHasMounted';
-import { AminalFilter, AminalSort, useAminals } from '@/hooks';
+import AminalGrid from '@components/AminalGrid';
+import { ContentContainer } from '@components/layout/ContentContainer';
+import { NoAminalsFound } from '@components/ui/EmptyState';
+import { AminalsFilterBar } from '@components/ui/FilterBar';
+import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { AminalFilter, AminalSort, useAminals } from '@hooks';
+import { useHasMounted } from '@hooks/useHasMounted';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import { useState } from 'react';

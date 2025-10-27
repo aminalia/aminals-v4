@@ -1,19 +1,19 @@
-import BulkVoteButton from '@/components/actions/BulkVoteButton';
-import EndAuctionButton from '@/components/actions/EndAuctionButton';
-import { AminalVisualImage } from '@/components/AminalCard';
-import CountdownTimer from '@/components/CountdownTimer';
-import ProposeGeneModal from '@/components/ProposeGeneModal';
+import BulkVoteButton from '@components/actions/BulkVoteButton';
+import EndAuctionButton from '@components/actions/EndAuctionButton';
+import { AminalVisualImage } from '@components/AminalCard';
+import CountdownTimer from '@components/CountdownTimer';
+import ProposeGeneModal from '@components/ProposeGeneModal';
 import TraitSelector, {
   SelectedParts,
   TraitParts,
-} from '@/components/TraitSelector';
-import VoteStats from '@/components/VoteStats';
+} from '@components/TraitSelector';
+import VoteStats from '@components/VoteStats';
 import {
   makeGeneNFTId,
   useAuction,
   useGeneProposalsByAuctionId,
   useGenesByIds,
-} from '@/hooks';
+} from '@hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';

@@ -1,6 +1,6 @@
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { cn } from '@/lib/utils';
-import { useAuction, useAuctionVotes, useAuctions } from '@/hooks';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { useAuction, useAuctionVotes, useAuctions } from '@hooks';
+import { cn } from '@lib/utils';
 import { useMemo, useState } from 'react';
 
 interface VoteStatsProps {

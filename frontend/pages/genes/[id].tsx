@@ -1,11 +1,11 @@
-import AminalCard from '@/components/AminalCard';
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
-import { EmptyState } from '@/components/ui/EmptyState';
-import { PageLoadingSpinner } from '@/components/ui/LoadingSpinner';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { genesAddress } from '@/contracts/generated';
-import { useGene } from '@/hooks';
+import AminalCard from '@components/AminalCard';
+import { Badge } from '@components/ui/Badge';
+import { Button } from '@components/ui/Button';
+import { EmptyState } from '@components/ui/EmptyState';
+import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { genesAddress } from '@contracts/generated';
+import { useGene } from '@hooks';
 import { ExternalLink } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -89,7 +89,7 @@ const GeneDetailPage: NextPage = () => {
                   <span className="text-3xl">{category.emoji}</span>
                   Gene #{gene.tokenId.toString()}
                 </h1>
-                <Badge variant="neutral" size="lg">
+                <Badge variant="default" size="lg">
                   {category.name}
                 </Badge>
               </div>

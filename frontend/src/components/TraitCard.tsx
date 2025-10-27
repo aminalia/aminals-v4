@@ -1,4 +1,4 @@
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import Link from 'next/link';
 
 interface TraitCardProps {

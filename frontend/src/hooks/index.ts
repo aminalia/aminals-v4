@@ -2,7 +2,7 @@
  * Hooks Barrel Export
  *
  * Central export point for all Ponder-based data hooks and types.
- * Import from this file for convenience: `import { useAminals, type Aminal } from '@/hooks'`
+ * Import from this file for convenience: `import { useAminals, type Aminal } from '@hooks'`
  */
 
 // Aminal hooks

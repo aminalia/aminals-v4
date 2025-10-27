@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/Button';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
+import { Button } from '@components/ui/Button';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import { useState } from 'react';
 
 // Define types for the component props
@@ -83,7 +83,9 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
     >
       {/* Header with Propose Gene Button */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">Gene Selection</h3>
+        <h3 className="text-lg font-semibold text-foreground">
+          Gene Selection
+        </h3>
         {showProposeButton && onProposeGene && (
           <Button
             onClick={onProposeGene}

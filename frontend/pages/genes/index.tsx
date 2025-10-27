@@ -1,8 +1,8 @@
-import { Button } from '@/components/ui/Button';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { CategoryFilter, GeneFilter, GeneSort, useGenes } from '@/hooks';
-import { useHasMounted } from '@/hooks/useHasMounted';
-import { cn } from '@/lib/utils';
+import { Button } from '@components/ui/Button';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { CategoryFilter, GeneFilter, GeneSort, useGenes } from '@hooks';
+import { useHasMounted } from '@hooks/useHasMounted';
+import { cn } from '@lib/utils';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
 import { useState } from 'react';

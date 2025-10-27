@@ -1,4 +1,4 @@
-import { Badge } from '@/components/ui/Badge';
+import { Badge } from '@components/ui/Badge';
 import {
   Card,
   CardContent,
@@ -6,8 +6,8 @@ import {
   CardMedia,
   CardSection,
   CardTitle,
-} from '@/components/ui/Card';
-import { AminalWithRelations } from '@/hooks';
+} from '@components/ui/Card';
+import { AminalWithRelations } from '@hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { formatEther } from 'viem';
@@ -44,7 +44,10 @@ export default function AminalCard({
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
-                Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
+                Aminal #
+                {aminal.aminalIndex !== undefined
+                  ? Number(aminal.aminalIndex)
+                  : 'Unknown'}
               </CardTitle>
               <Badge variant="energy" size="sm">
                 <span>⚡</span>
@@ -68,7 +71,9 @@ export default function AminalCard({
                   {aminal.lovers &&
                   aminal.lovers.items &&
                   aminal.lovers.items.length > 0 ? (
-                    <>💜 {Number(aminal.lovers.items[0].love || 0).toFixed(1)}</>
+                    <>
+                      💜 {Number(aminal.lovers.items[0].love || 0).toFixed(1)}
+                    </>
                   ) : (
                     <span className="text-muted-foreground">—</span>
                   )}
@@ -144,7 +149,10 @@ function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
       <div className="text-center space-y-2">
         <div className="text-6xl mb-4">🐾</div>
         <div className="text-sm font-medium">
-          Aminal #{aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown'}
+          Aminal #
+          {aminal.aminalIndex !== undefined
+            ? Number(aminal.aminalIndex)
+            : 'Unknown'}
         </div>
         <div className="text-xs text-muted-foreground space-y-1">
           <div>Back: {aminal.backId || '?'}</div>

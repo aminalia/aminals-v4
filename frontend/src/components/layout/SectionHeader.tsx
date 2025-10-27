@@ -5,7 +5,7 @@
  * Supports various heading levels and styling variants.
  */
 
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 import { ReactNode } from 'react';
 
 interface SectionHeaderProps {

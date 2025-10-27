@@ -5,7 +5,7 @@
  * Supports different layout patterns and grid configurations.
  */
 
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 import { ReactNode } from 'react';
 
 interface ContentContainerProps {

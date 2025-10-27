@@ -1,5 +1,5 @@
-import { useAminals } from '@/hooks';
-import { cn } from '@/lib/utils';
+import { useAminals } from '@hooks';
+import { cn } from '@lib/utils';
 import { X } from 'lucide-react';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useState } from 'react';
@@ -270,9 +270,7 @@ export default function BreedingModal({
           {/* Selected Partner Info */}
           {selectedPartner && (
             <div className="bg-love/10 border border-love/30 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-love mb-2">
-                Selected Partner
-              </h4>
+              <h4 className="font-medium text-love mb-2">Selected Partner</h4>
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 bg-card rounded-lg overflow-hidden border border-love/30">
                   <AminalVisualImage aminal={selectedPartner} />

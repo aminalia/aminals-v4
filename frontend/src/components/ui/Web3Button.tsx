@@ -1,4 +1,4 @@
-import { useHasMounted } from '@/hooks/useHasMounted';
+import { useHasMounted } from '@hooks/useHasMounted';
 import { useAccount } from 'wagmi';
 import { Button, ButtonProps } from './Button';
 

@@ -1,6 +1,6 @@
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { cn } from '@/lib/utils';
-import { CategoryFilter, useGenes } from '@/hooks';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { CategoryFilter, useGenes } from '@hooks';
+import { cn } from '@lib/utils';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
@@ -120,14 +120,7 @@ export default function ProposeGeneModal({
       toastStateRef.current = 'pending';
       toast.loading('Proposing gene...', { id: 'propose-gene-tx' });
     }
-  }, [
-    isPending,
-    isConfirming,
-    isConfirmed,
-    error,
-    receiptError,
-    onClose,
-  ]);
+  }, [isPending, isConfirming, isConfirmed, error, receiptError, onClose]);
 
   const handlePropose = () => {
     if (!enabled) return;

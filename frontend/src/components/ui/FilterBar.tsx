@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 import * as React from 'react';
 import { Badge } from './Badge';
 import { Button } from './Button';
@@ -55,7 +55,7 @@ export function FilterBar({
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 flex-wrap">
         {/* Results count */}
         {resultsCount !== undefined && (
-          <Badge variant="neutral" size="lg">
+          <Badge variant="default" size="lg">
             {resultsCount.toLocaleString()} {resultsLabel}
           </Badge>
         )}
@@ -78,7 +78,7 @@ export function FilterBar({
                   >
                     {filter.label}
                     {filter.count !== undefined && (
-                      <Badge variant="neutral" size="sm" className="ml-2">
+                      <Badge variant="default" size="sm" className="ml-2">
                         {filter.count}
                       </Badge>
                     )}

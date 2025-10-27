@@ -2,7 +2,7 @@ import { Slot } from '@radix-ui/react-slot';
 import { cva, type VariantProps } from 'class-variance-authority';
 import * as React from 'react';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 
 const buttonVariants = cva(
   'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
@@ -20,10 +20,12 @@ const buttonVariants = cva(
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         link: 'text-primary underline-offset-4 hover:underline',
         // Aminals-specific semantic variants
-        success: 'bg-success text-success-foreground shadow hover:bg-success/90',
+        success:
+          'bg-success text-success-foreground shadow hover:bg-success/90',
         love: 'bg-love text-love-foreground shadow hover:bg-love/90',
         energy: 'bg-energy text-energy-foreground shadow hover:bg-energy/90',
-        warning: 'bg-warning text-warning-foreground shadow hover:bg-warning/90',
+        warning:
+          'bg-warning text-warning-foreground shadow hover:bg-warning/90',
         // Action-specific aliases (use semantic colors)
         feed: 'bg-success text-success-foreground shadow hover:bg-success/90',
         breed: 'bg-love text-love-foreground shadow hover:bg-love/90',

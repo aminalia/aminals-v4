@@ -1,8 +1,9 @@
-import CallSkillButton from '@/components/actions/CallSkillButton';
-import FeedButton from '@/components/actions/FeedButton';
-import { AminalVisualImage } from '@/components/AminalCard';
-import BreedingModal from '@/components/BreedingModal';
-import { useAminalByContractAddress, useGenesByIds } from '@/hooks';
+import CallSkillButton from '@components/actions/CallSkillButton';
+import FeedButton from '@components/actions/FeedButton';
+import { AminalVisualImage } from '@components/AminalCard';
+import BreedingModal from '@components/BreedingModal';
+import { Button } from '@components/ui/Button';
+import { useAminalByContractAddress, useGenesByIds } from '@hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -10,7 +11,6 @@ import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
-import { Button } from '@/components/ui/Button';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';

@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/Badge';
-import { Button } from '@/components/ui/Button';
+import { Badge } from '@components/ui/Badge';
+import { Button } from '@components/ui/Button';
 import {
   Card,
   CardContent,
@@ -9,12 +9,11 @@ import {
   CardMedia,
   CardSection,
   CardTitle,
-} from '@/components/ui/Card';
-import { cn } from '@/lib/utils';
+} from '@components/ui/Card';
+import type { GeneAuction } from '@hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import type { GeneAuction } from '@/hooks';
 import ProposeButton from './actions/ProposeButton';
 
 import '../../styles/index.module.css';
@@ -127,7 +126,8 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
             <div className="flex-1">
               <Link href={`/breeding/${auction.auctionId}`}>
                 <h2 className="text-xl sm:text-2xl font-bold hover:text-love transition-colors group/title text-love">
-                  #{aminalOne?.aminalIndex?.toString() || '?'} × #{aminalTwo?.aminalIndex?.toString() || '?'}
+                  #{aminalOne?.aminalIndex?.toString() || '?'} × #
+                  {aminalTwo?.aminalIndex?.toString() || '?'}
                 </h2>
               </Link>
               <div className="text-sm text-muted-foreground mt-1">
@@ -188,7 +188,9 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
 
               <div className="bg-love/10 border border-love/30 rounded-xl p-3 sm:p-4 text-center">
                 <div className="text-2xl mb-1">❤️</div>
-                <div className="text-sm text-muted-foreground mb-1">Total Love</div>
+                <div className="text-sm text-muted-foreground mb-1">
+                  Total Love
+                </div>
                 <div className="font-bold text-love">
                   {auction.totalLove ? auction.totalLove.toString() : '0'}
                 </div>
@@ -228,14 +230,17 @@ export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
               <CardTitle>Auction #{auction.auctionId.toString()}</CardTitle>
             </Link>
             <CardDescription>
-              Between {aminalOne?.aminalIndex?.toString() || '?'} and {aminalTwo?.aminalIndex?.toString() || '?'}
+              Between {aminalOne?.aminalIndex?.toString() || '?'} and{' '}
+              {aminalTwo?.aminalIndex?.toString() || '?'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <table>
               <td>
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
-                <tr>Child ID: #{childAminal?.aminalIndex?.toString() || 'TBD'}</tr>
+                <tr>
+                  Child ID: #{childAminal?.aminalIndex?.toString() || 'TBD'}
+                </tr>
               </td>
             </table>
             <table>
@@ -269,14 +274,17 @@ export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
               <CardTitle>Auction #{auction.auctionId.toString()}</CardTitle>
             </Link>
             <CardDescription>
-              Between {aminalOne?.aminalIndex?.toString() || '?'} and {aminalTwo?.aminalIndex?.toString() || '?'}
+              Between {aminalOne?.aminalIndex?.toString() || '?'} and{' '}
+              {aminalTwo?.aminalIndex?.toString() || '?'}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <table>
               <td>
                 <tr>{auction.finished ? 'Finished' : 'In Progress'} </tr>
-                <tr>Child ID: #{childAminal?.aminalIndex?.toString() || 'TBD'}</tr>
+                <tr>
+                  Child ID: #{childAminal?.aminalIndex?.toString() || 'TBD'}
+                </tr>
               </td>
             </table>
             <table>

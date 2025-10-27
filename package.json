@@ -12,6 +12,10 @@
     "node": ">=18.14",
     "pnpm": ">=10.0.0"
   },
+  "workspaces": [
+    "frontend",
+    "ponder"
+  ],
   "scripts": {
     "claude-code": "docker compose -f .claude/docker-compose.claude.yml run --rm --remove-orphans -it claude-code-sandbox bash -c 'claude; exec'",
     "claude-code:unrestricted": "docker compose -f .claude/docker-compose.claude.yml run --rm --remove-orphans -it claude-code-sandbox bash -c 'claude --dangerously-skip-permissions; exec'",
@@ -32,6 +36,5 @@
     }
   },
   "author": "",
-  "license": "GPL-3.0",
-  "packageManager": "pnpm@10.18.3"
+  "license": "GPL-3.0"
 }

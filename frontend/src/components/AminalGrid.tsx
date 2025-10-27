@@ -1,4 +1,4 @@
-import type { AminalWithRelations } from '@/hooks';
+import type { AminalWithRelations } from '@hooks';
 import AminalCard from './AminalCard';
 
 export default function AminalGrid({

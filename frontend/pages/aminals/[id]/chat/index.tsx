@@ -1,5 +1,5 @@
-import { AminalVisualImage } from '@/components/AminalCard';
-import { Button } from '@/components/ui/Button';
+import { AminalVisualImage } from '@components/AminalCard';
+import { Button } from '@components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, Clock, MessageCircle, Plus, Trash2 } from 'lucide-react';
 import type { NextPage } from 'next';
