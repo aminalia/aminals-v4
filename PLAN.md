@@ -1,5 +1,7 @@
 # Plan
 
+- deploy-sepolia.sh -> deploy.sh
+
 ## UI
 
 - Trait links don't work on aminal detail page
