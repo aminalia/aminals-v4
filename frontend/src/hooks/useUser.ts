@@ -1,7 +1,7 @@
 import { eq } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import type {
   Aminal,
   GeneAuction,
@@ -234,7 +234,9 @@ export const useUserEarnings = (
       return db
         .select()
         .from(schema.geneCreatorPayout)
-        .where(eq(schema.geneCreatorPayout.creatorId, address as `0x${string}`));
+        .where(
+          eq(schema.geneCreatorPayout.creatorId, address as `0x${string}`)
+        );
     },
     enabled: !!address,
   }) as UseQueryResult<GeneCreatorPayout[], Error>;

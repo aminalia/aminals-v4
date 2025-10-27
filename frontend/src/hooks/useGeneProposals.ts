@@ -2,7 +2,7 @@ import { eq, inArray } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import type {
   GeneNFT,
   GeneProposal,

@@ -1,7 +1,7 @@
 import { desc, eq, inArray } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import type {
   Aminal,
   AminalWithRelations,

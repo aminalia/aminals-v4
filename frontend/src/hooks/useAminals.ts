@@ -1,7 +1,7 @@
 import { eq } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import type { AminalFilter, AminalSort } from '../lib/dataTransformers';
 import type {
   Aminal,
@@ -169,14 +169,22 @@ export const useAminalByContractAddress = (
   const aminal = aminalResult.data?.[0];
 
   // Only fetch parents if they have valid IDs (not null/undefined)
-  const hasParentOne = Boolean(aminal?.parentOneId && aminal.parentOneId !== null);
-  const hasParentTwo = Boolean(aminal?.parentTwoId && aminal.parentTwoId !== null);
+  const hasParentOne = Boolean(
+    aminal?.parentOneId && aminal.parentOneId !== null
+  );
+  const hasParentTwo = Boolean(
+    aminal?.parentTwoId && aminal.parentTwoId !== null
+  );
 
   const parentOneResult = usePonderQuery({
     queryFn: (db) => {
       if (!aminal?.parentOneId) {
         // Return empty query that won't execute
-        return db.select().from(schema.aminal).where(eq(schema.aminal.id, '0x0' as `0x${string}`)).limit(0);
+        return db
+          .select()
+          .from(schema.aminal)
+          .where(eq(schema.aminal.id, '0x0' as `0x${string}`))
+          .limit(0);
       }
       return db
         .select()
@@ -191,7 +199,11 @@ export const useAminalByContractAddress = (
     queryFn: (db) => {
       if (!aminal?.parentTwoId) {
         // Return empty query that won't execute
-        return db.select().from(schema.aminal).where(eq(schema.aminal.id, '0x0' as `0x${string}`)).limit(0);
+        return db
+          .select()
+          .from(schema.aminal)
+          .where(eq(schema.aminal.id, '0x0' as `0x${string}`))
+          .limit(0);
       }
       return db
         .select()

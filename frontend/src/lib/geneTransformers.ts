@@ -4,7 +4,7 @@
  * Updated for Ponder schema with hex-based IDs and new structure.
  */
 
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import { genesAddress } from '../contracts/generated';
 
 // Type inference from Ponder schema
@@ -52,8 +52,7 @@ export const transformGenes = (
   // Apply owner filter
   if (filter === 'yours' && userAddress) {
     processedGenes = processedGenes.filter(
-      (gene) =>
-        gene.creatorId?.toLowerCase() === userAddress.toLowerCase()
+      (gene) => gene.creatorId?.toLowerCase() === userAddress.toLowerCase()
     );
   }
 

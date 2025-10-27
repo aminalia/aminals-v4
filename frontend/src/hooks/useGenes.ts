@@ -1,6 +1,6 @@
 import { eq, inArray } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import type {
   CategoryFilter,
   GeneFilter,
@@ -58,7 +58,13 @@ export const useGenes = (
           userAddress
         )
       : genesResult.data
-      ? processGenes(genesResult.data as GeneNFT[], [], filter, sort, userAddress)
+      ? processGenes(
+          genesResult.data as GeneNFT[],
+          [],
+          filter,
+          sort,
+          userAddress
+        )
       : undefined;
 
   return {

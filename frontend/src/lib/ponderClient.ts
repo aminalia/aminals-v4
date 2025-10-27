@@ -1,5 +1,5 @@
 import { createClient } from '@ponder/client';
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 
 /**
  * Ponder Client Configuration

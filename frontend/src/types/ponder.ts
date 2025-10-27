@@ -5,7 +5,7 @@
  * Use these instead of 'any' for full type safety.
  */
 
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 
 // ============================================================================
 // Base Table Types (using Ponder's $inferSelect)
@@ -116,7 +116,16 @@ export type UserSingle = User | null | undefined;
 // ============================================================================
 
 // Trait array type (8 bigints)
-export type TraitArray = readonly [bigint, bigint, bigint, bigint, bigint, bigint, bigint, bigint];
+export type TraitArray = readonly [
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  bigint,
+  bigint
+];
 
 // Trait type enum (matches schema)
 export enum TraitType {

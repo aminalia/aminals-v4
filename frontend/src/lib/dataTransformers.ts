@@ -4,7 +4,7 @@
  * Updated for Ponder schema with traits array instead of individual fields.
  */
 
-import * as schema from '../../../ponder/ponder.schema';
+import * as schema from '../../ponder.schema';
 import {
   traitsArrayToFields,
   type AminalWithTraitsArray,
