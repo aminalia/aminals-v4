@@ -36,7 +36,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
     error EmptySVG();
     error InvalidSVG();
 
-    event GeneCreated(uint256 indexed geneId, address indexed creator, VisualsCat indexed category, string svg);
+    event GeneCreated(
+        uint256 indexed geneId, address indexed creator, address indexed recipient, VisualsCat category, string svg
+    );
 
     constructor(address _geneNFT) {
         geneNFT = Genes(_geneNFT);
@@ -50,6 +52,22 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @return geneId The ID of the created Gene NFT
      */
     function createGene(string calldata svg, VisualsCat category) external returns (uint256 geneId) {
+        return createGeneFor(msg.sender, svg, category);
+    }
+
+    /**
+     * @notice Create a new Gene NFT with trait data on behalf of another account
+     * @dev Anyone can call this function to create permissionless traits for others
+     * @dev Useful for minting scripts that want to specify the recipient
+     * @param recipient The address that will receive the Gene NFT and be marked as creator
+     * @param svg The SVG content for the trait
+     * @param category The visual category for the trait
+     * @return geneId The ID of the created Gene NFT
+     */
+    function createGeneFor(address recipient, string calldata svg, VisualsCat category)
+        public
+        returns (uint256 geneId)
+    {
         if (bytes(svg).length == 0) revert EmptySVG();
         if (bytes(svg).length > MAX_SVG_LENGTH) revert SVGTooLarge();
 
@@ -59,18 +77,18 @@ contract GeneRegistry is IAminalStructs, Ownable {
         // Get the gene ID that will be minted (current counter value)
         geneId = geneNFT.currentId();
 
-        // Mint the Gene NFT to the creator
-        geneNFT.mint(msg.sender, svg, category);
+        // Mint the Gene NFT to the recipient
+        geneNFT.mint(recipient, svg, category);
 
         // Register the gene as coming from this factory
         geneRegistry[geneId] = true;
-        geneCreators[geneId] = msg.sender;
+        geneCreators[geneId] = recipient;
         geneCategories[geneId] = category;
         geneSVGs[geneId] = svg;
 
         totalGenesCreated++;
 
-        emit GeneCreated(geneId, msg.sender, category, svg);
+        emit GeneCreated(geneId, recipient, recipient, category, svg);
 
         return geneId;
     }

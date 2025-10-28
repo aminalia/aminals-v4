@@ -493,4 +493,78 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.expectRevert(); // Should revert with NotEnoughLove when trying to squeak from aminal2
         geneAuction.proposeGene(auctionId, VisualsCat.BACK, geneId);
     }
+
+    function testCreateGeneFor() public {
+        // Alice creates a gene for Bob
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK);
+
+        // Verify gene was created correctly
+        assertEq(geneId, 0, "First gene should have ID 0");
+        assertEq(genes.ownerOf(geneId), bob, "Bob should own the gene");
+
+        // Verify gene info shows Bob as creator (recipient)
+        (address creator, VisualsCat category, string memory svg) = geneRegistry.getGeneInfo(geneId);
+        assertEq(creator, bob, "Creator should be Bob (recipient)");
+        assertTrue(category == VisualsCat.BACK, "Category should be BACK");
+        assertEq(svg, SAMPLE_BACKGROUND, "SVG should match");
+
+        // Verify factory registry
+        assertTrue(geneRegistry.isValidGene(geneId), "Gene should be valid");
+
+        // Verify counters
+        assertEq(geneRegistry.totalGenesCreated(), 1, "Total genes should be 1");
+    }
+
+    function testCreateGeneForMultipleRecipients() public {
+        // Alice creates genes for different recipients
+        vm.startPrank(alice);
+        uint256 bobGene = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 charlieGene = geneRegistry.createGeneFor(charlie, SAMPLE_FACE, VisualsCat.FACE);
+        uint256 aliceGene = geneRegistry.createGeneFor(alice, SAMPLE_BODY, VisualsCat.BODY);
+        vm.stopPrank();
+
+        // Verify ownership
+        assertEq(genes.ownerOf(bobGene), bob, "Bob should own his gene");
+        assertEq(genes.ownerOf(charlieGene), charlie, "Charlie should own his gene");
+        assertEq(genes.ownerOf(aliceGene), alice, "Alice should own her gene");
+
+        // Verify creators match recipients
+        (address bobCreator,,) = geneRegistry.getGeneInfo(bobGene);
+        (address charlieCreator,,) = geneRegistry.getGeneInfo(charlieGene);
+        (address aliceCreator,,) = geneRegistry.getGeneInfo(aliceGene);
+
+        assertEq(bobCreator, bob, "Bob should be marked as creator");
+        assertEq(charlieCreator, charlie, "Charlie should be marked as creator");
+        assertEq(aliceCreator, alice, "Alice should be marked as creator");
+
+        // Verify counters
+        assertEq(geneRegistry.totalGenesCreated(), 3, "Total genes should be 3");
+    }
+
+    function testCreateGeneForGetsByCreator() public {
+        // Alice creates genes for Bob and Charlie
+        vm.startPrank(alice);
+        geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK);
+        geneRegistry.createGeneFor(bob, SAMPLE_FACE, VisualsCat.FACE);
+        geneRegistry.createGeneFor(charlie, SAMPLE_BODY, VisualsCat.BODY);
+        vm.stopPrank();
+
+        // Get genes by creator (recipient)
+        uint256[] memory bobGenes = geneRegistry.getGenesByCreator(bob);
+        uint256[] memory charlieGenes = geneRegistry.getGenesByCreator(charlie);
+        uint256[] memory aliceGenes = geneRegistry.getGenesByCreator(alice);
+
+        // Verify counts
+        assertEq(bobGenes.length, 2, "Bob should have 2 genes");
+        assertEq(charlieGenes.length, 1, "Charlie should have 1 gene");
+        assertEq(aliceGenes.length, 0, "Alice should have 0 genes as creator");
+
+        // Verify Bob's gene IDs
+        assertEq(bobGenes[0], 0, "First Bob gene should be ID 0");
+        assertEq(bobGenes[1], 1, "Second Bob gene should be ID 1");
+
+        // Verify Charlie's gene ID
+        assertEq(charlieGenes[0], 2, "Charlie's gene should be ID 2");
+    }
 }
