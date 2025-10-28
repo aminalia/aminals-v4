@@ -486,7 +486,7 @@ const AuctionPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Show new Aminal if auction is finished, otherwise show builder */}
+                {/* Show new Aminal if auction is finished, show winning combination if ended but not born, otherwise show builder */}
                 {auction?.finished && auction?.childAminal ? (
                   <div className="p-4">
                     <div className="bg-success/10 border border-success/30 rounded-xl p-6">
@@ -578,6 +578,9 @@ const AuctionPage: NextPage = () => {
                       </div>
                     </div>
                   </div>
+                ) : isAuctionEnded &&
+                  (!auction?.finished || !auction?.childAminal) ? (
+                  <div></div>
                 ) : (
                   <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 p-4">
                     {/* Left Column - Preview */}
@@ -616,7 +619,7 @@ const AuctionPage: NextPage = () => {
                     </div>
 
                     {/* Right Column - Gene Selector */}
-                    <div className="space-y-4 xl:col-span-2I">
+                    <div className="space-y-4 xl:col-span-2">
                       <TraitSelector
                         parts={parts}
                         selectedParts={selectedParts}
@@ -771,7 +774,13 @@ const AuctionPage: NextPage = () => {
 
               {/* Vote Statistics - Always show, but "Current Winning Combination" section is hidden if auction is finished */}
               <div className="bg-card rounded-lg border border-border p-4">
-                <VoteStats auctionId={auctionId} />
+                <VoteStats
+                  auctionId={auctionId}
+                  forceShowWinningCombination={
+                    isAuctionEnded &&
+                    (!auction?.finished || !auction?.childAminal)
+                  }
+                />
               </div>
             </>
           )}

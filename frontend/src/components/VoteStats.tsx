@@ -5,9 +5,13 @@ import { useMemo, useState } from 'react';
 
 interface VoteStatsProps {
   auctionId: string;
+  forceShowWinningCombination?: boolean;
 }
 
-const VoteStats = ({ auctionId }: VoteStatsProps) => {
+const VoteStats = ({
+  auctionId,
+  forceShowWinningCombination,
+}: VoteStatsProps) => {
   const { data: votes, isLoading } = useAuctionVotes(auctionId);
   const { data: allAuctions } = useAuctions();
   const { data: currentAuction } = useAuction(auctionId);
@@ -242,31 +246,34 @@ const VoteStats = ({ auctionId }: VoteStatsProps) => {
         )}
       </div>
 
-      {/* Preview of current winning combination - only show if auction is not finished */}
-      {Object.keys(winningGenes).length > 0 && !currentAuction?.finished && (
-        <div className="bg-love/10 border border-love/30 rounded-lg p-4">
-          <div className="flex items-start gap-4">
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-lg">🏆</span>
-                <h4 className="font-semibold text-love">
-                  Current Winning Combination
-                </h4>
+      {/* Preview of current winning combination - show if auction is not finished or if forced to show */}
+      {Object.keys(winningGenes).length > 0 &&
+        (!currentAuction?.finished || forceShowWinningCombination) && (
+          <div className="bg-love/10 border border-love/30 rounded-lg p-4">
+            <div className="flex items-start gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-lg">🏆</span>
+                  <h4 className="font-semibold text-love">
+                    Current Winning Combination
+                  </h4>
+                </div>
+                <div className="text-sm text-love">
+                  {forceShowWinningCombination
+                    ? 'This is the winning combination that will be used to create the new Aminal'
+                    : 'What the offspring would look like if the auction closed now'}
+                </div>
               </div>
-              <div className="text-sm text-love">
-                What the offspring would look like if the auction closed now
+              <div className="w-64 h-64 bg-card rounded-lg overflow-hidden border border-love/30 flex-shrink-0">
+                <svg
+                  viewBox="0 0 1000 1000"
+                  className="w-full h-full"
+                  dangerouslySetInnerHTML={{ __html: previewSvg }}
+                />
               </div>
-            </div>
-            <div className="w-64 h-64 bg-card rounded-lg overflow-hidden border border-love/30 flex-shrink-0">
-              <svg
-                viewBox="0 0 1000 1000"
-                className="w-full h-full"
-                dangerouslySetInnerHTML={{ __html: previewSvg }}
-              />
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {/* Category Filters */}
       <div className="overflow-x-auto pb-2">

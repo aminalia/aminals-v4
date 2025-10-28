@@ -18,10 +18,10 @@ contract MintInitialGenes is Script {
     GeneRegistry public geneRegistry;
 
     // Store addresses of the four minter contracts
-    address public cuteOrangeyMinterAddress;
-    address public threeEyedMinterAddress;
-    address public blueAnimatedMinterAddress;
-    address public redAnimatedMinterAddress;
+    address payable public cuteOrangeyMinterAddress;
+    address payable public threeEyedMinterAddress;
+    address payable public blueAnimatedMinterAddress;
+    address payable public redAnimatedMinterAddress;
 
     function readDeploymentSummary() public returns (address geneRegistryAddr) {
         string memory json = vm.readFile("deployment-summary.json");
@@ -37,22 +37,22 @@ contract MintInitialGenes is Script {
 
         // Deploy Cute Orangey minter
         CuteOrangeyGenesMinter cuteOrangeyMinter = new CuteOrangeyGenesMinter();
-        cuteOrangeyMinterAddress = address(cuteOrangeyMinter);
+        cuteOrangeyMinterAddress = payable(address(cuteOrangeyMinter));
         console.log("CuteOrangeyGenesMinter deployed to:", cuteOrangeyMinterAddress);
 
         // Deploy Three-Eyed minter
         ThreeEyedGenesMinter threeEyedMinter = new ThreeEyedGenesMinter();
-        threeEyedMinterAddress = address(threeEyedMinter);
+        threeEyedMinterAddress = payable(address(threeEyedMinter));
         console.log("ThreeEyedGenesMinter deployed to:", threeEyedMinterAddress);
 
         // Deploy Blue Animated minter
         BlueAnimatedGenesMinter blueAnimatedMinter = new BlueAnimatedGenesMinter();
-        blueAnimatedMinterAddress = address(blueAnimatedMinter);
+        blueAnimatedMinterAddress = payable(address(blueAnimatedMinter));
         console.log("BlueAnimatedGenesMinter deployed to:", blueAnimatedMinterAddress);
 
         // Deploy Red Animated minter
         RedAnimatedGenesMinter redAnimatedMinter = new RedAnimatedGenesMinter();
-        redAnimatedMinterAddress = address(redAnimatedMinter);
+        redAnimatedMinterAddress = payable(address(redAnimatedMinter));
         console.log("RedAnimatedGenesMinter deployed to:", redAnimatedMinterAddress);
     }
 
