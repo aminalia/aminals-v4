@@ -75,6 +75,10 @@ Contract Changes:
 
 - "Why aren't all genes listed?"
 
+## Ponder
+
+- Index gene name and description
+
 # Contracts
 
 - Review vibe coded love bonding curve math

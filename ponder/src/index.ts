@@ -290,38 +290,11 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Fetch additional metadata from Genes contract
-  let name: string | null = null;
-  let description: string | null = null;
-
-  try {
-    // Fetch gene info from Genes contract
-    const geneInfo = await client.readContract({
-      address: contracts.Genes.address as Address,
-      abi: [
-        {
-          type: "function",
-          name: "getGeneInfo",
-          inputs: [{ name: "tokenId", type: "uint256" }],
-          outputs: [
-            { name: "name", type: "string" },
-            { name: "description", type: "string" },
-            { name: "svg", type: "string" },
-            { name: "traitType", type: "uint8" },
-          ],
-          stateMutability: "view",
-        },
-      ],
-      functionName: "getGeneInfo",
-      args: [geneId],
-    });
-
-    const [geneName, geneDesc] = geneInfo as [string, string, string, number];
-    name = geneName;
-    description = geneDesc;
-  } catch (error) {
-    console.log(`Could not fetch gene metadata for token ${geneId}`);
-  }
+  // Note: The Genes contract's getGeneInfo returns (svg, category)
+  // Name and description are generated in the tokenURI and not stored separately
+  // So we'll just use null for these fields or generate simple defaults
+  const name: string = `Gene #${geneId}`;
+  const description: string = "An Aminal gene trait";
 
   // Create GeneNFT entity
   await db.insert(geneNFT).values({
