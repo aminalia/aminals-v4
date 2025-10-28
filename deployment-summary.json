@@ -1,18 +1,14 @@
 {
   "chainId": 11155111,
-  "timestamp": 1761605040,
+  "timestamp": 1761684636,
   "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
   "contracts": {
-    "Genes": "0xa6C040cf7896Bbee04b8542A47ED30f88cf58d9D",
-    "GeneRegistry": "0x90ffaD7CeBF14a779Da2d3484d6989E5Af94f3aa",
-    "GeneAuction": "0x3A6f4C5bA7D0a82dcdB63Da6b9B60Ee958EdCe45",
-    "AminalProposals": "0x8cF2F4bfed92eb0541d248A4A69411c153c26915",
-    "AminalFactory": "0x4BC36F909341B521C6CBf55419815a616e3dDad2",
-    "Move2D": "0xb951D7B4E96DB12dda74ce48cB3F587559056847",
-    "FightSkill": "0xF570d98840e82f207224B5EEdb8B670ee8390f9c",
-    "CuteOrangeyGenesMinter": "0xc0D2E751bb840B01D99E8E56668c82733750945f",
-    "ThreeEyedGenesMinter": "0xA0EE47C293E4972A6c15FcC2BfB53D98E120a594",
-    "BlueAnimatedGenesMinter": "0x6e60c27a114c31E3c57d26C2958D5EaB90B4525F",
-    "RedAnimatedGenesMinter": "0x59718744b22C83A84989661532b7276af8efdA20"
+    "Genes": "0xA3Aa1667884f6f2111f46d4dfF74549252531232",
+    "GeneRegistry": "0x184C5b935C7fE0D5397b62DBB169e08Bdb10757F",
+    "GeneAuction": "0xc37B75BB83d9FcCe10bA6fED81C4672Dfd771b8D",
+    "AminalProposals": "0xD16Ec1ABcdFdE2Ae202f04E1F0E0a64f943189f3",
+    "AminalFactory": "0x8CE7Fbbe9d92136D842a76734C3883dd00839E7e",
+    "Move2D": "0x51Bd74f7cD9b35C6f1c2B48FA859846Afea11b3d",
+    "FightSkill": "0x85810e573a9CF7b05D8BAAe77a7420683b5890f3"
   }
 }

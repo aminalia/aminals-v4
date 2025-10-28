@@ -993,7 +993,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0x4BC36F909341B521C6CBf55419815a616e3dDad2' as const
+  '0x8CE7Fbbe9d92136D842a76734C3883dd00839E7e' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1083,6 +1083,13 @@ export const geneAuctionAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
+    name: 'claimFailedPayout',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: 'aminalOne', internalType: 'uint256', type: 'uint256' },
       { name: 'aminalTwo', internalType: 'uint256', type: 'uint256' },
@@ -1091,6 +1098,20 @@ export const geneAuctionAbi = [
     name: 'createAuction',
     outputs: [{ name: 'auctionId', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    name: 'failedPayouts',
+    outputs: [
+      { name: 'amountFromParentOne', internalType: 'uint256', type: 'uint256' },
+      { name: 'amountFromParentTwo', internalType: 'uint256', type: 'uint256' },
+      { name: 'parentOneAddress', internalType: 'address', type: 'address' },
+      { name: 'parentTwoAddress', internalType: 'address', type: 'address' },
+      { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
+      { name: 'claimed', internalType: 'bool', type: 'bool' },
+    ],
+    stateMutability: 'view',
   },
   {
     type: 'function',
@@ -1147,6 +1168,43 @@ export const geneAuctionAbi = [
             type: 'uint256[]',
           },
           { name: 'tiedGenes', internalType: 'uint256[]', type: 'uint256[]' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
+    name: 'getFailedPayout',
+    outputs: [
+      {
+        name: 'payout',
+        internalType: 'struct GeneAuction.FailedPayout',
+        type: 'tuple',
+        components: [
+          {
+            name: 'amountFromParentOne',
+            internalType: 'uint256',
+            type: 'uint256',
+          },
+          {
+            name: 'amountFromParentTwo',
+            internalType: 'uint256',
+            type: 'uint256',
+          },
+          {
+            name: 'parentOneAddress',
+            internalType: 'address',
+            type: 'address',
+          },
+          {
+            name: 'parentTwoAddress',
+            internalType: 'address',
+            type: 'address',
+          },
+          { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
+          { name: 'claimed', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
@@ -1369,6 +1427,31 @@ export const geneAuctionAbi = [
     anonymous: false,
     inputs: [
       {
+        name: 'geneId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'recipient',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'totalAmount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'FailedPayoutClaimed',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
         name: 'auctionId',
         internalType: 'uint256',
         type: 'uint256',
@@ -1563,6 +1646,37 @@ export const geneAuctionAbi = [
         indexed: true,
       },
       {
+        name: 'geneId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
+        name: 'recipient',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
+        name: 'amount',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+    ],
+    name: 'PayoutFailed',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'auctionId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      {
         name: 'aminalOne',
         internalType: 'uint256',
         type: 'uint256',
@@ -1632,7 +1746,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0x3A6f4C5bA7D0a82dcdB63Da6b9B60Ee958EdCe45' as const
+  '0xc37B75BB83d9FcCe10bA6fED81C4672Dfd771b8D' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1667,6 +1781,21 @@ export const geneRegistryAbi = [
       },
     ],
     name: 'createGene',
+    outputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'recipient', internalType: 'address', type: 'address' },
+      { name: 'svg', internalType: 'string', type: 'string' },
+      {
+        name: 'category',
+        internalType: 'enum IAminalStructs.VisualsCat',
+        type: 'uint8',
+      },
+    ],
+    name: 'createGeneFor',
     outputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
   },
@@ -1815,10 +1944,16 @@ export const geneRegistryAbi = [
         indexed: true,
       },
       {
+        name: 'recipient',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+      {
         name: 'category',
         internalType: 'enum IAminalStructs.VisualsCat',
         type: 'uint8',
-        indexed: true,
+        indexed: false,
       },
       { name: 'svg', internalType: 'string', type: 'string', indexed: false },
     ],
@@ -1849,7 +1984,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0x90ffaD7CeBF14a779Da2d3484d6989E5Af94f3aa' as const
+  '0x184C5b935C7fE0D5397b62DBB169e08Bdb10757F' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2221,7 +2356,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0xa6C040cf7896Bbee04b8542A47ED30f88cf58d9D' as const
+  '0xA3Aa1667884f6f2111f46d4dfF74549252531232' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2305,6 +2440,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0xb951D7B4E96DB12dda74ce48cB3F587559056847' as const
+  '0x51Bd74f7cD9b35C6f1c2B48FA859846Afea11b3d' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const

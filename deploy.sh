@@ -19,14 +19,14 @@ fi
 echo "📋 Configuration:"
 echo "   RPC URL: $RPC_URL"
 
-# # Step 1: Deploy core contracts
-# echo "Step 1: Deploying core contracts..."
-# forge script script/DeployContracts.s.sol \
-#     --rpc-url $RPC_URL \
-#     --private-key $PRIVATE_KEY \
-#     --broadcast \
-#     --verify \
-#     --etherscan-api-key $ETHERSCAN_API_KEY
+# Step 1: Deploy core contracts
+echo "Step 1: Deploying core contracts..."
+forge script script/DeployContracts.s.sol \
+    --rpc-url $RPC_URL \
+    --private-key $PRIVATE_KEY \
+    --broadcast \
+    --verify \
+    --etherscan-api-key $ETHERSCAN_API_KEY
 
 # if [ $? -ne 0 ]; then
 #     echo "Core contract deployment failed"
@@ -35,16 +35,9 @@ echo "   RPC URL: $RPC_URL"
 
 echo "Core contracts deployed successfully!"
 
-# Step 2: Mint initial genes using single contract with 4 functions
-echo "Step 2: Minting initial genes (32 genes across 4 Aminals)..."
-echo "   This will execute 5 transactions:"
-echo "   - 1 deployment transaction (InitialGenesMinter contract)"
-echo "   - 4 function call transactions (8 genes each)"
-
-forge script script/MintInitialGenes.s.sol:MintInitialGenes \
-    --rpc-url $RPC_URL \
-    --private-key $PRIVATE_KEY \
-    --broadcast
+# Step 2: Mint initial genes using mint-all-genes.sh script
+echo "Step 2: Minting initial genes (32 genes)..."
+./script/mint-all-genes.sh
 
 if [ $? -ne 0 ]; then
     echo "Initial genes minting failed"
@@ -56,9 +49,6 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Initial genes minted successfully!"
-echo "   - InitialGenesMinter contract deployed and verified"
-echo "   - 32 genes minted across 4 separate function calls"
-echo "   - All transactions completed without hanging"
 
 # Step 3: Spawn initial Aminals
 echo "Step 3: Spawning initial Aminals..."
