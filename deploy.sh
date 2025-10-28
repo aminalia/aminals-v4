@@ -44,10 +44,7 @@ echo "   - 4 function call transactions (8 genes each)"
 forge script script/MintInitialGenes.s.sol:MintInitialGenes \
     --rpc-url $RPC_URL \
     --private-key $PRIVATE_KEY \
-    --broadcast \
-    --verify \
-    --etherscan-api-key $ETHERSCAN_API_KEY \
-    -vvv
+    --broadcast
 
 if [ $? -ne 0 ]; then
     echo "Initial genes minting failed"

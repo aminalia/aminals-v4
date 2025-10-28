@@ -2,10 +2,13 @@ pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
-import {InitialGenesMinter} from "script/genes/InitialGenesMinter.sol";
+import {CuteOrangeyGenesMinter} from "script/genes/CuteOrangeyGenesMinter.sol";
+import {ThreeEyedGenesMinter} from "script/genes/ThreeEyedGenesMinter.sol";
+import {BlueAnimatedGenesMinter} from "script/genes/BlueAnimatedGenesMinter.sol";
+import {RedAnimatedGenesMinter} from "script/genes/RedAnimatedGenesMinter.sol";
 
 /*
-Mint initial genes using single contract with 4 separate function calls
+Mint initial genes using four separate contracts (one per Aminal) to avoid contract size limits
 
 Usage:
 forge script script/MintInitialGenes.s.sol:MintInitialGenes --chain-id 11155111 --rpc-url "https://ethereum-sepolia.publicnode.com" --broadcast --verify -vv
@@ -13,7 +16,12 @@ forge script script/MintInitialGenes.s.sol:MintInitialGenes --chain-id 11155111 
 
 contract MintInitialGenes is Script {
     GeneRegistry public geneRegistry;
-    address public minterAddress;
+
+    // Store addresses of the four minter contracts
+    address public cuteOrangeyMinterAddress;
+    address public threeEyedMinterAddress;
+    address public blueAnimatedMinterAddress;
+    address public redAnimatedMinterAddress;
 
     function readDeploymentSummary() public returns (address geneRegistryAddr) {
         string memory json = vm.readFile("deployment-summary.json");
@@ -24,39 +32,55 @@ contract MintInitialGenes is Script {
         require(geneRegistryAddr != address(0), "GeneRegistry address not found in deployment summary");
     }
 
-    function deployMinter() public {
-        console.log("Deploying InitialGenesMinter contract...");
+    function deployMinters() public {
+        console.log("Deploying four separate minter contracts...");
 
-        // Deploy the single minter contract
-        InitialGenesMinter minter = new InitialGenesMinter();
-        minterAddress = address(minter);
-        console.log("InitialGenesMinter deployed to:", address(minter));
+        // Deploy Cute Orangey minter
+        CuteOrangeyGenesMinter cuteOrangeyMinter = new CuteOrangeyGenesMinter();
+        cuteOrangeyMinterAddress = address(cuteOrangeyMinter);
+        console.log("CuteOrangeyGenesMinter deployed to:", cuteOrangeyMinterAddress);
+
+        // Deploy Three-Eyed minter
+        ThreeEyedGenesMinter threeEyedMinter = new ThreeEyedGenesMinter();
+        threeEyedMinterAddress = address(threeEyedMinter);
+        console.log("ThreeEyedGenesMinter deployed to:", threeEyedMinterAddress);
+
+        // Deploy Blue Animated minter
+        BlueAnimatedGenesMinter blueAnimatedMinter = new BlueAnimatedGenesMinter();
+        blueAnimatedMinterAddress = address(blueAnimatedMinter);
+        console.log("BlueAnimatedGenesMinter deployed to:", blueAnimatedMinterAddress);
+
+        // Deploy Red Animated minter
+        RedAnimatedGenesMinter redAnimatedMinter = new RedAnimatedGenesMinter();
+        redAnimatedMinterAddress = address(redAnimatedMinter);
+        console.log("RedAnimatedGenesMinter deployed to:", redAnimatedMinterAddress);
     }
 
     function mintGenesInSeparateTransactions() public {
-        console.log("Minting genes in 4 separate transactions...");
-
-        // Get minter contract
-        InitialGenesMinter minter = InitialGenesMinter(minterAddress);
+        console.log("Minting genes using 4 separate contracts in 4 separate transactions...");
 
         // Transaction 1: Mint Cute Orangey Aminal genes
         console.log("Minting Cute Orangey Aminal genes (8 genes)...");
-        minter.mintCuteOrangeyGenes(geneRegistry);
+        CuteOrangeyGenesMinter cuteOrangeyMinter = CuteOrangeyGenesMinter(cuteOrangeyMinterAddress);
+        cuteOrangeyMinter.mintGenes(geneRegistry);
         console.log("Cute Orangey Aminal genes minted successfully!");
 
         // Transaction 2: Mint Three-Eyed Aminal genes
         console.log("Minting Three-Eyed Aminal genes (8 genes)...");
-        minter.mintThreeEyedGenes(geneRegistry);
+        ThreeEyedGenesMinter threeEyedMinter = ThreeEyedGenesMinter(threeEyedMinterAddress);
+        threeEyedMinter.mintGenes(geneRegistry);
         console.log("Three-Eyed Aminal genes minted successfully!");
 
         // Transaction 3: Mint Blue Animated Aminal genes
         console.log("Minting Blue Animated Aminal genes (8 genes)...");
-        minter.mintBlueAnimatedGenes(geneRegistry);
+        BlueAnimatedGenesMinter blueAnimatedMinter = BlueAnimatedGenesMinter(blueAnimatedMinterAddress);
+        blueAnimatedMinter.mintGenes(geneRegistry);
         console.log("Blue Animated Aminal genes minted successfully!");
 
         // Transaction 4: Mint Red Animated Aminal genes
         console.log("Minting Red Animated Aminal genes (8 genes)...");
-        minter.mintRedAnimatedGenes(geneRegistry);
+        RedAnimatedGenesMinter redAnimatedMinter = RedAnimatedGenesMinter(redAnimatedMinterAddress);
+        redAnimatedMinter.mintGenes(geneRegistry);
         console.log("Red Animated Aminal genes minted successfully!");
 
         console.log("All 32 initial genes minted across 4 transactions!");
@@ -77,7 +101,7 @@ contract MintInitialGenes is Script {
         address move2DAddr = vm.parseJsonAddress(json, ".contracts.Move2D");
         address fightSkillAddr = vm.parseJsonAddress(json, ".contracts.FightSkill");
 
-        // Create updated JSON with minter address
+        // Create updated JSON with all minter addresses
         string memory updatedJson = string.concat(
             "{\n",
             '  "chainId": ',
@@ -111,15 +135,24 @@ contract MintInitialGenes is Script {
             '    "FightSkill": "',
             vm.toString(fightSkillAddr),
             '",\n',
-            '    "InitialGenesMinter": "',
-            vm.toString(minterAddress),
+            '    "CuteOrangeyGenesMinter": "',
+            vm.toString(cuteOrangeyMinterAddress),
+            '",\n',
+            '    "ThreeEyedGenesMinter": "',
+            vm.toString(threeEyedMinterAddress),
+            '",\n',
+            '    "BlueAnimatedGenesMinter": "',
+            vm.toString(blueAnimatedMinterAddress),
+            '",\n',
+            '    "RedAnimatedGenesMinter": "',
+            vm.toString(redAnimatedMinterAddress),
             '"\n',
             "  }\n",
             "}"
         );
 
         vm.writeFile("deployment-summary.json", updatedJson);
-        console.log("Deployment summary updated with InitialGenesMinter address");
+        console.log("Deployment summary updated with all minter contract addresses");
     }
 
     function run() external {
@@ -132,10 +165,10 @@ contract MintInitialGenes is Script {
 
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy minter contract in one transaction
-        deployMinter();
+        // Deploy all four minter contracts in separate transactions
+        deployMinters();
 
-        // Mint genes in 4 separate transactions (each will be broadcast separately)
+        // Mint genes using the four contracts in 4 separate transactions
         mintGenesInSeparateTransactions();
 
         vm.stopBroadcast();
@@ -146,9 +179,9 @@ contract MintInitialGenes is Script {
         console.log("");
         console.log("Gene minting deployment complete!");
         console.log("Summary:");
-        console.log("   - InitialGenesMinter contract deployed");
+        console.log("   - 4 minter contracts deployed (one per Aminal)");
         console.log("   - 32 genes minted across 4 Aminals");
-        console.log("   - 5 total transactions executed (1 deploy + 4 minting)");
+        console.log("   - 8 total transactions executed (4 deploys + 4 minting)");
         console.log("");
         console.log("Next step: Run SpawnInitialAminals.s.sol");
     }

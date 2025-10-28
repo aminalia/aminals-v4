@@ -6,6 +6,7 @@
 
 - Trait links don't work on aminal detail page
 - Fix CI
+- Show trait name
 - TOOL TIPS and more info EVERYWHERE
 - Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
