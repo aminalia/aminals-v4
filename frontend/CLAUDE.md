@@ -224,7 +224,7 @@ Components follow a consistent pattern:
 
 ```typescript
 // Import design tokens
-import { colors, spacing, typography } from '@/theme';
+import { colors, spacing, typography } from '@theme';
 
 // Use in components
 <div className="bg-love-100 text-love-700 p-4">Love-themed content</div>;

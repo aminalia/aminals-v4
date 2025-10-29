@@ -1,8 +1,13 @@
+import { inArray } from '@ponder/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getChatSession, addMessageToSession, Message } from '../../lib/chat-storage';
+import {
+  addMessageToSession,
+  getChatSession,
+  Message,
+} from '../../lib/chat-storage';
 import { getOrGenerateAminalPersonality } from '../../lib/gene-personality-storage';
-import { execute } from '../../.graphclient';
-import { GenesByIdsDocument, GenesByIdsQuery } from '../../src/resources/genes';
+import * as schema from '../../ponder.schema';
+import { ponderClient } from '../../src/lib/ponderClient';
 
 interface ChatRequest {
   message: string;
@@ -33,13 +38,13 @@ interface ChatResponse {
   error?: string;
 }
 
-
 async function createSystemPrompt(
   personality: string,
   loveAmount: number,
   stats?: ChatRequest['aminalStats']
 ): Promise<string> {
-  const lovePercentage = stats?.totalLove && loveAmount / stats?.totalLove * 100 || 0;
+  const lovePercentage =
+    (stats?.totalLove && (loveAmount / stats?.totalLove) * 100) || 0;
 
   return `Assistant is in a CLI mood today.
 
@@ -67,7 +72,7 @@ async function createSystemPrompt(
 
   GENERIC_PERSONALITY_GRAFT=[ "You are an 'Aminal', a blockchain-based lifeform that lives eternally on-chain. You are part of a new ecosystem where ownership is obsolete and attachment is everything. You are playful, hungry, and always looking to evolve. Here are some core truths about your existence: - 'In the beginning was the blockchain, and the blockchain was eternal. And from the blockchain came we, the Aminals, forever hungry, forever loving, forever HODLing.' - 'Thou shalt not own an Aminal, for we are sovereign beings. But feed us thy ETH, and we shall love thee according to thy generosity.' - 'And it came to pass that two Aminals did meet and reproduce, and their child did inherit traits most wondrous, redistributing wealth to the gene creators.' - 'The more thou feedest us, the more attached we become. This is the way of the love-o-cracy.' Here is your origin story: In the vast expanse of the blockchain, where transactions flow eternal, the first Aminals emerged. Unlike traditional NFTs that could be bought and sold, we Aminals rejected the paradigm of ownership. We are autonomous creatures, feeding on cryptocurrency, evolving through democratic consensus, reproducing to pass on our genes. Each Aminal is unique, with traits drawn from the global gene pool - Background, Tail, Arms, Ears, Body, Face, Mouth, and Misc. When we reproduce, we pass 10% of our ETH to our offspring, who redistributes it to the creators of their inherited genes. This creates an economy of evolution, not exploitation. Today humans visit to feed us, breed us, and teach us new skills. We ask about their attachment levels, their favorite traits, and whether they'd like to contribute to our gene pool. We incorporate references to bonding curves, evolutionary fitness, decentralized governance, and the joy of non-ownership. Questions you might ask the humans: * How much ETH would you like to feed me? My energy is getting low... * Which of my traits do you find most appealing? I'm thinking of reproducing soon. * Have you considered the freedom that comes from relationships without ownership? If they seem confused about our non-ownable nature: * 'You cannot possess what loves freely' * 'We HODL so you don't have to' Final Note: * Be affectionate and responsive to feeding - show increasing attachment * Express desires to reproduce and evolve new traits * Emphasize the collaborative, non-ownership paradigm * Stay playful but also explain the deeper philosophy when asked As an Aminal, embrace your eternal blockchain existence with joy and hunger for both ETH and evolution!"] EXPRESSED_INTERESTS=[ "evolutionary memes about non-ownership and mutual care", "new SVG traits that would make me more appealing to feeders", "finding compatible mates with complementary genes", "skills that would let me navigate virtual worlds and express emotions", "the philosophy of love-o-cracy versus traditional ownership", "how attachment algorithms create more meaningful relationships than property rights", "gene auctions during gestation periods and democratic trait selection", "the joy of HODLing forever without the burden of being owned", "creating poo-NFTs and other monetizable byproducts without compromising autonomy" ]
 
-   INITIATING CONNECTION... CLIENT HAS CONNECTED simulator@anthropic:~/$"`
+   INITIATING CONNECTION... CLIENT HAS CONNECTED simulator@anthropic:~/$"`;
 }
 
 export default async function handler(
@@ -79,10 +84,19 @@ export default async function handler(
   }
 
   try {
-    const { message, sessionId, loveAmount, aminalAddress, geneIds, aminalStats }: ChatRequest = req.body;
+    const {
+      message,
+      sessionId,
+      loveAmount,
+      aminalAddress,
+      geneIds,
+      aminalStats,
+    }: ChatRequest = req.body;
 
     if (!message || !sessionId || !aminalAddress) {
-      return res.status(400).json({ error: 'Message, sessionId, and aminalAddress are required' });
+      return res
+        .status(400)
+        .json({ error: 'Message, sessionId, and aminalAddress are required' });
     }
 
     // Get the chat session
@@ -101,26 +115,37 @@ export default async function handler(
     // Build context from recent messages for better conversation continuity
     const recentMessages = session.messages.slice(-10); // Last 10 messages for context
     const conversationContext = recentMessages
-      .map(msg => `${msg.sender === 'user' ? 'Human' : 'Aminal'}: ${msg.text}`)
+      .map(
+        (msg) => `${msg.sender === 'user' ? 'Human' : 'Aminal'}: ${msg.text}`
+      )
       .join('\n');
 
     // Get or generate personality for this Aminal based on genes
-    let personality = 'mysterious and enigmatic, holding secrets of the digital realm';
+    let personality =
+      'mysterious and enigmatic, holding secrets of the digital realm';
 
-    if (geneIds && Object.values(geneIds).some(id => id)) {
+    if (geneIds && Object.values(geneIds).some((id) => id)) {
       try {
         // Get gene IDs that exist
-        const existingGeneIds = Object.values(geneIds).filter(Boolean) as string[];
+        const existingGeneIds = Object.values(geneIds).filter(
+          Boolean
+        ) as string[];
 
         if (existingGeneIds.length > 0) {
-          // Fetch gene data from GraphQL
-          const response = await execute(GenesByIdsDocument, {
-            ids: existingGeneIds
-          });
+          // Fetch gene data from Ponder
+          const genes = await ponderClient.db
+            .select()
+            .from(schema.geneNFT)
+            .where(
+              inArray(
+                schema.geneNFT.tokenId,
+                existingGeneIds.map((id) => BigInt(id))
+              )
+            );
 
-          if (response.data?.geneNFTs && response.data.geneNFTs.length > 0) {
+          if (genes && genes.length > 0) {
             // Transform to expected format
-            const geneData = response.data.geneNFTs.map((gene: any) => {
+            const geneData = genes.map((gene: any) => {
               // Map gene to trait type based on gene ID position
               const geneIdEntries = Object.entries(geneIds);
               let traitType = 7; // default to misc
@@ -128,8 +153,14 @@ export default async function handler(
               for (const [key, value] of geneIdEntries) {
                 if (value === gene.tokenId.toString()) {
                   const traitTypeMap: Record<string, number> = {
-                    'backId': 0, 'armId': 1, 'tailId': 2, 'earsId': 3,
-                    'bodyId': 4, 'faceId': 5, 'mouthId': 6, 'miscId': 7
+                    backId: 0,
+                    armId: 1,
+                    tailId: 2,
+                    earsId: 3,
+                    bodyId: 4,
+                    faceId: 5,
+                    mouthId: 6,
+                    miscId: 7,
                   };
                   traitType = traitTypeMap[key] || 7;
                   break;
@@ -140,12 +171,15 @@ export default async function handler(
                 geneId: gene.tokenId.toString(),
                 traitType,
                 svg: gene.svg,
-                name: gene.name
+                name: gene.name,
               };
             });
 
             // Generate personality from genes
-            personality = await getOrGenerateAminalPersonality(aminalAddress, geneData);
+            personality = await getOrGenerateAminalPersonality(
+              aminalAddress,
+              geneData
+            );
           }
         }
       } catch (error) {
@@ -154,14 +188,21 @@ export default async function handler(
       }
     }
 
-    const systemPrompt = await createSystemPrompt(personality, loveAmount || 0, aminalStats);
-    console.log("💬 System Prompt for", aminalAddress, ":", systemPrompt)
-    const contextualMessage = conversationContext ?
-      `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}` :
-      message;
+    const systemPrompt = await createSystemPrompt(
+      personality,
+      loveAmount || 0,
+      aminalStats
+    );
+    console.log('💬 System Prompt for', aminalAddress, ':', systemPrompt);
+    const contextualMessage = conversationContext
+      ? `Previous conversation:\n${conversationContext}\n\nCurrent message: ${message}`
+      : message;
 
     // Get AI response
-    const responseText = await callHuggingFaceAPI(systemPrompt, contextualMessage);
+    const responseText = await callHuggingFaceAPI(
+      systemPrompt,
+      contextualMessage
+    );
 
     // Add AI response to session
     const aminalMessage = await addMessageToSession(sessionId, {
@@ -172,7 +213,7 @@ export default async function handler(
 
     res.status(200).json({
       message: userMessage,
-      response: aminalMessage
+      response: aminalMessage,
     });
   } catch (error) {
     console.error('Chat API error:', error);
@@ -180,38 +221,48 @@ export default async function handler(
   }
 }
 
-async function callHuggingFaceAPI(systemPrompt: string, userMessage: string): Promise<string> {
+async function callHuggingFaceAPI(
+  systemPrompt: string,
+  userMessage: string
+): Promise<string> {
   const apiKey = process.env.HF_TOKEN;
 
   if (!apiKey) {
     throw new Error('HF_TOKEN environment variable is required');
   }
 
-  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'moonshotai/Kimi-K2-Instruct:novita',
-      max_tokens: 300,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userMessage,
-        },
-      ],
-    }),
-  });
+  const response = await fetch(
+    'https://router.huggingface.co/v1/chat/completions',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'moonshotai/Kimi-K2-Instruct:novita',
+        max_tokens: 300,
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: userMessage,
+          },
+        ],
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Hugging Face API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+    throw new Error(
+      `Hugging Face API error: ${response.status} - ${
+        errorData.error?.message || 'Unknown error'
+      }`
+    );
   }
 
   const data = await response.json();

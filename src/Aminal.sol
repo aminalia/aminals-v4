@@ -403,9 +403,10 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
 
         // Transfer ETH to recipient
         (success,) = payable(recipient).call{value: amount}("");
-        if (!success) revert TreasuryTransferFailed();
 
-        emit TreasuryTransferred(recipient, amount, address(this).balance);
+        // Only emit event if transfer was successful
+        if (success) emit TreasuryTransferred(recipient, amount, address(this).balance);
+
         return success;
     }
 

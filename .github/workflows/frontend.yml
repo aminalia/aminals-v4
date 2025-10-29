@@ -7,67 +7,93 @@ on:
       - main
     paths:
       - "frontend/**"
+      - "package.json"
+      - "yarn.lock"
   pull_request:
     branches:
       - main
     paths:
       - "frontend/**"
+      - "package.json"
+      - "yarn.lock"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run graphclient:build
-      - run: npm run build
+          node-version: 22
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build application
+        run: yarn workspace aminals-frontend build
 
   lint:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run lint
+          node-version: 22
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn workspace aminals-frontend lint
 
   typecheck:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run graphclient:build
-      - run: npm run typecheck
+          node-version: 22
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Type check
+        run: yarn workspace aminals-frontend typecheck
 
   prettier:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - name: Enable Corepack
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 18
-      - run: npm install
-      - run: npm run prettier
+          node-version: 22
+          cache: "yarn"
+          cache-dependency-path: "yarn.lock"
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Check formatting
+        run: yarn workspace aminals-frontend prettier

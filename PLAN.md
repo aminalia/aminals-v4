@@ -1,57 +1,23 @@
 # Plan
 
-- [ ] Make issues / resolve issues from security audit
-- [ ] Switch to ponder (will hopefully solve many bugs)
+- deploy-sepolia.sh -> deploy.sh
 
-### Try ponder
-
-I want to experiment with using ponder.sh instead of the graph for indexing the solidity contracts. Create a new `ponder` directory, and let's create an indexer similar to the functionality we've already created with the graph in @graph/
-
-## New Features Ideas
-
-- Amainal Chat (feed in love, system prompt, extract SVG and convert to embeddings and grab words)
-- Maybe make this a chat skill (with an AVS that extracts personality traits)
-- Aminal Race
-- Prediction Market
-- Bribing
-- Give love to Aminals (check voting power) on breeding page (if you don't love them yet, it's not too late)
-- Aminals DAO (a DAO of Aminals based on Loveocracy)
-- Poo skill to create a new NFT
-
-
-## Open Design Questions
-
-- Do we need remove gene?
-- What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
-- Should there be a way of creating an entirely new Aminal?
-
-In general we need a review of what things cost (even if the cost is in terms of love or energy).
-
-## TODO
-
-#### UI
+## UI
 
 - Trait links don't work on aminal detail page
 - Fix CI
+- Show trait name
+- TOOL TIPS and more info EVERYWHERE
 - Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
+- Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
 
-#### Contracts
+### Chat Feature Improvements
 
-- setFactory in Genes is not good... maybe use an initializer? Owner can set factory whenever. Need to initialize initial genes, but maybe there is a different pattern we can use?
-- start optimizing for gas (payouts need most work)
-- measure gas (see how this is done in aminalsV3)
-- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
-- Clean up and document scripts
-- Some events might be redundent (squeak vs EnergyChange / LoveChange)
-- Investigate whether there should be some limits on gene proposals during auctions
-- When initializing aminal genes during deployment, gene #0 has issues
-
-#### Do last
-
-- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
-- More docs
-- Landing page about the Aminals project
+- Use Eigen AI for getting persionalities in a deterministic way
+- Better prompts for more creative outputs
+- Pass ETH amounts correctly (Aminals think they have more ETH than they actually have)
+- API rate limiting
 
 ### User Testing feedback
 
@@ -92,7 +58,7 @@ Desgin challenges:
 
 Indexer:
 
-- [ ] Total earnings for OG genes are not updating?
+- [?] Total earnings for OG genes are not updating? (maybe fixed)
 - [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
 
 Contract Changes:
@@ -108,3 +74,40 @@ Contract Changes:
 ##### General Questions from User Interview
 
 - "Why aren't all genes listed?"
+
+## Ponder
+
+- Index gene name and description
+
+# Contracts
+
+- Review vibe coded love bonding curve math
+- Make sure geneNFTs show up well on OpenSea / wallets
+- measure gas (see how this is done in aminalsV3)
+- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
+- Clean up and document scripts
+- Some events might be redundent (squeak vs EnergyChange / LoveChange)
+- Investigate whether there should be some limits on gene proposals during auctions
+- When initializing aminal genes during deployment, gene #0 has issues
+
+# New Features Ideas
+
+- Aminal Race
+- Bribe system
+- Prediction Market
+- Aminals DAO (a DAO of Aminals based on Loveocracy)
+- Poo skill to create a new NFT
+
+# Open Design Questions
+
+- Do we need remove gene?
+- What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
+- Should there be a way of creating an entirely new Aminal?
+
+In general we need a review of what things cost (even if the cost is in terms of love or energy).
+
+# Do last
+
+- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
+- More docs
+- Landing page about the Aminals project

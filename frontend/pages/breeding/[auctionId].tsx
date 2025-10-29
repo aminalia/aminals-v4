@@ -1,15 +1,19 @@
-import BulkVoteButton from '@/components/actions/bulk-vote-button';
-import EndAuctionButton from '@/components/actions/endauction-button';
-import { AminalVisualImage } from '@/components/aminal-card';
-import CountdownTimer from '@/components/countdown-timer';
-import ProposeGeneModal from '@/components/propose-gene-modal';
+import BulkVoteButton from '@components/actions/BulkVoteButton';
+import EndAuctionButton from '@components/actions/EndAuctionButton';
+import { AminalVisualImage } from '@components/AminalCard';
+import CountdownTimer from '@components/CountdownTimer';
+import ProposeGeneModal from '@components/ProposeGeneModal';
 import TraitSelector, {
   SelectedParts,
   TraitParts,
-} from '@/components/trait-selector';
-import VoteStats from '@/components/vote-stats';
-import { useAuction, useAuctionProposeGenes } from '@/resources/auctions';
-import { useGenesByIds } from '@/resources/genes';
+} from '@components/TraitSelector';
+import VoteStats from '@components/VoteStats';
+import {
+  makeGeneNFTId,
+  useAuction,
+  useGeneProposalsByAuctionId,
+  useGenesByIds,
+} from '@hooks';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
@@ -39,7 +43,7 @@ const AuctionPage: NextPage = () => {
     data: proposeGenes,
     isLoading: isLoadingProposeGenes,
     error: proposeGenesError,
-  } = useAuctionProposeGenes(isRouterReady ? auctionId : '');
+  } = useGeneProposalsByAuctionId(isRouterReady ? auctionId : '');
 
   // Calculate auction end time
   const auctionEndTime = useMemo(() => {
@@ -55,11 +59,12 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
-  // Get all gene IDs from parent Aminals
+  // Get gene IDs from parent Aminals only (proposals already have gene data loaded)
   const geneIds = useMemo(() => {
-    if (!auction) return [];
+    if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
-    const ids = [
+    // Convert parent trait token IDs to geneNFT ID format
+    const parentIds = [
       auction.aminalOne.backId,
       auction.aminalOne.armId,
       auction.aminalOne.tailId,
@@ -81,8 +86,9 @@ const AuctionPage: NextPage = () => {
         const idStr = id ? id.toString() : '';
         return idStr !== '' && idStr !== '0';
       })
-      .map((id) => id.toString());
-    return Array.from(new Set(ids)); // Remove duplicates
+      .map((id) => makeGeneNFTId(id!)); // Convert token ID to geneNFT ID format
+
+    return Array.from(new Set(parentIds)); // Remove duplicates
   }, [auction]);
 
   // Fetch gene NFT data for the gene IDs
@@ -113,7 +119,7 @@ const AuctionPage: NextPage = () => {
     const map: { [key: string]: any } = {};
     geneData.forEach((gene) => {
       if (gene && gene.tokenId) {
-        map[gene.tokenId] = gene;
+        map[gene.tokenId.toString()] = gene;
       }
     });
     return map;
@@ -121,7 +127,7 @@ const AuctionPage: NextPage = () => {
 
   // Define the gene parts from the auction data with community proposals
   const parts: TraitParts = useMemo(() => {
-    if (!auction) {
+    if (!auction?.aminalOne || !auction?.aminalTwo) {
       return {
         background: [],
         body: [],
@@ -138,7 +144,14 @@ const AuctionPage: NextPage = () => {
       if (!id || id.toString() === '0') {
         return null;
       }
-      const gene = geneMap[id.toString()];
+      const idStr = id.toString();
+      const gene = geneMap[idStr];
+      if (!gene) {
+        console.warn(
+          `Gene not found for ID: ${idStr}, available keys:`,
+          Object.keys(geneMap).slice(0, 5)
+        );
+      }
       return gene ? { ...gene, visualId: gene.tokenId } : null;
     };
 
@@ -210,11 +223,13 @@ const AuctionPage: NextPage = () => {
       proposeGenes.forEach((proposal) => {
         const traitKey =
           traitMapping[proposal.traitType as keyof typeof traitMapping];
-        if (traitKey && proposal.geneNFT) {
+        // Use gene NFT data that's already loaded with the proposal
+        const geneNFT = proposal.geneNFT;
+        if (traitKey && geneNFT) {
           (communityGenes as any)[traitKey].push({
-            ...proposal.geneNFT,
-            visualId: proposal.geneNFT.tokenId,
-            svg: proposal.geneNFT.svg,
+            ...geneNFT,
+            visualId: geneNFT.tokenId,
+            svg: geneNFT.svg,
             isCommunityGene: true,
           });
         }
@@ -257,7 +272,7 @@ const AuctionPage: NextPage = () => {
 
   // Parent genes only (for randomization)
   const parentParts: TraitParts = useMemo(() => {
-    if (!auction) {
+    if (!auction?.aminalOne || !auction?.aminalTwo) {
       return {
         background: [],
         body: [],
@@ -336,8 +351,6 @@ const AuctionPage: NextPage = () => {
           return acc;
         }, {} as SelectedParts);
 
-        console.log('Randomizing with parent parts:', parentParts);
-        console.log('Setting randomized parts:', randomizedParts);
         setSelectedParts(randomizedParts);
         setHasRandomized(true);
       }
@@ -354,7 +367,8 @@ const AuctionPage: NextPage = () => {
 
   // Function to get parent Aminal contract addresses
   const getParentAddresses = () => {
-    if (!auction) return { parentOne: '?', parentTwo: '?' };
+    if (!auction?.aminalOne || !auction?.aminalTwo)
+      return { parentOne: '?', parentTwo: '?' };
     return {
       parentOne:
         auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
@@ -365,10 +379,6 @@ const AuctionPage: NextPage = () => {
 
   const { parentOne, parentTwo } = getParentAddresses();
 
-  console.log('auction data:', auction, error);
-  console.log('propose genes:', proposeGenes, proposeGenesError);
-  console.log(auction);
-
   // Handle fallback state for static export (production only)
   if (router.isFallback) {
     return (
@@ -376,8 +386,8 @@ const AuctionPage: NextPage = () => {
         <div className="container max-w-7xl mx-auto px-4 py-8">
           <div className="flex justify-center items-center h-64">
             <div className="flex flex-col items-center gap-4">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-              <div className="text-gray-600">Loading auction...</div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-love"></div>
+              <div className="text-muted-foreground">Loading auction...</div>
             </div>
           </div>
         </div>
@@ -387,7 +397,7 @@ const AuctionPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-7xl mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="space-y-8">
           {/* Header Section */}
           <div className="flex items-center justify-between">
@@ -395,20 +405,20 @@ const AuctionPage: NextPage = () => {
               <div className="flex items-center gap-3 mb-2">
                 <Link
                   href="/breeding"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  className="text-energy hover:text-energy/80 text-sm font-medium"
                 >
                   ← Back to Breeding
                 </Link>
-                <span className="px-2 py-1 text-sm bg-gray-100 text-gray-700 rounded font-medium">
+                <span className="px-2 py-1 text-sm bg-secondary text-foreground rounded font-medium">
                   #{auctionId}
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
                 {auction?.finished && auction?.childAminal
                   ? `Aminal #${auction.childAminal.aminalIndex}`
                   : 'Gene Selection'}
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className="text-muted-foreground mt-1">
                 {auction?.finished && auction?.childAminal
                   ? 'Has been born!'
                   : 'Select genes for each trait category'}
@@ -419,16 +429,18 @@ const AuctionPage: NextPage = () => {
           {!isRouterReady || isLoadingAuction || isLoadingGenes ? (
             <div className="flex justify-center items-center h-64">
               <div className="flex flex-col items-center gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
-                <div className="text-gray-600">Loading breeding data...</div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-love"></div>
+                <div className="text-muted-foreground">
+                  Loading breeding data...
+                </div>
               </div>
             </div>
           ) : (
             <>
               {/* Main Content */}
-              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden -mt-8">
+              <div className="bg-card rounded-lg border border-border overflow-hidden -mt-8">
                 {/* Parents Info with Countdown Timer */}
-                <div className="bg-gray-50 border border-gray-200 rounded-lg px-6 py-4">
+                <div className="bg-muted border border-border rounded-lg px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6">
                       <Link
@@ -436,26 +448,32 @@ const AuctionPage: NextPage = () => {
                           auction?.aminalOne?.contractAddress ||
                           auction?.aminalOne?.aminalIndex
                         }`}
-                        className="text-lg font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                        className="text-lg font-semibold text-energy hover:text-energy/80 transition-colors"
                       >
-                        Aminal #{auction?.aminalOne?.aminalIndex || '?'}
+                        Aminal #
+                        {auction?.aminalOne?.aminalIndex !== undefined
+                          ? Number(auction.aminalOne.aminalIndex)
+                          : '?'}
                       </Link>
-                      <div className="text-gray-400">×</div>
+                      <div className="text-muted-foreground">×</div>
                       <Link
                         href={`/aminals/${
                           auction?.aminalTwo?.contractAddress ||
                           auction?.aminalTwo?.aminalIndex
                         }`}
-                        className="text-lg font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                        className="text-lg font-semibold text-energy hover:text-energy/80 transition-colors"
                       >
-                        Aminal #{auction?.aminalTwo?.aminalIndex || '?'}
+                        Aminal #
+                        {auction?.aminalTwo?.aminalIndex !== undefined
+                          ? Number(auction.aminalTwo.aminalIndex)
+                          : '?'}
                       </Link>
                     </div>
 
                     <div>
                       {/* Countdown Timer or End Auction Button */}
                       {auction?.finished ? (
-                        <div className="flex items-center gap-2 bg-blue-100 text-blue-700 px-3 py-1 rounded text-sm">
+                        <div className="flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded text-sm">
                           <div>✓</div>
                           <div className="font-medium">Completed</div>
                         </div>
@@ -468,16 +486,16 @@ const AuctionPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Show new Aminal if auction is finished, otherwise show builder */}
+                {/* Show new Aminal if auction is finished, show winning combination if ended but not born, otherwise show builder */}
                 {auction?.finished && auction?.childAminal ? (
                   <div className="p-4">
-                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
+                    <div className="bg-success/10 border border-success/30 rounded-xl p-6">
                       <div className="text-center mb-6">
                         <div className="text-4xl mb-2">🎉</div>
-                        <h2 className="text-2xl font-bold text-green-800 mb-2">
+                        <h2 className="text-2xl font-bold text-success mb-2">
                           New Aminal Has Been Born!
                         </h2>
-                        <p className="text-green-700">
+                        <p className="text-success">
                           The community has voted and created a new Aminal from
                           this breeding auction.
                         </p>
@@ -487,47 +505,10 @@ const AuctionPage: NextPage = () => {
                         {/* Left Column - New Aminal Display */}
                         <div className="flex justify-center">
                           <div className="relative">
-                            <div className="w-80 h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-green-100 to-emerald-100 border-4 border-green-300 shadow-2xl">
-                              <AminalVisualImage
-                                aminal={{
-                                  id: auction.childAminal.id,
-                                  contractAddress:
-                                    auction.childAminal.contractAddress,
-                                  aminalIndex:
-                                    auction.childAminal.aminalIndex.toString(),
-                                  energy: auction.childAminal.energy.toString(),
-                                  totalLove:
-                                    auction.childAminal.totalLove.toString(),
-                                  tokenURI:
-                                    auction.childAminal.tokenURI || undefined,
-                                  backId:
-                                    auction.childAminal.backId?.toString() ||
-                                    '0',
-                                  armId:
-                                    auction.childAminal.armId?.toString() ||
-                                    '0',
-                                  tailId:
-                                    auction.childAminal.tailId?.toString() ||
-                                    '0',
-                                  earsId:
-                                    auction.childAminal.earsId?.toString() ||
-                                    '0',
-                                  bodyId:
-                                    auction.childAminal.bodyId?.toString() ||
-                                    '0',
-                                  faceId:
-                                    auction.childAminal.faceId?.toString() ||
-                                    '0',
-                                  mouthId:
-                                    auction.childAminal.mouthId?.toString() ||
-                                    '0',
-                                  miscId:
-                                    auction.childAminal.miscId?.toString() ||
-                                    '0',
-                                }}
-                              />
+                            <div className="w-80 h-80 rounded-2xl overflow-hidden bg-success/20 border-4 border-success shadow-2xl">
+                              <AminalVisualImage aminal={auction.childAminal} />
                             </div>
-                            <div className="absolute -top-4 -right-4 bg-green-500 text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg animate-bounce">
+                            <div className="absolute -top-4 -right-4 bg-success text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg animate-bounce">
                               👶
                             </div>
                           </div>
@@ -538,34 +519,34 @@ const AuctionPage: NextPage = () => {
                           <div className="text-center lg:text-left">
                             <Link
                               href={`/aminals/${auction.childAminal.contractAddress}`}
-                              className="text-4xl font-bold text-green-700 hover:text-green-800 transition-colors underline decoration-2 underline-offset-4"
+                              className="text-4xl font-bold text-success hover:text-success/80 transition-colors underline decoration-2 underline-offset-4"
                             >
                               Aminal #{auction.childAminal.aminalIndex}
                             </Link>
-                            <p className="text-xl text-green-600 mt-2 font-medium">
+                            <p className="text-xl text-success mt-2 font-medium">
                               Has been born!
                             </p>
-                            <p className="text-green-600 mt-1">
-                              Child of #{auction.aminalOne.aminalIndex} × #
-                              {auction.aminalTwo.aminalIndex}
+                            <p className="text-success mt-1">
+                              Child of #{auction.aminalOne?.aminalIndex} × #
+                              {auction.aminalTwo?.aminalIndex}
                             </p>
                           </div>
 
                           <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-white rounded-lg p-4 border border-green-200 shadow-sm">
-                              <div className="text-sm text-green-600 font-medium">
+                            <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
+                              <div className="text-sm text-success font-medium">
                                 Energy
                               </div>
-                              <div className="text-2xl font-bold text-green-700">
+                              <div className="text-2xl font-bold text-success">
                                 {Number(auction.childAminal.energy).toFixed(2)}{' '}
                                 ⚡
                               </div>
                             </div>
-                            <div className="bg-white rounded-lg p-4 border border-green-200 shadow-sm">
-                              <div className="text-sm text-green-600 font-medium">
+                            <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
+                              <div className="text-sm text-success font-medium">
                                 Total Love
                               </div>
-                              <div className="text-2xl font-bold text-green-700">
+                              <div className="text-2xl font-bold text-success">
                                 {Number(auction.childAminal.totalLove).toFixed(
                                   2
                                 )}{' '}
@@ -574,11 +555,11 @@ const AuctionPage: NextPage = () => {
                             </div>
                           </div>
 
-                          <div className="bg-white rounded-lg p-4 border border-green-200 shadow-sm">
-                            <div className="text-sm text-green-600 font-medium">
+                          <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
+                            <div className="text-sm text-success font-medium">
                               Contract Address
                             </div>
-                            <div className="text-sm font-mono text-green-700 mt-1">
+                            <div className="text-sm font-mono text-success mt-1">
                               {auction.childAminal.contractAddress}
                             </div>
                           </div>
@@ -586,7 +567,7 @@ const AuctionPage: NextPage = () => {
                           <div className="text-center lg:text-left">
                             <Link
                               href={`/aminals/${auction.childAminal.contractAddress}`}
-                              className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all hover:shadow-lg transform hover:-translate-y-0.5"
+                              className="inline-flex items-center gap-3 bg-success hover:bg-success/80 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                             >
                               <span>👀</span>
                               Visit Aminal Page
@@ -597,15 +578,18 @@ const AuctionPage: NextPage = () => {
                       </div>
                     </div>
                   </div>
+                ) : isAuctionEnded &&
+                  (!auction?.finished || !auction?.childAminal) ? (
+                  <div></div>
                 ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 p-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 p-4">
                     {/* Left Column - Preview */}
                     <div className="xl:col-span-2">
-                      <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <h3 className="text-sm font-medium text-gray-700 mb-3">
+                      <div className="bg-muted rounded-lg p-4 border border-border">
+                        <h3 className="text-sm font-medium text-foreground mb-3">
                           Preview
                         </h3>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-white border border-gray-300">
+                        <div className="aspect-square rounded-lg overflow-hidden bg-card border border-border">
                           <svg
                             viewBox="0 0 1000 1000"
                             className="w-full h-full"
@@ -635,7 +619,7 @@ const AuctionPage: NextPage = () => {
                     </div>
 
                     {/* Right Column - Gene Selector */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 xl:col-span-2">
                       <TraitSelector
                         parts={parts}
                         selectedParts={selectedParts}
@@ -704,8 +688,8 @@ const AuctionPage: NextPage = () => {
                       )}
 
                       {auction?.finished && (
-                        <div className="text-center py-4 bg-green-50 rounded-lg border border-green-200">
-                          <div className="text-green-600 font-medium">
+                        <div className="text-center py-4 bg-success/10 rounded-lg border border-success/30">
+                          <div className="text-success font-medium">
                             Auction Complete - New Aminal Created
                           </div>
                         </div>
@@ -717,12 +701,12 @@ const AuctionPage: NextPage = () => {
 
               {/* Additional breeding information section - only show if auction is finished */}
               {auction?.finished && auction?.childAminal && (
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className="bg-card rounded-lg border border-border p-6">
                   <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">
                       Breeding Details
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-muted-foreground">
                       This Aminal was created through community voting in
                       auction #{auctionId}
                     </p>
@@ -730,53 +714,55 @@ const AuctionPage: NextPage = () => {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                      <h4 className="font-medium text-foreground flex items-center gap-2">
                         <span>👨‍👩‍👧‍👦</span>
                         Parent Information
                       </h4>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">
                             Parent A
                           </span>
                           <Link
-                            href={`/aminals/${auction.aminalOne.contractAddress}`}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                            href={`/aminals/${auction.aminalOne?.contractAddress}`}
+                            className="text-sm font-medium text-energy hover:text-energy/80"
                           >
-                            Aminal #{auction.aminalOne.aminalIndex}
+                            Aminal #{auction.aminalOne?.aminalIndex}
                           </Link>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">
                             Parent B
                           </span>
                           <Link
-                            href={`/aminals/${auction.aminalTwo.contractAddress}`}
-                            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+                            href={`/aminals/${auction.aminalTwo?.contractAddress}`}
+                            className="text-sm font-medium text-energy hover:text-energy/80"
                           >
-                            Aminal #{auction.aminalTwo.aminalIndex}
+                            Aminal #{auction.aminalTwo?.aminalIndex}
                           </Link>
                         </div>
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <h4 className="font-medium text-gray-700 flex items-center gap-2">
+                      <h4 className="font-medium text-foreground flex items-center gap-2">
                         <span>📊</span>
                         Auction Statistics
                       </h4>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">
                             Total Voting Power
                           </span>
-                          <span className="text-sm font-medium text-gray-800">
+                          <span className="text-sm font-medium text-foreground">
                             {Number(auction.totalLove).toFixed(2)} ❤️
                           </span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-600">Status</span>
-                          <span className="text-sm font-medium text-green-600">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">
+                            Status
+                          </span>
+                          <span className="text-sm font-medium text-success">
                             ✅ Completed
                           </span>
                         </div>
@@ -787,8 +773,14 @@ const AuctionPage: NextPage = () => {
               )}
 
               {/* Vote Statistics - Always show, but "Current Winning Combination" section is hidden if auction is finished */}
-              <div className="bg-white rounded-lg border border-gray-200 p-4">
-                <VoteStats auctionId={auctionId} />
+              <div className="bg-card rounded-lg border border-border p-4">
+                <VoteStats
+                  auctionId={auctionId}
+                  forceShowWinningCombination={
+                    isAuctionEnded &&
+                    (!auction?.finished || !auction?.childAminal)
+                  }
+                />
               </div>
             </>
           )}

@@ -1,25 +1,16 @@
-import AminalCard from '@/components/aminal-card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/ui/empty-state';
-import { PageLoadingSpinner } from '@/components/ui/loading-spinner';
-import { TRAIT_CATEGORIES } from '@/constants/trait-categories';
-import { genesAddress } from '@/contracts/generated';
-import { useGene } from '@/resources/genes';
+import AminalCard from '@components/AminalCard';
+import { Badge } from '@components/ui/Badge';
+import { Button } from '@components/ui/Button';
+import { EmptyState } from '@components/ui/EmptyState';
+import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { genesAddress } from '@contracts/generated';
+import { useGene } from '@hooks';
 import { ExternalLink } from 'lucide-react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Layout from '../_layout';
-
-interface AminalWithDetails {
-  id: string;
-  aminalIndex: string;
-  contractAddress: string;
-  tokenURI: string;
-  totalLove: string;
-  energy: string;
-}
 
 const GeneDetailPage: NextPage = () => {
   const router = useRouter();
@@ -59,7 +50,7 @@ const GeneDetailPage: NextPage = () => {
   if (!gene) {
     return (
       <Layout>
-        <div className="container max-w-5xl mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-8">
           <EmptyState
             icon="🧬"
             title="Gene not found"
@@ -72,23 +63,10 @@ const GeneDetailPage: NextPage = () => {
 
   const category =
     TRAIT_CATEGORIES[gene.traitType as keyof typeof TRAIT_CATEGORIES];
-  // Extract unique Aminals from proposals (each proposal has 2 Aminals)
-  const uniqueAminals = gene.proposalsUsingGene
-    ? Array.from(
-        new Set(
-          [
-            ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalOne),
-            ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalTwo),
-          ].map((a) => a.id)
-        )
-      ).map((id) =>
-        [
-          ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalOne),
-          ...gene.proposalsUsingGene.map((p: any) => p.auction.aminalTwo),
-        ].find((a) => a.id === id)
-      )
-    : [];
-  const aminalCount = uniqueAminals.length;
+
+  // Get aminals that have this gene in their traits
+  const aminalsWithGene = gene.aminals || [];
+  const aminalCount = aminalsWithGene.length;
 
   // Format total earnings from wei to ETH
   const formatEarnings = (totalEarnings: string) => {
@@ -101,20 +79,20 @@ const GeneDetailPage: NextPage = () => {
 
   return (
     <Layout>
-      <div className="container max-w-5xl mx-auto px-4 py-8">
+      <div className="py-8">
         <div className="flex flex-col gap-8">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold flex items-center gap-2">
-                <span className="text-3xl">{category.emoji}</span>
-                Gene #{gene.tokenId}
-              </h1>
-              <Badge variant="neutral" size="lg">
-                {category.name}
-              </Badge>
-            </div>
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold flex items-center gap-2">
+                  <span className="text-3xl">{category.emoji}</span>
+                  Gene #{gene.tokenId.toString()}
+                </h1>
+                <Badge variant="default" size="lg">
+                  {category.name}
+                </Badge>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -130,13 +108,13 @@ const GeneDetailPage: NextPage = () => {
                   View on OpenSea
                 </Link>
               </Button>
-              <Link
-                href="/genes"
-                className="text-primary hover:text-primary/80 text-sm font-medium"
-              >
-                ← Back to all Genes
-              </Link>
             </div>
+            <Link
+              href="/genes"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
+            >
+              ← Back to all Genes
+            </Link>
           </div>
 
           {/* Main Content */}
@@ -172,7 +150,7 @@ const GeneDetailPage: NextPage = () => {
                   <div>
                     <div className="font-medium">Address</div>
                     <div className="font-mono text-sm text-muted-foreground">
-                      {gene.creator.address}
+                      {gene.creator?.address || 'Unknown'}
                     </div>
                   </div>
                 </div>
@@ -188,7 +166,7 @@ const GeneDetailPage: NextPage = () => {
                   <div>
                     <div className="font-medium">Address</div>
                     <div className="font-mono text-sm text-muted-foreground">
-                      {gene.owner.address}
+                      {gene.owner?.address || 'Unknown'}
                     </div>
                   </div>
                 </div>
@@ -201,8 +179,8 @@ const GeneDetailPage: NextPage = () => {
                   <div className="text-sm text-muted-foreground">
                     Total Earnings
                   </div>
-                  <div className="text-2xl font-semibold text-green-600">
-                    {formatEarnings(gene.totalEarnings)} ETH
+                  <div className="text-2xl font-semibold text-success">
+                    {formatEarnings(gene.totalEarnings.toString())} ETH
                   </div>
                 </div>
               </div>
@@ -225,40 +203,9 @@ const GeneDetailPage: NextPage = () => {
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {uniqueAminals.map((aminal: any) => {
-                  const aminalWithDetails =
-                    aminal as unknown as AminalWithDetails;
-
-                  // Transform the data to match AminalCard's expected interface
-                  const transformedAminal = {
-                    id: aminalWithDetails.id,
-                    contractAddress: aminalWithDetails.contractAddress,
-                    aminalIndex: aminalWithDetails.aminalIndex,
-                    energy: (
-                      Number(aminalWithDetails.energy) / 1e18
-                    ).toString(),
-                    totalLove: (
-                      Number(aminalWithDetails.totalLove) / 1e18
-                    ).toString(),
-                    tokenURI: aminalWithDetails.tokenURI,
-                    backId: '',
-                    armId: '',
-                    tailId: '',
-                    earsId: '',
-                    bodyId: '',
-                    faceId: '',
-                    mouthId: '',
-                    miscId: '',
-                    lovers: [],
-                  };
-
-                  return (
-                    <AminalCard
-                      key={aminalWithDetails.id}
-                      aminal={transformedAminal}
-                    />
-                  );
-                })}
+                {aminalsWithGene.map((aminal: any) => (
+                  <AminalCard key={aminal.id} aminal={aminal} />
+                ))}
               </div>
             )}
           </div>

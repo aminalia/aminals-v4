@@ -12,6 +12,7 @@ const nextConfig = {
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },
+
   swcMinify: true,
   compress: true,
   // // Seemed to fuck with dev server

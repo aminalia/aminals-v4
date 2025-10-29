@@ -1,3 +1,4 @@
+import { PonderProvider } from '@ponder/react';
 import {
   getDefaultConfig,
   lightTheme,
@@ -6,12 +7,20 @@ import {
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
+import { Roboto_Mono } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
-import { ErrorBoundary } from '../src/components/error-boundary';
-import { createQueryClient } from '../src/lib/query-client';
+import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { ponderClient } from '../src/lib/ponderClient';
+import { createQueryClient } from '../src/lib/queryClient';
 import '../styles/globals.css';
+
+const robotoMono = Roboto_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-roboto-mono',
+});
 
 const wagmiConfig = getDefaultConfig({
   appName: 'Aminals',
@@ -28,30 +37,48 @@ const queryClient = createQueryClient();
 
 function AminalsApp({ Component, pageProps }: AppProps) {
   return (
-    <ErrorBoundary>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <RainbowKitProvider theme={rainbowTheme}>
-            <Component {...pageProps} />
-            <Toaster
-              position="top-right"
-              toastOptions={{
-                duration: 4000,
-                className: 'toast-custom',
-                style: {
-                  background: 'hsl(var(--card))',
-                  color: 'hsl(var(--card-foreground))',
-                  border: '1px solid hsl(var(--border))',
-                  borderRadius: '8px',
-                  boxShadow:
-                    '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
-                },
-              }}
-            />
-          </RainbowKitProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </ErrorBoundary>
+    <div className={robotoMono.className}>
+      <ErrorBoundary>
+        <WagmiProvider config={wagmiConfig}>
+          <PonderProvider client={ponderClient}>
+            <QueryClientProvider client={queryClient}>
+              <RainbowKitProvider theme={rainbowTheme}>
+                <Component {...pageProps} />
+                <Toaster
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#ffffff',
+                      color: '#000000',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      boxShadow:
+                        '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                    },
+                    success: {
+                      iconTheme: {
+                        primary: '#10b981',
+                        secondary: '#ffffff',
+                      },
+                    },
+                    error: {
+                      iconTheme: {
+                        primary: '#ef4444',
+                        secondary: '#ffffff',
+                      },
+                    },
+                  }}
+                />
+              </RainbowKitProvider>
+            </QueryClientProvider>
+          </PonderProvider>
+        </WagmiProvider>
+      </ErrorBoundary>
+    </div>
   );
 }
 

@@ -70,6 +70,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Mapping from auction ID to auction data
     mapping(uint256 => Auction) public auctions;
 
+    /// @notice Mapping from gene ID to failed payout information
+    mapping(uint256 => FailedPayout) public failedPayouts;
+
     /*//////////////////////////////////////////////////////////////
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
@@ -223,6 +226,22 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
     /// @notice Thrown when user has no voting power in an auction
     error NoVotingPower();
+
+    /// @notice Failed payout information
+    struct FailedPayout {
+        uint256 amountFromParentOne;
+        uint256 amountFromParentTwo;
+        address parentOneAddress;
+        address parentTwoAddress;
+        uint256 auctionId;
+        bool claimed;
+    }
+
+    /// @notice Emitted when a payout fails and is stored for later claiming
+    event PayoutFailed(uint256 indexed auctionId, uint256 indexed geneId, address indexed recipient, uint256 amount);
+
+    /// @notice Emitted when a failed payout is successfully claimed
+    event FailedPayoutClaimed(uint256 indexed geneId, address indexed recipient, uint256 totalAmount);
 
     /*//////////////////////////////////////////////////////////////
                                MODIFIERS
@@ -948,6 +967,23 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             if (successOne) totalTransferred += treasuryPerGeneHalf;
             if (successTwo) totalTransferred += treasuryPerGeneHalf;
 
+            // Store failed payouts for later claiming
+            if (!successOne || !successTwo) {
+                FailedPayout storage failed = failedPayouts[selectedGeneId];
+                if (!successOne) {
+                    failed.amountFromParentOne += treasuryPerGeneHalf;
+                    failed.parentOneAddress = aminalOneAddress;
+                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                }
+                if (!successTwo) {
+                    failed.amountFromParentTwo += treasuryPerGeneHalf;
+                    failed.parentTwoAddress = aminalTwoAddress;
+                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                }
+                failed.auctionId = auctionId;
+                failed.claimed = false;
+            }
+
             // Emit payout event if any transfers succeeded
             if (successOne || successTwo) {
                 emit GeneCreatorPayout(auctionId, selectedGeneId, geneOwner, totalTransferred);
@@ -955,5 +991,60 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         }
 
         return totalTransferred;
+    }
+
+    /**
+     * @notice Allows gene owners to claim failed payouts
+     * @param geneId The gene ID for which to claim failed payouts
+     * @dev Only the current owner of the gene NFT can claim failed payouts
+     * @dev Uses a separate function to prevent griefing during auction settlement
+     */
+    function claimFailedPayout(uint256 geneId) external nonReentrant {
+        FailedPayout storage failed = failedPayouts[geneId];
+
+        // Verify there's a failed payout to claim
+        require(failed.amountFromParentOne > 0 || failed.amountFromParentTwo > 0, "No failed payout to claim");
+        require(!failed.claimed, "Payout already claimed");
+
+        // Verify caller is the current gene owner
+        address geneOwner = genes.ownerOf(geneId);
+        require(msg.sender == geneOwner, "Only gene owner can claim");
+
+        uint256 totalClaimed = 0;
+
+        // Attempt to claim from parent one if there's a failed payout
+        if (failed.amountFromParentOne > 0) {
+            bool successOne = IAminal(failed.parentOneAddress).payout(failed.amountFromParentOne, geneOwner);
+            if (successOne) {
+                totalClaimed += failed.amountFromParentOne;
+                failed.amountFromParentOne = 0;
+            }
+        }
+
+        // Attempt to claim from parent two if there's a failed payout
+        if (failed.amountFromParentTwo > 0) {
+            bool successTwo = IAminal(failed.parentTwoAddress).payout(failed.amountFromParentTwo, geneOwner);
+            if (successTwo) {
+                totalClaimed += failed.amountFromParentTwo;
+                failed.amountFromParentTwo = 0;
+            }
+        }
+
+        // Mark as claimed if all amounts were successfully transferred
+        if (failed.amountFromParentOne == 0 && failed.amountFromParentTwo == 0) failed.claimed = true;
+
+        // Require at least some amount was claimed
+        require(totalClaimed > 0, "Payout still failing - recipient cannot receive ETH");
+
+        emit FailedPayoutClaimed(geneId, geneOwner, totalClaimed);
+    }
+
+    /**
+     * @notice Get information about failed payouts for a gene
+     * @param geneId The gene ID to check
+     * @return payout The failed payout information
+     */
+    function getFailedPayout(uint256 geneId) external view returns (FailedPayout memory payout) {
+        return failedPayouts[geneId];
     }
 }

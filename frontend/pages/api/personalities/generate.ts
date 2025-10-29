@@ -1,6 +1,8 @@
+import { inArray } from '@ponder/client';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { getOrGenerateAminalPersonality } from '../../../lib/gene-personality-storage';
-import { execute, GenesByIdsDocument } from '../../../.graphclient';
+import * as schema from '../../../ponder.schema';
+import { ponderClient } from '../../../src/lib/ponderClient';
 
 interface GeneratePersonalityRequest {
   aminalAddress: string;
@@ -27,14 +29,20 @@ export default async function handler(
   res: NextApiResponse<GeneratePersonalityResponse>
 ) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' } as GeneratePersonalityResponse);
+    return res
+      .status(405)
+      .json({ error: 'Method not allowed' } as GeneratePersonalityResponse);
   }
 
   try {
     const { aminalAddress, geneIds }: GeneratePersonalityRequest = req.body;
 
     if (!aminalAddress || !geneIds) {
-      return res.status(400).json({ error: 'aminalAddress and geneIds are required' } as GeneratePersonalityResponse);
+      return res
+        .status(400)
+        .json({
+          error: 'aminalAddress and geneIds are required',
+        } as GeneratePersonalityResponse);
     }
 
     // Collect all valid gene IDs and map them to trait types
@@ -50,20 +58,23 @@ export default async function handler(
       .map(([_, id]) => id as string);
 
     if (geneIdArray.length === 0) {
-      return res.status(400).json({ error: 'No valid gene IDs provided' } as GeneratePersonalityResponse);
+      return res
+        .status(400)
+        .json({
+          error: 'No valid gene IDs provided',
+        } as GeneratePersonalityResponse);
     }
 
-    // Fetch gene data from GraphQL
-    const response = await execute(GenesByIdsDocument, {
-      ids: geneIdArray,
-    });
-
-    if (response.errors) {
-      console.error('GraphQL errors:', response.errors);
-      throw new Error(`GraphQL error: ${response.errors[0].message}`);
-    }
-
-    const genes = response.data?.geneNFTs || [];
+    // Fetch gene data from Ponder
+    const genes = await ponderClient.db
+      .select()
+      .from(schema.geneNFT)
+      .where(
+        inArray(
+          schema.geneNFT.tokenId,
+          geneIdArray.map((id) => BigInt(id))
+        )
+      );
 
     // Map genes to trait types
     const traitTypeMap: Record<string, number> = {
@@ -80,7 +91,7 @@ export default async function handler(
     for (const [geneKey, geneId] of Object.entries(geneIds)) {
       if (!geneId || geneId === '0') continue;
 
-      const gene = genes.find(g => g.tokenId === geneId);
+      const gene = genes.find((g: any) => g.tokenId.toString() === geneId);
       if (gene && gene.svg) {
         geneData.push({
           geneId,
@@ -92,11 +103,18 @@ export default async function handler(
     }
 
     if (geneData.length === 0) {
-      return res.status(400).json({ error: 'No valid genes found with SVG data' } as GeneratePersonalityResponse);
+      return res
+        .status(400)
+        .json({
+          error: 'No valid genes found with SVG data',
+        } as GeneratePersonalityResponse);
     }
 
     // Generate personality from genes
-    const personality = await getOrGenerateAminalPersonality(aminalAddress, geneData);
+    const personality = await getOrGenerateAminalPersonality(
+      aminalAddress,
+      geneData
+    );
 
     // Get the individual traits for response
     const traits: Record<string, string> = {};
@@ -108,6 +126,10 @@ export default async function handler(
     });
   } catch (error) {
     console.error('Error generating personality:', error);
-    res.status(500).json({ error: 'Failed to generate personality' } as GeneratePersonalityResponse);
+    res
+      .status(500)
+      .json({
+        error: 'Failed to generate personality',
+      } as GeneratePersonalityResponse);
   }
 }
