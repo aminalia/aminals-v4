@@ -1,8 +1,15 @@
 ## Getting Started
 
+Set environment variables in `.env.local` file.
+```
+cp .env.example .env.local
+```
+
+The most important environment variable is `NEXT_PUBLIC_PONDER_URL` which points to the indexer.
+
+Then:
 ```bash
 npm install
-npm run graphclient:build
 npm run dev
 ```
 
