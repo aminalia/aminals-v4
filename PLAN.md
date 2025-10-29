@@ -1,16 +1,20 @@
 # Plan
 
-- deploy-sepolia.sh -> deploy.sh
+# Bugs
+- Empty traits are not working, voting no trait means a random one get's selected.
+- ETH balance is not updating
+- Trait links don't work on aminal detail page
+
 
 ## UI
 
-- Trait links don't work on aminal detail page
 - Fix CI
 - Show trait name
 - TOOL TIPS and more info EVERYWHERE
 - Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
 - Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
+- Better page metadata, linking to an Aminal on Twitter should show image, etc.
 
 ### Chat Feature Improvements
 
@@ -78,6 +82,7 @@ Contract Changes:
 ## Ponder
 
 - Index gene name and description
+- ETH balance is not updating
 
 # Contracts
 
@@ -86,6 +91,7 @@ Contract Changes:
 - measure gas (see how this is done in aminalsV3)
 - More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
 - Clean up and document scripts
+- Remove proposals
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
