@@ -333,16 +333,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Proposing complete Aminal designs (all 8 traits together)...");
 
         // First design: Cohesive pastel theme
-        uint256[8] memory design1 = [
-            backgroundGeneId,
-            armsGeneId,
-            tailGeneId,
-            earsGeneId,
-            bodyGeneId,
-            faceGeneId,
-            mouthGeneId,
-            miscGeneId
-        ];
+        uint256[8] memory design1 =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
 
         // Second design: Alternative vibrant theme
         uint256[8] memory design2 = [
@@ -465,7 +457,11 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("New Aminal created - Total Aminals:", factory.totalAminals());
     }
 
-    function _verifyChildBirthAndPayouts(uint256 /* auctionId */ ) internal {
+    function _verifyChildBirthAndPayouts(
+        uint256 /* auctionId */
+    )
+        internal
+    {
         console.log("Verifying child birth with complete design...");
 
         // Get the child Aminal
@@ -492,13 +488,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("- Misc gene:", childVisuals.miscId);
 
         // Verify all traits are set (not zero unless parent had zero)
-        bool hasNonZeroTraits = childVisuals.backId != 0 || childVisuals.armId != 0 ||
-                                childVisuals.tailId != 0 || childVisuals.earsId != 0 ||
-                                childVisuals.bodyId != 0 || childVisuals.faceId != 0 ||
-                                childVisuals.mouthId != 0 || childVisuals.miscId != 0;
+        bool hasNonZeroTraits = childVisuals.backId != 0 || childVisuals.armId != 0 || childVisuals.tailId != 0
+            || childVisuals.earsId != 0 || childVisuals.bodyId != 0 || childVisuals.faceId != 0
+            || childVisuals.mouthId != 0 || childVisuals.miscId != 0;
 
-        assertTrue(hasNonZeroTraits || (childVisuals.backId == 0 && childVisuals.armId == 0),
-                   "Child should have traits from winning design");
+        assertTrue(
+            hasNonZeroTraits || (childVisuals.backId == 0 && childVisuals.armId == 0),
+            "Child should have traits from winning design"
+        );
 
         console.log("Child birth and design application verified successfully");
     }
@@ -540,16 +537,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 auctionId = _initiateBreeding();
 
         // Propose a design
-        uint256[8] memory design = [
-            backgroundGeneId,
-            armsGeneId,
-            tailGeneId,
-            earsGeneId,
-            bodyGeneId,
-            faceGeneId,
-            mouthGeneId,
-            miscGeneId
-        ];
+        uint256[8] memory design =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
 
         vm.prank(alice);
         geneAuction.proposeDesign(auctionId, design);

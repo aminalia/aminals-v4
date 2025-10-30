@@ -34,8 +34,8 @@ contract FightSkill is Skill {
         // require(Fighters[victim].fighting == 0, "Cannot attack an Aminal that is already enrolled in a fight");
 
         if (!Fighters[msg.sender].fighting) {
-            Fighters[msg.sender].health =
-                IAminal(msg.sender).getEnergy() + (IAminal(msg.sender).getEnergy() * Fighters[msg.sender].mastery) / 100;
+            Fighters[msg.sender].health = IAminal(msg.sender).getEnergy()
+                + (IAminal(msg.sender).getEnergy() * Fighters[msg.sender].mastery) / 100;
             Fighters[msg.sender].fighting = true;
         }
         if (!Fighters[victim].fighting) {

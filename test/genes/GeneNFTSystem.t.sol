@@ -184,7 +184,8 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     }
 
     function testSVGStorageAndRetrieval() public {
-        string memory longSvg = '<svg width="1000" height="1000"><rect x="0" y="0" width="1000" height="1000" fill="blue"/><circle cx="500" cy="500" r="200" fill="yellow"/></svg>';
+        string memory longSvg =
+            '<svg width="1000" height="1000"><rect x="0" y="0" width="1000" height="1000" fill="blue"/><circle cx="500" cy="500" r="200" fill="yellow"/></svg>';
 
         vm.prank(alice);
         uint256 geneId = geneRegistry.createGene(longSvg, VisualsCat.FACE);

@@ -191,11 +191,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param _aminalProposals Address of the governance proposals contract
      * @param _genes Address of the gene NFT contract
      */
-    function initialize(address _geneAuction, address _aminalProposals, address _genes)
-        external
-        initializer
-        onlyOwner
-    {
+    function initialize(address _geneAuction, address _aminalProposals, address _genes) external initializer onlyOwner {
         require(_geneAuction != address(0), "AminalFactory: invalid auction address");
         require(_aminalProposals != address(0), "AminalFactory: invalid proposals address");
         require(_genes != address(0), "AminalFactory: invalid genes address");

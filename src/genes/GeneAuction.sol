@@ -83,17 +83,17 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
     /// @notice Complete Aminal design proposal (all 8 traits)
     struct AminalDesign {
-        uint256 backId;     // Gene ID for background trait
-        uint256 armId;      // Gene ID for arm trait
-        uint256 tailId;     // Gene ID for tail trait
-        uint256 earsId;     // Gene ID for ears trait
-        uint256 bodyId;     // Gene ID for body trait
-        uint256 faceId;     // Gene ID for face trait
-        uint256 mouthId;    // Gene ID for mouth trait
-        uint256 miscId;     // Gene ID for misc trait
-        address proposer;   // Address that proposed this design
-        uint256 votes;      // Total voting power for this design
-        bool removed;       // Whether this design has been removed
+        uint256 backId; // Gene ID for background trait
+        uint256 armId; // Gene ID for arm trait
+        uint256 tailId; // Gene ID for tail trait
+        uint256 earsId; // Gene ID for ears trait
+        uint256 bodyId; // Gene ID for body trait
+        uint256 faceId; // Gene ID for face trait
+        uint256 mouthId; // Gene ID for mouth trait
+        uint256 miscId; // Gene ID for misc trait
+        address proposer; // Address that proposed this design
+        uint256 votes; // Total voting power for this design
+        bool removed; // Whether this design has been removed
     }
 
     /// @notice Core auction data structure
@@ -151,10 +151,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param voter Address of the voter
     /// @param userVotingPower The voting power used
     event DesignVoteCast(
-        uint256 indexed auctionId,
-        uint256 indexed designId,
-        address indexed voter,
-        uint256 userVotingPower
+        uint256 indexed auctionId, uint256 indexed designId, address indexed voter, uint256 userVotingPower
     );
 
     /// @notice Emitted when an auction is settled and child is spawned
@@ -163,10 +160,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param winningGeneIds Array of winning gene IDs by category
     /// @param totalTreasuryTransferred Total ETH paid to gene creators
     event VotingSettled(
-        uint256 indexed auctionId,
-        uint256 winningDesignId,
-        uint256[8] winningGeneIds,
-        uint256 totalTreasuryTransferred
+        uint256 indexed auctionId, uint256 winningDesignId, uint256[8] winningGeneIds, uint256 totalTreasuryTransferred
     );
 
     /// @notice Emitted when a gene creator receives payment for their winning gene
@@ -182,10 +176,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param proposer Address of the proposer
     /// @param geneIds Array of 8 gene IDs comprising the design
     event DesignProposed(
-        uint256 indexed auctionId,
-        uint256 indexed designId,
-        address indexed proposer,
-        uint256[8] geneIds
+        uint256 indexed auctionId, uint256 indexed designId, address indexed proposer, uint256[8] geneIds
     );
 
     /// @notice Emitted when someone votes to remove a design from consideration
@@ -193,12 +184,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param designId The design being voted for removal
     /// @param voter Address voting for removal
     /// @param voteWeight Weight of the removal vote
-    event DesignRemovalVote(
-        uint256 indexed auctionId,
-        uint256 indexed designId,
-        address voter,
-        uint256 voteWeight
-    );
+    event DesignRemovalVote(uint256 indexed auctionId, uint256 indexed designId, address voter, uint256 voteWeight);
 
     /// @notice Emitted when a design is successfully removed from an auction
     /// @param auctionId The auction the design was removed from
@@ -543,20 +529,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         )
     {
         Auction storage auction = auctions[auctionId];
-        return (
-            auction.aminalOne, auction.aminalTwo, auction.totalLove, auction.startTime, auction.endTime, auction.settled
-        );
+        return
+            (
+                auction.aminalOne,
+                auction.aminalTwo,
+                auction.totalLove,
+                auction.startTime,
+                auction.endTime,
+                auction.settled
+            );
     }
 
     /**
      * @notice Get voting information for an auction
      */
-    function getAuctionVoting(uint256 auctionId)
-        external
-        view
-        validVoting(auctionId)
-        returns (AuctionVoteInfo memory)
-    {
+    function getAuctionVoting(uint256 auctionId) external view validVoting(auctionId) returns (AuctionVoteInfo memory) {
         Auction storage auction = auctions[auctionId];
         return AuctionVoteInfo({
             highestVotes: auction.highestVotes,
@@ -713,9 +700,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             // Tie situation - add to tied array
             auction.tiedDesignIds.push(designId);
             // Keep existing winner for now (tie resolution happens at settlement)
-            if (auction.winningDesignId == 0) {
-                auction.winningDesignId = designId;
-            }
+            if (auction.winningDesignId == 0) auction.winningDesignId = designId;
         }
     }
 
@@ -748,7 +733,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
                     auction.winningDesignId = currentDesignId;
                     delete auction.tiedDesignIds;
                     auction.tiedDesignIds.push(currentDesignId);
-                } else if (!currentDesign.removed && currentDesign.votes == auction.highestVotes && currentDesign.votes > 0) {
+                } else if (
+                    !currentDesign.removed && currentDesign.votes == auction.highestVotes && currentDesign.votes > 0
+                ) {
                     auction.tiedDesignIds.push(currentDesignId);
                 }
                 unchecked {
@@ -773,8 +760,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
                 // Multiple designs tied - use randomness to break the tie
                 // Using auction-specific data as seed to ensure unique randomness per auction
                 uint256 randomIndex = _generateRandomness(
-                    uint256(keccak256(abi.encode(auction.aminalOne, auction.aminalTwo))),
-                    auction.tiedDesignIds.length
+                    uint256(keccak256(abi.encode(auction.aminalOne, auction.aminalTwo))), auction.tiedDesignIds.length
                 );
                 winningDesignId = auction.tiedDesignIds[randomIndex];
             } else {
@@ -791,11 +777,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[8] memory) {
         // Randomly choose between parent designs
         uint256 random = _generateRandomness(1, 2);
-        if (random == 0) {
-            return auction.parentOneTraits;
-        } else {
-            return auction.parentTwoTraits;
-        }
+        if (random == 0) return auction.parentOneTraits;
+        else return auction.parentTwoTraits;
     }
 
     /**
@@ -962,9 +945,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         }
 
         // Mark as claimed if all amounts were successfully transferred
-        if (failed.amountFromParentOne == 0 && failed.amountFromParentTwo == 0) {
-            failed.claimed = true;
-        }
+        if (failed.amountFromParentOne == 0 && failed.amountFromParentTwo == 0) failed.claimed = true;
 
         // Require at least some amount was claimed
         require(totalClaimed > 0, "Payout still failing - recipient cannot receive ETH");
