@@ -207,6 +207,13 @@ export const aminalAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
+    name: 'getLoveForAmount',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [],
     name: 'getParents',
     outputs: [
@@ -993,7 +1000,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0x8CE7Fbbe9d92136D842a76734C3883dd00839E7e' as const
+  '0x8364df6bCDDfc3eE749263f5A6D4C8B937fe0E84' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1746,7 +1753,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0xc37B75BB83d9FcCe10bA6fED81C4672Dfd771b8D' as const
+  '0x3329bC1De8612423b571b3353DB318995081125e' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1831,13 +1838,6 @@ export const geneRegistryAbi = [
     inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
     name: 'geneRegistry',
     outputs: [{ name: 'isFromFactory', internalType: 'bool', type: 'bool' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
-    name: 'geneSVGs',
-    outputs: [{ name: 'svg', internalType: 'string', type: 'string' }],
     stateMutability: 'view',
   },
   {
@@ -1984,7 +1984,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0x184C5b935C7fE0D5397b62DBB169e08Bdb10757F' as const
+  '0x7078E24274d797f641dcBB2b4B5D0BF31B4d0cb2' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2045,8 +2045,8 @@ export const genesAbi = [
   {
     type: 'function',
     inputs: [{ name: 'id', internalType: 'uint256', type: 'uint256' }],
-    name: 'geneSVGs',
-    outputs: [{ name: '', internalType: 'string', type: 'string' }],
+    name: 'geneSVGPointers',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
     stateMutability: 'view',
   },
   {
@@ -2081,6 +2081,13 @@ export const genesAbi = [
         type: 'uint8',
       },
     ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'id', internalType: 'uint256', type: 'uint256' }],
+    name: 'getGeneSVG',
+    outputs: [{ name: '', internalType: 'string', type: 'string' }],
     stateMutability: 'view',
   },
   {
@@ -2356,7 +2363,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0xA3Aa1667884f6f2111f46d4dfF74549252531232' as const
+  '0x14336FD396682Bc93d89Bd5f7c7f0b52ce6c30C3' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2440,6 +2447,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0x51Bd74f7cD9b35C6f1c2B48FA859846Afea11b3d' as const
+  '0x849aA5F963a4A9Ec952543Dd43A7f0Fda5eFEbA2' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const
