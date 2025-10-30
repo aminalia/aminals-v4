@@ -110,19 +110,41 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.deal(david, 10 ether);
         vm.deal(eve, 10 ether);
 
-        // Create initial parent Aminals
-        _createParentAminals();
-
-        // Create diverse Gene NFTs for all categories
+        // FIRST: Create Gene NFTs that will be used by parent Aminals
         _createGeneNFTs();
+
+        // THEN: Create parent Aminals using the gene NFTs we just created
+        _createParentAminals();
     }
 
     function _createParentAminals() internal {
+        // Create parent Aminals using the first set of gene NFTs (pastel theme)
+        // This ensures parent Aminals have valid gene NFT IDs that actually exist
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
-        initialVisuals[1] =
-            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+
+        // Parent 1: Uses first set of genes (pastel theme)
+        initialVisuals[0] = Visuals({
+            backId: backgroundGeneId,
+            armId: armsGeneId,
+            tailId: tailGeneId,
+            earsId: earsGeneId,
+            bodyId: bodyGeneId,
+            faceId: faceGeneId,
+            mouthId: mouthGeneId,
+            miscId: miscGeneId
+        });
+
+        // Parent 2: Uses alternative set of genes (vibrant theme) for variety
+        initialVisuals[1] = Visuals({
+            backId: altBackgroundGeneId,
+            armId: altArmsGeneId,
+            tailId: altTailGeneId,
+            earsId: altEarsGeneId,
+            bodyId: altBodyGeneId,
+            faceId: altFaceGeneId,
+            mouthId: altMouthGeneId,
+            miscId: altMiscGeneId
+        });
 
         factory.spawnInitialAminals(initialVisuals);
         aminal1Address = factory.getAminalByIndex(0);
