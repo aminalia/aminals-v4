@@ -14,9 +14,9 @@ const TraitCard = dynamic(() => import('../../src/components/TraitCard'), {
   ssr: false,
 });
 
-const CreateGeneModal = dynamic(
+const CreateGenePage = dynamic(
   () =>
-    import('../../src/components/CreateGeneModal').then((mod) => ({
+    import('../../src/components/CreateGenePage').then((mod) => ({
       default: mod.default,
     })),
   {
@@ -188,8 +188,8 @@ const TraitsPage: NextPage = () => {
         </div>
       </div>
 
-      {/* Create Gene Modal */}
-      <CreateGeneModal
+      {/* Create Gene Page */}
+      <CreateGenePage
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={() => {
