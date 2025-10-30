@@ -762,19 +762,27 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
     /**
      * @notice Select the winning design for an auction
+     * @dev Handles ties using deterministic randomness based on auction ID
+     * @param auction The auction to select winner from
+     * @return winningDesignId The ID of the winning design, or 0 if no votes were cast
      */
     function _selectWinningDesign(Auction storage auction) internal view returns (uint256 winningDesignId) {
-        if (auction.highestVotes > 0 && auction.tiedDesignIds.length > 0) {
+        // Check if there were any votes cast (tiedDesignIds is populated during voting)
+        if (auction.tiedDesignIds.length > 0) {
             if (auction.tiedDesignIds.length > 1) {
-                // Handle tie with randomness
-                uint256 randomIndex = _generateRandomness(0, auction.tiedDesignIds.length);
+                // Multiple designs tied - use randomness to break the tie
+                // Using auction-specific data as seed to ensure unique randomness per auction
+                uint256 randomIndex = _generateRandomness(
+                    uint256(keccak256(abi.encode(auction.aminalOne, auction.aminalTwo))),
+                    auction.tiedDesignIds.length
+                );
                 winningDesignId = auction.tiedDesignIds[randomIndex];
             } else {
-                // Clear winner
+                // Single clear winner
                 winningDesignId = auction.tiedDesignIds[0];
             }
         }
-        // Returns 0 if no votes were cast
+        // Implicitly returns 0 if no votes were cast (default value)
     }
 
     /**
