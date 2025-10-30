@@ -420,7 +420,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         require(address(loveVRGDA) != address(0), "AminalFactory: VRGDA not deployed");
 
         // Construct visual genetics for the new Aminal
-        Visuals memory visuals = Visuals({
+        Visuals memory v = Visuals({
             backId: backId,
             armId: armId,
             tailId: tailId,
@@ -436,7 +436,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             address(this), // Factory address for callbacks
             parentOne, // First parent (or address(0) for genesis)
             parentTwo, // Second parent (or address(0) for genesis)
-            visuals, // Complete genetic visual profile
+            v, // Complete genetic visual profile
             totalAminals, // Unique index for this Aminal
             address(loveVRGDA) // VRGDA system for love calculations
         );
@@ -448,13 +448,18 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         aminalsByIndex[totalAminals] = childAddress;
         totalAminals++;
 
-        emit AminalSpawned(
-            childAddress,
-            parentOne,
-            parentTwo,
-            auctionId,
-            [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
-        );
+        // Create array for emit to avoid stack too deep
+        uint256[TRAIT_CATEGORIES] memory geneIds;
+        geneIds[0] = v.backId;
+        geneIds[1] = v.armId;
+        geneIds[2] = v.tailId;
+        geneIds[3] = v.earsId;
+        geneIds[4] = v.bodyId;
+        geneIds[5] = v.faceId;
+        geneIds[6] = v.mouthId;
+        geneIds[7] = v.miscId;
+
+        emit AminalSpawned(childAddress, parentOne, parentTwo, auctionId, geneIds);
 
         return childAddress;
     }

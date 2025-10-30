@@ -235,6 +235,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         bool claimed;
     }
 
+    /// @notice Helper struct to reduce stack depth in settleVoting
+    struct PayoutContext {
+        uint256 auctionId;
+        address aminalOneAddress;
+        address aminalTwoAddress;
+        uint256 treasuryPerGeneHalf;
+    }
+
     /// @notice Emitted when a payout fails and is stored for later claiming
     event PayoutFailed(uint256 indexed auctionId, uint256 indexed geneId, address indexed recipient, uint256 amount);
 
@@ -349,26 +357,26 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         }
 
         // Process treasury payouts to gene creators
-        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
-        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
+        PayoutContext memory ctx;
+        ctx.auctionId = auctionId;
+        ctx.aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
+        ctx.aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
-        uint256 aminalOneTreasury = IAminal(aminalOneAddress).getTreasuryBalance();
-        uint256 aminalTwoTreasury = IAminal(aminalTwoAddress).getTreasuryBalance();
+        uint256 aminalOneTreasury = IAminal(ctx.aminalOneAddress).getTreasuryBalance();
+        uint256 aminalTwoTreasury = IAminal(ctx.aminalTwoAddress).getTreasuryBalance();
         uint256 treasuryFromAminalOne = (aminalOneTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
         uint256 treasuryFromAminalTwo = (aminalTwoTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
 
         // Pre-calculate treasury per gene to avoid repeated division
         uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / 8;
-        uint256 treasuryPerGeneHalf = treasuryPerGene / 2;
+        ctx.treasuryPerGeneHalf = treasuryPerGene / 2;
 
         // Transfer treasury to each gene creator
         for (uint256 i = 0; i < 8;) {
             uint256 selectedGeneId = winningGeneIds[i];
 
             if (selectedGeneId != 0 && geneRegistry.isValidGene(selectedGeneId)) {
-                totalTreasuryTransferred += _payoutGeneCreator(
-                    auctionId, selectedGeneId, treasuryPerGeneHalf, aminalOneAddress, aminalTwoAddress
-                );
+                totalTreasuryTransferred += _payoutGeneCreator(ctx, selectedGeneId);
             }
             unchecked {
                 ++i;
@@ -378,7 +386,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         emit VotingSettled(auctionId, winningDesignId, winningGeneIds, totalTreasuryTransferred);
 
         // Spawn the child Aminal with winning traits
-        aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, winningGeneIds);
+        aminalFactory.spawnAminal(ctx.aminalOneAddress, ctx.aminalTwoAddress, auctionId, winningGeneIds);
     }
 
     /**
@@ -864,44 +872,41 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /**
      * @notice Transfer treasury to gene creator with pre-calculated amounts
      */
-    function _payoutGeneCreator(
-        uint256 auctionId,
-        uint256 selectedGeneId,
-        uint256 treasuryPerGeneHalf,
-        address aminalOneAddress,
-        address aminalTwoAddress
-    ) internal returns (uint256 totalTransferred) {
-        if (treasuryPerGeneHalf > 0) {
+    function _payoutGeneCreator(PayoutContext memory ctx, uint256 selectedGeneId)
+        internal
+        returns (uint256 totalTransferred)
+    {
+        if (ctx.treasuryPerGeneHalf > 0) {
             // Get current owner of the gene NFT
             address geneOwner = genes.ownerOf(selectedGeneId);
 
             // Transfer treasury from parents to gene owner (split equally)
-            bool successOne = IAminal(aminalOneAddress).payout(treasuryPerGeneHalf, geneOwner);
-            bool successTwo = IAminal(aminalTwoAddress).payout(treasuryPerGeneHalf, geneOwner);
+            bool successOne = IAminal(ctx.aminalOneAddress).payout(ctx.treasuryPerGeneHalf, geneOwner);
+            bool successTwo = IAminal(ctx.aminalTwoAddress).payout(ctx.treasuryPerGeneHalf, geneOwner);
 
-            if (successOne) totalTransferred += treasuryPerGeneHalf;
-            if (successTwo) totalTransferred += treasuryPerGeneHalf;
+            if (successOne) totalTransferred += ctx.treasuryPerGeneHalf;
+            if (successTwo) totalTransferred += ctx.treasuryPerGeneHalf;
 
             // Store failed payouts for later claiming
             if (!successOne || !successTwo) {
                 FailedPayout storage failed = failedPayouts[selectedGeneId];
                 if (!successOne) {
-                    failed.amountFromParentOne += treasuryPerGeneHalf;
-                    failed.parentOneAddress = aminalOneAddress;
-                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                    failed.amountFromParentOne += ctx.treasuryPerGeneHalf;
+                    failed.parentOneAddress = ctx.aminalOneAddress;
+                    emit PayoutFailed(ctx.auctionId, selectedGeneId, geneOwner, ctx.treasuryPerGeneHalf);
                 }
                 if (!successTwo) {
-                    failed.amountFromParentTwo += treasuryPerGeneHalf;
-                    failed.parentTwoAddress = aminalTwoAddress;
-                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                    failed.amountFromParentTwo += ctx.treasuryPerGeneHalf;
+                    failed.parentTwoAddress = ctx.aminalTwoAddress;
+                    emit PayoutFailed(ctx.auctionId, selectedGeneId, geneOwner, ctx.treasuryPerGeneHalf);
                 }
-                failed.auctionId = auctionId;
+                failed.auctionId = ctx.auctionId;
                 failed.claimed = false;
             }
 
             // Emit payout event if any transfers succeeded
             if (successOne || successTwo) {
-                emit GeneCreatorPayout(auctionId, selectedGeneId, geneOwner, totalTransferred);
+                emit GeneCreatorPayout(ctx.auctionId, selectedGeneId, geneOwner, totalTransferred);
             }
         }
 
