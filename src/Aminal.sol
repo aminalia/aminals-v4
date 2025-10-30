@@ -452,6 +452,13 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         return address(this).balance;
     }
 
+    /// @notice Calculate the amount of love that would be received for a given ETH amount
+    /// @param amount The amount of ETH (in wei) to query
+    /// @return loveAmount The amount of love that would be received
+    function getLoveForAmount(uint256 amount) external view returns (uint256) {
+        return loveVRGDA.getLoveForETH(energy, amount);
+    }
+
     /*//////////////////////////////////////////////////////////////
                               NFT OVERRIDES
     //////////////////////////////////////////////////////////////*/
