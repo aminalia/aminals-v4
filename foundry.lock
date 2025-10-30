@@ -1,0 +1,14 @@
+{
+  "lib/VRGDAs": {
+    "rev": "c2f3afebcb1d449572b3e5ce3a6acb9cf4a957cd"
+  },
+  "lib/abdk-libraries-solidity": {
+    "rev": "5e1e7c11b35f8313d3f7ce11c1b86320d7c0b554"
+  },
+  "lib/forge-std": {
+    "rev": "e8a047e3f40f13fa37af6fe14e6e06283d9a060e"
+  },
+  "lib/openzeppelin-contracts": {
+    "rev": "e50c24f5839db17f46991478384bfda14acfb830"
+  }
+}
