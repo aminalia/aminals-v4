@@ -17,6 +17,7 @@ import {Strings} from "oz/utils/Strings.sol";
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Base64} from "src/utils/Base64.sol";
+import {SSTORE2} from "solady/utils/SSTORE2.sol";
 
 /// @notice Gene NFT contract implementing ERC721 with enumerable extension
 /// @dev Genes represent individual visual traits that can be composed into Aminals
@@ -37,9 +38,9 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @dev Incremented with each new gene minted
     uint256 public currentId;
 
-    /// @notice Mapping from gene ID to its SVG content
-    /// @dev Contains the actual visual representation of the gene
-    mapping(uint256 id => string) public geneSVGs;
+    /// @notice Mapping from gene ID to its SVG content **storage pointer**
+    /// @dev Contains **SSTORE2 pointer** to the actual visual representation of the gene
+    mapping(uint256 id => address) public geneSVGPointers;
 
     /// @notice Mapping from gene ID to its visual category
     /// @dev Determines which trait slot this gene can fill in an Aminal
@@ -111,7 +112,8 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
         onlyRegistry
     {
         uint256 tokenId = currentId;
-        geneSVGs[tokenId] = geneSVG;
+        // geneSVGs[tokenId] = geneSVG;
+        geneSVGPointers[tokenId] = SSTORE2.write(bytes(geneSVG));
         geneVisualsCat[tokenId] = visualsCategory;
 
         ++currentId;
@@ -126,13 +128,24 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
         _burn(id);
     }
 
+    /// @notice Get SVG content for a gene
+    /// @dev Reads SVG from SSTORE2 storage
+    /// @param id Token ID of the gene to query
+    /// @return SVG content string
+    function getGeneSVG(uint256 id) public view returns (string memory) {
+        address pointer = geneSVGPointers[id];
+        if(pointer == address(0)) return "";
+        return string(SSTORE2.read(pointer));
+    }
+
     /// @notice Get Gene NFT information
     /// @dev Returns both SVG content and visual category for a gene
     /// @param id Token ID of the gene to query
     /// @return svg SVG content string
     /// @return category Visual category enum value
     function getGeneInfo(uint256 id) external view returns (string memory svg, IAminalStructs.VisualsCat category) {
-        return (geneSVGs[id], geneVisualsCat[id]);
+        //return (geneSVGs[id], geneVisualsCat[id]);
+        return (getGeneSVG(id), geneVisualsCat[id]);
     }
 
     // ============ PUBLIC FUNCTIONS ============
@@ -144,7 +157,8 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
 
-        string memory svg = geneSVGs[tokenId];
+        //string memory svg = geneSVGs[tokenId];
+        string memory svg = getGeneSVG(tokenId);
         IAminalStructs.VisualsCat category = geneVisualsCat[tokenId];
 
         // Create JSON metadata with the SVG embedded as base64 image

@@ -24,7 +24,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
     mapping(uint256 geneId => VisualsCat category) public geneCategories;
 
     /// @notice Mapping from gene ID to SVG content
-    mapping(uint256 geneId => string svg) public geneSVGs;
+    // mapping(uint256 geneId => string svg) public geneSVGs;
 
     /// @notice Counter for tracking total genes created
     uint256 public totalGenesCreated;
@@ -84,7 +84,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
         geneRegistry[geneId] = true;
         geneCreators[geneId] = recipient;
         geneCategories[geneId] = category;
-        geneSVGs[geneId] = svg;
+        //geneSVGs[geneId] = svg;
 
         totalGenesCreated++;
 
@@ -114,7 +114,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
         view
         returns (address creator, VisualsCat category, string memory svg)
     {
-        return (geneCreators[geneId], geneCategories[geneId], geneSVGs[geneId]);
+        //return (geneCreators[geneId], geneCategories[geneId], geneSVGs[geneId]);
+        svg = geneNFT.getGeneSVG(geneId);
+        return (geneCreators[geneId], geneCategories[geneId], svg);
     }
 
     /**

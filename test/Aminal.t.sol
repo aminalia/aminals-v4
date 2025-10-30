@@ -276,4 +276,30 @@ contract IndividualAminalTest is Test, IAminalStructs {
         assertTrue(aminal.getLoveByUser(alice) > initialLove);
         assertTrue(aminal.getEnergy() > initialEnergy);
     }
+
+    function testGetLoveForAmount() public {
+        vm.deal(alice, 1 ether);
+
+        // Query love for a specific amount before feeding
+        uint256 predictedLove = aminal.getLoveForAmount(0.01 ether);
+        assertTrue(predictedLove > 0);
+
+        // Feed with that amount
+        vm.prank(alice);
+        aminal.feed{value: 0.01 ether}();
+
+        // The actual love received should match the prediction
+        assertEq(aminal.getLoveByUser(alice), predictedLove);
+
+        // Query love for another amount after feeding (should be same since VRGDA doesn't change with energy in this implementation)
+        uint256 predictedLove2 = aminal.getLoveForAmount(0.01 ether);
+        assertTrue(predictedLove2 > 0);
+
+        // Feed again and verify
+        uint256 loveBefore = aminal.getLoveByUser(alice);
+        vm.prank(alice);
+        aminal.feed{value: 0.01 ether}();
+
+        assertEq(aminal.getLoveByUser(alice) - loveBefore, predictedLove2);
+    }
 }
