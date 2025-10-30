@@ -30,6 +30,11 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     string constant SAMPLE_BACKGROUND = '<rect width="1000" height="1000" fill="#87CEEB"/>';
 
+    // Helper function to create default metadata
+    function _defaultMetadata() internal pure returns (GeneMetadata memory) {
+        return GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+    }
+
     function setUp() public {
         // Deploy all contracts
         genes = new Genes();
@@ -170,7 +175,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneFor() public {
         // Alice creates a gene for Bob
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK, _defaultMetadata());
 
         // Verify gene was created correctly
         assertEq(geneId, 0, "First gene should have ID 0");
@@ -180,7 +185,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneForZeroAddress() public {
         vm.prank(alice);
         vm.expectRevert("ERC721: mint to the zero address");
-        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND, VisualsCat.BACK);
+        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND, VisualsCat.BACK, _defaultMetadata());
     }
 
     function testSVGStorageAndRetrieval() public {
@@ -220,6 +225,36 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         genes.transferFrom(alice, charlie, geneId);
 
         assertEq(genes.ownerOf(geneId), charlie, "Charlie should now own the gene");
+    }
+
+    function testGeneMetadata() public {
+        // Create a gene with custom placement metadata
+        GeneMetadata memory customMeta = GeneMetadata({offsetX: 50, offsetY: -30, scale: 150, rotation: 45});
+
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK, customMeta);
+
+        // Retrieve and verify metadata
+        (int16 offsetX, int16 offsetY, uint16 scale, uint16 rotation) = genes.geneMetadata(geneId);
+
+        assertEq(offsetX, 50, "Offset X should match");
+        assertEq(offsetY, -30, "Offset Y should match (negative)");
+        assertEq(scale, 150, "Scale should match");
+        assertEq(rotation, 45, "Rotation should match");
+    }
+
+    function testGeneDefaultMetadata() public {
+        // Create a gene with default metadata (via the simple createGene function)
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+
+        // Verify default metadata
+        (int16 offsetX, int16 offsetY, uint16 scale, uint16 rotation) = genes.geneMetadata(geneId);
+
+        assertEq(offsetX, 0, "Default offset X should be 0");
+        assertEq(offsetY, 0, "Default offset Y should be 0");
+        assertEq(scale, 100, "Default scale should be 100");
+        assertEq(rotation, 0, "Default rotation should be 0");
     }
 
     // Helper function to feed aminals

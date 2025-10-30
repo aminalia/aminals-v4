@@ -48,4 +48,19 @@ interface IAminalStructs {
         MOUTH, // Mouth, teeth, and vocal expressions
         MISC // Accessories, special effects, and unique features
     }
+
+    /**
+     * @notice Placement metadata for visual gene positioning
+     * @dev Controls how a gene trait is positioned, scaled, and rotated during rendering
+     * @param offsetX Horizontal offset from canvas center in pixels (-500 to 500)
+     * @param offsetY Vertical offset from canvas center in pixels (-500 to 500)
+     * @param scale Scale factor as percentage (100 = 100%, range 0-500)
+     * @param rotation Rotation angle in degrees (0-359)
+     */
+    struct GeneMetadata {
+        int16 offsetX;
+        int16 offsetY;
+        uint16 scale;
+        uint16 rotation;
+    }
 }
