@@ -835,12 +835,38 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
     /**
      * @notice Generate pseudo-random number for tie-breaking
+     * @dev Uses block.prevrandao (post-merge randomness) combined with auction-specific data
+     *      This provides good randomness for non-critical decisions like tie-breaking
+     *      For high-value randomness, consider using Chainlink VRF
+     * @param seed Additional entropy (e.g., auctionId or specific use case)
+     * @param max Upper bound (exclusive) for the random number
+     * @return Random number in range [0, max)
      */
     function _generateRandomness(uint256 seed, uint256 max) internal view returns (uint256) {
         if (max == 0) return 0;
 
-        uint256 randomValue =
-            uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, block.number, msg.sender, seed)));
+        // Use auction-specific data to prevent manipulation across auctions
+        uint256 auctionId = auctionCounter; // Current auction context
+
+        // Combine multiple sources of entropy:
+        // - block.prevrandao: Post-merge beacon randomness (harder to manipulate than difficulty)
+        // - block.timestamp: Adds time-based entropy
+        // - auctionId: Makes randomness unique per auction
+        // - seed: Additional entropy for different randomness needs within same block
+        // - msg.sender: Who triggered the settlement (adds sender-specific entropy)
+        uint256 randomValue = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.prevrandao,
+                    block.timestamp,
+                    auctionId,
+                    seed,
+                    msg.sender,
+                    blockhash(block.number - 1) // Previous block hash for additional entropy
+                )
+            )
+        );
+
         return randomValue % max;
     }
 
