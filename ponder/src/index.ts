@@ -164,15 +164,21 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
     .values({
       id: senderId,
       address: senderId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
+  // Update user's total spent feeding
+  await db.update(user, { id: senderId }).set((row) => ({
+    totalSpentFeeding: row.totalSpentFeeding + event.transaction.value,
+  }));
+
   // Update Aminal state
-  await db.update(aminal, { id: aminalId }).set({
+  await db.update(aminal, { id: aminalId }).set((row) => ({
     energy: energy,
     totalLove: totalLove,
-    ethBalance: event.transaction.value,
-  });
+    ethBalance: row.ethBalance + event.transaction.value,
+  }));
 
   // Create or update relationship (user's love for this Aminal)
   const relationshipId = makeRelationshipId(sender, event.log.address);
@@ -223,6 +229,7 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
     .values({
       id: callerId,
       address: callerId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -287,6 +294,7 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     .values({
       id: creatorId,
       address: creatorId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -343,6 +351,7 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
     .values({
       id: newOwnerId,
       address: newOwnerId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -485,6 +494,7 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
     .values({
       id: proposerId,
       address: proposerId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -520,6 +530,7 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
     .values({
       id: voterId,
       address: voterId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -561,6 +572,7 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
     .values({
       id: voterId,
       address: voterId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -620,6 +632,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     .values({
       id: voterId,
       address: voterId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -629,6 +642,7 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     .values({
       id: zeroAddress as Hex,
       address: zeroAddress as Hex,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
@@ -732,6 +746,7 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
     .values({
       id: creatorId,
       address: creatorId,
+      totalSpentFeeding: 0n,
     })
     .onConflictDoNothing();
 
