@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { parseEther } from 'viem';
 import {
   useAccount,
+  useReadContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
@@ -22,7 +23,18 @@ export default function FeedButton({
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [feedAmount, setFeedAmount] = useState('0.01');
+  const [feedAmount, setFeedAmount] = useState('0.1');
+
+  // Get the love amount for the current feed amount
+  const { data: loveForAmount } = useReadContract({
+    address: contractAddress,
+    abi: aminalAbi,
+    functionName: 'getLoveForAmount',
+    args: feedAmount ? [parseEther(feedAmount)] : undefined,
+    query: {
+      enabled: !!feedAmount && parseFloat(feedAmount) >= 0.001,
+    },
+  });
 
   const {
     isLoading: isConfirming,
@@ -102,7 +114,7 @@ export default function FeedButton({
       let errorMessage = 'Failed to feed Aminal. Please try again.';
       if (error.message.includes('insufficient funds')) {
         errorMessage =
-          'Insufficient funds. You need at least 0.01 ETH plus gas fees.';
+          'Insufficient funds. You need at least 0.001 ETH plus gas fees.';
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       } else if (error.message.includes('network')) {
@@ -231,15 +243,24 @@ export default function FeedButton({
             <Input
               id="feed-amount"
               type="number"
-              step="0.01"
-              min="0.01"
+              step="0.001"
+              min="0.001"
               value={feedAmount}
               onChange={(e) => setFeedAmount(e.target.value)}
-              placeholder="0.01"
+              placeholder="0.1"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              Minimum: 0.01 ETH
-            </p>
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-gray-500">
+                Minimum: 0.001 ETH
+              </p>
+              {loveForAmount !== undefined && (
+                <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                  <p className="text-base font-semibold text-pink-700">
+                    💖 Love gained: {loveForAmount.toString()}
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-2">
@@ -254,7 +275,7 @@ export default function FeedButton({
               onClick={action}
               variant="feed"
               className="flex-1"
-              disabled={!feedAmount || parseFloat(feedAmount) < 0.01}
+              disabled={!feedAmount || parseFloat(feedAmount) < 0.001}
             >
               Feed 🍖
             </Button>
