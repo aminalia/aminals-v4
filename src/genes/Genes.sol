@@ -46,6 +46,10 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @dev Determines which trait slot this gene can fill in an Aminal
     mapping(uint256 id => IAminalStructs.VisualsCat) public geneVisualsCat;
 
+    /// @notice Mapping from gene ID to its placement metadata
+    /// @dev Contains positioning, scaling, and rotation information for rendering
+    mapping(uint256 id => IAminalStructs.GeneMetadata) public geneMetadata;
+
     // ============ MODIFIERS ============
 
     /// @notice Restricts function access to the Aminal Factory only
@@ -107,14 +111,18 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @param to Address to mint the gene to
     /// @param geneSVG SVG content for the visual representation
     /// @param visualsCategory Category that this gene belongs to
-    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
-        external
-        onlyRegistry
-    {
+    /// @param metadata Placement metadata for positioning and transforming the gene
+    function mint(
+        address to,
+        string calldata geneSVG,
+        IAminalStructs.VisualsCat visualsCategory,
+        IAminalStructs.GeneMetadata calldata metadata
+    ) external onlyRegistry {
         uint256 tokenId = currentId;
         // geneSVGs[tokenId] = geneSVG;
         geneSVGPointers[tokenId] = SSTORE2.write(bytes(geneSVG));
         geneVisualsCat[tokenId] = visualsCategory;
+        geneMetadata[tokenId] = metadata;
 
         ++currentId;
         _mint(to, tokenId);
