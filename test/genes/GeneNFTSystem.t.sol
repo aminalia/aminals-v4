@@ -58,7 +58,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         assertEq(geneId, 0, "First gene should have ID 0");
         assertEq(genes.ownerOf(geneId), alice, "Alice should own the gene");
-        assertEq(geneRegistry.geneSVGs(geneId), SAMPLE_BACKGROUND, "SVG should match");
+        assertEq(genes.getGeneSVG(geneId), SAMPLE_BACKGROUND, "SVG should match");
         assertEq(uint256(geneRegistry.getGeneCategory(geneId)), uint256(VisualsCat.BACK), "Category should be BACK");
         assertTrue(geneRegistry.isValidGene(geneId), "Gene should be valid");
     }
@@ -120,8 +120,8 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.prank(bob);
         uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.ARM);
 
-        assertEq(geneRegistry.geneSVGs(gene1), SAMPLE_BACKGROUND, "Gene1 SVG matches");
-        assertEq(geneRegistry.geneSVGs(gene2), SAMPLE_BACKGROUND, "Gene2 SVG matches");
+        assertEq(genes.getGeneSVG(gene1), SAMPLE_BACKGROUND, "Gene1 SVG matches");
+        assertEq(genes.getGeneSVG(gene2), SAMPLE_BACKGROUND, "Gene2 SVG matches");
         assertEq(uint256(geneRegistry.getGeneCategory(gene1)), uint256(VisualsCat.BACK), "Gene1 is BACK");
         assertEq(uint256(geneRegistry.getGeneCategory(gene2)), uint256(VisualsCat.ARM), "Gene2 is ARM");
     }
@@ -190,7 +190,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.prank(alice);
         uint256 geneId = geneRegistry.createGene(longSvg, VisualsCat.FACE);
 
-        assertEq(geneRegistry.geneSVGs(geneId), longSvg, "Long SVG should be stored and retrieved correctly");
+        assertEq(genes.getGeneSVG(geneId), longSvg, "Long SVG should be stored and retrieved correctly");
     }
 
     function testGeneBalance() public {

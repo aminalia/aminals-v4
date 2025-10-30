@@ -134,7 +134,7 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @return SVG content string
     function getGeneSVG(uint256 id) public view returns (string memory) {
         address pointer = geneSVGPointers[id];
-        if(pointer == address(0)) return "";
+        if (pointer == address(0)) return "";
         return string(SSTORE2.read(pointer));
     }
 
