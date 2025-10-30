@@ -22,6 +22,9 @@ const robotoMono = Roboto_Mono({
   variable: '--font-roboto-mono',
 });
 
+// Export the font className so it can be used in portaled components
+export { robotoMono };
+
 const wagmiConfig = getDefaultConfig({
   appName: 'Aminals',
   projectId: 'a8bd6a09bfba4f70a0b02ee66e844702',

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { parseEther } from 'viem';
 import {
@@ -9,6 +9,8 @@ import {
 } from 'wagmi';
 import { aminalAbi } from '../../contracts/generated';
 import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { Input } from '../ui/Input';
 
 export default function FeedButton({
   contractAddress,
@@ -19,6 +21,8 @@ export default function FeedButton({
   const enabled = isConnected && chain;
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [feedAmount, setFeedAmount] = useState('0.01');
 
   const {
     isLoading: isConfirming,
@@ -158,7 +162,7 @@ export default function FeedButton({
     }
   }, [isConfirming, hash, contractAddress]);
 
-  function action() {
+  function openModal() {
     if (!enabled || !contractAddress) {
       console.warn(
         '⚠️ Feed aminal attempted but wallet not connected or no contract address:',
@@ -171,12 +175,15 @@ export default function FeedButton({
       );
       return;
     }
+    setIsModalOpen(true);
+  }
 
+  function action() {
     // Log the contract call parameters
     console.log('🚀 Initiating feed aminal transaction:', {
       contractAddress,
       functionName: 'feed',
-      value: parseEther('0.01').toString(),
+      value: parseEther(feedAmount).toString(),
       userAddress: address,
       chainId: chain?.id,
       timestamp: new Date().toISOString(),
@@ -187,22 +194,73 @@ export default function FeedButton({
       address: contractAddress,
       functionName: 'feed',
       args: [],
-      value: parseEther('0.01'),
+      value: parseEther(feedAmount),
     });
+
+    setIsModalOpen(false);
   }
 
   return (
-    <Button
-      onClick={action}
-      disabled={!enabled || isPending || isConfirming}
-      variant="feed"
-      className="w-full"
-    >
-      {isPending
-        ? '⏳ Feeding...'
-        : isConfirming
-        ? '⏳ Confirming...'
-        : '🍖 Feed (0.01 ETH)'}
-    </Button>
+    <>
+      <Button
+        onClick={openModal}
+        disabled={!enabled || isPending || isConfirming}
+        variant="feed"
+        className="w-full"
+      >
+        {isPending
+          ? '⏳ Feeding...'
+          : isConfirming
+          ? '⏳ Confirming...'
+          : '🍖 Feed Aminal'}
+      </Button>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Feed Aminal"
+      >
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="feed-amount"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Amount (ETH)
+            </label>
+            <Input
+              id="feed-amount"
+              type="number"
+              step="0.01"
+              min="0.01"
+              value={feedAmount}
+              onChange={(e) => setFeedAmount(e.target.value)}
+              placeholder="0.01"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Minimum: 0.01 ETH
+            </p>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              variant="default"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={action}
+              variant="feed"
+              className="flex-1"
+              disabled={!feedAmount || parseFloat(feedAmount) < 0.01}
+            >
+              Feed 🍖
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }
