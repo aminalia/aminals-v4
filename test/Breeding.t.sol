@@ -475,7 +475,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Verify child exists and is valid
         assertTrue(childAddress != address(0), "Child address should not be zero");
-        assertEq(child.ownerOf(0), address(factory), "Factory should own child NFT");
+        // Note: Aminal NFTs are 1-of-1 NFTs with tokenId = 1
+        assertEq(child.ownerOf(1), address(factory), "Factory should own child NFT");
 
         // Verify child has traits from the winning design
         Visuals memory childVisuals = child.getVisuals();
@@ -567,20 +568,33 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
         uint256 bobVotingPower = geneAuction.getUserVotingPower(auctionId, bob);
 
+        console.log("Alice voting power:", aliceVotingPower);
+        console.log("Bob voting power:", bobVotingPower);
+
+        // Alice votes to remove with her voting power
         vm.prank(alice);
         geneAuction.voteToRemoveDesign(auctionId, designId, aliceVotingPower);
 
-        vm.prank(bob);
-        geneAuction.voteToRemoveDesign(auctionId, designId, bobVotingPower);
+        // Check if design was already removed after Alice's vote
+        GeneAuction.AminalDesign memory designAfterAlice = geneAuction.getDesign(auctionId, designId);
 
-        // Check if design was removed (depends on if threshold was met)
-        GeneAuction.AminalDesign memory removedDesign = geneAuction.getDesign(auctionId, designId);
+        if (!designAfterAlice.removed) {
+            // Only vote with Bob if the design hasn't been removed yet
+            vm.prank(bob);
+            geneAuction.voteToRemoveDesign(auctionId, designId, bobVotingPower);
+        }
 
-        if (aliceVotingPower + bobVotingPower >= removalThreshold) {
-            assertTrue(removedDesign.removed, "Design should be removed after reaching threshold");
-            console.log("Design successfully removed");
+        // Check final state
+        GeneAuction.AminalDesign memory finalDesign = geneAuction.getDesign(auctionId, designId);
+
+        if (aliceVotingPower >= removalThreshold) {
+            assertTrue(finalDesign.removed, "Design should be removed after Alice's vote alone");
+            console.log("Design removed by Alice's vote alone");
+        } else if (aliceVotingPower + bobVotingPower >= removalThreshold) {
+            assertTrue(finalDesign.removed, "Design should be removed after both votes");
+            console.log("Design removed after both Alice and Bob voted");
         } else {
-            assertFalse(removedDesign.removed, "Design should not be removed below threshold");
+            assertFalse(finalDesign.removed, "Design should not be removed (below threshold)");
             console.log("Design not removed (below threshold)");
         }
     }
