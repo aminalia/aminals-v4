@@ -10,6 +10,7 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneAuctionAbi, geneAuctionAddress } from '../contracts/generated';
+import CreateGenePage from './CreateGenePage';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
 
@@ -39,6 +40,7 @@ export default function ProposeGeneModal({
   const [selectedGeneId, setSelectedGeneId] = useState<string>('');
   const [manualGeneId, setManualGeneId] = useState<string>('');
   const [useManualId, setUseManualId] = useState(false);
+  const [showCreateGene, setShowCreateGene] = useState(false);
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const { isConnected, chain } = useAccount();
   const enabled = isConnected && chain;
@@ -136,11 +138,31 @@ export default function ProposeGeneModal({
     });
   };
 
+  const handleCreateGeneSuccess = (geneId?: string) => {
+    setShowCreateGene(false);
+    // If we got a gene ID back, select it automatically
+    if (geneId) {
+      setSelectedGeneId(geneId);
+      setUseManualId(false);
+      toast.success(`Gene #${geneId} has been selected`);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <>
+      {/* CreateGenePage Overlay */}
+      <CreateGenePage
+        isOpen={showCreateGene}
+        onClose={() => setShowCreateGene(false)}
+        onSuccess={handleCreateGeneSuccess}
+        preSelectedCategory={selectedCategory}
+      />
+
+      {/* ProposeGeneModal */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div>
@@ -188,7 +210,16 @@ export default function ProposeGeneModal({
 
           {/* Gene Selection Method */}
           <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Select Gene</h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-lg font-semibold">Select Gene</h3>
+              <Button
+                variant="energy"
+                size="sm"
+                onClick={() => setShowCreateGene(true)}
+              >
+                ✨ Create New Gene
+              </Button>
+            </div>
             <div className="flex gap-4 mb-4">
               <button
                 onClick={() => setUseManualId(false)}
@@ -303,6 +334,7 @@ export default function ProposeGeneModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
