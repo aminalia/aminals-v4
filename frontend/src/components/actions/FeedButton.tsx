@@ -1,14 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { parseEther } from 'viem';
 import {
   useAccount,
+  useReadContract,
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
 import { aminalAbi } from '../../contracts/generated';
 import { Button } from '../ui/Button';
+import { Modal } from '../ui/Modal';
+import { Input } from '../ui/Input';
 
 export default function FeedButton({
   contractAddress,
@@ -19,6 +22,19 @@ export default function FeedButton({
   const enabled = isConnected && chain;
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const queryClient = useQueryClient();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [feedAmount, setFeedAmount] = useState('0.1');
+
+  // Get the love amount for the current feed amount
+  const { data: loveForAmount } = useReadContract({
+    address: contractAddress,
+    abi: aminalAbi,
+    functionName: 'getLoveForAmount',
+    args: feedAmount ? [parseEther(feedAmount)] : undefined,
+    query: {
+      enabled: !!feedAmount && parseFloat(feedAmount) >= 0.001,
+    },
+  });
 
   const {
     isLoading: isConfirming,
@@ -98,7 +114,7 @@ export default function FeedButton({
       let errorMessage = 'Failed to feed Aminal. Please try again.';
       if (error.message.includes('insufficient funds')) {
         errorMessage =
-          'Insufficient funds. You need at least 0.01 ETH plus gas fees.';
+          'Insufficient funds. You need at least 0.001 ETH plus gas fees.';
       } else if (error.message.includes('user rejected')) {
         errorMessage = 'Transaction was cancelled by user.';
       } else if (error.message.includes('network')) {
@@ -158,7 +174,7 @@ export default function FeedButton({
     }
   }, [isConfirming, hash, contractAddress]);
 
-  function action() {
+  function openModal() {
     if (!enabled || !contractAddress) {
       console.warn(
         '⚠️ Feed aminal attempted but wallet not connected or no contract address:',
@@ -171,12 +187,15 @@ export default function FeedButton({
       );
       return;
     }
+    setIsModalOpen(true);
+  }
 
+  function action() {
     // Log the contract call parameters
     console.log('🚀 Initiating feed aminal transaction:', {
       contractAddress,
       functionName: 'feed',
-      value: parseEther('0.01').toString(),
+      value: parseEther(feedAmount).toString(),
       userAddress: address,
       chainId: chain?.id,
       timestamp: new Date().toISOString(),
@@ -187,22 +206,82 @@ export default function FeedButton({
       address: contractAddress,
       functionName: 'feed',
       args: [],
-      value: parseEther('0.01'),
+      value: parseEther(feedAmount),
     });
+
+    setIsModalOpen(false);
   }
 
   return (
-    <Button
-      onClick={action}
-      disabled={!enabled || isPending || isConfirming}
-      variant="feed"
-      className="w-full"
-    >
-      {isPending
-        ? '⏳ Feeding...'
-        : isConfirming
-        ? '⏳ Confirming...'
-        : '🍖 Feed (0.01 ETH)'}
-    </Button>
+    <>
+      <Button
+        onClick={openModal}
+        disabled={!enabled || isPending || isConfirming}
+        variant="feed"
+        className="w-full"
+      >
+        {isPending
+          ? '⏳ Feeding...'
+          : isConfirming
+          ? '⏳ Confirming...'
+          : '🍖 Feed Aminal'}
+      </Button>
+
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Feed Aminal"
+      >
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor="feed-amount"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Amount (ETH)
+            </label>
+            <Input
+              id="feed-amount"
+              type="number"
+              step="0.001"
+              min="0.001"
+              value={feedAmount}
+              onChange={(e) => setFeedAmount(e.target.value)}
+              placeholder="0.1"
+            />
+            <div className="mt-2 space-y-2">
+              <p className="text-xs text-gray-500">
+                Minimum: 0.001 ETH
+              </p>
+              {loveForAmount !== undefined && (
+                <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
+                  <p className="text-base font-semibold text-pink-700">
+                    💖 Love gained: {loveForAmount.toString()}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              variant="default"
+              className="flex-1"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={action}
+              variant="feed"
+              className="flex-1"
+              disabled={!feedAmount || parseFloat(feedAmount) < 0.001}
+            >
+              Feed 🍖
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

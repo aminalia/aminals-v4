@@ -26,7 +26,7 @@ const buttonVariants = cva(
         warning:
           'bg-warning text-warning-foreground shadow hover:bg-warning/90',
         // Action-specific aliases (use semantic colors)
-        feed: 'bg-success text-success-foreground shadow hover:bg-success/90',
+        feed: 'bg-chart-3 text-success-foreground shadow hover:bg-success/90',
         breed: 'bg-love text-love-foreground shadow hover:bg-love/90',
         skill: 'bg-energy text-energy-foreground shadow hover:bg-energy/90',
       },
