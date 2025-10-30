@@ -10,5 +10,8 @@
   },
   "lib/openzeppelin-contracts": {
     "rev": "e50c24f5839db17f46991478384bfda14acfb830"
+  },
+  "lib/solady": {
+    "rev": "73f13dd1483707ef6b4d16cb0543570b7e1715a8"
   }
 }

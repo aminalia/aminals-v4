@@ -94,40 +94,29 @@ contract SettleAuction is Script {
         }
 
         console.log("");
-        console.log("--- Pre-Settlement Gene Debugging ---");
+        console.log("--- Pre-Settlement Design Voting Info ---");
 
-        // Check winning genes and their creators before settlement
-        for (uint256 category = 0; category < 8; category++) {
-            try geneAuction.getCategoryVoting(auctionId, IAminalStructs.VisualsCat(category)) returns (
-                GeneAuction.CategoryVoteInfo memory categoryInfo
-            ) {
-                console.log("Category", category, "- Highest votes:", categoryInfo.highestVotes);
-                if (categoryInfo.proposedGenes.length > 0) {
-                    uint256 leadingGeneId = categoryInfo.winningGeneId;
-                    uint256 maxVotes = categoryInfo.highestVotes;
+        // Check winning design before settlement
+        try geneAuction.getAuctionVoting(auctionId) returns (GeneAuction.AuctionVoteInfo memory voteInfo) {
+            console.log("Highest votes:", voteInfo.highestVotes);
+            console.log("Winning design ID:", voteInfo.winningDesignId);
+            console.log("Total proposed designs:", voteInfo.proposedDesignIds.length);
+            console.log("Tied designs count:", voteInfo.tiedDesignIds.length);
 
-                    console.log("  Proposed genes count:", categoryInfo.proposedGenes.length);
-                    console.log("  Leading gene ID:", leadingGeneId);
-                    console.log("  Max votes:", maxVotes);
-
-                    if (leadingGeneId != 0) {
-                        // Check gene creator
-                        try factory.genes().ownerOf(leadingGeneId) returns (address creator) {
-                            console.log("  Gene creator:", creator);
-                            // Check if creator is contract or EOA
-                            uint256 codeSize;
-                            assembly {
-                                codeSize := extcodesize(creator)
-                            }
-                            console.log("  Creator code size:", codeSize, codeSize == 0 ? "(EOA)" : "(Contract)");
-                        } catch {
-                            console.log("  Could not get gene creator");
-                        }
-                    }
+            if (voteInfo.winningDesignId != 0) {
+                // Check the winning design details
+                try geneAuction.getDesign(auctionId, voteInfo.winningDesignId) returns (
+                    GeneAuction.AminalDesign memory winningDesign
+                ) {
+                    console.log("Winning design votes:", winningDesign.votes);
+                    console.log("Winning design proposer:", winningDesign.proposer);
+                    console.log("Winning design removed:", winningDesign.removed);
+                } catch {
+                    console.log("Could not get winning design details");
                 }
-            } catch {
-                console.log("Category", category, "- Could not get voting info");
             }
+        } catch {
+            console.log("Could not get voting info");
         }
 
         console.log("");

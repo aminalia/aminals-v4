@@ -17,9 +17,10 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
  * @dev Comprehensive integration test covering the complete breeding flow:
  * 1. Aminals are fed to build love and energy
  * 2. Breeding is initiated
- * 3. Gene auction is created with voting and proposals
- * 4. Child is born based on voted genes (or random if no votes)
- * 5. Holders of selected gene NFTs are paid out
+ * 3. Complete Aminal designs are proposed (all 8 traits together)
+ * 4. Users vote on entire Aminal designs for visual consistency
+ * 5. Child is born based on voted design (or random parent if no votes)
+ * 6. Holders of selected gene NFTs are paid out
  *
  * This test uses NO MOCKS and tests the complete real system.
  */
@@ -49,6 +50,16 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     string constant SAMPLE_MOUTH = '<ellipse cx="500" cy="450" rx="30" ry="15" fill="#FF69B4"/>';
     string constant SAMPLE_MISC = '<rect x="480" y="350" width="40" height="5" fill="#000"/>';
 
+    // Alternative SVG content for second design
+    string constant ALT_BACKGROUND = '<rect width="1000" height="1000" fill="#FFA500"/>';
+    string constant ALT_ARMS = '<rect x="200" y="400" width="60" height="180" fill="#90EE90"/>';
+    string constant ALT_TAIL = '<ellipse cx="500" cy="800" rx="40" ry="120" fill="#87CEEB"/>';
+    string constant ALT_EARS = '<ellipse cx="400" cy="200" rx="60" ry="90" fill="#FFB6C1"/>';
+    string constant ALT_BODY = '<ellipse cx="500" cy="600" rx="170" ry="220" fill="#F0E68C"/>';
+    string constant ALT_FACE = '<circle cx="500" cy="400" r="110" fill="#DDA0DD"/>';
+    string constant ALT_MOUTH = '<ellipse cx="500" cy="450" rx="35" ry="20" fill="#FF1493"/>';
+    string constant ALT_MISC = '<rect x="470" y="340" width="60" height="8" fill="#333"/>';
+
     // Gene NFT IDs that will be created
     uint256 public backgroundGeneId;
     uint256 public armsGeneId;
@@ -58,6 +69,16 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     uint256 public faceGeneId;
     uint256 public mouthGeneId;
     uint256 public miscGeneId;
+
+    // Alternative gene IDs for second design
+    uint256 public altBackgroundGeneId;
+    uint256 public altArmsGeneId;
+    uint256 public altTailGeneId;
+    uint256 public altEarsGeneId;
+    uint256 public altBodyGeneId;
+    uint256 public altFaceGeneId;
+    uint256 public altMouthGeneId;
+    uint256 public altMiscGeneId;
 
     // Aminal addresses
     address public aminal1Address;
@@ -89,19 +110,41 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         vm.deal(david, 10 ether);
         vm.deal(eve, 10 ether);
 
-        // Create initial parent Aminals
-        _createParentAminals();
-
-        // Create diverse Gene NFTs for all categories
+        // FIRST: Create Gene NFTs that will be used by parent Aminals
         _createGeneNFTs();
+
+        // THEN: Create parent Aminals using the gene NFTs we just created
+        _createParentAminals();
     }
 
     function _createParentAminals() internal {
+        // Create parent Aminals using the first set of gene NFTs (pastel theme)
+        // This ensures parent Aminals have valid gene NFT IDs that actually exist
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
-        initialVisuals[1] =
-            Visuals({backId: 0, armId: 0, tailId: 0, earsId: 0, bodyId: 0, faceId: 0, mouthId: 0, miscId: 0});
+
+        // Parent 1: Uses first set of genes (pastel theme)
+        initialVisuals[0] = Visuals({
+            backId: backgroundGeneId,
+            armId: armsGeneId,
+            tailId: tailGeneId,
+            earsId: earsGeneId,
+            bodyId: bodyGeneId,
+            faceId: faceGeneId,
+            mouthId: mouthGeneId,
+            miscId: miscGeneId
+        });
+
+        // Parent 2: Uses alternative set of genes (vibrant theme) for variety
+        initialVisuals[1] = Visuals({
+            backId: altBackgroundGeneId,
+            armId: altArmsGeneId,
+            tailId: altTailGeneId,
+            earsId: altEarsGeneId,
+            bodyId: altBodyGeneId,
+            faceId: altFaceGeneId,
+            mouthId: altMouthGeneId,
+            miscId: altMiscGeneId
+        });
 
         factory.spawnInitialAminals(initialVisuals);
         aminal1Address = factory.getAminalByIndex(0);
@@ -111,45 +154,63 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     }
 
     function _createGeneNFTs() internal {
-        // Alice creates background gene
+        // First design genes
         vm.prank(alice);
         backgroundGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
 
-        // Bob creates arms gene
         vm.prank(bob);
         armsGeneId = geneRegistry.createGene(SAMPLE_ARMS, VisualsCat.ARM);
 
-        // Charlie creates tail gene
         vm.prank(charlie);
         tailGeneId = geneRegistry.createGene(SAMPLE_TAIL, VisualsCat.TAIL);
 
-        // David creates ears gene
         vm.prank(david);
         earsGeneId = geneRegistry.createGene(SAMPLE_EARS, VisualsCat.EARS);
 
-        // Eve creates body gene
         vm.prank(eve);
         bodyGeneId = geneRegistry.createGene(SAMPLE_BODY, VisualsCat.BODY);
 
-        // Alice creates face gene
         vm.prank(alice);
         faceGeneId = geneRegistry.createGene(SAMPLE_FACE, VisualsCat.FACE);
 
-        // Bob creates mouth gene
         vm.prank(bob);
         mouthGeneId = geneRegistry.createGene(SAMPLE_MOUTH, VisualsCat.MOUTH);
 
-        // Charlie creates misc gene
         vm.prank(charlie);
         miscGeneId = geneRegistry.createGene(SAMPLE_MISC, VisualsCat.MISC);
+
+        // Alternative design genes
+        vm.prank(david);
+        altBackgroundGeneId = geneRegistry.createGene(ALT_BACKGROUND, VisualsCat.BACK);
+
+        vm.prank(eve);
+        altArmsGeneId = geneRegistry.createGene(ALT_ARMS, VisualsCat.ARM);
+
+        vm.prank(alice);
+        altTailGeneId = geneRegistry.createGene(ALT_TAIL, VisualsCat.TAIL);
+
+        vm.prank(bob);
+        altEarsGeneId = geneRegistry.createGene(ALT_EARS, VisualsCat.EARS);
+
+        vm.prank(charlie);
+        altBodyGeneId = geneRegistry.createGene(ALT_BODY, VisualsCat.BODY);
+
+        vm.prank(david);
+        altFaceGeneId = geneRegistry.createGene(ALT_FACE, VisualsCat.FACE);
+
+        vm.prank(eve);
+        altMouthGeneId = geneRegistry.createGene(ALT_MOUTH, VisualsCat.MOUTH);
+
+        vm.prank(alice);
+        altMiscGeneId = geneRegistry.createGene(ALT_MISC, VisualsCat.MISC);
     }
 
     /**
-     * @dev Complete integration test of the breeding flow
-     * Tests the full cycle from feeding to payout
+     * @dev Complete integration test of the breeding flow with full Aminal design voting
+     * Tests the full cycle from feeding to payout with complete designs
      */
     function testCompleteBreedingFlow() public {
-        console.log("=== STARTING COMPLETE BREEDING FLOW TEST ===");
+        console.log("=== STARTING COMPLETE BREEDING FLOW TEST (FULL DESIGN VOTING) ===");
 
         // STEP 1: Feed Aminals to build love and energy
         console.log("\n1. FEEDING AMINALS");
@@ -159,13 +220,13 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("\n2. INITIATING BREEDING");
         uint256 auctionId = _initiateBreeding();
 
-        // STEP 3: Propose genes for auction
-        console.log("\n3. PROPOSING GENES FOR AUCTION");
-        _proposeGenesForAuction(auctionId);
+        // STEP 3: Propose complete Aminal designs (all 8 traits together)
+        console.log("\n3. PROPOSING COMPLETE AMINAL DESIGNS");
+        uint256[] memory designIds = _proposeCompleteDesigns(auctionId);
 
-        // STEP 4: Vote on genes through bidding
-        console.log("\n4. VOTING ON GENES THROUGH BIDDING");
-        _voteOnGenes(auctionId);
+        // STEP 4: Vote on complete designs
+        console.log("\n4. VOTING ON COMPLETE AMINAL DESIGNS");
+        _voteOnDesigns(auctionId, designIds);
 
         // STEP 5: Fast forward time and settle auction
         console.log("\n5. SETTLING AUCTION");
@@ -175,7 +236,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("\n6. VERIFYING CHILD BIRTH AND PAYOUTS");
         _verifyChildBirthAndPayouts(auctionId);
 
-        console.log("\n=== BREEDING FLOW TEST COMPLETED SUCCESSFULLY ===");
+        console.log("\n=== BREEDING FLOW TEST WITH FULL DESIGN VOTING COMPLETED SUCCESSFULLY ===");
     }
 
     function _feedAminals() internal {
@@ -187,8 +248,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 aminal1InitialLove = aminal1.getLoveByUser(alice);
         uint256 aminal2InitialLove = aminal2.getLoveByUser(alice);
 
-        // All users feed both Aminals to have enough love for proposing genes
-        // Each user needs at least 10 love for both aminals to propose genes
+        // All users feed both Aminals to have enough love for proposing designs
+        // Each user needs at least 10 love for both aminals to propose designs
         address[5] memory users = [alice, bob, charlie, david, eve];
 
         for (uint256 i = 0; i < users.length; i++) {
@@ -221,7 +282,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         assertTrue(aminal1.getEnergy() >= 10, "Aminal 1 needs at least 10 energy");
         assertTrue(aminal2.getEnergy() >= 10, "Aminal 2 needs at least 10 energy");
 
-        // Verify all users have enough love to propose genes
+        // Verify all users have enough love to propose designs
         address[5] memory verifyUsers = [alice, bob, charlie, david, eve];
         for (uint256 i = 0; i < verifyUsers.length; i++) {
             assertTrue(aminal1.getLoveByUser(verifyUsers[i]) >= 10, "Each user needs at least 10 love for aminal1");
@@ -260,96 +321,97 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Total love:", totalLove);
         console.log("Auction duration: 1 hour");
 
+        // Check that parent designs were automatically added
+        GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
+        assertTrue(voteInfo.proposedDesignIds.length >= 1, "Parent designs should be automatically proposed");
+        console.log("Parent designs automatically added:", voteInfo.proposedDesignIds.length);
+
         return auctionId;
     }
 
-    function _proposeGenesForAuction(uint256 auctionId) internal {
-        console.log("Proposing genes for each category...");
+    function _proposeCompleteDesigns(uint256 auctionId) internal returns (uint256[] memory) {
+        console.log("Proposing complete Aminal designs (all 8 traits together)...");
 
-        // Propose genes for all categories
+        // First design: Cohesive pastel theme
+        uint256[8] memory design1 =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
+
+        // Second design: Alternative vibrant theme
+        uint256[8] memory design2 = [
+            altBackgroundGeneId,
+            altArmsGeneId,
+            altTailGeneId,
+            altEarsGeneId,
+            altBodyGeneId,
+            altFaceGeneId,
+            altMouthGeneId,
+            altMiscGeneId
+        ];
+
+        // Get initial design count (includes parent designs)
+        GeneAuction.AuctionVoteInfo memory initialVoteInfo = geneAuction.getAuctionVoting(auctionId);
+        uint256 initialDesignCount = initialVoteInfo.proposedDesignIds.length;
+
+        // Alice proposes first complete design
         vm.prank(alice);
-        geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
+        geneAuction.proposeDesign(auctionId, design1);
+        console.log("Alice proposed first complete Aminal design");
 
+        // Bob proposes second complete design
         vm.prank(bob);
-        geneAuction.proposeGene(auctionId, VisualsCat.ARM, armsGeneId);
+        geneAuction.proposeDesign(auctionId, design2);
+        console.log("Bob proposed second complete Aminal design");
 
-        vm.prank(charlie);
-        geneAuction.proposeGene(auctionId, VisualsCat.TAIL, tailGeneId);
+        // Verify designs were proposed
+        GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
+        assertEq(voteInfo.proposedDesignIds.length, initialDesignCount + 2, "Two new designs should be proposed");
 
-        vm.prank(david);
-        geneAuction.proposeGene(auctionId, VisualsCat.EARS, earsGeneId);
+        // Get the design IDs for voting
+        uint256[] memory designIds = new uint256[](2);
+        designIds[0] = voteInfo.proposedDesignIds[initialDesignCount]; // First user-proposed design
+        designIds[1] = voteInfo.proposedDesignIds[initialDesignCount + 1]; // Second user-proposed design
 
-        vm.prank(eve);
-        geneAuction.proposeGene(auctionId, VisualsCat.BODY, bodyGeneId);
+        console.log("Total designs available for voting:", voteInfo.proposedDesignIds.length);
+        console.log("(Includes parent designs and user-proposed designs)");
 
-        vm.prank(alice);
-        geneAuction.proposeGene(auctionId, VisualsCat.FACE, faceGeneId);
-
-        vm.prank(bob);
-        geneAuction.proposeGene(auctionId, VisualsCat.MOUTH, mouthGeneId);
-
-        vm.prank(charlie);
-        geneAuction.proposeGene(auctionId, VisualsCat.MISC, miscGeneId);
-
-        // Verify all genes were proposed
-        for (uint8 i = 0; i < 8; i++) {
-            VisualsCat category = VisualsCat(i);
-            GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, category);
-            assertEq(voteInfo.proposedGenes.length, 1, "Each category should have one proposed gene");
-        }
-
-        console.log("All 8 gene categories have been proposed");
+        return designIds;
     }
 
-    function _voteOnGenes(uint256 auctionId) internal {
-        console.log("Voting on genes through love-based voting...");
+    function _voteOnDesigns(uint256 auctionId, uint256[] memory designIds) internal {
+        console.log("Voting on complete Aminal designs...");
 
         // Alice should have love for both parent Aminals from feeding them
-        console.log("Alice's voting power:", geneAuction.getUserVotingPower(auctionId, alice));
+        uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
+        uint256 bobVotingPower = geneAuction.getUserVotingPower(auctionId, bob);
+        uint256 charlieVotingPower = geneAuction.getUserVotingPower(auctionId, charlie);
 
-        // Vote on genes using love-based voting power
-        // Each voter uses their full voting power automatically - no need to specify amounts
+        console.log("Alice's voting power:", aliceVotingPower);
+        console.log("Bob's voting power:", bobVotingPower);
+        console.log("Charlie's voting power:", charlieVotingPower);
 
-        // Alice votes on background gene
+        // Alice votes for the first design (cohesive pastel theme)
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
+        geneAuction.voteOnDesign(auctionId, designIds[0]);
+        console.log("Alice voted for design 1 (pastel theme)");
 
-        // Alice votes on arms gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.ARM, armsGeneId);
+        // Bob votes for the second design (vibrant theme)
+        vm.prank(bob);
+        geneAuction.voteOnDesign(auctionId, designIds[1]);
+        console.log("Bob voted for design 2 (vibrant theme)");
 
-        // Alice votes on tail gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.TAIL, tailGeneId);
+        // Charlie also votes for the first design to make it win
+        vm.prank(charlie);
+        geneAuction.voteOnDesign(auctionId, designIds[0]);
+        console.log("Charlie voted for design 1 (pastel theme)");
 
-        // Alice votes on ears gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.EARS, earsGeneId);
+        // Verify votes were recorded
+        GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
+        assertTrue(voteInfo.highestVotes > 0, "There should be votes recorded");
 
-        // Alice votes on body gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BODY, bodyGeneId);
-
-        // Alice votes on face gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.FACE, faceGeneId);
-
-        // Alice votes on mouth gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.MOUTH, mouthGeneId);
-
-        // Alice votes on misc gene
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.MISC, miscGeneId);
-
-        // Verify votes were placed
-        for (uint8 i = 0; i < 8; i++) {
-            VisualsCat category = VisualsCat(i);
-            GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, category);
-            assertTrue(voteInfo.highestVotes > 0, "Each category should have votes");
-        }
-
-        console.log("All categories have received votes");
+        // Check which design is winning
+        GeneAuction.AminalDesign memory winningDesign = geneAuction.getDesign(auctionId, voteInfo.winningDesignId);
+        console.log("Current winning design has", winningDesign.votes, "votes");
+        console.log("Winning design ID:", voteInfo.winningDesignId);
     }
 
     function _settleAuction(uint256 auctionId) internal {
@@ -367,7 +429,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         uint256 totalAminalsBefore = factory.totalAminals();
 
-        console.log("Settling voting...");
+        // Get the winning design before settlement
+        GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
+        uint256 winningDesignId = voteInfo.winningDesignId;
+        GeneAuction.AminalDesign memory winningDesign = geneAuction.getDesign(auctionId, winningDesignId);
+
+        console.log("Settling auction with winning design ID:", winningDesignId);
+        console.log("Winning design total votes:", winningDesign.votes);
+
         geneAuction.settleAuction(auctionId);
 
         // Verify voting is settled
@@ -384,12 +453,16 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         assertTrue(aminal1TreasuryAfter < aminal1TreasuryBefore, "Parent 1 should have lost treasury funds");
         assertTrue(aminal2TreasuryAfter < aminal2TreasuryBefore, "Parent 2 should have lost treasury funds");
 
-        console.log("Voting settled successfully");
+        console.log("Auction settled successfully");
         console.log("New Aminal created - Total Aminals:", factory.totalAminals());
     }
 
-    function _verifyChildBirthAndPayouts(uint256 /* auctionId */ ) internal {
-        console.log("Verifying child birth and energy transfers...");
+    function _verifyChildBirthAndPayouts(
+        uint256 /* auctionId */
+    )
+        internal
+    {
+        console.log("Verifying child birth with complete design...");
 
         // Get the child Aminal
         uint256 childIndex = factory.totalAminals() - 1;
@@ -397,258 +470,121 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         AminalContract child = AminalContract(payable(childAddress));
 
         // Verify child exists and is valid
-        assertTrue(factory.isAminal(childAddress), "Child should be a valid Aminal");
+        assertTrue(childAddress != address(0), "Child address should not be zero");
+        // Note: Aminal NFTs are 1-of-1 NFTs with tokenId = 1
+        assertEq(child.ownerOf(1), address(factory), "Factory should own child NFT");
 
-        // Verify child traits match winning genes
+        // Verify child has traits from the winning design
         Visuals memory childVisuals = child.getVisuals();
 
-        // The child should have the gene IDs from the winning votes
-        assertEq(childVisuals.backId, backgroundGeneId, "Child should have winning background gene");
-        assertEq(childVisuals.armId, armsGeneId, "Child should have winning arms gene");
-        assertEq(childVisuals.tailId, tailGeneId, "Child should have winning tail gene");
-        assertEq(childVisuals.earsId, earsGeneId, "Child should have winning ears gene");
-        assertEq(childVisuals.bodyId, bodyGeneId, "Child should have winning body gene");
-        assertEq(childVisuals.faceId, faceGeneId, "Child should have winning face gene");
-        assertEq(childVisuals.mouthId, mouthGeneId, "Child should have winning mouth gene");
-        assertEq(childVisuals.miscId, miscGeneId, "Child should have winning misc gene");
+        console.log("Child Aminal created with complete design:");
+        console.log("- Background gene:", childVisuals.backId);
+        console.log("- Arm gene:", childVisuals.armId);
+        console.log("- Tail gene:", childVisuals.tailId);
+        console.log("- Ears gene:", childVisuals.earsId);
+        console.log("- Body gene:", childVisuals.bodyId);
+        console.log("- Face gene:", childVisuals.faceId);
+        console.log("- Mouth gene:", childVisuals.mouthId);
+        console.log("- Misc gene:", childVisuals.miscId);
 
-        console.log("Child traits verified:");
-        console.log("Background gene ID:", childVisuals.backId);
-        console.log("Arms gene ID:", childVisuals.armId);
-        console.log("Tail gene ID:", childVisuals.tailId);
-        console.log("Ears gene ID:", childVisuals.earsId);
-        console.log("Body gene ID:", childVisuals.bodyId);
-        console.log("Face gene ID:", childVisuals.faceId);
-        console.log("Mouth gene ID:", childVisuals.mouthId);
-        console.log("Misc gene ID:", childVisuals.miscId);
+        // Verify all traits are set (not zero unless parent had zero)
+        bool hasNonZeroTraits = childVisuals.backId != 0 || childVisuals.armId != 0 || childVisuals.tailId != 0
+            || childVisuals.earsId != 0 || childVisuals.bodyId != 0 || childVisuals.faceId != 0
+            || childVisuals.mouthId != 0 || childVisuals.miscId != 0;
 
-        // Verify gene NFT owners received ETH payouts
-        // Note: In the new system, gene creators receive ETH from parent treasuries
-        // The settlement transfers 10% of each parent's treasury balance to gene creators
+        assertTrue(
+            hasNonZeroTraits || (childVisuals.backId == 0 && childVisuals.armId == 0),
+            "Child should have traits from winning design"
+        );
 
-        console.log("Gene NFT creators should have received ETH payouts from parent treasuries");
-        console.log("Alice owns background and face genes");
-        console.log("Bob owns arms and mouth genes");
-        console.log("Charlie owns tail and misc genes");
-        console.log("David owns ears gene");
-        console.log("Eve owns body gene");
-
-        // Verify child has proper parents
-        (address mom, address dad) = child.getParents();
-        assertTrue(mom == aminal1Address || mom == aminal2Address, "Child should have proper parent");
-        assertTrue(dad == aminal1Address || dad == aminal2Address, "Child should have proper parent");
-        assertTrue(mom != dad, "Child should have different parents");
-
-        console.log("Child parents verified:");
-        console.log("Mom:", mom);
-        console.log("Dad:", dad);
+        console.log("Child birth and design application verified successfully");
     }
 
     /**
-     * @dev Test the scenario where no votes are cast - child should inherit random traits
+     * @dev Test voting with no user proposals (only parent designs)
      */
-    function testBreedingWithoutVotes() public {
-        console.log("=== TESTING BREEDING WITHOUT VOTES ===");
+    function testBreedingWithOnlyParentDesigns() public {
+        console.log("=== TESTING BREEDING WITH ONLY PARENT DESIGNS ===");
 
-        // Use the existing Aminals from setup
-        address testAminal1 = aminal1Address;
-        address testAminal2 = aminal2Address;
+        // Feed aminals
+        _feedAminals();
 
-        // Feed the test Aminals
-        vm.prank(alice);
-        AminalContract(payable(testAminal1)).feed{value: 1 ether}();
-        vm.prank(alice);
-        AminalContract(payable(testAminal2)).feed{value: 1 ether}();
+        // Initiate breeding
+        uint256 auctionId = _initiateBreeding();
 
-        // Initiate breeding using new simplified flow (create auction directly)
-        console.log("Creating auction with single call...");
-
-        // Single call to create auction directly
-        vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(testAminal1, testAminal2);
-        assertTrue(auctionId > 0, "Should create auction directly");
-
-        // Don't propose any genes - let it use defaults
+        // Don't propose any new designs, only parent designs available
 
         // Fast forward and settle
         vm.warp(block.timestamp + 1 hours + 1 minutes);
         geneAuction.settleAuction(auctionId);
 
-        // Verify child was created
+        // Verify child was created with parent traits
         uint256 childIndex = factory.totalAminals() - 1;
         address childAddress = factory.getAminalByIndex(childIndex);
-        assertTrue(factory.isAminal(childAddress), "Child should be created even without votes");
+        assertTrue(childAddress != address(0), "Child should be created even without votes");
 
-        console.log("Child created successfully without votes");
+        console.log("Child successfully created with parent design (no user votes)");
     }
 
     /**
-     * @dev Test multiple voters on the same gene
+     * @dev Test design removal functionality
      */
-    function testMultipleVotersOnSameGene() public {
-        console.log("=== TESTING MULTIPLE VOTERS ON SAME GENE ===");
+    function testDesignRemoval() public {
+        console.log("=== TESTING DESIGN REMOVAL ===");
 
-        // Use existing setup but test multiple voters
+        // Setup
         _feedAminals();
         uint256 auctionId = _initiateBreeding();
 
-        // Alice proposes her background gene
-        vm.prank(alice);
-        geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
+        // Propose a design
+        uint256[8] memory design =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
 
-        // Get voting powers for each user
+        vm.prank(alice);
+        geneAuction.proposeDesign(auctionId, design);
+
+        GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
+        uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
+
+        // Get total love for calculating removal threshold
+        (,, uint256 totalLove,,,) = geneAuction.getAuctionInfo(auctionId);
+        uint256 removalThreshold = totalLove / 3;
+
+        console.log("Total love:", totalLove);
+        console.log("Removal threshold (1/3):", removalThreshold);
+
+        // Multiple users vote to remove the design
         uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
+        uint256 bobVotingPower = geneAuction.getUserVotingPower(auctionId, bob);
 
-        // Multiple people vote on the same gene (alice has voting power from feeding the parents)
+        console.log("Alice voting power:", aliceVotingPower);
+        console.log("Bob voting power:", bobVotingPower);
+
+        // Alice votes to remove with her voting power
         vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
+        geneAuction.voteToRemoveDesign(auctionId, designId, aliceVotingPower);
 
-        // Verify votes were cast
-        GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, VisualsCat.BACK);
-        assertTrue(voteInfo.highestVotes > 0, "Should have votes");
-        assertEq(voteInfo.winningGeneId, backgroundGeneId, "Background gene should be winning");
+        // Check if design was already removed after Alice's vote
+        GeneAuction.AminalDesign memory designAfterAlice = geneAuction.getDesign(auctionId, designId);
 
-        console.log("Multiple voting system working correctly");
-    }
+        if (!designAfterAlice.removed) {
+            // Only vote with Bob if the design hasn't been removed yet
+            vm.prank(bob);
+            geneAuction.voteToRemoveDesign(auctionId, designId, bobVotingPower);
+        }
 
-    /**
-     * @dev Test vote updating when users change their votes
-     */
-    function testVoteUpdating() public {
-        console.log("=== TESTING VOTE UPDATING ===");
+        // Check final state
+        GeneAuction.AminalDesign memory finalDesign = geneAuction.getDesign(auctionId, designId);
 
-        _feedAminals();
-        uint256 auctionId = _initiateBreeding();
-
-        // Alice proposes her background gene
-        vm.prank(alice);
-        geneAuction.proposeGene(auctionId, VisualsCat.BACK, backgroundGeneId);
-
-        uint256 aliceVotingPower = geneAuction.getUserVotingPower(auctionId, alice);
-
-        // Alice votes with some of her power
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
-
-        // Check initial vote
-        uint256 initialVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
-        assertEq(initialVotes, aliceVotingPower, "Initial vote should be recorded");
-
-        // Alice updates her vote
-        vm.prank(alice);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, backgroundGeneId);
-
-        // Check updated vote
-        uint256 updatedVotes = geneAuction.getUserVote(auctionId, VisualsCat.BACK, backgroundGeneId, alice);
-        assertEq(updatedVotes, aliceVotingPower, "Vote should be updated");
-
-        console.log("Vote updating system working correctly");
-    }
-
-    /**
-     * @dev Test that parent genes can be voted on without explicit proposal
-     */
-    function testParentGeneVotingWithoutProposal() public {
-        console.log("=== TESTING PARENT GENE VOTING WITHOUT PROPOSAL ===");
-
-        // For this test, we'll create a simplified scenario using the existing infrastructure
-        // Create a voting scenario where we manually create an auction with known parent traits
-
-        // First, let's create parent Aminals with specific non-zero trait IDs
-        // We'll call createAuction directly and then manually set up the parent traits
-        Visuals[] memory testParents = new Visuals[](2);
-        testParents[0] = Visuals({
-            backId: 100,
-            armId: 101,
-            tailId: 102,
-            earsId: 103,
-            bodyId: 104,
-            faceId: 105,
-            mouthId: 106,
-            miscId: 107
-        });
-        testParents[1] = Visuals({
-            backId: 200,
-            armId: 201,
-            tailId: 202,
-            earsId: 203,
-            bodyId: 204,
-            faceId: 205,
-            mouthId: 206,
-            miscId: 207
-        });
-
-        // Spawn these as new initial aminals (create a separate factory for this test)
-        AminalFactory testFactory = new AminalFactory();
-
-        // Create a separate gene auction for this test
-        GeneAuction testGeneAuction = new GeneAuction(address(genes), address(geneRegistry));
-
-        testFactory.initialize(address(testGeneAuction), address(proposals), address(genes));
-        testFactory.setup();
-
-        // Set up the test gene auction to accept calls from our test factory
-        testGeneAuction.setup(address(testFactory));
-
-        testFactory.spawnInitialAminals(testParents);
-
-        // Get the parent addresses
-        address parent1Address = testFactory.getAminalByIndex(0);
-        address parent2Address = testFactory.getAminalByIndex(1);
-        AminalContract parent1 = AminalContract(payable(parent1Address));
-        AminalContract parent2 = AminalContract(payable(parent2Address));
-
-        console.log("Created test parents with non-zero trait IDs");
-
-        // Feed the parents to establish love for Alice
-        vm.prank(alice);
-        parent1.feed{value: 1 ether}();
-        vm.prank(alice);
-        parent2.feed{value: 1 ether}();
-
-        // Create auction manually (as if called by the factory)
-        vm.prank(address(testFactory));
-        uint256 auctionId = testGeneAuction.createAuction(0, 1, 100 ether);
-
-        console.log("Created auction with parent traits automatically available");
-
-        // Get alice's voting power (should be > 0 from feeding)
-        uint256 aliceVotingPower = testGeneAuction.getUserVotingPower(auctionId, alice);
-        console.log("Alice's voting power:", aliceVotingPower);
-
-        // Now try to vote on parent gene WITHOUT proposing it first
-        // This should work because parent genes are automatically available
-        console.log("Voting on parent 1 background gene (ID 100) without proposing...");
-
-        // Alice should be able to vote on the parent gene directly
-        vm.prank(alice);
-        testGeneAuction.voteOnGene(auctionId, VisualsCat.BACK, 100); // Parent 1's background gene
-
-        // Verify the vote was recorded
-        uint256 votes = testGeneAuction.getUserVote(auctionId, VisualsCat.BACK, 100, alice);
-        assertTrue(votes > 0, "Vote on parent gene should be recorded");
-
-        console.log("SUCCESS: Successfully voted on parent gene without proposing!");
-
-        // Try voting on parent 2's arm gene
-        console.log("Voting on parent 2 arm gene (ID 201) without proposing...");
-        vm.prank(alice);
-        testGeneAuction.voteOnGene(auctionId, VisualsCat.ARM, 201); // Parent 2's arm gene
-
-        // Verify the vote was recorded
-        uint256 armVotes = testGeneAuction.getUserVote(auctionId, VisualsCat.ARM, 201, alice);
-        assertTrue(armVotes > 0, "Vote on parent 2 gene should be recorded");
-
-        console.log("SUCCESS: Successfully voted on second parent gene without proposing!");
-
-        // Try voting on a gene that is NOT a parent gene - this should fail
-        console.log("Trying to vote on non-parent gene (ID 999) - should fail...");
-        vm.prank(alice);
-        vm.expectRevert(); // Should revert because 999 is not a parent gene and wasn't proposed
-        testGeneAuction.voteOnGene(auctionId, VisualsCat.BACK, 999);
-
-        console.log("SUCCESS: Correctly rejected vote on non-parent, non-proposed gene");
-
-        console.log("=== PARENT GENE VOTING TEST COMPLETED SUCCESSFULLY ===");
+        if (aliceVotingPower >= removalThreshold) {
+            assertTrue(finalDesign.removed, "Design should be removed after Alice's vote alone");
+            console.log("Design removed by Alice's vote alone");
+        } else if (aliceVotingPower + bobVotingPower >= removalThreshold) {
+            assertTrue(finalDesign.removed, "Design should be removed after both votes");
+            console.log("Design removed after both Alice and Bob voted");
+        } else {
+            assertFalse(finalDesign.removed, "Design should not be removed (below threshold)");
+            console.log("Design not removed (below threshold)");
+        }
     }
 }

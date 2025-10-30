@@ -170,7 +170,8 @@ contract AminalVRGDATest is Test, IAminalStructs {
     }
 
     function testFuzz_FixedEnergyGain(uint96 ethAmount) public {
-        vm.assume(ethAmount > 0.001 ether && ethAmount < 10 ether);
+        // Use bound instead of assume to avoid CI rejection issues
+        ethAmount = uint96(bound(uint256(ethAmount), 0.001 ether, 10 ether));
 
         uint256 initialEnergy = aminal.getEnergy();
         uint256 expectedEnergyGain = (ethAmount * vrgda.ENERGY_PER_ETH()) / 1 ether;
@@ -182,8 +183,9 @@ contract AminalVRGDATest is Test, IAminalStructs {
     }
 
     function testFuzz_LoveDiminishingReturns(uint96 firstAmount, uint96 secondAmount) public {
-        vm.assume(firstAmount > 0.01 ether && firstAmount < 10 ether);
-        vm.assume(secondAmount > 0.01 ether && secondAmount < 10 ether);
+        // Use bounds instead of assume to avoid CI rejection issues
+        firstAmount = uint96(bound(uint256(firstAmount), 0.01 ether, 10 ether));
+        secondAmount = uint96(bound(uint256(secondAmount), 0.01 ether, 10 ether));
 
         // First feeding at initial energy
         vm.prank(user1);

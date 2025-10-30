@@ -13,23 +13,24 @@ import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
 /**
- * @title GeneAuction - Community-Driven Gene Selection for Aminal Breeding
- * @notice Love-based voting system for Gene NFT trait selection with treasury payouts to gene creators
- * @dev Manages breeding auctions where community votes determine child Aminal traits
+ * @title GeneAuction - Community-Driven Full Aminal Design Selection for Breeding
+ * @notice Love-based voting system for complete Aminal trait set selection with treasury payouts to gene creators
+ * @dev Manages breeding auctions where community votes determine complete child Aminal designs
  *
  * When two Aminals breed, a gene auction is created where:
- * - Community members vote using their love given to parent Aminals
- * - Winners are selected for each trait category (8 total)
+ * - Community members propose complete 8-trait Aminal designs
+ * - Voters select entire Aminal configurations, ensuring visual consistency
  * - 10% of each parent's treasury is distributed to winning gene creators
- * - Child Aminal is spawned with the winning traits
+ * - Child Aminal is spawned with the winning design
  *
  * Key Features:
+ * - 🎨 Full Aminal design voting (all 8 traits as a set)
  * - 🗳️ Love-weighted voting system
  * - 💰 Treasury payouts to gene creators (10% from each parent)
  * - 🎲 Tie-breaking with deterministic randomness
- * - 🔄 Parent trait inheritance as fallback
+ * - 🔄 Parent design inheritance as fallback
  * - ⏱️ Time-limited voting periods
- * - 🛡️ Gene removal voting for quality control
+ * - 🛡️ Design removal voting for quality control
  *
  * @author The Aminals Collective
  * @custom:security-contact security@aminals.art
@@ -45,11 +46,11 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Percentage of parent treasury transferred to gene creators (10%)
     uint256 public constant TREASURY_TRANSFER_PERCENTAGE = 10;
 
-    /// @notice Cost in love and energy to propose a gene
-    uint256 public constant PROPOSE_GENE_COST = 10;
+    /// @notice Cost in love and energy to propose a design
+    uint256 public constant PROPOSE_DESIGN_COST = 10;
 
-    /// @notice Minimum fraction of total love required to remove a gene (1/3)
-    uint256 public constant GENE_REMOVAL_THRESHOLD = 3;
+    /// @notice Minimum fraction of total love required to remove a design (1/3)
+    uint256 public constant DESIGN_REMOVAL_THRESHOLD = 3;
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -67,6 +68,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Counter for unique auction IDs
     uint256 public auctionCounter;
 
+    /// @notice Counter for unique design proposal IDs
+    uint256 public designCounter;
+
     /// @notice Mapping from auction ID to auction data
     mapping(uint256 => Auction) public auctions;
 
@@ -76,6 +80,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /*//////////////////////////////////////////////////////////////
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
+
+    /// @notice Complete Aminal design proposal (all 8 traits)
+    struct AminalDesign {
+        uint256 backId; // Gene ID for background trait
+        uint256 armId; // Gene ID for arm trait
+        uint256 tailId; // Gene ID for tail trait
+        uint256 earsId; // Gene ID for ears trait
+        uint256 bodyId; // Gene ID for body trait
+        uint256 faceId; // Gene ID for face trait
+        uint256 mouthId; // Gene ID for mouth trait
+        uint256 miscId; // Gene ID for misc trait
+        address proposer; // Address that proposed this design
+        uint256 votes; // Total voting power for this design
+        bool removed; // Whether this design has been removed
+    }
 
     /// @notice Core auction data structure
     struct Auction {
@@ -87,32 +106,23 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         bool settled; // Whether auction has been settled - packed with timestamps
         uint256[8] parentOneTraits; // Parent 1 traits by category
         uint256[8] parentTwoTraits; // Parent 2 traits by category
-        mapping(VisualsCat => CategoryVoting) categoryVotes; // Voting data per category
-    }
-
-    /// @notice Voting data for a specific trait category
-    struct CategoryVoting {
-        uint256 highestVotes; // Highest vote count achieved
-        uint256 winningGeneId; // Current winning gene ID
-        mapping(uint256 => uint256) geneVotes; // geneId => total vote power
-        mapping(address => uint256) userVotedGene; // user => geneId they voted for
+        uint256[] proposedDesignIds; // Array of proposed design IDs
+        mapping(uint256 => AminalDesign) designs; // designId => AminalDesign
+        mapping(address => uint256) userVotedDesign; // user => designId they voted for
         mapping(address => uint256) userVoteWeight; // user => vote weight they cast
         mapping(address => bool) userHasVoted; // user => whether they have voted
-        mapping(uint256 => uint256) geneRemovalVotes; // geneId => removal vote weight
-        // Gas optimization: O(1) lookups instead of O(n) array searches
-        mapping(uint256 => bool) isGeneProposed; // geneId => whether gene is proposed
-        mapping(uint256 => bool) isGeneTied; // geneId => whether gene is in tied array
-        mapping(uint256 => uint256) geneProposalIndex; // geneId => index in proposedGenes array
-        uint256[] proposedGenes; // Array of proposed gene IDs
-        uint256[] tiedGenes; // Array of genes with highest votes
+        mapping(uint256 => uint256) designRemovalVotes; // designId => removal vote weight
+        uint256 winningDesignId; // Current winning design ID
+        uint256 highestVotes; // Highest vote count achieved
+        uint256[] tiedDesignIds; // Array of designs tied for highest votes
     }
 
-    /// @notice View structure for category voting information
-    struct CategoryVoteInfo {
+    /// @notice View structure for auction voting information
+    struct AuctionVoteInfo {
         uint256 highestVotes; // Highest vote count
-        uint256 winningGeneId; // Current winner
-        uint256[] proposedGenes; // All proposed genes
-        uint256[] tiedGenes; // Genes tied for highest votes
+        uint256 winningDesignId; // Current winner
+        uint256[] proposedDesignIds; // All proposed design IDs
+        uint256[] tiedDesignIds; // Designs tied for highest votes
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -135,30 +145,23 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint64 endTime
     );
 
-    /// @notice Emitted when a user votes for a gene in a category
+    /// @notice Emitted when a user votes for a complete Aminal design
     /// @param auctionId The auction being voted in
-    /// @param category The trait category being voted on
-    /// @param geneId The gene being voted for
+    /// @param designId The design being voted for
     /// @param voter Address of the voter
-    event GeneVoteCast(
-        uint256 indexed auctionId,
-        VisualsCat indexed category,
-        uint256 indexed geneId,
-        address voter,
-        uint256 userVotingPower
+    /// @param userVotingPower The voting power used
+    event DesignVoteCast(
+        uint256 indexed auctionId, uint256 indexed designId, address indexed voter, uint256 userVotingPower
     );
-
-    /// @notice Emitted when a user votes for multiple categories at once
-    /// @param auctionId The auction being voted in
-    /// @param voter Address of the voter
-    /// @param geneIds Array of gene IDs voted for (by category index)
-    event BulkVoteCast(uint256 indexed auctionId, address indexed voter, uint256[8] geneIds, uint256 userVotingPower);
 
     /// @notice Emitted when an auction is settled and child is spawned
     /// @param auctionId The settled auction
+    /// @param winningDesignId The winning design ID
     /// @param winningGeneIds Array of winning gene IDs by category
     /// @param totalTreasuryTransferred Total ETH paid to gene creators
-    event VotingSettled(uint256 indexed auctionId, uint256[8] winningGeneIds, uint256 totalTreasuryTransferred);
+    event VotingSettled(
+        uint256 indexed auctionId, uint256 winningDesignId, uint256[8] winningGeneIds, uint256 totalTreasuryTransferred
+    );
 
     /// @notice Emitted when a gene creator receives payment for their winning gene
     /// @param auctionId The auction that generated the payout
@@ -167,34 +170,26 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param amount Amount of ETH transferred to the creator
     event GeneCreatorPayout(uint256 indexed auctionId, uint256 indexed geneId, address indexed creator, uint256 amount);
 
-    /// @notice Emitted when a gene is proposed for voting in a category
-    /// @param auctionId The auction the gene is proposed for
-    /// @param category The trait category the gene belongs to
-    /// @param geneId The proposed gene ID
+    /// @notice Emitted when a complete Aminal design is proposed for voting
+    /// @param auctionId The auction the design is proposed for
+    /// @param designId The unique design ID
     /// @param proposer Address of the proposer
-    event GeneProposed(
-        uint256 indexed auctionId, VisualsCat indexed category, uint256 indexed geneId, address proposer
+    /// @param geneIds Array of 8 gene IDs comprising the design
+    event DesignProposed(
+        uint256 indexed auctionId, uint256 indexed designId, address indexed proposer, uint256[8] geneIds
     );
 
-    /// @notice Emitted when someone votes to remove a gene from consideration
-    /// @param auctionId The auction containing the gene
-    /// @param category The trait category of the gene
-    /// @param geneId The gene being voted for removal
+    /// @notice Emitted when someone votes to remove a design from consideration
+    /// @param auctionId The auction containing the design
+    /// @param designId The design being voted for removal
     /// @param voter Address voting for removal
     /// @param voteWeight Weight of the removal vote
-    event GeneRemovalVote(
-        uint256 indexed auctionId,
-        VisualsCat indexed category,
-        uint256 indexed geneId,
-        address voter,
-        uint256 voteWeight
-    );
+    event DesignRemovalVote(uint256 indexed auctionId, uint256 indexed designId, address voter, uint256 voteWeight);
 
-    /// @notice Emitted when a gene is successfully removed from an auction
-    /// @param auctionId The auction the gene was removed from
-    /// @param category The trait category of the removed gene
-    /// @param geneId The removed gene ID
-    event GeneRemoved(uint256 indexed auctionId, VisualsCat indexed category, uint256 indexed geneId);
+    /// @notice Emitted when a design is successfully removed from an auction
+    /// @param auctionId The auction the design was removed from
+    /// @param designId The removed design ID
+    event DesignRemoved(uint256 indexed auctionId, uint256 indexed designId);
 
     /*//////////////////////////////////////////////////////////////
                                 ERRORS
@@ -221,11 +216,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Thrown when user lacks sufficient love for an action
     error InsufficientLove();
 
-    /// @notice Thrown when a gene has already been removed
-    error GeneAlreadyRemoved();
+    /// @notice Thrown when a design has already been removed
+    error DesignAlreadyRemoved();
 
     /// @notice Thrown when user has no voting power in an auction
     error NoVotingPower();
+
+    /// @notice Thrown when referencing an invalid or non-existent design
+    error InvalidDesign();
 
     /// @notice Failed payout information
     struct FailedPayout {
@@ -308,6 +306,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Store parent traits for inheritance fallback
         _captureParentTraits(auction, aminalOne, aminalTwo);
 
+        // Automatically add both parent designs as proposals
+        _addParentDesigns(auction);
+
         emit VotingCreated(auctionId, aminalOne, aminalTwo, totalLove, auction.startTime, auction.endTime);
         return auctionId;
     }
@@ -328,7 +329,26 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256[8] memory winningGeneIds;
         uint256 totalTreasuryTransferred = 0;
 
-        // Gas optimization: Cache all external calls and pre-calculate values
+        // Select winning design
+        uint256 winningDesignId = _selectWinningDesign(auction);
+
+        // Get the winning design's traits
+        if (winningDesignId != 0) {
+            AminalDesign storage winningDesign = auction.designs[winningDesignId];
+            winningGeneIds[0] = winningDesign.backId;
+            winningGeneIds[1] = winningDesign.armId;
+            winningGeneIds[2] = winningDesign.tailId;
+            winningGeneIds[3] = winningDesign.earsId;
+            winningGeneIds[4] = winningDesign.bodyId;
+            winningGeneIds[5] = winningDesign.faceId;
+            winningGeneIds[6] = winningDesign.mouthId;
+            winningGeneIds[7] = winningDesign.miscId;
+        } else {
+            // Fallback to random parent design if no votes
+            winningGeneIds = _selectRandomParentDesign(auction);
+        }
+
+        // Process treasury payouts to gene creators
         address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
         address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
@@ -341,13 +361,10 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / 8;
         uint256 treasuryPerGeneHalf = treasuryPerGene / 2;
 
-        // Process each trait category
+        // Transfer treasury to each gene creator
         for (uint256 i = 0; i < 8;) {
-            VisualsCat category = VisualsCat(i);
-            uint256 selectedGeneId = _selectWinningGene(auction, category, i);
-            winningGeneIds[i] = selectedGeneId;
+            uint256 selectedGeneId = winningGeneIds[i];
 
-            // Transfer treasury to gene creator if applicable
             if (selectedGeneId != 0 && geneRegistry.isValidGene(selectedGeneId)) {
                 totalTreasuryTransferred += _payoutGeneCreator(
                     auctionId, selectedGeneId, treasuryPerGeneHalf, aminalOneAddress, aminalTwoAddress
@@ -358,158 +375,111 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             }
         }
 
-        emit VotingSettled(auctionId, winningGeneIds, totalTreasuryTransferred);
+        emit VotingSettled(auctionId, winningDesignId, winningGeneIds, totalTreasuryTransferred);
 
         // Spawn the child Aminal with winning traits
         aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, winningGeneIds);
     }
 
     /**
-     * @notice Propose a Gene NFT for a specific trait category in voting
-     * @dev Anyone can propose genes
+     * @notice Propose a complete Aminal design (all 8 traits) for voting
+     * @dev Anyone can propose designs. Each trait must be valid for its category.
+     * @param auctionId The auction to propose the design for
+     * @param geneIds Array of 8 gene IDs (one per trait category)
      */
-    function proposeGene(uint256 auctionId, VisualsCat category, uint256 geneId) external validVoting(auctionId) {
+    function proposeDesign(uint256 auctionId, uint256[8] calldata geneIds) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= 8) revert InvalidCategory();
 
-        // Verify gene exists and is from the registry
-        if (!geneRegistry.isValidGene(geneId)) revert InvalidGene();
+        // Validate all genes upfront
+        for (uint256 i = 0; i < 8;) {
+            if (geneIds[i] != 0) {
+                // Verify gene exists and is from the registry
+                if (!geneRegistry.isValidGene(geneIds[i])) revert InvalidGene();
 
-        // Verify gene is in the correct category
-        VisualsCat geneCategory = geneRegistry.getGeneCategory(geneId);
-        if (geneCategory != category) revert InvalidCategory();
+                // Verify gene is in the correct category
+                VisualsCat geneCategory = geneRegistry.getGeneCategory(geneIds[i]);
+                if (uint256(geneCategory) != i) revert InvalidCategory();
+            }
+            unchecked {
+                ++i;
+            }
+        }
 
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
+        // Consume love from user and energy via squeakFrom
+        IAminal(aminalFactory.getAminalByIndex(auction.aminalOne)).squeakFrom(msg.sender, PROPOSE_DESIGN_COST);
+        IAminal(aminalFactory.getAminalByIndex(auction.aminalTwo)).squeakFrom(msg.sender, PROPOSE_DESIGN_COST);
 
-        // Consume love from user and energy via squeakFrom. SquakFrom checks required love and energy
-        IAminal(aminalFactory.getAminalByIndex(auction.aminalOne)).squeakFrom(msg.sender, PROPOSE_GENE_COST);
-        IAminal(aminalFactory.getAminalByIndex(auction.aminalTwo)).squeakFrom(msg.sender, PROPOSE_GENE_COST);
+        // Create the new design
+        uint256 designId = ++designCounter;
+        AminalDesign storage newDesign = auction.designs[designId];
+        newDesign.backId = geneIds[0];
+        newDesign.armId = geneIds[1];
+        newDesign.tailId = geneIds[2];
+        newDesign.earsId = geneIds[3];
+        newDesign.bodyId = geneIds[4];
+        newDesign.faceId = geneIds[5];
+        newDesign.mouthId = geneIds[6];
+        newDesign.miscId = geneIds[7];
+        newDesign.proposer = msg.sender;
+        newDesign.votes = 0;
+        newDesign.removed = false;
 
-        // Gas optimization: O(1) lookup instead of O(n) search
-        if (categoryVoting.isGeneProposed[geneId]) return; // Already proposed, no need to add again
+        auction.proposedDesignIds.push(designId);
 
-        // Mark as proposed and add to array
-        categoryVoting.isGeneProposed[geneId] = true;
-        categoryVoting.geneProposalIndex[geneId] = categoryVoting.proposedGenes.length;
-        categoryVoting.proposedGenes.push(geneId);
-        emit GeneProposed(auctionId, category, geneId, msg.sender);
+        emit DesignProposed(auctionId, designId, msg.sender, geneIds);
     }
 
     /**
-     * @notice Vote on a specific Gene NFT with full voting power
+     * @notice Vote on a complete Aminal design with full voting power
      * @dev Users vote with their full voting power based on love given to parent Aminals
+     * @param auctionId The auction to vote in
+     * @param designId The design ID to vote for
      */
-    function voteOnGene(uint256 auctionId, VisualsCat category, uint256 geneId) external validVoting(auctionId) {
-        Auction storage auction = auctions[auctionId];
-
-        if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
-        if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= 8) revert InvalidCategory();
-
-        // Cache external calls for gas efficiency
-        (address aminalOneAddress, address aminalTwoAddress, uint256 userVotingPower) =
-            _getCachedAminalDataForUser(auction, msg.sender);
-
-        if (userVotingPower == 0) revert NoVotingPower();
-
-        // Verify gene is valid for voting (either proposed or parent trait)
-        if (!_isGeneValidForVoting(auction, category, geneId)) revert InvalidGene();
-
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
-
-        // Remove previous vote if exists
-        uint256 previousGeneId = categoryVoting.userVotedGene[msg.sender];
-        if (previousGeneId != 0) {
-            uint256 previousVoteWeight = categoryVoting.userVoteWeight[msg.sender];
-            categoryVoting.geneVotes[previousGeneId] -= previousVoteWeight;
-        }
-
-        // Add new vote with full voting power
-        categoryVoting.userVotedGene[msg.sender] = geneId;
-        categoryVoting.userVoteWeight[msg.sender] = userVotingPower;
-        categoryVoting.userHasVoted[msg.sender] = true;
-        categoryVoting.geneVotes[geneId] += userVotingPower;
-
-        // Update highest vote for category and handle ties
-        _updateCategoryWinner(categoryVoting, geneId);
-
-        emit GeneVoteCast(auctionId, category, geneId, msg.sender, userVotingPower);
-    }
-
-    /**
-     * @notice Vote on genes for all trait categories in a single transaction
-     * @dev Users vote with full power on each specified gene (0 = no vote for that category)
-     */
-    function bulkVoteOnGenes(uint256 auctionId, uint256[8] calldata geneIds) external validVoting(auctionId) {
+    function voteOnDesign(uint256 auctionId, uint256 designId) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
 
-        // Cache external calls to avoid repeated expensive operations
-        (address aminalOneAddress, address aminalTwoAddress, uint256 userVotingPower) =
-            _getCachedAminalDataForUser(auction, msg.sender);
+        // Verify design exists and isn't removed
+        AminalDesign storage design = auction.designs[designId];
+        if (design.proposer == address(0)) revert InvalidDesign();
+        if (design.removed) revert DesignAlreadyRemoved();
 
+        // Calculate user's voting power
+        uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
         if (userVotingPower == 0) revert NoVotingPower();
 
-        // Batch validate all genes upfront to fail fast
-        for (uint256 i = 0; i < 8;) {
-            if (geneIds[i] != 0) {
-                VisualsCat category = VisualsCat(i);
-                if (!_isGeneValidForVoting(auction, category, geneIds[i])) revert InvalidGene();
-            }
-            unchecked {
-                ++i;
-            }
-        }
-
-        // Process votes for each category with cached values
-        for (uint256 i = 0; i < 8;) {
-            if (geneIds[i] != 0) {
-                VisualsCat category = VisualsCat(i);
-                _processSingleVote(auction, category, geneIds[i], userVotingPower);
-            }
-            unchecked {
-                ++i;
-            }
-        }
-
-        emit BulkVoteCast(auctionId, msg.sender, geneIds, userVotingPower);
-    }
-
-    /**
-     * @notice Internal function to process a single vote
-     */
-    function _processSingleVote(Auction storage auction, VisualsCat category, uint256 geneId, uint256 userVotingPower)
-        internal
-    {
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
-
         // Remove previous vote if exists
-        uint256 previousGeneId = categoryVoting.userVotedGene[msg.sender];
-        if (categoryVoting.userHasVoted[msg.sender]) {
-            uint256 previousVoteWeight = categoryVoting.userVoteWeight[msg.sender];
-            categoryVoting.geneVotes[previousGeneId] -= previousVoteWeight;
+        if (auction.userHasVoted[msg.sender]) {
+            uint256 previousDesignId = auction.userVotedDesign[msg.sender];
+            uint256 previousVoteWeight = auction.userVoteWeight[msg.sender];
+            auction.designs[previousDesignId].votes -= previousVoteWeight;
         }
 
         // Add new vote with full voting power
-        categoryVoting.userVotedGene[msg.sender] = geneId;
-        categoryVoting.userVoteWeight[msg.sender] = userVotingPower;
-        categoryVoting.userHasVoted[msg.sender] = true;
-        categoryVoting.geneVotes[geneId] += userVotingPower;
+        auction.userVotedDesign[msg.sender] = designId;
+        auction.userVoteWeight[msg.sender] = userVotingPower;
+        auction.userHasVoted[msg.sender] = true;
+        design.votes += userVotingPower;
 
-        // Update highest vote for category and handle ties
-        _updateCategoryWinner(categoryVoting, geneId);
+        // Update highest vote and handle ties
+        _updateAuctionWinner(auction, designId);
+
+        emit DesignVoteCast(auctionId, designId, msg.sender, userVotingPower);
     }
 
     /**
-     * @notice Vote to remove a Gene NFT from the auction
-     * @dev Requires 1/3 of total love to remove a gene
+     * @notice Vote to remove a design from the auction
+     * @dev Requires 1/3 of total love to remove a design
+     * @param auctionId The auction containing the design
+     * @param designId The design to vote for removal
+     * @param voteWeight The voting weight to apply
      */
-    function voteToRemoveGene(uint256 auctionId, VisualsCat category, uint256 geneId, uint256 voteWeight)
+    function voteToRemoveDesign(uint256 auctionId, uint256 designId, uint256 voteWeight)
         external
         validVoting(auctionId)
     {
@@ -517,196 +487,30 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
-        if (uint256(category) >= 8) revert InvalidCategory();
+
+        // Verify design exists and isn't already removed
+        AminalDesign storage design = auction.designs[designId];
+        if (design.proposer == address(0)) revert InvalidDesign();
+        if (design.removed) revert DesignAlreadyRemoved();
 
         // Calculate user's voting power
         uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
         if (voteWeight > userVotingPower) revert InsufficientLove();
 
-        // Verify gene is valid for voting (either proposed or parent trait)
-        if (!_isGeneValidForVoting(auction, category, geneId)) revert InvalidGene();
-
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
-
         // Add removal vote
-        categoryVoting.geneRemovalVotes[geneId] += voteWeight;
+        auction.designRemovalVotes[designId] += voteWeight;
 
-        emit GeneRemovalVote(auctionId, category, geneId, msg.sender, voteWeight);
+        emit DesignRemovalVote(auctionId, designId, msg.sender, voteWeight);
 
-        // Check if gene should be removed (1/3 of total love threshold)
-        if (categoryVoting.geneRemovalVotes[geneId] >= auction.totalLove / GENE_REMOVAL_THRESHOLD) {
-            _removeGeneFromCategory(auctionId, category, geneId);
+        // Check if design should be removed (1/3 of total love threshold)
+        if (auction.designRemovalVotes[designId] >= auction.totalLove / DESIGN_REMOVAL_THRESHOLD) {
+            _removeDesignFromAuction(auctionId, designId);
         }
     }
 
-    /**
-     * @notice Internal function to remove a gene from a category
-     */
-    function _removeGeneFromCategory(uint256 auctionId, VisualsCat category, uint256 geneId) internal {
-        CategoryVoting storage categoryVoting = auctions[auctionId].categoryVotes[category];
-
-        // Gas optimization: O(1) removal using index mapping
-        if (categoryVoting.isGeneProposed[geneId]) {
-            uint256 geneIndex = categoryVoting.geneProposalIndex[geneId];
-            uint256 lastIndex = categoryVoting.proposedGenes.length - 1;
-
-            if (geneIndex != lastIndex) {
-                // Move last element to current position
-                uint256 lastGeneId = categoryVoting.proposedGenes[lastIndex];
-                categoryVoting.proposedGenes[geneIndex] = lastGeneId;
-                categoryVoting.geneProposalIndex[lastGeneId] = geneIndex;
-            }
-
-            // Remove last element and update mappings
-            categoryVoting.proposedGenes.pop();
-            categoryVoting.isGeneProposed[geneId] = false;
-            delete categoryVoting.geneProposalIndex[geneId];
-        }
-
-        // Remove from tied genes if present
-        if (categoryVoting.isGeneTied[geneId]) {
-            categoryVoting.isGeneTied[geneId] = false;
-            // Use swap-and-pop pattern for gas efficiency
-            uint256 tiedLength = categoryVoting.tiedGenes.length;
-            for (uint256 i = 0; i < tiedLength;) {
-                if (categoryVoting.tiedGenes[i] == geneId) {
-                    // Swap with last element and pop
-                    uint256 lastIndex = tiedLength - 1;
-                    if (i != lastIndex) categoryVoting.tiedGenes[i] = categoryVoting.tiedGenes[lastIndex];
-                    categoryVoting.tiedGenes.pop();
-                    break;
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-
-        // Reset votes for this gene
-        categoryVoting.geneVotes[geneId] = 0;
-        categoryVoting.geneRemovalVotes[geneId] = 0;
-
-        // If this was the winning gene, reset the winner
-        if (categoryVoting.winningGeneId == geneId) {
-            categoryVoting.winningGeneId = 0;
-            categoryVoting.highestVotes = 0;
-
-            // Recalculate winner from remaining genes
-            for (uint256 i = 0; i < categoryVoting.proposedGenes.length;) {
-                uint256 currentGeneId = categoryVoting.proposedGenes[i];
-                if (categoryVoting.geneVotes[currentGeneId] > categoryVoting.highestVotes) {
-                    categoryVoting.highestVotes = categoryVoting.geneVotes[currentGeneId];
-                    categoryVoting.winningGeneId = currentGeneId;
-                }
-                unchecked {
-                    ++i;
-                }
-            }
-        }
-
-        emit GeneRemoved(auctionId, category, geneId);
-    }
-
-    /**
-     * @notice Update category winner and handle ties
-     * @dev Optimized for gas efficiency with deferred tie array management
-     */
-    function _updateCategoryWinner(CategoryVoting storage categoryVoting, uint256 geneId) internal {
-        uint256 currentVotes = categoryVoting.geneVotes[geneId];
-        uint256 cachedHighestVotes = categoryVoting.highestVotes;
-
-        if (currentVotes > cachedHighestVotes) {
-            // New highest votes - update winner and highest vote count
-            categoryVoting.highestVotes = currentVotes;
-            categoryVoting.winningGeneId = geneId;
-
-            // Clear previous tied gene markers (but defer array cleanup)
-            if (categoryVoting.tiedGenes.length > 0) {
-                for (uint256 i = 0; i < categoryVoting.tiedGenes.length;) {
-                    categoryVoting.isGeneTied[categoryVoting.tiedGenes[i]] = false;
-                    unchecked {
-                        ++i;
-                    }
-                }
-                delete categoryVoting.tiedGenes;
-            }
-
-            // Mark new winner as tied (for consistency)
-            categoryVoting.isGeneTied[geneId] = true;
-            categoryVoting.tiedGenes.push(geneId);
-        } else if (currentVotes == cachedHighestVotes && currentVotes > 0) {
-            // Tie situation - only add to tied array if not already there
-            if (!categoryVoting.isGeneTied[geneId]) {
-                categoryVoting.isGeneTied[geneId] = true;
-                categoryVoting.tiedGenes.push(geneId);
-            }
-
-            // Keep existing winner for now (tie resolution happens at settlement)
-            if (categoryVoting.winningGeneId == 0) categoryVoting.winningGeneId = geneId;
-        }
-    }
-
-    /**
-     * @notice Internal helper to check if a gene is valid for voting
-     * @dev A gene is valid if it's either proposed for the category OR is a parent trait
-     * @param auction The auction storage reference
-     * @param category The trait category
-     * @param geneId The gene ID to validate
-     * @return isValid True if the gene can be voted on
-     */
-    function _isGeneValidForVoting(Auction storage auction, VisualsCat category, uint256 geneId)
-        internal
-        view
-        returns (bool isValid)
-    {
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
-
-        // Gas optimization: O(1) lookup instead of O(n) search
-        if (categoryVoting.isGeneProposed[geneId]) return true;
-
-        // If not proposed, check if it's a parent trait
-        uint256 categoryIndex = uint256(category);
-        return (auction.parentOneTraits[categoryIndex] == geneId || auction.parentTwoTraits[categoryIndex] == geneId);
-    }
-
-    /**
-     * @notice Generate pseudo-random number for tie-breaking and fallbacks
-     * @dev Uses block data for deterministic randomness - not cryptographically secure
-     */
-    function _generateRandomness(uint256 seed, uint256 max) internal view returns (uint256) {
-        if (max == 0) return 0;
-
-        uint256 randomValue =
-            uint256(keccak256(abi.encodePacked(block.prevrandao, block.timestamp, block.number, msg.sender, seed)));
-        return randomValue % max;
-    }
-
-    /**
-     * @notice Calculate a user's voting power based on love given to parent Aminals
-     * @dev Voting power is the sum of love given to both parent Aminals
-     */
-    function _calculateVotingPower(Auction storage auction, address user) internal view returns (uint256) {
-        (,, uint256 votingPower) = _getCachedAminalDataForUser(auction, user);
-        return votingPower;
-    }
-
-    /**
-     * @notice Get cached aminal addresses and user voting power
-     * @dev Reduces redundant external calls by caching results
-     */
-    function _getCachedAminalDataForUser(Auction storage auction, address user)
-        internal
-        view
-        returns (address aminalOneAddress, address aminalTwoAddress, uint256 votingPower)
-    {
-        aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
-        aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
-
-        uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(user);
-        uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(user);
-
-        votingPower = loveToAminalOne + loveToAminalTwo;
-    }
+    /*//////////////////////////////////////////////////////////////
+                           VIEW FUNCTIONS
+    //////////////////////////////////////////////////////////////*/
 
     /**
      * @notice Get auction information
@@ -725,73 +529,52 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         )
     {
         Auction storage auction = auctions[auctionId];
-        return (
-            auction.aminalOne, auction.aminalTwo, auction.totalLove, auction.startTime, auction.endTime, auction.settled
-        );
+        return
+            (
+                auction.aminalOne,
+                auction.aminalTwo,
+                auction.totalLove,
+                auction.startTime,
+                auction.endTime,
+                auction.settled
+            );
     }
 
     /**
-     * @notice Get category voting information
+     * @notice Get voting information for an auction
      */
-    function getCategoryVoting(uint256 auctionId, VisualsCat category)
-        external
-        view
-        validVoting(auctionId)
-        returns (CategoryVoteInfo memory)
-    {
-        CategoryVoting storage categoryVoting = auctions[auctionId].categoryVotes[category];
-        return CategoryVoteInfo({
-            highestVotes: categoryVoting.highestVotes,
-            winningGeneId: categoryVoting.winningGeneId,
-            proposedGenes: categoryVoting.proposedGenes,
-            tiedGenes: categoryVoting.tiedGenes
+    function getAuctionVoting(uint256 auctionId) external view validVoting(auctionId) returns (AuctionVoteInfo memory) {
+        Auction storage auction = auctions[auctionId];
+        return AuctionVoteInfo({
+            highestVotes: auction.highestVotes,
+            winningDesignId: auction.winningDesignId,
+            proposedDesignIds: auction.proposedDesignIds,
+            tiedDesignIds: auction.tiedDesignIds
         });
     }
 
     /**
-     * @notice Get vote information for a specific gene
+     * @notice Get a specific design's details
      */
-    function getGeneVotes(uint256 auctionId, VisualsCat category, uint256 geneId)
+    function getDesign(uint256 auctionId, uint256 designId)
         external
         view
         validVoting(auctionId)
-        returns (uint256 totalVotes)
+        returns (AminalDesign memory)
     {
-        CategoryVoting storage categoryVoting = auctions[auctionId].categoryVotes[category];
-        return categoryVoting.geneVotes[geneId];
+        return auctions[auctionId].designs[designId];
     }
 
     /**
-     * @notice Get user's vote for a specific gene
+     * @notice Get which design a user voted for
      */
-    function getUserVote(uint256 auctionId, VisualsCat category, uint256 geneId, address user)
+    function getUserVotedDesign(uint256 auctionId, address user)
         external
         view
         validVoting(auctionId)
-        returns (uint256 voteWeight)
+        returns (uint256 designId)
     {
-        Auction storage auction = auctions[auctionId];
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
-
-        // Check if user voted for this specific gene
-        if (categoryVoting.userHasVoted[user] && categoryVoting.userVotedGene[user] == geneId) {
-            return categoryVoting.userVoteWeight[user];
-        }
-
-        return 0; // User didn't vote for this gene
-    }
-
-    /**
-     * @notice Get which gene a user voted for in a category
-     */
-    function getUserVotedGene(uint256 auctionId, VisualsCat category, address user)
-        external
-        view
-        validVoting(auctionId)
-        returns (uint256 geneId)
-    {
-        CategoryVoting storage categoryVoting = auctions[auctionId].categoryVotes[category];
-        return categoryVoting.userVotedGene[user];
+        return auctions[auctionId].userVotedDesign[user];
     }
 
     /**
@@ -829,26 +612,178 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Get gene removal votes for a specific gene
+     * @notice Get design removal votes
      */
-    function getGeneRemovalVotes(uint256 auctionId, VisualsCat category, uint256 geneId)
+    function getDesignRemovalVotes(uint256 auctionId, uint256 designId)
         external
         view
         validVoting(auctionId)
         returns (uint256 removalVotes)
     {
-        CategoryVoting storage categoryVoting = auctions[auctionId].categoryVotes[category];
-        return categoryVoting.geneRemovalVotes[geneId];
+        return auctions[auctionId].designRemovalVotes[designId];
+    }
+
+    /**
+     * @notice Get information about failed payouts for a gene
+     * @param geneId The gene ID to check
+     * @return payout The failed payout information
+     */
+    function getFailedPayout(uint256 geneId) external view returns (FailedPayout memory payout) {
+        return failedPayouts[geneId];
     }
 
     /*//////////////////////////////////////////////////////////////
                            INTERNAL HELPERS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Capture parent traits for inheritance fallback
-    /// @param auction The auction storage reference
-    /// @param aminalOne Index of first parent
-    /// @param aminalTwo Index of second parent
+    /**
+     * @notice Add parent designs as automatic proposals
+     */
+    function _addParentDesigns(Auction storage auction) internal {
+        // Add parent one's design
+        uint256 parentOneDesignId = ++designCounter;
+        AminalDesign storage parentOneDesign = auction.designs[parentOneDesignId];
+        parentOneDesign.backId = auction.parentOneTraits[0];
+        parentOneDesign.armId = auction.parentOneTraits[1];
+        parentOneDesign.tailId = auction.parentOneTraits[2];
+        parentOneDesign.earsId = auction.parentOneTraits[3];
+        parentOneDesign.bodyId = auction.parentOneTraits[4];
+        parentOneDesign.faceId = auction.parentOneTraits[5];
+        parentOneDesign.mouthId = auction.parentOneTraits[6];
+        parentOneDesign.miscId = auction.parentOneTraits[7];
+        parentOneDesign.proposer = address(0); // System proposed
+        parentOneDesign.votes = 0;
+        parentOneDesign.removed = false;
+        auction.proposedDesignIds.push(parentOneDesignId);
+
+        // Add parent two's design if different
+        bool isDifferent = false;
+        for (uint256 i = 0; i < 8; i++) {
+            if (auction.parentOneTraits[i] != auction.parentTwoTraits[i]) {
+                isDifferent = true;
+                break;
+            }
+        }
+
+        if (isDifferent) {
+            uint256 parentTwoDesignId = ++designCounter;
+            AminalDesign storage parentTwoDesign = auction.designs[parentTwoDesignId];
+            parentTwoDesign.backId = auction.parentTwoTraits[0];
+            parentTwoDesign.armId = auction.parentTwoTraits[1];
+            parentTwoDesign.tailId = auction.parentTwoTraits[2];
+            parentTwoDesign.earsId = auction.parentTwoTraits[3];
+            parentTwoDesign.bodyId = auction.parentTwoTraits[4];
+            parentTwoDesign.faceId = auction.parentTwoTraits[5];
+            parentTwoDesign.mouthId = auction.parentTwoTraits[6];
+            parentTwoDesign.miscId = auction.parentTwoTraits[7];
+            parentTwoDesign.proposer = address(0); // System proposed
+            parentTwoDesign.votes = 0;
+            parentTwoDesign.removed = false;
+            auction.proposedDesignIds.push(parentTwoDesignId);
+        }
+    }
+
+    /**
+     * @notice Update auction winner and handle ties
+     */
+    function _updateAuctionWinner(Auction storage auction, uint256 designId) internal {
+        uint256 currentVotes = auction.designs[designId].votes;
+        uint256 cachedHighestVotes = auction.highestVotes;
+
+        if (currentVotes > cachedHighestVotes) {
+            // New highest votes - update winner and clear ties
+            auction.highestVotes = currentVotes;
+            auction.winningDesignId = designId;
+            delete auction.tiedDesignIds;
+            auction.tiedDesignIds.push(designId);
+        } else if (currentVotes == cachedHighestVotes && currentVotes > 0) {
+            // Tie situation - add to tied array
+            auction.tiedDesignIds.push(designId);
+            // Keep existing winner for now (tie resolution happens at settlement)
+            if (auction.winningDesignId == 0) auction.winningDesignId = designId;
+        }
+    }
+
+    /**
+     * @notice Remove a design from an auction
+     */
+    function _removeDesignFromAuction(uint256 auctionId, uint256 designId) internal {
+        Auction storage auction = auctions[auctionId];
+        AminalDesign storage design = auction.designs[designId];
+
+        design.removed = true;
+
+        // Reset votes for this design
+        design.votes = 0;
+        auction.designRemovalVotes[designId] = 0;
+
+        // If this was the winning design, recalculate winner
+        if (auction.winningDesignId == designId) {
+            auction.winningDesignId = 0;
+            auction.highestVotes = 0;
+            delete auction.tiedDesignIds;
+
+            // Recalculate winner from remaining designs
+            for (uint256 i = 0; i < auction.proposedDesignIds.length;) {
+                uint256 currentDesignId = auction.proposedDesignIds[i];
+                AminalDesign storage currentDesign = auction.designs[currentDesignId];
+
+                if (!currentDesign.removed && currentDesign.votes > auction.highestVotes) {
+                    auction.highestVotes = currentDesign.votes;
+                    auction.winningDesignId = currentDesignId;
+                    delete auction.tiedDesignIds;
+                    auction.tiedDesignIds.push(currentDesignId);
+                } else if (
+                    !currentDesign.removed && currentDesign.votes == auction.highestVotes && currentDesign.votes > 0
+                ) {
+                    auction.tiedDesignIds.push(currentDesignId);
+                }
+                unchecked {
+                    ++i;
+                }
+            }
+        }
+
+        emit DesignRemoved(auctionId, designId);
+    }
+
+    /**
+     * @notice Select the winning design for an auction
+     * @dev Handles ties using deterministic randomness based on auction ID
+     * @param auction The auction to select winner from
+     * @return winningDesignId The ID of the winning design, or 0 if no votes were cast
+     */
+    function _selectWinningDesign(Auction storage auction) internal view returns (uint256 winningDesignId) {
+        // Check if there were any votes cast (tiedDesignIds is populated during voting)
+        if (auction.tiedDesignIds.length > 0) {
+            if (auction.tiedDesignIds.length > 1) {
+                // Multiple designs tied - use randomness to break the tie
+                // Using auction-specific data as seed to ensure unique randomness per auction
+                uint256 randomIndex = _generateRandomness(
+                    uint256(keccak256(abi.encode(auction.aminalOne, auction.aminalTwo))), auction.tiedDesignIds.length
+                );
+                winningDesignId = auction.tiedDesignIds[randomIndex];
+            } else {
+                // Single clear winner
+                winningDesignId = auction.tiedDesignIds[0];
+            }
+        }
+        // Implicitly returns 0 if no votes were cast (default value)
+    }
+
+    /**
+     * @notice Select a random parent design when no votes are cast
+     */
+    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[8] memory) {
+        // Randomly choose between parent designs
+        uint256 random = _generateRandomness(1, 2);
+        if (random == 0) return auction.parentOneTraits;
+        else return auction.parentTwoTraits;
+    }
+
+    /**
+     * @notice Capture parent traits for inheritance fallback
+     */
     function _captureParentTraits(Auction storage auction, uint256 aminalOne, uint256 aminalTwo) internal {
         address aminalOneAddress = aminalFactory.getAminalByIndex(aminalOne);
         address aminalTwoAddress = aminalFactory.getAminalByIndex(aminalTwo);
@@ -876,79 +811,59 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         auction.parentTwoTraits[7] = parentTwoVisuals.miscId;
     }
 
-    /// @notice Select the winning gene for a trait category
-    /// @param auction The auction storage reference
-    /// @param category The trait category
-    /// @param categoryIndex Numeric index of the category (for randomness seed)
-    /// @return selectedGeneId The selected gene ID (0 if no trait)
-    function _selectWinningGene(Auction storage auction, VisualsCat category, uint256 categoryIndex)
-        internal
-        view
-        returns (uint256 selectedGeneId)
-    {
-        CategoryVoting storage categoryVoting = auction.categoryVotes[category];
+    /**
+     * @notice Calculate a user's voting power based on love given to parent Aminals
+     */
+    function _calculateVotingPower(Auction storage auction, address user) internal view returns (uint256) {
+        address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
+        address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
-        // Step 1: Check if there are any votes
-        if (categoryVoting.highestVotes > 0 && categoryVoting.tiedGenes.length > 0) {
-            // Check for ties
-            if (categoryVoting.tiedGenes.length > 1) {
-                // Handle tie with randomness
-                uint256 randomIndex = _generateRandomness(categoryIndex, categoryVoting.tiedGenes.length);
-                selectedGeneId = categoryVoting.tiedGenes[randomIndex];
-            } else {
-                // Clear winner - use the single tied gene
-                selectedGeneId = categoryVoting.tiedGenes[0];
-            }
-        } else {
-            // Step 2: No votes cast, fall back to parent traits
-            selectedGeneId = _selectParentTrait(auction, categoryIndex);
-        }
+        uint256 loveToAminalOne = IAminal(aminalOneAddress).getLoveByUser(user);
+        uint256 loveToAminalTwo = IAminal(aminalTwoAddress).getLoveByUser(user);
 
-        return selectedGeneId;
+        return loveToAminalOne + loveToAminalTwo;
     }
 
-    /// @notice Select a parent trait when no votes are cast
-    /// @param auction The auction storage reference
-    /// @param categoryIndex The trait category index
-    /// @return selectedGeneId The selected parent trait ID (0 if none)
-    function _selectParentTrait(Auction storage auction, uint256 categoryIndex)
-        internal
-        view
-        returns (uint256 selectedGeneId)
-    {
-        // Use fixed-size array for parent traits (max 2 parents)
-        uint256[2] memory availableTraits;
-        uint256 availableCount = 0;
+    /**
+     * @notice Generate pseudo-random number for tie-breaking
+     * @dev Uses block.prevrandao (post-merge randomness) combined with auction-specific data
+     *      This provides good randomness for non-critical decisions like tie-breaking
+     *      For high-value randomness, consider using Chainlink VRF
+     * @param seed Additional entropy (e.g., auctionId or specific use case)
+     * @param max Upper bound (exclusive) for the random number
+     * @return Random number in range [0, max)
+     */
+    function _generateRandomness(uint256 seed, uint256 max) internal view returns (uint256) {
+        if (max == 0) return 0;
 
-        if (auction.parentOneTraits[categoryIndex] != 0) {
-            availableTraits[availableCount] = auction.parentOneTraits[categoryIndex];
-            availableCount++;
-        }
-        if (
-            auction.parentTwoTraits[categoryIndex] != 0
-                && auction.parentTwoTraits[categoryIndex] != auction.parentOneTraits[categoryIndex]
-        ) {
-            availableTraits[availableCount] = auction.parentTwoTraits[categoryIndex];
-            availableCount++;
-        }
+        // Use auction-specific data to prevent manipulation across auctions
+        uint256 auctionId = auctionCounter; // Current auction context
 
-        if (availableCount > 0) {
-            // Randomly select from available parent traits
-            uint256 randomIndex = _generateRandomness(categoryIndex + 1000, availableCount);
-            selectedGeneId = availableTraits[randomIndex];
-        }
-        // If availableCount == 0, selectedGeneId remains 0 (no trait)
+        // Combine multiple sources of entropy:
+        // - block.prevrandao: Post-merge beacon randomness (harder to manipulate than difficulty)
+        // - block.timestamp: Adds time-based entropy
+        // - auctionId: Makes randomness unique per auction
+        // - seed: Additional entropy for different randomness needs within same block
+        // - msg.sender: Who triggered the settlement (adds sender-specific entropy)
+        uint256 randomValue = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.prevrandao,
+                    block.timestamp,
+                    auctionId,
+                    seed,
+                    msg.sender,
+                    blockhash(block.number - 1) // Previous block hash for additional entropy
+                )
+            )
+        );
 
-        return selectedGeneId;
+        return randomValue % max;
     }
 
-    /// @notice Transfer treasury to gene creator with pre-calculated amounts
-    /// @param auctionId The auction ID
-    /// @param selectedGeneId The winning gene ID
-    /// @param treasuryPerGeneHalf Pre-calculated half of treasury per gene
-    /// @param aminalOneAddress Address of first parent
-    /// @param aminalTwoAddress Address of second parent
-    /// @return totalTransferred Total amount successfully transferred
+    /**
+     * @notice Transfer treasury to gene creator with pre-calculated amounts
+     */
     function _payoutGeneCreator(
         uint256 auctionId,
         uint256 selectedGeneId,
@@ -997,7 +912,6 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @notice Allows gene owners to claim failed payouts
      * @param geneId The gene ID for which to claim failed payouts
      * @dev Only the current owner of the gene NFT can claim failed payouts
-     * @dev Uses a separate function to prevent griefing during auction settlement
      */
     function claimFailedPayout(uint256 geneId) external nonReentrant {
         FailedPayout storage failed = failedPayouts[geneId];
@@ -1037,14 +951,5 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         require(totalClaimed > 0, "Payout still failing - recipient cannot receive ETH");
 
         emit FailedPayoutClaimed(geneId, geneOwner, totalClaimed);
-    }
-
-    /**
-     * @notice Get information about failed payouts for a gene
-     * @param geneId The gene ID to check
-     * @return payout The failed payout information
-     */
-    function getFailedPayout(uint256 geneId) external view returns (FailedPayout memory payout) {
-        return failedPayouts[geneId];
     }
 }

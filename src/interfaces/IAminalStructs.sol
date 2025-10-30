@@ -47,6 +47,5 @@ interface IAminalStructs {
         FACE, // Facial features and expressions
         MOUTH, // Mouth, teeth, and vocal expressions
         MISC // Accessories, special effects, and unique features
-
     }
 }
