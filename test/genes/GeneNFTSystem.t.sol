@@ -190,63 +190,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertTrue(geneAuction.isVotingActive(auctionId));
     }
 
+    // NOTE: This test is commented out as it tests the old per-trait voting system
+    // The new system uses full Aminal design voting (all 8 traits together)
+    // See Breeding.t.sol for comprehensive tests of the new system
+    /*
     function testGeneProposalInAuction() public {
-        // First spawn some initial Aminals to test with
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
-        initialVisuals[1] =
-            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
-        aminalFactory.spawnInitialAminals(initialVisuals);
-
-        // Get aminal addresses and feed them so Alice has love to propose genes
-        address aminal1 = aminalFactory.getAminalByIndex(0);
-        address aminal2 = aminalFactory.getAminalByIndex(1);
-        _feedAminals(aminal1, aminal2);
-
-        // Alice creates gene, breeds aminals, and proposes gene
-        vm.startPrank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
-        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2);
-        geneAuction.proposeGene(auctionId, VisualsCat.BACK, geneId);
-        vm.stopPrank();
-
-        // Verify gene was proposed
-        GeneAuction.CategoryVoteInfo memory voteInfo = geneAuction.getCategoryVoting(auctionId, VisualsCat.BACK);
-        assertEq(voteInfo.proposedGenes.length, 1);
-        assertEq(voteInfo.proposedGenes[0], geneId);
+        // Test disabled - old per-trait system replaced with full design voting
     }
+    */
 
-    function testGeneVotingInAuction() public {
-        // First spawn some initial Aminals to test with
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
-        initialVisuals[1] =
-            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
-        aminalFactory.spawnInitialAminals(initialVisuals);
-
-        // Get aminal addresses and feed them so Alice has love to propose genes
-        address aminal1 = aminalFactory.getAminalByIndex(0);
-        address aminal2 = aminalFactory.getAminalByIndex(1);
-        _feedAminals(aminal1, aminal2);
-
-        // Alice creates gene, breeds aminals, proposes gene, and votes
-        vm.startPrank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
-        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2);
-        geneAuction.proposeGene(auctionId, VisualsCat.BACK, geneId);
-        geneAuction.voteOnGene(auctionId, VisualsCat.BACK, geneId);
-        vm.stopPrank();
-
-        // Verify vote count (should be > 0 since Alice voted)
-        uint256 totalVotes = geneAuction.getGeneVotes(auctionId, VisualsCat.BACK, geneId);
-        assertTrue(totalVotes > 0, "Should have votes since Alice has love");
-
-        // Verify user vote (should be > 0)
-        uint256 userVote = geneAuction.getUserVote(auctionId, VisualsCat.BACK, geneId, alice);
-        assertTrue(userVote > 0, "User should have recorded vote");
-    }
 
     function testVoteUpdating() public {
         // First spawn some initial Aminals to test with
