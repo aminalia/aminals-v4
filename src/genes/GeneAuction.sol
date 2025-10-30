@@ -398,11 +398,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function proposeDesign(uint256 auctionId, uint256[8] calldata geneIds) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
+        // Timestamp comparison is required for auction timing logic
         // slither-disable-next-line timestamp
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
 
         // Validate all genes upfront
+        // External calls in this loop are necessary for validation and are view functions
+        // that cannot cause reentrancy or DoS issues. Fixed 8 iterations prevent unbounded loops.
         // slither-disable-start calls-loop
         for (uint256 i = 0; i < 8;) {
             if (geneIds[i] != 0) {
@@ -452,6 +455,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function voteOnDesign(uint256 auctionId, uint256 designId) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
+        // Timestamp comparison is required for auction timing logic
         // slither-disable-next-line timestamp
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
@@ -497,6 +501,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     {
         Auction storage auction = auctions[auctionId];
 
+        // Timestamp comparison is required for auction timing logic
         // slither-disable-next-line timestamp
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
@@ -790,6 +795,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[8] memory) {
         // Randomly choose between parent designs (0 or 1)
         uint256 random = _generateRandomness(1, 2);
+        // Strict equality check is correct here: _generateRandomness returns either 0 or 1
+        // when max=2, making == 0 the appropriate check for selecting parent one
         // slither-disable-next-line incorrect-equality
         if (random == 0) return auction.parentOneTraits;
         else return auction.parentTwoTraits;
@@ -872,9 +879,11 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             )
         );
 
-        // Note: Using modulo for simplicity. While this can introduce minimal bias for
-        // non-power-of-2 max values, it's acceptable for our use case of selecting
-        // parent designs as a fallback when no votes are cast.
+        // Using modulo for simplicity. While this can introduce minimal bias for
+        // non-power-of-2 max values, it's acceptable here because:
+        // 1. This is only used for fallback parent design selection when no votes are cast
+        // 2. The randomness is not economically exploitable (no financial incentive to manipulate)
+        // 3. Multiple entropy sources make manipulation difficult for minimal gain
         // slither-disable-next-line weak-prng
         return randomValue % max;
     }
