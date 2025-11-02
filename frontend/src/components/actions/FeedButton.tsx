@@ -10,8 +10,8 @@ import {
 } from 'wagmi';
 import { aminalAbi } from '../../contracts/generated';
 import { Button } from '../ui/Button';
-import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
+import { Modal } from '../ui/Modal';
 
 export default function FeedButton({
   contractAddress,
@@ -250,9 +250,7 @@ export default function FeedButton({
               placeholder="0.1"
             />
             <div className="mt-2 space-y-2">
-              <p className="text-xs text-gray-500">
-                Minimum: 0.001 ETH
-              </p>
+              <p className="text-xs text-gray-500">Minimum: 0.001 ETH</p>
               {loveForAmount !== undefined && (
                 <div className="bg-pink-50 border border-pink-200 rounded-lg p-3">
                   <p className="text-base font-semibold text-pink-700">

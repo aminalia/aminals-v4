@@ -1,5 +1,8 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getCachedGeneTrait, GeneTrait } from '../../../../lib/gene-personality-storage';
+import {
+  GeneTrait,
+  getCachedGeneTrait,
+} from '../../../../lib/gene-personality-storage';
 
 export default async function handler(
   req: NextApiRequest,
@@ -18,9 +21,11 @@ export default async function handler(
     }
 
     const geneTrait = await getCachedGeneTrait(geneIdString);
-    
+
     if (!geneTrait) {
-      return res.status(404).json({ error: 'No cached trait found for this gene' });
+      return res
+        .status(404)
+        .json({ error: 'No cached trait found for this gene' });
     }
 
     res.status(200).json(geneTrait);

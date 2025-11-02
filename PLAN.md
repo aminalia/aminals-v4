@@ -8,13 +8,15 @@
 
 ## UI
 
+- Add Eigen AI for personality generation
 - Fix CI
 - Show trait name
 - TOOL TIPS and more info EVERYWHERE
-- Optimize all of the UI to be screenshotable for Twitter
 - Show how much money genes have made on the card
+- Optimize all of the UI to be screenshotable for Twitter
 - Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
 - Better page metadata, linking to an Aminal on Twitter should show image, etc.
+- Minify doesn't seem to do anything
 
 ### Chat Feature Improvements
 
@@ -44,7 +46,6 @@ Genes:
 Breeding:
 
 - [x] SVG creator should just be text / preview
-- [ ] make nice SVG coder with linting
 - [ ] "Gene Selection" -> "Gene Pool"
 - [ ] "p1" - "Parent 1", etc
 - [ ] "Time Left" -> "Incubation Period"

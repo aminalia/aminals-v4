@@ -77,9 +77,12 @@ const ChatSessionsPage: NextPage = () => {
     setIsCreating(true);
 
     // Show a loading toast that personality is being generated
-    const loadingToast = toast.loading('Creating chat session & generating personality...', {
-      duration: Infinity,
-    });
+    const loadingToast = toast.loading(
+      'Creating chat session & generating personality...',
+      {
+        duration: Infinity,
+      }
+    );
 
     try {
       const response = await fetch('/api/chat/sessions', {

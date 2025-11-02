@@ -187,12 +187,16 @@ function CreateGenePage({
     const byteSize = new Blob([svgContent]).size;
     if (byteSize > 50000) {
       errors.push({
-        message: `SVG is too large (${(byteSize / 1024).toFixed(1)}KB). Maximum is 50KB.`,
+        message: `SVG is too large (${(byteSize / 1024).toFixed(
+          1
+        )}KB). Maximum is 50KB.`,
         type: 'error',
       });
     } else if (byteSize > 10000) {
       errors.push({
-        message: `SVG is large (${(byteSize / 1024).toFixed(1)}KB). Consider minifying to reduce gas costs.`,
+        message: `SVG is large (${(byteSize / 1024).toFixed(
+          1
+        )}KB). Consider minifying to reduce gas costs.`,
         type: 'warning',
       });
     }
@@ -469,7 +473,9 @@ Note: SVG wrapper tags are not required"
                   <div>
                     Status:{' '}
                     <span
-                      className={`font-medium ${hasErrors ? 'text-red-500' : 'text-green-500'}`}
+                      className={`font-medium ${
+                        hasErrors ? 'text-red-500' : 'text-green-500'
+                      }`}
                     >
                       {hasErrors ? 'Invalid' : 'Valid'}
                     </span>
@@ -522,8 +528,8 @@ Note: SVG wrapper tags are not required"
                       previewBackground === 'white'
                         ? 'bg-white'
                         : previewBackground === 'black'
-                          ? 'bg-black'
-                          : 'bg-checkerboard'
+                        ? 'bg-black'
+                        : 'bg-checkerboard'
                     }`}
                   >
                     {showContextPreview ? (
@@ -626,7 +632,9 @@ Note: SVG wrapper tags are not required"
                     </div>
                     <div className="p-4 bg-muted rounded-lg text-center">
                       <div
-                        className={`text-2xl font-bold ${hasErrors ? 'text-red-500' : 'text-green-500'}`}
+                        className={`text-2xl font-bold ${
+                          hasErrors ? 'text-red-500' : 'text-green-500'
+                        }`}
                       >
                         {hasErrors ? '✗' : '✓'}
                       </div>

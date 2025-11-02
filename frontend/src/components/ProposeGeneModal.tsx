@@ -163,177 +163,178 @@ export default function ProposeGeneModal({
       {/* ProposeGeneModal */}
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-border">
-          <div>
-            <h2 className="text-xl font-bold">Propose New Gene</h2>
-            <p className="text-sm text-muted-foreground">
-              Select a gene from the registry or enter a specific ID
-            </p>
+          {/* Header */}
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <div>
+              <h2 className="text-xl font-bold">Propose New Gene</h2>
+              <p className="text-sm text-muted-foreground">
+                Select a gene from the registry or enter a specific ID
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-muted rounded-full transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
 
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-          {/* Category Selection */}
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold mb-3">Select Category</h3>
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((category) => {
-                const emoji =
-                  TRAIT_CATEGORIES[category.id as keyof typeof TRAIT_CATEGORIES]
-                    ?.emoji || '🎨';
-                return (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={cn(
-                      'px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
-                      selectedCategory === category.id
-                        ? 'bg-energy text-energy-foreground'
-                        : 'bg-muted hover:bg-muted/80 text-foreground'
-                    )}
-                  >
-                    <span>{emoji}</span>
-                    <span>{category.label}</span>
-                  </button>
-                );
-              })}
+          {/* Content */}
+          <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+            {/* Category Selection */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-3">Select Category</h3>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((category) => {
+                  const emoji =
+                    TRAIT_CATEGORIES[
+                      category.id as keyof typeof TRAIT_CATEGORIES
+                    ]?.emoji || '🎨';
+                  return (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={cn(
+                        'px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
+                        selectedCategory === category.id
+                          ? 'bg-energy text-energy-foreground'
+                          : 'bg-muted hover:bg-muted/80 text-foreground'
+                      )}
+                    >
+                      <span>{emoji}</span>
+                      <span>{category.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Gene Selection Method */}
+            <div className="mb-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-semibold">Select Gene</h3>
+                <Button
+                  variant="energy"
+                  size="sm"
+                  onClick={() => setShowCreateGene(true)}
+                >
+                  ✨ Create New Gene
+                </Button>
+              </div>
+              <div className="flex gap-4 mb-4">
+                <button
+                  onClick={() => setUseManualId(false)}
+                  className={cn(
+                    'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                    !useManualId
+                      ? 'bg-energy/20 text-energy border border-energy/30'
+                      : 'bg-muted hover:bg-muted/80 text-foreground'
+                  )}
+                >
+                  Browse Registry
+                </button>
+                <button
+                  onClick={() => setUseManualId(true)}
+                  className={cn(
+                    'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
+                    useManualId
+                      ? 'bg-energy/20 text-energy border border-energy/30'
+                      : 'bg-muted hover:bg-muted/80 text-foreground'
+                  )}
+                >
+                  Enter ID Manually
+                </button>
+              </div>
+
+              {useManualId ? (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-foreground">
+                    Gene ID
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="Enter gene ID (e.g., 123)"
+                    value={manualGeneId}
+                    onChange={(e) => setManualGeneId(e.target.value)}
+                    className="max-w-xs"
+                  />
+                </div>
+              ) : (
+                <div>
+                  {isLoadingGenes ? (
+                    <div className="flex justify-center items-center h-32">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-energy"></div>
+                    </div>
+                  ) : !genes || genes.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No genes found for this category
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                      {genes.map((gene: any) => (
+                        <div
+                          key={gene.id}
+                          className={cn(
+                            'border-2 rounded-lg p-3 cursor-pointer transition-all',
+                            selectedGeneId === gene.tokenId
+                              ? 'border-energy bg-energy/10'
+                              : 'border-border hover:border-energy/50'
+                          )}
+                          onClick={() => setSelectedGeneId(gene.tokenId)}
+                        >
+                          <div className="aspect-square mb-2 bg-secondary rounded-lg overflow-hidden">
+                            <svg
+                              viewBox="0 0 1000 1000"
+                              className="w-full h-full"
+                              dangerouslySetInnerHTML={{
+                                __html: gene.svg || '',
+                              }}
+                            />
+                          </div>
+                          <div className="text-sm font-medium text-center">
+                            Gene #{gene.tokenId}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Gene Selection Method */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Select Gene</h3>
+          {/* Footer */}
+          <div className="border-t border-border p-6 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {useManualId
+                ? `Manual ID: ${manualGeneId || 'Not entered'}`
+                : `Selected: ${
+                    selectedGeneId ? `Gene #${selectedGeneId}` : 'None'
+                  }`}
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
+                onClick={handlePropose}
+                disabled={
+                  !enabled ||
+                  (!selectedGeneId && !manualGeneId) ||
+                  isPending ||
+                  isConfirming
+                }
                 variant="energy"
-                size="sm"
-                onClick={() => setShowCreateGene(true)}
               >
-                ✨ Create New Gene
+                {!enabled
+                  ? 'Connect Wallet'
+                  : isPending || isConfirming
+                  ? 'Proposing...'
+                  : 'Propose Gene'}
               </Button>
             </div>
-            <div className="flex gap-4 mb-4">
-              <button
-                onClick={() => setUseManualId(false)}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  !useManualId
-                    ? 'bg-energy/20 text-energy border border-energy/30'
-                    : 'bg-muted hover:bg-muted/80 text-foreground'
-                )}
-              >
-                Browse Registry
-              </button>
-              <button
-                onClick={() => setUseManualId(true)}
-                className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  useManualId
-                    ? 'bg-energy/20 text-energy border border-energy/30'
-                    : 'bg-muted hover:bg-muted/80 text-foreground'
-                )}
-              >
-                Enter ID Manually
-              </button>
-            </div>
-
-            {useManualId ? (
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">
-                  Gene ID
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Enter gene ID (e.g., 123)"
-                  value={manualGeneId}
-                  onChange={(e) => setManualGeneId(e.target.value)}
-                  className="max-w-xs"
-                />
-              </div>
-            ) : (
-              <div>
-                {isLoadingGenes ? (
-                  <div className="flex justify-center items-center h-32">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-energy"></div>
-                  </div>
-                ) : !genes || genes.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    No genes found for this category
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {genes.map((gene: any) => (
-                      <div
-                        key={gene.id}
-                        className={cn(
-                          'border-2 rounded-lg p-3 cursor-pointer transition-all',
-                          selectedGeneId === gene.tokenId
-                            ? 'border-energy bg-energy/10'
-                            : 'border-border hover:border-energy/50'
-                        )}
-                        onClick={() => setSelectedGeneId(gene.tokenId)}
-                      >
-                        <div className="aspect-square mb-2 bg-secondary rounded-lg overflow-hidden">
-                          <svg
-                            viewBox="0 0 1000 1000"
-                            className="w-full h-full"
-                            dangerouslySetInnerHTML={{
-                              __html: gene.svg || '',
-                            }}
-                          />
-                        </div>
-                        <div className="text-sm font-medium text-center">
-                          Gene #{gene.tokenId}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="border-t border-border p-6 flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            {useManualId
-              ? `Manual ID: ${manualGeneId || 'Not entered'}`
-              : `Selected: ${
-                  selectedGeneId ? `Gene #${selectedGeneId}` : 'None'
-                }`}
-          </div>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handlePropose}
-              disabled={
-                !enabled ||
-                (!selectedGeneId && !manualGeneId) ||
-                isPending ||
-                isConfirming
-              }
-              variant="energy"
-            >
-              {!enabled
-                ? 'Connect Wallet'
-                : isPending || isConfirming
-                ? 'Proposing...'
-                : 'Propose Gene'}
-            </Button>
-          </div>
-        </div>
-      </div>
       </div>
     </>
   );
