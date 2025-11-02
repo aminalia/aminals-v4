@@ -410,12 +410,12 @@ const AminalPage: NextPage = () => {
                         id: any;
                         traitType: number;
                       }>
-                    ) =>
-                      traits.map((gene, i) => {
+                    ) => {
+                      return traits.map((gene, i) => {
                         // Find gene data for this trait
                         const traitId = (gene as any).id;
                         const geneInfo = geneData?.find(
-                          (g: any) => g?.tokenId === traitId?.toString()
+                          (g: any) => g?.tokenId === traitId
                         );
                         const geneId = geneInfo?.id || traitId || '';
 
@@ -445,9 +445,9 @@ const AminalPage: NextPage = () => {
                                 <div className="text-sm font-medium truncate">
                                   {gene.name}
                                 </div>
-                                <div className="text-xs text-primary font-medium hover:text-primary/80 truncate">
+                                {/*<div className="text-xs text-primary font-medium hover:text-primary/80 truncate">
                                   Gene #{gene.id}
-                                </div>
+                                </div>*/}
                                 {geneInfo?.name && (
                                   <div className="text-xs text-muted-foreground truncate">
                                     {geneInfo.name}
@@ -457,45 +457,46 @@ const AminalPage: NextPage = () => {
                             </div>
                           </Link>
                         );
-                      }))([
+                      });
+                    })([
                       {
                         name: 'Background',
-                        id: aminal.backId,
+                        id: aminal.traits[0],
                         traitType: 0,
                       },
                       {
                         name: 'Arms',
-                        id: aminal.armId,
+                        id: aminal.traits[1],
                         traitType: 1,
                       },
                       {
                         name: 'Tail',
-                        id: aminal.tailId,
+                        id: aminal.traits[2],
                         traitType: 2,
                       },
                       {
                         name: 'Ears',
-                        id: aminal.earsId,
+                        id: aminal.traits[3],
                         traitType: 3,
                       },
                       {
                         name: 'Body',
-                        id: aminal.bodyId,
+                        id: aminal.traits[4],
                         traitType: 4,
                       },
                       {
                         name: 'Face',
-                        id: aminal.faceId,
+                        id: aminal.traits[5],
                         traitType: 5,
                       },
                       {
                         name: 'Mouth',
-                        id: aminal.mouthId,
+                        id: aminal.traits[6],
                         traitType: 6,
                       },
                       {
                         name: 'Misc',
-                        id: aminal.miscId,
+                        id: aminal.traits[7],
                         traitType: 7,
                       },
                     ])}

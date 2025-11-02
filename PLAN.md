@@ -3,8 +3,6 @@
 # Bugs
 - Empty traits are not working, voting no trait means a random one get's selected.
 - ETH balance is not updating
-- Trait links don't work on aminal detail page
-
 
 ## UI
 
