@@ -130,6 +130,12 @@ const GeneDetailPage: NextPage = () => {
                   }}
                 />
               </div>
+              {/* Gene name */}
+              {gene.name && (
+                <div className="text-center text-lg font-semibold">
+                  {gene.name}
+                </div>
+              )}
               {/* Description as image caption */}
               {gene.description && (
                 <div className="text-center text-sm text-muted-foreground italic leading-relaxed px-2">
