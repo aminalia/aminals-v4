@@ -68,7 +68,7 @@ jobs:
         run: forge install
 
       - name: Run coverage
-        run: forge coverage --report summary --report lcov --ir-minimum
+        run: forge coverage --report summary --report lcov
 
       ### TODO re-enable when we have better coverage and enforce threshold
       # - name: Verify minimum coverage
