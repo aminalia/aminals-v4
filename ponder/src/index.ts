@@ -276,7 +276,7 @@ ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
  * Creates new GeneNFT entity when gene is registered
  */
 ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
-  const { geneId, creator, category, svg } = event.args;
+  const { geneId, creator, category, svg, metadata } = event.args;
   const { db, client, contracts } = context;
 
   const creatorId = normalizeAddress(creator);
@@ -296,7 +296,7 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
   const name: string = `Gene #${geneId}`;
   const description: string = "An Aminal gene trait";
 
-  // Create GeneNFT entity
+  // Create GeneNFT entity with placement metadata
   await db.insert(geneNFT).values({
     id: makeGeneNFTId(geneId),
     tokenId: geneId,
@@ -306,6 +306,10 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     svg,
     name,
     description,
+    offsetX: Number(metadata.offsetX),
+    offsetY: Number(metadata.offsetY),
+    scale: Number(metadata.scale),
+    rotation: Number(metadata.rotation),
     totalEarnings: 0n,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,

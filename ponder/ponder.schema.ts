@@ -117,6 +117,12 @@ export const geneNFT = onchainTable("geneNFT", (t) => ({
   name: t.text(),
   description: t.text(),
 
+  // Placement metadata (for rendering transforms)
+  offsetX: t.integer().notNull(), // Horizontal offset from center (-500 to 500)
+  offsetY: t.integer().notNull(), // Vertical offset from center (-500 to 500)
+  scale: t.integer().notNull(), // Scale percentage (10 to 500, where 100 = 100%)
+  rotation: t.integer().notNull(), // Rotation in degrees (0 to 359)
+
   // Earnings tracking
   totalEarnings: t.bigint().notNull(),
 
