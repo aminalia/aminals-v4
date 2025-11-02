@@ -2,25 +2,19 @@
 
 # Bugs
 - Empty traits are not working, voting no trait means a random one get's selected.
-- ETH balance is not updating
 
 ## UI
 
-- Add Eigen AI for personality generation
-- Fix CI
 - Show trait name
 - TOOL TIPS and more info EVERYWHERE
 - Show how much money genes have made on the card
 - Optimize all of the UI to be screenshotable for Twitter
-- Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
 - Better page metadata, linking to an Aminal on Twitter should show image, etc.
 - Minify doesn't seem to do anything
 
 ### Chat Feature Improvements
 
-- Use Eigen AI for getting persionalities in a deterministic way
 - Better prompts for more creative outputs
-- Pass ETH amounts correctly (Aminals think they have more ETH than they actually have)
 - API rate limiting
 
 ### User Testing feedback

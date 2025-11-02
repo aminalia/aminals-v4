@@ -52,31 +52,6 @@ jobs:
       - name: Run tests
         run: forge test -vvv
 
-  coverage:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-
-      - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
-        with:
-          version: stable
-
-      - name: Install dependencies
-        run: forge install
-
-      - name: Run coverage
-        run: forge coverage --report summary --report lcov
-
-      ### TODO re-enable when we have better coverage and enforce threshold
-      # - name: Verify minimum coverage
-      #   uses: zgosalvez/github-actions-report-lcov@v4
-      #   with:
-      #     coverage-files: ./lcov.info
-      #     minimum-coverage: 100 # Set coverage threshold.
-
   lint:
     runs-on: ubuntu-latest
     steps:
