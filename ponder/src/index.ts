@@ -297,6 +297,9 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
   const description: string = "An Aminal gene trait";
 
   // Create GeneNFT entity with placement metadata
+  // Old contract versions don't have metadata, so use defaults
+  const hasMetadata = metadata && typeof metadata === 'object';
+
   await db.insert(geneNFT).values({
     id: makeGeneNFTId(geneId),
     tokenId: geneId,
@@ -306,10 +309,10 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     svg,
     name,
     description,
-    offsetX: Number(metadata.offsetX),
-    offsetY: Number(metadata.offsetY),
-    scale: Number(metadata.scale),
-    rotation: Number(metadata.rotation),
+    offsetX: hasMetadata && metadata.offsetX !== undefined ? Number(metadata.offsetX) : 0,
+    offsetY: hasMetadata && metadata.offsetY !== undefined ? Number(metadata.offsetY) : 0,
+    scale: hasMetadata && metadata.scale !== undefined ? Number(metadata.scale) : 100,
+    rotation: hasMetadata && metadata.rotation !== undefined ? Number(metadata.rotation) : 0,
     totalEarnings: 0n,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
