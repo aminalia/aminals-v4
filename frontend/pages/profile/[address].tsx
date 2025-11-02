@@ -283,7 +283,15 @@ const ProfilePage: NextPage = () => {
               </div>
               <div className="bg-primary/10 border border-primary/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
                 <div className="text-lg md:text-2xl font-bold text-primary">
-                  {Number(formatEther(BigInt(userProfile.totalSpentFeeding || '0'))).toFixed(4)} ETH
+                  {Number(
+                    formatEther(
+                      userProfile.feedEvents?.reduce(
+                        (sum, event) => sum + event.amount,
+                        0n
+                      ) || 0n
+                    )
+                  ).toFixed(4)}{' '}
+                  ETH
                 </div>
                 <div className="text-xs md:text-sm text-primary font-medium">
                   Spent Feeding
