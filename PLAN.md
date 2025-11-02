@@ -5,11 +5,8 @@
 
 ## UI
 
-- Show trait name
 - TOOL TIPS and more info EVERYWHERE
 - Show how much money genes have made on the card
-- Optimize all of the UI to be screenshotable for Twitter
-- Better page metadata, linking to an Aminal on Twitter should show image, etc.
 - Minify doesn't seem to do anything
 
 ### Chat Feature Improvements
@@ -71,13 +68,13 @@ Contract Changes:
 
 - Review vibe coded love bonding curve math
 - Make sure geneNFTs show up well on OpenSea / wallets
-- measure gas (see how this is done in aminalsV3)
-- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
-- Clean up and document scripts
-- Remove proposals
+- Remove proposals?
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
+
+- Do we want "This NFT represents a digital pet. This NFT cannot be transfered." as the Aminal description?
+- Name / description is not actually being used when creating a new gene, not being stored in contracts
 
 # New Features Ideas
 
