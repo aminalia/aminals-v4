@@ -2,7 +2,11 @@ import fs from 'fs';
 import path from 'path';
 
 const GENE_TRAITS_DIR = path.join(process.cwd(), 'data', 'gene-traits');
-const AMINAL_PERSONALITIES_DIR = path.join(process.cwd(), 'data', 'personalities');
+const AMINAL_PERSONALITIES_DIR = path.join(
+  process.cwd(),
+  'data',
+  'personalities'
+);
 
 export interface GeneTrait {
   geneId: string;
@@ -16,14 +20,14 @@ export interface GeneTrait {
 export interface AminalPersonality {
   aminalAddress: string;
   traits: {
-    back?: string;    // backId trait
-    arms?: string;    // armId trait
-    tail?: string;    // tailId trait
-    ears?: string;    // earsId trait
-    body?: string;    // bodyId trait
-    face?: string;    // faceId trait
-    mouth?: string;   // mouthId trait
-    misc?: string;    // miscId trait
+    back?: string; // backId trait
+    arms?: string; // armId trait
+    tail?: string; // tailId trait
+    ears?: string; // earsId trait
+    body?: string; // bodyId trait
+    face?: string; // faceId trait
+    mouth?: string; // mouthId trait
+    misc?: string; // miscId trait
   };
   geneIds: {
     backId?: string;
@@ -49,7 +53,7 @@ const TRAIT_TYPE_NAMES: Record<number, keyof AminalPersonality['traits']> = {
   4: 'body',
   5: 'face',
   6: 'mouth',
-  7: 'misc'
+  7: 'misc',
 };
 
 const GENE_ID_NAMES: Record<number, keyof AminalPersonality['geneIds']> = {
@@ -60,7 +64,7 @@ const GENE_ID_NAMES: Record<number, keyof AminalPersonality['geneIds']> = {
   4: 'bodyId',
   5: 'faceId',
   6: 'mouthId',
-  7: 'miscId'
+  7: 'miscId',
 };
 
 // Ensure directories exist
@@ -78,7 +82,7 @@ function hashSvg(svgContent: string): string {
   let hash = 0;
   for (let i = 0; i < svgContent.length; i++) {
     const char = svgContent.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
+    hash = (hash << 5) - hash + char;
     hash = hash & hash; // Convert to 32-bit integer
   }
   return hash.toString(16);
@@ -91,11 +95,16 @@ function getGeneTraitFilePath(geneId: string): string {
 
 // Get Aminal personality file path
 function getAminalPersonalityFilePath(aminalAddress: string): string {
-  return path.join(AMINAL_PERSONALITIES_DIR, `${aminalAddress.toLowerCase()}.json`);
+  return path.join(
+    AMINAL_PERSONALITIES_DIR,
+    `${aminalAddress.toLowerCase()}.json`
+  );
 }
 
 // Get cached gene trait
-export async function getCachedGeneTrait(geneId: string): Promise<GeneTrait | null> {
+export async function getCachedGeneTrait(
+  geneId: string
+): Promise<GeneTrait | null> {
   try {
     ensureDirectories();
     const filePath = getGeneTraitFilePath(geneId);
@@ -175,9 +184,9 @@ async function generateTraitFromGeneSvg(
 ): Promise<string> {
   console.log('🎭 Generating trait for gene:', { geneId, traitType, geneName });
 
-  const apiKey = process.env.HF_TOKEN;
+  const apiKey = process.env.EIGENAI_API_KEY;
   if (!apiKey) {
-    throw new Error('HF_TOKEN environment variable is required');
+    throw new Error('EIGENAI_API_KEY environment variable is required');
   }
 
   const traitTypeName = TRAIT_TYPE_NAMES[traitType] || 'unknown';
@@ -199,45 +208,77 @@ Good examples:
 
 Respond with just the trait phrase, no preamble.`;
 
-  const userPrompt = `This gene represents the "${traitTypeName}" trait${geneName ? ` called "${geneName}"` : ''}.
+  const userPrompt = `This gene represents the "${traitTypeName}" trait${
+    geneName ? ` called "${geneName}"` : ''
+  }.
 
 Gene SVG:
 ${svgContent}
 
 Based on this visual element, generate a single personality trait that this gene would contribute to an Aminal.`;
 
-  const response = await fetch('https://router.huggingface.co/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'moonshotai/Kimi-K2-Instruct:novita',
-      max_tokens: 100,
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: userPrompt,
-        },
-      ],
-    }),
-  });
+  const response = await fetch(
+    'https://eigenai.eigencloud.xyz/v1/chat/completions',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': apiKey,
+      },
+      body: JSON.stringify({
+        model: 'gpt-oss-120b-f16',
+        max_tokens: 500,
+        seed: 42,
+        messages: [
+          {
+            role: 'system',
+            content: systemPrompt,
+          },
+          {
+            role: 'user',
+            content: userPrompt,
+          },
+        ],
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
-    throw new Error(`Hugging Face API error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
+    throw new Error(
+      `Eigen AI API error: ${response.status} - ${
+        errorData.error?.message || 'Unknown error'
+      }`
+    );
   }
 
   const data = await response.json();
-  const trait = data.choices[0].message.content.trim();
+  let content = data.choices[0].message.content.trim();
 
-  console.log('🎭 Generated trait:', trait);
-  return trait;
+  // Eigen AI may include reasoning tokens like <|channel|>analysis<|message|>
+  // Extract only the final answer by looking for the last <|channel|>final<|message|> section
+  // or removing all <|...> tags if no final section exists
+  const finalMatch = content.match(
+    /<\|channel\|>final<\|message\|>([^<]+)(?:<\|end\|>)?/
+  );
+  if (finalMatch) {
+    content = finalMatch[1].trim();
+  } else {
+    // If no final section, remove all reasoning tokens
+    content = content
+      .replace(/<\|channel\|>[^<]*<\|message\|>[^<]*(?:<\|end\|>)?/g, '')
+      .replace(/<\|start\|>[^<]*/g, '')
+      .trim();
+  }
+
+  // Clean up any remaining malformed tags
+  content = content.replace(/<\|[^>]*\|>/g, '').trim();
+
+  // If content starts with "assistant" or other artifacts, remove them
+  content = content.replace(/^assistant[,:]?\s*/i, '').trim();
+
+  console.log('🎭 Generated trait:', content);
+  return content;
 }
 
 // Get or generate gene trait
@@ -265,7 +306,12 @@ export async function getOrGenerateGeneTrait(
 
     // Generate new trait
     console.log('🎭 Generating new trait for gene:', geneId);
-    const trait = await generateTraitFromGeneSvg(geneId, traitType, svgContent, geneName);
+    const trait = await generateTraitFromGeneSvg(
+      geneId,
+      traitType,
+      svgContent,
+      geneName
+    );
 
     // Save the new trait
     await saveGeneTrait(geneId, traitType, trait, svgContent);
@@ -278,7 +324,9 @@ export async function getOrGenerateGeneTrait(
 }
 
 // Get cached Aminal personality
-export async function getCachedAminalPersonality(aminalAddress: string): Promise<AminalPersonality | null> {
+export async function getCachedAminalPersonality(
+  aminalAddress: string
+): Promise<AminalPersonality | null> {
   try {
     ensureDirectories();
     const filePath = getAminalPersonalityFilePath(aminalAddress);
@@ -332,7 +380,11 @@ export async function saveAminalPersonality(
       updatedAt: now,
     };
 
-    fs.writeFileSync(filePath, JSON.stringify(personalityData, null, 2), 'utf-8');
+    fs.writeFileSync(
+      filePath,
+      JSON.stringify(personalityData, null, 2),
+      'utf-8'
+    );
 
     console.log('💾 Saved Aminal personality for:', aminalAddress);
     return personalityData;
@@ -343,7 +395,9 @@ export async function saveAminalPersonality(
 }
 
 // Combine individual traits into full personality
-function combineTraitsIntoPersonality(traits: AminalPersonality['traits']): string {
+function combineTraitsIntoPersonality(
+  traits: AminalPersonality['traits']
+): string {
   const traitList = Object.values(traits).filter(Boolean);
 
   if (traitList.length === 0) {
@@ -355,7 +409,9 @@ function combineTraitsIntoPersonality(traits: AminalPersonality['traits']): stri
   }
 
   // Clean and combine traits with proper grammar
-  const cleanedTraits = traitList.map(trait => trait.replace(/\.$/, '').toLowerCase());
+  const cleanedTraits = traitList.map((trait) =>
+    trait.replace(/\.$/, '').toLowerCase()
+  );
 
   if (cleanedTraits.length === 2) {
     return `This Aminal is ${cleanedTraits[0]} and ${cleanedTraits[1]}.`;
@@ -382,7 +438,7 @@ export async function getOrGenerateAminalPersonality(
 
     // Create current gene IDs mapping
     const currentGeneIds: AminalPersonality['geneIds'] = {};
-    geneData.forEach(gene => {
+    geneData.forEach((gene) => {
       const idName = GENE_ID_NAMES[gene.traitType];
       if (idName) {
         currentGeneIds[idName] = gene.geneId;
@@ -391,9 +447,10 @@ export async function getOrGenerateAminalPersonality(
 
     // Check if cached personality matches current genes
     if (cached) {
-      const geneIdsMatch = Object.keys(currentGeneIds).every(key =>
-        cached.geneIds[key as keyof AminalPersonality['geneIds']] ===
-        currentGeneIds[key as keyof AminalPersonality['geneIds']]
+      const geneIdsMatch = Object.keys(currentGeneIds).every(
+        (key) =>
+          cached.geneIds[key as keyof AminalPersonality['geneIds']] ===
+          currentGeneIds[key as keyof AminalPersonality['geneIds']]
       );
 
       if (geneIdsMatch) {
@@ -401,7 +458,10 @@ export async function getOrGenerateAminalPersonality(
         return cached.fullPersonality;
       }
 
-      console.log('🔄 Gene composition changed for Aminal, regenerating personality:', aminalAddress);
+      console.log(
+        '🔄 Gene composition changed for Aminal, regenerating personality:',
+        aminalAddress
+      );
     }
 
     console.log('🎭 Generating new Aminal personality for:', aminalAddress);
@@ -427,7 +487,12 @@ export async function getOrGenerateAminalPersonality(
     const fullPersonality = combineTraitsIntoPersonality(traits);
 
     // Save the personality
-    await saveAminalPersonality(aminalAddress, traits, currentGeneIds, fullPersonality);
+    await saveAminalPersonality(
+      aminalAddress,
+      traits,
+      currentGeneIds,
+      fullPersonality
+    );
 
     return fullPersonality;
   } catch (error) {
