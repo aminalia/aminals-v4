@@ -2,27 +2,16 @@
 
 # Bugs
 - Empty traits are not working, voting no trait means a random one get's selected.
-- ETH balance is not updating
-- Trait links don't work on aminal detail page
-
 
 ## UI
 
-- Add Eigen AI for personality generation
-- Fix CI
-- Show trait name
 - TOOL TIPS and more info EVERYWHERE
 - Show how much money genes have made on the card
-- Optimize all of the UI to be screenshotable for Twitter
-- Show more information about bonding curve love pricing... allow feeding more than 0.01 ETH.
-- Better page metadata, linking to an Aminal on Twitter should show image, etc.
 - Minify doesn't seem to do anything
 
 ### Chat Feature Improvements
 
-- Use Eigen AI for getting persionalities in a deterministic way
 - Better prompts for more creative outputs
-- Pass ETH amounts correctly (Aminals think they have more ETH than they actually have)
 - API rate limiting
 
 ### User Testing feedback
@@ -61,11 +50,6 @@ Desgin challenges:
 - [ ] Make it clearer that you can't own an Aminal
 - [x] Be clearer that you can own genes (they have "owners" now)
 
-Indexer:
-
-- [?] Total earnings for OG genes are not updating? (maybe fixed)
-- [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
-
 Contract Changes:
 
 - [ ] Default Aminal Designer to winning combo
@@ -80,22 +64,17 @@ Contract Changes:
 
 - "Why aren't all genes listed?"
 
-## Ponder
-
-- Index gene name and description
-- ETH balance is not updating
-
 # Contracts
 
 - Review vibe coded love bonding curve math
 - Make sure geneNFTs show up well on OpenSea / wallets
-- measure gas (see how this is done in aminalsV3)
-- More genes test coverage (renderer, auction, registry, NFT contract, payouts to owners)
-- Clean up and document scripts
-- Remove proposals
+- Remove proposals?
 - Some events might be redundent (squeak vs EnergyChange / LoveChange)
 - Investigate whether there should be some limits on gene proposals during auctions
 - When initializing aminal genes during deployment, gene #0 has issues
+
+- Do we want "This NFT represents a digital pet. This NFT cannot be transfered." as the Aminal description?
+- Name / description is not actually being used when creating a new gene, not being stored in contracts
 
 # New Features Ideas
 

@@ -251,7 +251,7 @@ export const useGene = (id: string) => {
 };
 
 /**
- * Fetch multiple genes by their IDs
+ * Fetch multiple genes by their token IDs
  */
 export const useGenesByIds = (ids: string[]) => {
   return usePonderQuery({
@@ -261,13 +261,16 @@ export const useGenesByIds = (ids: string[]) => {
         return db
           .select()
           .from(schema.geneNFT)
-          .where(eq(schema.geneNFT.id, '' as `0x${string}`));
+          .where(eq(schema.geneNFT.tokenId, 0n));
       }
+
+      // Convert string IDs to bigints for comparison with tokenId
+      const tokenIds = ids.map((id) => BigInt(id));
 
       return db
         .select()
         .from(schema.geneNFT)
-        .where(inArray(schema.geneNFT.id, ids as `0x${string}`[]));
+        .where(inArray(schema.geneNFT.tokenId, tokenIds));
     },
     enabled: ids.length > 0,
   });
