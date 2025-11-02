@@ -256,7 +256,7 @@ const ProfilePage: NextPage = () => {
             </div>
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-4 mb-4 md:mb-2">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-2">
               <div className="bg-love/10 border border-love/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
                 <div className="text-lg md:text-2xl font-bold text-love">
                   {userProfile.lovers?.length || 0}
@@ -279,6 +279,14 @@ const ProfilePage: NextPage = () => {
                 </div>
                 <div className="text-xs md:text-sm text-success font-medium">
                   Total Earnings
+                </div>
+              </div>
+              <div className="bg-primary/10 border border-primary/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
+                <div className="text-lg md:text-2xl font-bold text-primary">
+                  {Number(formatEther(BigInt(userProfile.totalSpentFeeding || '0'))).toFixed(4)} ETH
+                </div>
+                <div className="text-xs md:text-sm text-primary font-medium">
+                  Spent Feeding
                 </div>
               </div>
             </div>

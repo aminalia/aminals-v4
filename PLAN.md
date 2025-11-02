@@ -53,11 +53,6 @@ Desgin challenges:
 - [ ] Make it clearer that you can't own an Aminal
 - [x] Be clearer that you can own genes (they have "owners" now)
 
-Indexer:
-
-- [?] Total earnings for OG genes are not updating? (maybe fixed)
-- [ ] Index amount of Eth a user has spent feeding / interacting with Aminals
-
 Contract Changes:
 
 - [ ] Default Aminal Designer to winning combo
@@ -71,11 +66,6 @@ Contract Changes:
 ##### General Questions from User Interview
 
 - "Why aren't all genes listed?"
-
-## Ponder
-
-- Index gene name and description
-- ETH balance is not updating
 
 # Contracts
 
