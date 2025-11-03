@@ -204,156 +204,20 @@ abstract contract GeneRenderer is IAminalStructs {
         output = string(abi.encodePacked(output, "</svg>"));
     }
 
-    /// @notice Safely retrieve SVG content for a Gene NFT with placement transforms
+    /// @notice Safely retrieve SVG content for a Gene NFT
     /// @dev Handles the case where a Gene NFT might not exist or be burned
-    /// @dev Wraps SVG in a group element with transform attribute for positioning
     /// @param geneId The Gene NFT ID to get SVG for
-    /// @return SVG string content with transforms applied, empty string if gene doesn't exist
+    /// @return SVG string content, empty string if gene doesn't exist
     function _getGeneNFTSVG(uint256 geneId) internal view returns (string memory) {
         if (geneId == 0) return ""; // No trait set for this category
 
         // Safely attempt to get gene info
         try genes.getGeneInfo(geneId) returns (string memory svg, VisualsCat) {
-            // Get metadata for this gene
-            (int16 offsetX, int16 offsetY, uint16 scale, uint16 rotation) = genes.geneMetadata(geneId);
-            GeneMetadata memory metadata = GeneMetadata({
-                offsetX: offsetX,
-                offsetY: offsetY,
-                scale: scale,
-                rotation: rotation
-            });
-
-            // If no transforms needed (default values), return SVG as-is
-            if (metadata.offsetX == 0 && metadata.offsetY == 0 && metadata.scale == 100 && metadata.rotation == 0) {
-                return svg;
-            }
-
-            // Apply transforms: translate, scale, rotate
-            // Center point is 500,500 (middle of 1000x1000 canvas)
-            return _applyTransforms(svg, metadata);
+            return svg;
         } catch {
             // Gene NFT doesn't exist or was burned, return empty string
             return "";
         }
-    }
-
-    /// @notice Apply SVG transforms based on gene metadata
-    /// @dev Wraps SVG content in a group with transform attribute
-    /// @param svg The raw SVG content to transform
-    /// @param metadata Placement metadata containing offset, scale, and rotation
-    /// @return Transformed SVG wrapped in a group element
-    function _applyTransforms(string memory svg, GeneMetadata memory metadata) internal pure returns (string memory) {
-        // Build transform string
-        // Order matters: translate -> rotate -> scale (applied right to left in SVG)
-        string memory transforms = "";
-
-        // Translate (offset from center)
-        if (metadata.offsetX != 0 || metadata.offsetY != 0) {
-            transforms = string(
-                abi.encodePacked(
-                    "translate(",
-                    _int16ToString(metadata.offsetX),
-                    ",",
-                    _int16ToString(metadata.offsetY),
-                    ")"
-                )
-            );
-        }
-
-        // Rotate (around center point 500,500)
-        if (metadata.rotation != 0) {
-            if (bytes(transforms).length > 0) transforms = string(abi.encodePacked(transforms, " "));
-            transforms = string(
-                abi.encodePacked(
-                    transforms,
-                    "rotate(",
-                    Strings.toString(metadata.rotation),
-                    " 500 500)"
-                )
-            );
-        }
-
-        // Scale (from center point)
-        if (metadata.scale != 100) {
-            if (bytes(transforms).length > 0) transforms = string(abi.encodePacked(transforms, " "));
-            // Convert scale percentage to decimal (100 = 1.0)
-            transforms = string(
-                abi.encodePacked(
-                    transforms,
-                    "scale(",
-                    _scaleToString(metadata.scale),
-                    ")"
-                )
-            );
-        }
-
-        // Wrap SVG in group with transforms
-        return string(
-            abi.encodePacked(
-                '<g transform="',
-                transforms,
-                '">',
-                svg,
-                '</g>'
-            )
-        );
-    }
-
-    /// @notice Convert int16 to string (handles negative values)
-    /// @param value The signed integer to convert
-    /// @return String representation of the integer
-    function _int16ToString(int16 value) internal pure returns (string memory) {
-        if (value == 0) return "0";
-
-        bool negative = value < 0;
-        uint16 absValue = uint16(negative ? -value : value);
-
-        string memory str = Strings.toString(absValue);
-        return negative ? string(abi.encodePacked("-", str)) : str;
-    }
-
-    /// @notice Convert scale percentage to decimal string
-    /// @dev 100 = "1", 50 = "0.5", 150 = "1.5", etc.
-    /// @param scale The scale percentage (0-500)
-    /// @return Decimal string representation
-    function _scaleToString(uint16 scale) internal pure returns (string memory) {
-        if (scale == 100) return "1";
-
-        uint16 wholePart = scale / 100;
-        uint16 decimalPart = scale % 100;
-
-        if (decimalPart == 0) {
-            return Strings.toString(wholePart);
-        }
-
-        // Format with decimal point, removing trailing zeros
-        string memory decimalStr = Strings.toString(decimalPart);
-
-        // Pad with leading zero if needed (e.g., 5 -> "05")
-        if (decimalPart < 10) {
-            decimalStr = string(abi.encodePacked("0", decimalStr));
-        }
-
-        // Remove trailing zeros
-        bytes memory decimalBytes = bytes(decimalStr);
-        uint256 len = decimalBytes.length;
-        while (len > 0 && decimalBytes[len - 1] == "0") {
-            len--;
-        }
-
-        // Rebuild decimal part without trailing zeros
-        bytes memory trimmed = new bytes(len);
-        for (uint256 i = 0; i < len; i++) {
-            trimmed[i] = decimalBytes[i];
-        }
-
-        return string(
-            abi.encodePacked(
-                Strings.toString(wholePart),
-                ".",
-                string(trimmed)
-            )
-        );
     }
 
     /// @notice Safely get the creator/owner of a Gene NFT

@@ -37,12 +37,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
     error InvalidSVG();
 
     event GeneCreated(
-        uint256 indexed geneId,
-        address indexed creator,
-        address indexed recipient,
-        VisualsCat category,
-        string svg,
-        GeneMetadata metadata
+        uint256 indexed geneId, address indexed creator, address indexed recipient, VisualsCat category, string svg
     );
 
     constructor(address _geneNFT) {
@@ -57,24 +52,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @return geneId The ID of the created Gene NFT
      */
     function createGene(string calldata svg, VisualsCat category) external returns (uint256 geneId) {
-        // Default metadata: centered, 100% scale, no rotation
-        GeneMetadata memory defaultMetadata = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
-        return createGeneFor(msg.sender, svg, category, defaultMetadata);
-    }
-
-    /**
-     * @notice Create a new Gene NFT with trait data and custom placement
-     * @dev Anyone can call this function to create permissionless traits with positioning
-     * @param svg The SVG content for the trait
-     * @param category The visual category for the trait
-     * @param metadata Placement metadata (offset, scale, rotation)
-     * @return geneId The ID of the created Gene NFT
-     */
-    function createGene(string calldata svg, VisualsCat category, GeneMetadata calldata metadata)
-        external
-        returns (uint256 geneId)
-    {
-        return createGeneFor(msg.sender, svg, category, metadata);
+        return createGeneFor(msg.sender, svg, category);
     }
 
     /**
@@ -84,10 +62,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @param recipient The address that will receive the Gene NFT and be marked as creator
      * @param svg The SVG content for the trait
      * @param category The visual category for the trait
-     * @param metadata Placement metadata (offset, scale, rotation)
      * @return geneId The ID of the created Gene NFT
      */
-    function createGeneFor(address recipient, string calldata svg, VisualsCat category, GeneMetadata memory metadata)
+    function createGeneFor(address recipient, string calldata svg, VisualsCat category)
         public
         returns (uint256 geneId)
     {
@@ -100,8 +77,8 @@ contract GeneRegistry is IAminalStructs, Ownable {
         // Get the gene ID that will be minted (current counter value)
         geneId = geneNFT.currentId();
 
-        // Mint the Gene NFT to the recipient with metadata
-        geneNFT.mint(recipient, svg, category, metadata);
+        // Mint the Gene NFT to the recipient
+        geneNFT.mint(recipient, svg, category);
 
         // Register the gene as coming from this factory
         geneRegistry[geneId] = true;
@@ -111,7 +88,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
 
         totalGenesCreated++;
 
-        emit GeneCreated(geneId, recipient, recipient, category, svg, metadata);
+        emit GeneCreated(geneId, recipient, recipient, category, svg);
 
         return geneId;
     }

@@ -50,7 +50,7 @@ interface IAminalStructs {
     }
 
     /**
-     * @notice Placement metadata for visual gene positioning
+     * @notice Placement metadata for visual gene positioning per Aminal
      * @dev Controls how a gene trait is positioned, scaled, and rotated during rendering
      * @param offsetX Horizontal offset from canvas center in pixels (-500 to 500)
      * @param offsetY Vertical offset from canvas center in pixels (-500 to 500)
