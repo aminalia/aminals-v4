@@ -36,8 +36,19 @@ export function makeAuctionId(auctionId: bigint): Hex {
 }
 
 /**
- * Generate proposal ID
- * Format: auction-{auctionId}-{traitType}-{geneId}
+ * Generate design proposal ID
+ * Format: auction-{auctionId}-design-{designIndex}
+ */
+export function makeDesignId(
+  auctionId: bigint,
+  designIndex: number | bigint
+): Hex {
+  return makeId("auction", auctionId, "design", designIndex);
+}
+
+/**
+ * Legacy function - kept for backwards compatibility but deprecated
+ * @deprecated Use makeDesignId instead
  */
 export function makeProposalId(
   auctionId: bigint,
@@ -59,14 +70,14 @@ export function makeRelationshipId(userId: Address, aminalId: Address): Hex {
 
 /**
  * Generate aminal-gene join table ID
- * Format: aminalId-geneTokenId-traitType
+ * Format: aminalId-geneTokenId-slotIndex
  */
 export function makeAminalGeneId(
   aminalId: Address,
   geneTokenId: bigint,
-  traitType: number
+  slotIndex: number
 ): Hex {
-  return makeId(aminalId.toLowerCase(), geneTokenId, traitType);
+  return makeId(aminalId.toLowerCase(), geneTokenId, slotIndex);
 }
 
 /**
@@ -85,7 +96,15 @@ export function normalizeAddress(address: Address): Hex {
 }
 
 /**
- * Convert array of bigints to proper format for storage
+ * Convert array of bigints to proper format for storage (1-10 genes)
+ */
+export function normalizeGeneArray(genes: readonly bigint[]): bigint[] {
+  return Array.from(genes);
+}
+
+/**
+ * Legacy function - kept for backwards compatibility but deprecated
+ * @deprecated Use normalizeGeneArray instead
  */
 export function normalizeTraitArray(traits: readonly bigint[]): bigint[] {
   return Array.from(traits);
