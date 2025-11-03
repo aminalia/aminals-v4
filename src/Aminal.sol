@@ -84,7 +84,13 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     address public immutable dadAddress;
 
     /// @notice The visual DNA that defines this Aminal's appearance
-    Visuals public visuals;
+    Visuals internal _visuals;
+
+    /// @notice Get the visuals for this Aminal
+    /// @return The visuals struct containing all gene IDs
+    function getVisuals() external view returns (Visuals memory) {
+        return _visuals;
+    }
 
     /// @notice Unique identifier within the Aminal ecosystem
     uint256 public immutable aminalIndex;
@@ -209,14 +215,14 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param _factory Address of the AminalFactory that created this Aminal
     /// @param _momAddress Address of the mother Aminal (0x0 for genesis)
     /// @param _dadAddress Address of the father Aminal (0x0 for genesis)
-    /// @param _visuals Visual traits that define this Aminal's appearance
+    /// @param visualTraits Visual traits that define this Aminal's appearance
     /// @param _aminalIndex Unique identifier within the Aminal ecosystem
     /// @param _loveVRGDA Address of the VRGDA contract for love calculations
     constructor(
         address _factory,
         address _momAddress,
         address _dadAddress,
-        Visuals memory _visuals,
+        Visuals memory visualTraits,
         uint256 _aminalIndex,
         address _loveVRGDA
     )
@@ -229,7 +235,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         factory = AminalFactory(_factory);
         momAddress = _momAddress;
         dadAddress = _dadAddress;
-        visuals = _visuals;
+        _visuals = visualTraits;
         aminalIndex = _aminalIndex;
         loveVRGDA = AminalVRGDA(_loveVRGDA);
 
@@ -412,13 +418,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
 
     /*//////////////////////////////////////////////////////////////
                               VIEW FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Get the visual traits of this Aminal
-    /// @return visuals The Visuals struct containing all trait IDs
-    function getVisuals() external view returns (Visuals memory) {
-        return visuals;
-    }
+    /////////////////////////////////////////////////////////////*/
 
     /// @notice Get the love balance of a specific user for this Aminal
     /// @param user Address to check love balance for
@@ -468,7 +468,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @return visuals The visual traits of this Aminal
     function getAminalVisualsByID(uint256 aminalID) public view virtual override returns (Visuals memory) {
         require(aminalID == aminalIndex, "Invalid aminal ID");
-        return visuals;
+        return _visuals;
     }
 
     /// @notice Generate token URI using GeneRenderer

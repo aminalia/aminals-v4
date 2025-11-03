@@ -14,7 +14,6 @@ forge script script/SpawnInitialAminals.s.sol:SpawnInitialAminals --chain-id 111
 
 contract SpawnInitialAminals is Script {
     AminalFactory public factory;
-    IAminalStructs.Visuals[] public initialVisuals;
 
     function readDeploymentSummary() public returns (address factoryAddr) {
         string memory json = vm.readFile("deployment-summary.json");
@@ -31,21 +30,27 @@ contract SpawnInitialAminals is Script {
 
         console.log("Using AminalFactory at:", address(factory));
 
-        // First Aminal with cute orangey theme (genes 0-7)
-        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(0, 1, 2, 3, 4, 5, 6, 7));
+        IAminalStructs.Visuals[] memory initialVisuals = new IAminalStructs.Visuals[](4);
 
-        // Second Aminal with 3 eyed monster theme (genes 8-15)
-        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(8, 9, 10, 11, 12, 13, 14, 15));
+        // First Aminal with cute orangey theme (genes 0-7 in first 8 slots)
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[0].genes[i] = i;
+        }
 
-        // Third Aminal with blue/moon theme (genes 16-23)
-        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(16, 17, 18, 19, 20, 21, 22, 23));
+        // Second Aminal with 3 eyed monster theme (genes 8-15 in first 8 slots)
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[1].genes[i] = 8 + i;
+        }
 
-        // Fourth Aminal with blue/moon theme (genes 24-31)
-        // Order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-        initialVisuals.push(IAminalStructs.Visuals(24, 25, 26, 27, 28, 29, 30, 31));
+        // Third Aminal with blue/moon theme (genes 16-23 in first 8 slots)
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[2].genes[i] = 16 + i;
+        }
+
+        // Fourth Aminal (genes 24-31 in first 8 slots)
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[3].genes[i] = 24 + i;
+        }
 
         factory.spawnInitialAminals(initialVisuals);
         console.log("Spawned", initialVisuals.length, "initial Aminals");

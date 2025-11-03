@@ -37,16 +37,14 @@ contract GetAminalInfo is Script {
             console.log("Total Love:", aminal.getTotalLove());
             console.log("Energy:", aminal.getEnergy());
 
-            // Get visuals
+            // Get visuals (flexible 1-10 gene system)
             IAminalStructs.Visuals memory visuals = aminal.getVisuals();
-            console.log("Visuals - Back:", visuals.backId);
-            console.log("Visuals - Arm:", visuals.armId);
-            console.log("Visuals - Tail:", visuals.tailId);
-            console.log("Visuals - Ears:", visuals.earsId);
-            console.log("Visuals - Body:", visuals.bodyId);
-            console.log("Visuals - Face:", visuals.faceId);
-            console.log("Visuals - Mouth:", visuals.mouthId);
-            console.log("Visuals - Misc:", visuals.miscId);
+            console.log("Genes (1-10 flexible system):");
+            for (uint256 j = 0; j < 10; j++) {
+                if (visuals.genes[j] != 0) {
+                    console.log("  Gene slot", j, ":", visuals.genes[j]);
+                }
+            }
 
             // Show token URI
             console.log("Token URI available - call tokenURI() to view");

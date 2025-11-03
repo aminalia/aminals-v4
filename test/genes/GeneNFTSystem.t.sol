@@ -54,12 +54,11 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneCreation() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         assertEq(geneId, 0, "First gene should have ID 0");
         assertEq(genes.ownerOf(geneId), alice, "Alice should own the gene");
         assertEq(genes.getGeneSVG(geneId), SAMPLE_BACKGROUND, "SVG should match");
-        assertEq(uint256(geneRegistry.getGeneCategory(geneId)), uint256(VisualsCat.BACK), "Category should be BACK");
         assertTrue(geneRegistry.isValidGene(geneId), "Gene should be valid");
     }
 
@@ -67,23 +66,12 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertFalse(geneRegistry.isValidGene(999), "Non-existent gene should not be valid");
     }
 
-    function testGeneCategoryRetrieval() public {
-        vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
-
-        VisualsCat category = geneRegistry.getGeneCategory(geneId);
-        assertEq(uint256(category), uint256(VisualsCat.BACK), "Should return correct category");
-    }
-
-    function testInvalidGeneCategoryReturnsDefault() public {
-        // Non-existent gene returns default category value (BACK = 0)
-        VisualsCat category = geneRegistry.getGeneCategory(999);
-        assertEq(uint256(category), 0, "Non-existent gene should return default category");
-    }
+    // NOTE: Category tests removed - genes no longer have categories
+    // With per-Aminal placement, any gene can be placed in any slot
 
     function testGeneTransfer() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         // Alice transfers to Bob
         vm.prank(alice);
@@ -96,15 +84,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // Ensure that createGene cannot mint to the zero address
         vm.expectRevert("ERC721: mint to the zero address");
         vm.prank(address(0));
-        geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        geneRegistry.createGene(SAMPLE_BACKGROUND);
     }
 
     function testMultipleGeneCreation() public {
         vm.prank(alice);
-        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         vm.prank(bob);
-        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.ARM);
+        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         assertEq(gene1, 0, "First gene ID should be 0");
         assertEq(gene2, 1, "Second gene ID should be 1");
@@ -112,30 +100,29 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         assertEq(genes.ownerOf(gene2), bob, "Bob owns second gene");
     }
 
-    function testSameContentDifferentCategory() public {
-        // Same SVG content can be used for different categories
+    function testSameContentForDifferentGenes() public {
+        // Same SVG content can be used for different gene NFTs
         vm.prank(alice);
-        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         vm.prank(bob);
-        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.ARM);
+        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         assertEq(genes.getGeneSVG(gene1), SAMPLE_BACKGROUND, "Gene1 SVG matches");
         assertEq(genes.getGeneSVG(gene2), SAMPLE_BACKGROUND, "Gene2 SVG matches");
-        assertEq(uint256(geneRegistry.getGeneCategory(gene1)), uint256(VisualsCat.BACK), "Gene1 is BACK");
-        assertEq(uint256(geneRegistry.getGeneCategory(gene2)), uint256(VisualsCat.ARM), "Gene2 is ARM");
+        // Both genes can be placed in any slot with per-Aminal placement
     }
 
     function testGeneOwnershipQuery() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         assertEq(genes.ownerOf(geneId), alice, "Correct owner returned");
     }
 
     function testGeneValidation() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         assertTrue(geneRegistry.isValidGene(geneId), "Created gene should be valid");
         assertFalse(geneRegistry.isValidGene(geneId + 1), "Non-existent gene should not be valid");
@@ -144,10 +131,14 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testBreedingCreatesAuction() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
-        initialVisuals[1] =
-            Visuals({backId: 2, armId: 2, tailId: 2, earsId: 2, bodyId: 2, faceId: 2, mouthId: 2, miscId: 2});
+        // Parent 1 - 8 genes in first 8 slots
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[0].genes[i] = i + 1;
+        }
+        // Parent 2 - 8 different genes in first 8 slots
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[1].genes[i] = i + 9;
+        }
         aminalFactory.spawnInitialAminals(initialVisuals);
 
         // Get aminal addresses and feed them so Alice has love to propose genes
@@ -170,7 +161,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneFor() public {
         // Alice creates a gene for Bob
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND);
 
         // Verify gene was created correctly
         assertEq(geneId, 0, "First gene should have ID 0");
@@ -180,7 +171,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneForZeroAddress() public {
         vm.prank(alice);
         vm.expectRevert("ERC721: mint to the zero address");
-        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND, VisualsCat.BACK);
+        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND);
     }
 
     function testSVGStorageAndRetrieval() public {
@@ -188,7 +179,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
             '<svg width="1000" height="1000"><rect x="0" y="0" width="1000" height="1000" fill="blue"/><circle cx="500" cy="500" r="200" fill="yellow"/></svg>';
 
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(longSvg, VisualsCat.FACE);
+        uint256 geneId = geneRegistry.createGene(longSvg);
 
         assertEq(genes.getGeneSVG(geneId), longSvg, "Long SVG should be stored and retrieved correctly");
     }
@@ -196,9 +187,9 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGeneBalance() public {
         // Alice creates multiple genes
         vm.startPrank(alice);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.ARM);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.TAIL);
+        geneRegistry.createGene(SAMPLE_BACKGROUND);
+        geneRegistry.createGene(SAMPLE_BACKGROUND);
+        geneRegistry.createGene(SAMPLE_BACKGROUND);
         vm.stopPrank();
 
         assertEq(genes.balanceOf(alice), 3, "Alice should own 3 genes");
@@ -207,7 +198,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneApproval() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
 
         // Alice approves Bob
         vm.prank(alice);
