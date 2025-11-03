@@ -10,6 +10,8 @@ import type { Address, Hex } from "viem";
 import {
   aminal,
   aminalGene,
+  designProposal,
+  designVote,
   factory,
   feedEvent,
   geneAuction,
@@ -22,6 +24,7 @@ import {
 import {
   makeAminalGeneId,
   makeAuctionId,
+  makeDesignId,
   makeEventId,
   makeGeneNFTId,
   makeRelationshipId,
@@ -735,20 +738,144 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
 });
 =======
 // ============================================================================
-// DESIGN PROPOSAL/VOTING HANDLERS (TODO - NOT YET IMPLEMENTED)
-// ============================================================================
-//
-// The old per-gene voting system has been removed.
-// New design-based voting needs to be implemented with these events:
-//
-// TODO: Implement GeneAuction:DesignProposed handler
-// TODO: Implement GeneAuction:DesignVoted handler
-// TODO: Implement GeneAuction:DesignRemovalVoted handler (if applicable)
-//
-// See /ponder/MIGRATION_NOTES.md for detailed implementation guide
-//
+// DESIGN PROPOSAL/VOTING HANDLERS
 // ============================================================================
 >>>>>>> b19907e (feat: update subgraph)
+
+/**
+ * Handle GeneAuction:DesignProposed
+ * Creates design proposal entity for a complete Aminal design (1-10 genes with placements)
+ */
+ponder.on("GeneAuction:DesignProposed", async ({ event, context }) => {
+  const { auctionId, designId, proposer, geneIds, placements } = event.args;
+  const { db } = context;
+
+  const proposerId = normalizeAddress(proposer);
+
+  // Ensure proposer exists
+  await db
+    .insert(user)
+    .values({
+      id: proposerId,
+      address: proposerId,
+    })
+    .onConflictDoNothing();
+
+  // Create design proposal
+  // Note: placements is a struct array, serialize to JSON for storage
+  await db.insert(designProposal).values({
+    id: makeDesignId(auctionId, designId),
+    auctionId: makeAuctionId(auctionId),
+    designIndex: Number(designId),
+    proposerId,
+    geneIds: normalizeGeneArray(geneIds),
+    placements: JSON.stringify(placements), // Serialize placement metadata
+    votes: 0n,
+    removeVotes: 0n,
+    removed: false,
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+  });
+});
+
+/**
+ * Handle GeneAuction:DesignVoteCast
+ * Records vote on a complete Aminal design
+ */
+ponder.on("GeneAuction:DesignVoteCast", async ({ event, context }) => {
+  const { auctionId, designId, voter, userVotingPower } = event.args;
+  const { db } = context;
+
+  const voterId = normalizeAddress(voter);
+
+  // Ensure voter exists
+  await db
+    .insert(user)
+    .values({
+      id: voterId,
+      address: voterId,
+    })
+    .onConflictDoNothing();
+
+  const proposalId = makeDesignId(auctionId, designId);
+  const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
+
+  // Create vote record
+  await db.insert(designVote).values({
+    id: voteId,
+    auctionId: makeAuctionId(auctionId),
+    proposalId,
+    voterId,
+    isRemoveVote: false,
+    votingPower: userVotingPower,
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+  });
+
+  // Update design vote count
+  await db.update(designProposal, { id: proposalId }).set((row) => ({
+    votes: row.votes + userVotingPower,
+  }));
+});
+
+/**
+ * Handle GeneAuction:DesignRemovalVote
+ * Records vote to remove a design from consideration
+ */
+ponder.on("GeneAuction:DesignRemovalVote", async ({ event, context }) => {
+  const { auctionId, designId, voter, voteWeight } = event.args;
+  const { db } = context;
+
+  const voterId = normalizeAddress(voter);
+
+  // Ensure voter exists
+  await db
+    .insert(user)
+    .values({
+      id: voterId,
+      address: voterId,
+    })
+    .onConflictDoNothing();
+
+  const proposalId = makeDesignId(auctionId, designId);
+  const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
+
+  // Create removal vote record
+  await db.insert(designVote).values({
+    id: voteId,
+    auctionId: makeAuctionId(auctionId),
+    proposalId,
+    voterId,
+    isRemoveVote: true,
+    votingPower: voteWeight,
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+  });
+
+  // Update design removal vote count
+  await db.update(designProposal, { id: proposalId }).set((row) => ({
+    removeVotes: row.removeVotes + voteWeight,
+  }));
+});
+
+/**
+ * Handle GeneAuction:DesignRemoved
+ * Marks design as removed from auction
+ */
+ponder.on("GeneAuction:DesignRemoved", async ({ event, context }) => {
+  const { auctionId, designId } = event.args;
+  const { db } = context;
+
+  const proposalId = makeDesignId(auctionId, designId);
+
+  // Mark design as removed
+  await db.update(designProposal, { id: proposalId }).set({
+    removed: true,
+  });
+});
 
 /**
  * Handle GeneAuction:GeneCreatorPayout
