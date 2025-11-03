@@ -52,12 +52,6 @@ function CreateGenePage({
   const [showContextPreview, setShowContextPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Placement metadata state
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
-  const [scale, setScale] = useState(100);
-  const [rotation, setRotation] = useState(0);
-
   const {
     writeContract,
     data: hash,
@@ -97,10 +91,6 @@ function CreateGenePage({
       setDescription('');
       setCategory(preSelectedCategory);
       setSvg('<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>');
-      setOffsetX(0);
-      setOffsetY(0);
-      setScale(100);
-      setRotation(0);
       setCurrentStep('design');
       onSuccess?.();
       onClose();
@@ -197,12 +187,16 @@ function CreateGenePage({
     const byteSize = new Blob([svgContent]).size;
     if (byteSize > 50000) {
       errors.push({
-        message: `SVG is too large (${(byteSize / 1024).toFixed(1)}KB). Maximum is 50KB.`,
+        message: `SVG is too large (${(byteSize / 1024).toFixed(
+          1
+        )}KB). Maximum is 50KB.`,
         type: 'error',
       });
     } else if (byteSize > 10000) {
       errors.push({
-        message: `SVG is large (${(byteSize / 1024).toFixed(1)}KB). Consider minifying to reduce gas costs.`,
+        message: `SVG is large (${(byteSize / 1024).toFixed(
+          1
+        )}KB). Consider minifying to reduce gas costs.`,
         type: 'warning',
       });
     }
@@ -222,11 +216,10 @@ function CreateGenePage({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      // Try to extract just the SVG content without wrapper tags
-      const svgMatch = content.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+      // Keep the entire SVG including the wrapper tag to preserve viewBox and other attributes
+      const svgMatch = content.match(/<svg[\s\S]*<\/svg>/i);
       if (svgMatch) {
-        // Extract content between svg tags
-        setSvg(svgMatch[1].trim());
+        setSvg(svgMatch[0].trim());
       } else {
         // Use the whole content if no svg wrapper found
         setSvg(content);
@@ -240,22 +233,64 @@ function CreateGenePage({
   };
 
   const handleMinifySVG = async () => {
-    // For now, do basic minification without SVGO
-    // Remove comments, extra whitespace, and newlines
-    let minified = svg
-      .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
-      .replace(/\s+/g, ' ') // Collapse whitespace
-      .replace(/>\s+</g, '><') // Remove space between tags
-      .trim();
+    try {
+      let minified = svg;
 
-    const originalSize = new Blob([svg]).size;
-    const minifiedSize = new Blob([minified]).size;
-    const savings = ((1 - minifiedSize / originalSize) * 100).toFixed(1);
+      // Step 1: Remove XML comments
+      minified = minified.replace(/<!--[\s\S]*?-->/g, '');
 
-    setSvg(minified);
-    toast.success(
-      `SVG minified! Reduced by ${savings}% (${originalSize}B → ${minifiedSize}B)`
-    );
+      // Step 2: Remove unnecessary whitespace between tags (but preserve text content)
+      minified = minified.replace(/>\s+</g, '><');
+
+      // Step 3: Remove leading/trailing whitespace inside tags
+      minified = minified.replace(/\s+([>\/])/g, '$1');
+      minified = minified.replace(/([<])\s+/g, '$1');
+
+      // Step 4: Collapse multiple spaces in attribute values to single space
+      minified = minified.replace(/\s{2,}/g, ' ');
+
+      // Step 5: Remove spaces around = in attributes
+      minified = minified.replace(/\s*=\s*/g, '=');
+
+      // Step 6: Optimize number precision (reduce to 2 decimal places max)
+      minified = minified.replace(/(\d+\.\d{3,})/g, (match) => {
+        return parseFloat(match).toFixed(2);
+      });
+
+      // Step 7: Remove trailing zeros in decimals
+      minified = minified.replace(/(\d+)\.(\d*?)0+(["\s,<>])/g, '$1.$2$3');
+      minified = minified.replace(/(\d+)\.(["\s,<>])/g, '$1$2'); // Remove .0
+
+      // Step 8: Remove default attribute values
+      minified = minified.replace(/\s+fill="black"/gi, '');
+      minified = minified.replace(/\s+stroke="none"/gi, '');
+      minified = minified.replace(/\s+stroke-width="1"/gi, '');
+      minified = minified.replace(/\s+opacity="1"/gi, '');
+      minified = minified.replace(/\s+fill-opacity="1"/gi, '');
+      minified = minified.replace(/\s+stroke-opacity="1"/gi, '');
+
+      // Step 9: Trim the result
+      minified = minified.trim();
+
+      const originalSize = new Blob([svg]).size;
+      const minifiedSize = new Blob([minified]).size;
+      const savings = ((1 - minifiedSize / originalSize) * 100).toFixed(1);
+
+      if (minifiedSize >= originalSize) {
+        toast.error(
+          'Minification did not reduce size. SVG may already be optimized.'
+        );
+        return;
+      }
+
+      setSvg(minified);
+      toast.success(
+        `SVG minified! Reduced by ${savings}% (${originalSize}B → ${minifiedSize}B)`
+      );
+    } catch (error) {
+      console.error('Minification error:', error);
+      toast.error('Failed to minify SVG. The SVG may have syntax errors.');
+    }
   };
 
   const handleNextStep = () => {
@@ -299,19 +334,11 @@ function CreateGenePage({
 
     setIsCreating(true);
 
-    // Create metadata tuple
-    const metadata = {
-      offsetX,
-      offsetY,
-      scale,
-      rotation,
-    };
-
     writeContract({
       address: geneRegistryAddress,
       abi: geneRegistryAbi,
       functionName: 'createGene',
-      args: [svg, category, metadata],
+      args: [svg, category],
     });
   };
 
@@ -487,7 +514,9 @@ Note: SVG wrapper tags are not required"
                   <div>
                     Status:{' '}
                     <span
-                      className={`font-medium ${hasErrors ? 'text-red-500' : 'text-green-500'}`}
+                      className={`font-medium ${
+                        hasErrors ? 'text-red-500' : 'text-green-500'
+                      }`}
                     >
                       {hasErrors ? 'Invalid' : 'Valid'}
                     </span>
@@ -540,8 +569,8 @@ Note: SVG wrapper tags are not required"
                       previewBackground === 'white'
                         ? 'bg-white'
                         : previewBackground === 'black'
-                          ? 'bg-black'
-                          : 'bg-checkerboard'
+                        ? 'bg-black'
+                        : 'bg-checkerboard'
                     }`}
                   >
                     {showContextPreview ? (
@@ -551,20 +580,16 @@ Note: SVG wrapper tags are not required"
                         <circle cx="500" cy="500" r="300" fill="#e0e0e0" />
                         <circle cx="400" cy="450" r="50" fill="#333" />
                         <circle cx="600" cy="450" r="50" fill="#333" />
-                        {/* Render the user's trait with transforms */}
-                        <g
-                          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                          dangerouslySetInnerHTML={{ __html: svg }}
-                        />
+                        {/* Render the user's trait */}
+                        <g dangerouslySetInnerHTML={{ __html: svg }} />
                       </svg>
                     ) : (
                       // Isolated preview
-                      <svg viewBox="0 0 1000 1000" className="w-full h-full">
-                        <g
-                          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                          dangerouslySetInnerHTML={{ __html: svg }}
-                        />
-                      </svg>
+                      <svg
+                        viewBox="0 0 1000 1000"
+                        className="w-full h-full"
+                        dangerouslySetInnerHTML={{ __html: svg }}
+                      />
                     )}
                   </div>
                 </div>
@@ -604,18 +629,14 @@ Note: SVG wrapper tags are not required"
                           <circle cx="500" cy="500" r="300" fill="#e0e0e0" />
                           <circle cx="400" cy="450" r="50" fill="#333" />
                           <circle cx="600" cy="450" r="50" fill="#333" />
-                          <g
-                            transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                            dangerouslySetInnerHTML={{ __html: svg }}
-                          />
+                          <g dangerouslySetInnerHTML={{ __html: svg }} />
                         </svg>
                       ) : (
-                        <svg viewBox="0 0 1000 1000" className="w-full h-full">
-                          <g
-                            transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                            dangerouslySetInnerHTML={{ __html: svg }}
-                          />
-                        </svg>
+                        <svg
+                          viewBox="0 0 1000 1000"
+                          className="w-full h-full"
+                          dangerouslySetInnerHTML={{ __html: svg }}
+                        />
                       )}
                     </div>
                   </div>
@@ -652,7 +673,9 @@ Note: SVG wrapper tags are not required"
                     </div>
                     <div className="p-4 bg-muted rounded-lg text-center">
                       <div
-                        className={`text-2xl font-bold ${hasErrors ? 'text-red-500' : 'text-green-500'}`}
+                        className={`text-2xl font-bold ${
+                          hasErrors ? 'text-red-500' : 'text-green-500'
+                        }`}
                       >
                         {hasErrors ? '✗' : '✓'}
                       </div>
@@ -739,113 +762,6 @@ Note: SVG wrapper tags are not required"
                     />
                     <div className="text-xs text-muted-foreground mt-1">
                       {description.length}/100 characters
-                    </div>
-                  </div>
-
-                  {/* Placement Controls */}
-                  <div className="border-t border-border pt-6">
-                    <Label className="text-sm font-medium mb-4 block">
-                      🎯 Trait Placement
-                    </Label>
-                    <div className="space-y-4">
-                      {/* Offset X */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="offset-x" className="text-xs">
-                            Horizontal Offset
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {offsetX}px
-                          </span>
-                        </div>
-                        <input
-                          id="offset-x"
-                          type="range"
-                          min="-500"
-                          max="500"
-                          value={offsetX}
-                          onChange={(e) => setOffsetX(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Offset Y */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="offset-y" className="text-xs">
-                            Vertical Offset
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {offsetY}px
-                          </span>
-                        </div>
-                        <input
-                          id="offset-y"
-                          type="range"
-                          min="-500"
-                          max="500"
-                          value={offsetY}
-                          onChange={(e) => setOffsetY(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Scale */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="scale" className="text-xs">
-                            Scale
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {scale}%
-                          </span>
-                        </div>
-                        <input
-                          id="scale"
-                          type="range"
-                          min="10"
-                          max="500"
-                          value={scale}
-                          onChange={(e) => setScale(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Rotation */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="rotation" className="text-xs">
-                            Rotation
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {rotation}°
-                          </span>
-                        </div>
-                        <input
-                          id="rotation"
-                          type="range"
-                          min="0"
-                          max="359"
-                          value={rotation}
-                          onChange={(e) => setRotation(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Reset Button */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setOffsetX(0);
-                          setOffsetY(0);
-                          setScale(100);
-                          setRotation(0);
-                        }}
-                        className="w-full"
-                      >
-                        Reset to Defaults
-                      </Button>
                     </div>
                   </div>
 

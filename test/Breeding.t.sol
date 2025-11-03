@@ -290,6 +290,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         }
     }
 
+    function _getDefaultPlacements() internal pure returns (GeneMetadata[8] memory placements) {
+        // Default placement: centered, 100% scale, no rotation
+        GeneMetadata memory defaultPlacement = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        for (uint256 i = 0; i < 8; i++) {
+            placements[i] = defaultPlacement;
+        }
+    }
+
     function _initiateBreeding() internal returns (uint256 auctionId) {
         console.log("Initiating breeding through simplified flow...");
 
@@ -348,18 +356,21 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
             altMiscGeneId
         ];
 
+        // Default placement metadata for all traits
+        GeneMetadata[8] memory defaultPlacements = _getDefaultPlacements();
+
         // Get initial design count (includes parent designs)
         GeneAuction.AuctionVoteInfo memory initialVoteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 initialDesignCount = initialVoteInfo.proposedDesignIds.length;
 
         // Alice proposes first complete design
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design1);
+        geneAuction.proposeDesign(auctionId, design1, defaultPlacements);
         console.log("Alice proposed first complete Aminal design");
 
         // Bob proposes second complete design
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, design2);
+        geneAuction.proposeDesign(auctionId, design2, defaultPlacements);
         console.log("Bob proposed second complete Aminal design");
 
         // Verify designs were proposed
@@ -539,9 +550,10 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // Propose a design
         uint256[8] memory design =
             [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
+        GeneMetadata[8] memory defaultPlacements = _getDefaultPlacements();
 
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design);
+        geneAuction.proposeDesign(auctionId, design, defaultPlacements);
 
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
