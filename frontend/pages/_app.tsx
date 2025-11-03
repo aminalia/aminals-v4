@@ -12,6 +12,7 @@ import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
+import { TooltipProvider } from '../src/components/ui';
 import { ponderClient } from '../src/lib/ponderClient';
 import { createQueryClient } from '../src/lib/queryClient';
 import '../styles/globals.css';
@@ -46,36 +47,38 @@ function AminalsApp({ Component, pageProps }: AppProps) {
           <PonderProvider client={ponderClient}>
             <QueryClientProvider client={queryClient}>
               <RainbowKitProvider theme={rainbowTheme}>
-                <Component {...pageProps} />
-                <Toaster
-                  position="top-right"
-                  toastOptions={{
-                    duration: 4000,
-                    style: {
-                      background: '#ffffff',
-                      color: '#000000',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      boxShadow:
-                        '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                    },
-                    success: {
-                      iconTheme: {
-                        primary: '#10b981',
-                        secondary: '#ffffff',
+                <TooltipProvider>
+                  <Component {...pageProps} />
+                  <Toaster
+                    position="top-right"
+                    toastOptions={{
+                      duration: 4000,
+                      style: {
+                        background: '#ffffff',
+                        color: '#000000',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '8px',
+                        padding: '16px',
+                        boxShadow:
+                          '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
+                        fontWeight: '500',
+                        cursor: 'pointer',
                       },
-                    },
-                    error: {
-                      iconTheme: {
-                        primary: '#ef4444',
-                        secondary: '#ffffff',
+                      success: {
+                        iconTheme: {
+                          primary: '#10b981',
+                          secondary: '#ffffff',
+                        },
                       },
-                    },
-                  }}
-                />
+                      error: {
+                        iconTheme: {
+                          primary: '#ef4444',
+                          secondary: '#ffffff',
+                        },
+                      },
+                    }}
+                  />
+                </TooltipProvider>
               </RainbowKitProvider>
             </QueryClientProvider>
           </PonderProvider>
