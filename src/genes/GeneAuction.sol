@@ -81,20 +81,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Complete Aminal design proposal (all 8 traits with placement info)
+    /// @notice Complete Aminal design proposal (1-10 genes with placement info)
     struct AminalDesign {
-        uint256 backId; // Gene ID for background trait
-        uint256 armId; // Gene ID for arm trait
-        uint256 tailId; // Gene ID for tail trait
-        uint256 earsId; // Gene ID for ears trait
-        uint256 bodyId; // Gene ID for body trait
-        uint256 faceId; // Gene ID for face trait
-        uint256 mouthId; // Gene ID for mouth trait
-        uint256 miscId; // Gene ID for misc trait
+        uint256[10] geneIds; // Up to 10 gene NFT IDs (0 = unused slot)
         address proposer; // Address that proposed this design
         uint256 votes; // Total voting power for this design
         bool removed; // Whether this design has been removed
-        GeneMetadata[8] placements; // Placement metadata for each trait
+        GeneMetadata[10] placements; // Placement metadata for each gene
     }
 
     /// @notice Core auction data structure
@@ -105,8 +98,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint64 startTime; // Auction start timestamp - packed to save gas
         uint64 endTime; // Auction end timestamp - packed to save gas
         bool settled; // Whether auction has been settled - packed with timestamps
-        uint256[8] parentOneTraits; // Parent 1 traits by category
-        uint256[8] parentTwoTraits; // Parent 2 traits by category
+        uint256[10] parentOneGenes; // Parent 1 genes
+        uint256[10] parentTwoGenes; // Parent 2 genes
         uint256[] proposedDesignIds; // Array of proposed design IDs
         mapping(uint256 => AminalDesign) designs; // designId => AminalDesign
         mapping(address => uint256) userVotedDesign; // user => designId they voted for

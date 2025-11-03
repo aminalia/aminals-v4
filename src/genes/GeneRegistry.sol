@@ -20,9 +20,6 @@ contract GeneRegistry is IAminalStructs, Ownable {
     /// @notice Mapping from gene ID to creator address
     mapping(uint256 geneId => address creator) public geneCreators;
 
-    /// @notice Mapping from gene ID to trait category
-    mapping(uint256 geneId => VisualsCat category) public geneCategories;
-
     /// @notice Mapping from gene ID to SVG content
     // mapping(uint256 geneId => string svg) public geneSVGs;
 
@@ -36,9 +33,7 @@ contract GeneRegistry is IAminalStructs, Ownable {
     error EmptySVG();
     error InvalidSVG();
 
-    event GeneCreated(
-        uint256 indexed geneId, address indexed creator, address indexed recipient, VisualsCat category, string svg
-    );
+    event GeneCreated(uint256 indexed geneId, address indexed creator, address indexed recipient, string svg);
 
     constructor(address _geneNFT) {
         geneNFT = Genes(_geneNFT);
@@ -48,11 +43,10 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @notice Create a new Gene NFT with trait data
      * @dev Anyone can call this function to create permissionless traits
      * @param svg The SVG content for the trait
-     * @param category The visual category for the trait
      * @return geneId The ID of the created Gene NFT
      */
-    function createGene(string calldata svg, VisualsCat category) external returns (uint256 geneId) {
-        return createGeneFor(msg.sender, svg, category);
+    function createGene(string calldata svg) external returns (uint256 geneId) {
+        return createGeneFor(msg.sender, svg);
     }
 
     /**
@@ -61,13 +55,9 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @dev Useful for minting scripts that want to specify the recipient
      * @param recipient The address that will receive the Gene NFT and be marked as creator
      * @param svg The SVG content for the trait
-     * @param category The visual category for the trait
      * @return geneId The ID of the created Gene NFT
      */
-    function createGeneFor(address recipient, string calldata svg, VisualsCat category)
-        public
-        returns (uint256 geneId)
-    {
+    function createGeneFor(address recipient, string calldata svg) public returns (uint256 geneId) {
         if (bytes(svg).length == 0) revert EmptySVG();
         if (bytes(svg).length > MAX_SVG_LENGTH) revert SVGTooLarge();
 
@@ -78,17 +68,15 @@ contract GeneRegistry is IAminalStructs, Ownable {
         geneId = geneNFT.currentId();
 
         // Mint the Gene NFT to the recipient
-        geneNFT.mint(recipient, svg, category);
+        geneNFT.mint(recipient, svg);
 
         // Register the gene as coming from this factory
         geneRegistry[geneId] = true;
         geneCreators[geneId] = recipient;
-        geneCategories[geneId] = category;
-        //geneSVGs[geneId] = svg;
 
         totalGenesCreated++;
 
-        emit GeneCreated(geneId, recipient, recipient, category, svg);
+        emit GeneCreated(geneId, recipient, recipient, svg);
 
         return geneId;
     }
@@ -106,17 +94,11 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @notice Get Gene NFT information
      * @param geneId The ID of the Gene NFT
      * @return creator The creator address
-     * @return category The visual category
      * @return svg The SVG content
      */
-    function getGeneInfo(uint256 geneId)
-        external
-        view
-        returns (address creator, VisualsCat category, string memory svg)
-    {
-        //return (geneCreators[geneId], geneCategories[geneId], geneSVGs[geneId]);
+    function getGeneInfo(uint256 geneId) external view returns (address creator, string memory svg) {
         svg = geneNFT.getGeneSVG(geneId);
-        return (geneCreators[geneId], geneCategories[geneId], svg);
+        return (geneCreators[geneId], svg);
     }
 
     /**
@@ -140,38 +122,6 @@ contract GeneRegistry is IAminalStructs, Ownable {
                 index++;
             }
         }
-    }
-
-    /**
-     * @notice Get all Gene NFTs by category
-     * @param category The visual category
-     * @return geneIds Array of Gene NFT IDs in the category
-     */
-    function getGenesByCategory(VisualsCat category) external view returns (uint256[] memory geneIds) {
-        // Count genes by category
-        uint256 count = 0;
-        for (uint256 i = 0; i < totalGenesCreated; i++) {
-            if (geneCategories[i] == category) count++;
-        }
-
-        // Build array of gene IDs
-        geneIds = new uint256[](count);
-        uint256 index = 0;
-        for (uint256 i = 0; i < totalGenesCreated; i++) {
-            if (geneCategories[i] == category) {
-                geneIds[index] = i;
-                index++;
-            }
-        }
-    }
-
-    /**
-     * @notice Get the visual category for a Gene NFT
-     * @param geneId The ID of the Gene NFT
-     * @return category The visual category of the gene
-     */
-    function getGeneCategory(uint256 geneId) external view returns (VisualsCat category) {
-        return geneCategories[geneId];
     }
 
     /**

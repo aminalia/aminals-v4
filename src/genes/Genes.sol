@@ -42,10 +42,6 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @dev Contains **SSTORE2 pointer** to the actual visual representation of the gene
     mapping(uint256 id => address) public geneSVGPointers;
 
-    /// @notice Mapping from gene ID to its visual category
-    /// @dev Determines which trait slot this gene can fill in an Aminal
-    mapping(uint256 id => IAminalStructs.VisualsCat) public geneVisualsCat;
-
     // ============ MODIFIERS ============
 
     /// @notice Restricts function access to the Aminal Factory only
@@ -106,15 +102,9 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @dev Can only be called by the Gene Registry contract
     /// @param to Address to mint the gene to
     /// @param geneSVG SVG content for the visual representation
-    /// @param visualsCategory Category that this gene belongs to
-    function mint(address to, string calldata geneSVG, IAminalStructs.VisualsCat visualsCategory)
-        external
-        onlyRegistry
-    {
+    function mint(address to, string calldata geneSVG) external onlyRegistry {
         uint256 tokenId = currentId;
-        // geneSVGs[tokenId] = geneSVG;
         geneSVGPointers[tokenId] = SSTORE2.write(bytes(geneSVG));
-        geneVisualsCat[tokenId] = visualsCategory;
 
         ++currentId;
         _mint(to, tokenId);
@@ -138,14 +128,12 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
         return string(SSTORE2.read(pointer));
     }
 
-    /// @notice Get Gene NFT information
-    /// @dev Returns both SVG content and visual category for a gene
+    /// @notice Get Gene NFT SVG information
+    /// @dev Returns SVG content for a gene
     /// @param id Token ID of the gene to query
     /// @return svg SVG content string
-    /// @return category Visual category enum value
-    function getGeneInfo(uint256 id) external view returns (string memory svg, IAminalStructs.VisualsCat category) {
-        //return (geneSVGs[id], geneVisualsCat[id]);
-        return (getGeneSVG(id), geneVisualsCat[id]);
+    function getGeneInfo(uint256 id) external view returns (string memory svg) {
+        return getGeneSVG(id);
     }
 
     // ============ PUBLIC FUNCTIONS ============
@@ -157,41 +145,19 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         require(_ownerOf(tokenId) != address(0), "Token does not exist");
 
-        //string memory svg = geneSVGs[tokenId];
         string memory svg = getGeneSVG(tokenId);
-        IAminalStructs.VisualsCat category = geneVisualsCat[tokenId];
 
         // Create JSON metadata with the SVG embedded as base64 image
         string memory json = string(
             abi.encodePacked(
                 '{"name": "Aminal Gene #',
                 Strings.toString(tokenId),
-                '", "description": "A gene NFT representing a trait for Aminals", "category": "',
-                _categoryToString(category),
-                '", "image": "data:image/svg+xml;base64,',
+                '", "description": "A permissionless gene NFT that can be used in Aminal compositions", "image": "data:image/svg+xml;base64,',
                 Base64.encode(bytes(svg)),
                 '"}'
             )
         );
 
         return string(abi.encodePacked("data:application/json;base64,", Base64.encode(bytes(json))));
-    }
-
-    // ============ INTERNAL FUNCTIONS ============
-
-    /// @notice Convert VisualsCat enum to human-readable string
-    /// @dev Used in token metadata generation
-    /// @param category The visual category enum value
-    /// @return Human-readable category name
-    function _categoryToString(IAminalStructs.VisualsCat category) internal pure returns (string memory) {
-        if (category == IAminalStructs.VisualsCat.BACK) return "Background";
-        if (category == IAminalStructs.VisualsCat.ARM) return "Arms";
-        if (category == IAminalStructs.VisualsCat.TAIL) return "Tail";
-        if (category == IAminalStructs.VisualsCat.EARS) return "Ears";
-        if (category == IAminalStructs.VisualsCat.BODY) return "Body";
-        if (category == IAminalStructs.VisualsCat.FACE) return "Face";
-        if (category == IAminalStructs.VisualsCat.MOUTH) return "Mouth";
-        if (category == IAminalStructs.VisualsCat.MISC) return "Miscellaneous";
-        return "Unknown";
     }
 }
