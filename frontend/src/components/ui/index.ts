@@ -23,10 +23,5 @@ export {
   navigationMenuTriggerStyle,
 } from './NavigationMenu';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './Tabs';
-export {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from './Tooltip';
+export { Tooltip } from './Tooltip';
 export { Web3Button } from './Web3Button';
