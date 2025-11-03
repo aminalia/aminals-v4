@@ -7,7 +7,6 @@
 
 - TOOL TIPS and more info EVERYWHERE
 - Show how much money genes have made on the card
-- Minify doesn't seem to do anything
 
 ### Chat Feature Improvements
 

@@ -216,11 +216,10 @@ function CreateGenePage({
     const reader = new FileReader();
     reader.onload = (e) => {
       const content = e.target?.result as string;
-      // Try to extract just the SVG content without wrapper tags
-      const svgMatch = content.match(/<svg[^>]*>([\s\S]*?)<\/svg>/i);
+      // Keep the entire SVG including the wrapper tag to preserve viewBox and other attributes
+      const svgMatch = content.match(/<svg[\s\S]*<\/svg>/i);
       if (svgMatch) {
-        // Extract content between svg tags
-        setSvg(svgMatch[1].trim());
+        setSvg(svgMatch[0].trim());
       } else {
         // Use the whole content if no svg wrapper found
         setSvg(content);
@@ -234,22 +233,64 @@ function CreateGenePage({
   };
 
   const handleMinifySVG = async () => {
-    // For now, do basic minification without SVGO
-    // Remove comments, extra whitespace, and newlines
-    let minified = svg
-      .replace(/<!--[\s\S]*?-->/g, '') // Remove comments
-      .replace(/\s+/g, ' ') // Collapse whitespace
-      .replace(/>\s+</g, '><') // Remove space between tags
-      .trim();
+    try {
+      let minified = svg;
 
-    const originalSize = new Blob([svg]).size;
-    const minifiedSize = new Blob([minified]).size;
-    const savings = ((1 - minifiedSize / originalSize) * 100).toFixed(1);
+      // Step 1: Remove XML comments
+      minified = minified.replace(/<!--[\s\S]*?-->/g, '');
 
-    setSvg(minified);
-    toast.success(
-      `SVG minified! Reduced by ${savings}% (${originalSize}B → ${minifiedSize}B)`
-    );
+      // Step 2: Remove unnecessary whitespace between tags (but preserve text content)
+      minified = minified.replace(/>\s+</g, '><');
+
+      // Step 3: Remove leading/trailing whitespace inside tags
+      minified = minified.replace(/\s+([>\/])/g, '$1');
+      minified = minified.replace(/([<])\s+/g, '$1');
+
+      // Step 4: Collapse multiple spaces in attribute values to single space
+      minified = minified.replace(/\s{2,}/g, ' ');
+
+      // Step 5: Remove spaces around = in attributes
+      minified = minified.replace(/\s*=\s*/g, '=');
+
+      // Step 6: Optimize number precision (reduce to 2 decimal places max)
+      minified = minified.replace(/(\d+\.\d{3,})/g, (match) => {
+        return parseFloat(match).toFixed(2);
+      });
+
+      // Step 7: Remove trailing zeros in decimals
+      minified = minified.replace(/(\d+)\.(\d*?)0+(["\s,<>])/g, '$1.$2$3');
+      minified = minified.replace(/(\d+)\.(["\s,<>])/g, '$1$2'); // Remove .0
+
+      // Step 8: Remove default attribute values
+      minified = minified.replace(/\s+fill="black"/gi, '');
+      minified = minified.replace(/\s+stroke="none"/gi, '');
+      minified = minified.replace(/\s+stroke-width="1"/gi, '');
+      minified = minified.replace(/\s+opacity="1"/gi, '');
+      minified = minified.replace(/\s+fill-opacity="1"/gi, '');
+      minified = minified.replace(/\s+stroke-opacity="1"/gi, '');
+
+      // Step 9: Trim the result
+      minified = minified.trim();
+
+      const originalSize = new Blob([svg]).size;
+      const minifiedSize = new Blob([minified]).size;
+      const savings = ((1 - minifiedSize / originalSize) * 100).toFixed(1);
+
+      if (minifiedSize >= originalSize) {
+        toast.error(
+          'Minification did not reduce size. SVG may already be optimized.'
+        );
+        return;
+      }
+
+      setSvg(minified);
+      toast.success(
+        `SVG minified! Reduced by ${savings}% (${originalSize}B → ${minifiedSize}B)`
+      );
+    } catch (error) {
+      console.error('Minification error:', error);
+      toast.error('Failed to minify SVG. The SVG may have syntax errors.');
+    }
   };
 
   const handleNextStep = () => {
