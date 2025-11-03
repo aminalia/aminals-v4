@@ -81,7 +81,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Complete Aminal design proposal (all 8 traits)
+    /// @notice Complete Aminal design proposal (all 8 traits with placement info)
     struct AminalDesign {
         uint256 backId; // Gene ID for background trait
         uint256 armId; // Gene ID for arm trait
@@ -94,6 +94,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         address proposer; // Address that proposed this design
         uint256 votes; // Total voting power for this design
         bool removed; // Whether this design has been removed
+        GeneMetadata[8] placements; // Placement metadata for each trait
     }
 
     /// @notice Core auction data structure
@@ -175,8 +176,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param designId The unique design ID
     /// @param proposer Address of the proposer
     /// @param geneIds Array of 8 gene IDs comprising the design
+    /// @param placements Array of 8 placement metadata for the genes
     event DesignProposed(
-        uint256 indexed auctionId, uint256 indexed designId, address indexed proposer, uint256[8] geneIds
+        uint256 indexed auctionId,
+        uint256 indexed designId,
+        address indexed proposer,
+        uint256[8] geneIds,
+        GeneMetadata[8] placements
     );
 
     /// @notice Emitted when someone votes to remove a design from consideration
@@ -386,8 +392,12 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @dev Anyone can propose designs. Each trait must be valid for its category.
      * @param auctionId The auction to propose the design for
      * @param geneIds Array of 8 gene IDs (one per trait category)
+     * @param placements Array of 8 placement metadata for positioning each gene
      */
-    function proposeDesign(uint256 auctionId, uint256[8] calldata geneIds) external validVoting(auctionId) {
+    function proposeDesign(uint256 auctionId, uint256[8] calldata geneIds, GeneMetadata[8] calldata placements)
+        external
+        validVoting(auctionId)
+    {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
@@ -427,9 +437,17 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         newDesign.votes = 0;
         newDesign.removed = false;
 
+        // Store placement metadata for each trait
+        for (uint256 i = 0; i < 8;) {
+            newDesign.placements[i] = placements[i];
+            unchecked {
+                ++i;
+            }
+        }
+
         auction.proposedDesignIds.push(designId);
 
-        emit DesignProposed(auctionId, designId, msg.sender, geneIds);
+        emit DesignProposed(auctionId, designId, msg.sender, geneIds, placements);
     }
 
     /**
@@ -632,6 +650,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         return failedPayouts[geneId];
     }
 
+    /**
+     * @notice Get placement metadata for a design's traits
+     * @param auctionId The auction containing the design
+     * @param designId The design ID to get placements for
+     * @return placements Array of 8 placement metadata for the design
+     */
+    function getDesignPlacements(uint256 auctionId, uint256 designId)
+        external
+        view
+        validVoting(auctionId)
+        returns (GeneMetadata[8] memory placements)
+    {
+        return auctions[auctionId].designs[designId].placements;
+    }
+
     /*//////////////////////////////////////////////////////////////
                            INTERNAL HELPERS
     //////////////////////////////////////////////////////////////*/
@@ -640,6 +673,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @notice Add parent designs as automatic proposals
      */
     function _addParentDesigns(Auction storage auction) internal {
+        // Default placement: centered, 100% scale, no rotation
+        GeneMetadata memory defaultPlacement = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+
         // Add parent one's design
         uint256 parentOneDesignId = ++designCounter;
         AminalDesign storage parentOneDesign = auction.designs[parentOneDesignId];
@@ -654,6 +690,15 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         parentOneDesign.proposer = address(0); // System proposed
         parentOneDesign.votes = 0;
         parentOneDesign.removed = false;
+
+        // Set default placement for all traits
+        for (uint256 i = 0; i < 8;) {
+            parentOneDesign.placements[i] = defaultPlacement;
+            unchecked {
+                ++i;
+            }
+        }
+
         auction.proposedDesignIds.push(parentOneDesignId);
 
         // Add parent two's design if different
@@ -679,6 +724,15 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             parentTwoDesign.proposer = address(0); // System proposed
             parentTwoDesign.votes = 0;
             parentTwoDesign.removed = false;
+
+            // Set default placement for all traits
+            for (uint256 i = 0; i < 8;) {
+                parentTwoDesign.placements[i] = defaultPlacement;
+                unchecked {
+                    ++i;
+                }
+            }
+
             auction.proposedDesignIds.push(parentTwoDesignId);
         }
     }
