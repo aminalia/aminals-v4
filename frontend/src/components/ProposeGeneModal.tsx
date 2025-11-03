@@ -160,8 +160,9 @@ export default function ProposeGeneModal({
         preSelectedCategory={selectedCategory}
       />
 
-      {/* ProposeGeneModal */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      {/* ProposeGeneModal - Hidden when CreateGenePage is open */}
+      {!showCreateGene && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div className="bg-card rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-border">
@@ -336,6 +337,7 @@ export default function ProposeGeneModal({
           </div>
         </div>
       </div>
+      )}
     </>
   );
 }

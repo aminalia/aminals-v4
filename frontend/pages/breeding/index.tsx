@@ -2,34 +2,12 @@ import AuctionCard from '@components/AuctionCard';
 import { Button } from '@components/ui/Button';
 import { useAuctions } from '@hooks';
 import type { NextPage } from 'next';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import Layout from '../_layout';
 
 const AuctionsPage: NextPage = () => {
   const { data: auctions, isLoading: isLoadingAuctions, error } = useAuctions();
   const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
-
-  // Test direct connection to Ponder
-  useEffect(() => {
-    const testPonderConnection = async () => {
-      try {
-        const response = await fetch('http://localhost:42069/sql', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: 'SELECT * FROM geneAuction LIMIT 5',
-          }),
-        });
-        const data = await response.json();
-        console.log('Direct Ponder test - response:', data);
-      } catch (err) {
-        console.error('Direct Ponder test - error:', err);
-      }
-    };
-    testPonderConnection();
-  }, []);
 
   const filteredAuctions =
     auctions?.filter((auction) => {

@@ -3,6 +3,7 @@ import FeedButton from '@components/actions/FeedButton';
 import { AminalVisualImage } from '@components/AminalCard';
 import BreedingModal from '@components/BreedingModal';
 import { Button } from '@components/ui/Button';
+import { Tooltip } from '@components/ui/Tooltip';
 import { useAminalByContractAddress, useGenesByIds } from '@hooks';
 import type { NextPage } from 'next';
 import Head from 'next/head';
@@ -242,7 +243,10 @@ const AminalPage: NextPage = () => {
 
                   {/* Energy, Total Love, and ETH Balance */}
                   <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="p-4 bg-muted rounded-lg border border-border relative">
+                      <div className="absolute top-2 right-2">
+                        <Tooltip content="Energy increases when fed and decreases when performing actions. At zero energy, the Aminal can no longer act until fed." />
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         Energy
                       </div>
@@ -250,7 +254,10 @@ const AminalPage: NextPage = () => {
                         {Number(aminal.energy).toFixed(2)} ⚡
                       </div>
                     </div>
-                    <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="p-4 bg-muted rounded-lg border border-border relative">
+                      <div className="absolute top-2 right-2">
+                        <Tooltip content="Total attachment level from all feeders. Higher love enables breeding and governance voting rights." />
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         Total Love
                       </div>
@@ -258,7 +265,10 @@ const AminalPage: NextPage = () => {
                         {Number(aminal.totalLove).toFixed(2)} ❤️
                       </div>
                     </div>
-                    <div className="p-4 bg-muted rounded-lg border border-border">
+                    <div className="p-4 bg-muted rounded-lg border border-border relative">
+                      <div className="absolute top-2 right-2">
+                        <Tooltip content="ETH held by this Aminal. When breeding, each parent donates 10% of their treasury to the offspring, which is distributed to gene owners." />
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         ETH Balance
                       </div>
@@ -275,7 +285,10 @@ const AminalPage: NextPage = () => {
                   {aminal.lovers &&
                     aminal.lovers.items &&
                     aminal.lovers.items.length > 0 && (
-                      <div className="p-4 bg-energy/10 rounded-lg border border-energy/30">
+                      <div className="p-4 bg-energy/10 rounded-lg border border-energy/30 relative">
+                        <div className="absolute top-2 right-2">
+                          <Tooltip content="Your personal attachment level with this Aminal. Feed it more to increase your love and unlock breeding privileges." />
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           Love 4 U
                         </div>
@@ -347,6 +360,7 @@ const AminalPage: NextPage = () => {
                     <h3 className="font-medium flex items-center gap-2 px-3">
                       <span className="text-primary text-lg">👪</span>
                       Lineage
+                      <Tooltip content="Aminals inherit traits from their parents through sexual reproduction. Genesis Aminals have no parents and were created by the factory." />
                     </h3>
 
                     {/* Parents */}
@@ -410,6 +424,7 @@ const AminalPage: NextPage = () => {
                     <h3 className="font-medium flex items-center gap-2 px-3">
                       <span className="text-primary text-lg">🧬</span>
                       Breeding
+                      <Tooltip content="During breeding, both parents donate 10% of their ETH treasury to offspring. The community votes on traits during gestation using a love-weighted voting system." />
                     </h3>
 
                     <div className="px-3">
@@ -446,6 +461,7 @@ const AminalPage: NextPage = () => {
                     <h3 className="font-medium flex items-center gap-2 px-3">
                       <span className="text-primary text-lg">🧬</span>
                       Traits
+                      <Tooltip content="Each Aminal has 8 trait types (Background, Arms, Tail, Ears, Body, Face, Mouth, Misc). Traits are Gene NFTs created by the community. Gene owners earn revenue when offspring inherit their genes." />
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {((
@@ -553,7 +569,10 @@ const AminalPage: NextPage = () => {
             {/* Global Skills Section */}
             <div className="mt-4 p-6 bg-muted rounded-xl border border-border">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-                <h2 className="text-2xl font-bold">Skills</h2>
+                <h2 className="text-2xl font-bold flex items-center gap-2">
+                  Skills
+                  <Tooltip content="Skills are smart contracts that give Aminals new abilities. Anyone can create and register new skills. Using skills consumes energy through the squeak() function." />
+                </h2>
                 <div className="text-sm text-muted-foreground">
                   Aminals can <em>do</em> things.
                 </div>

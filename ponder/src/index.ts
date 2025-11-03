@@ -125,6 +125,13 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     transactionHash: event.transaction.hash,
   });
 
+  // If this Aminal was created from an auction, update the auction's childAminalId
+  if (auctionId > 0n) {
+    await db.update(geneAuction, { id: makeAuctionId(auctionId) }).set({
+      childAminalId: aminalId,
+    });
+  }
+
   // Create AminalGene join table entries for each trait
   // traits array order: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
   for (let traitType = 0; traitType < traitsArray.length; traitType++) {

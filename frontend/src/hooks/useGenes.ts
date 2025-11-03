@@ -251,7 +251,10 @@ export const useGene = (id: string) => {
 };
 
 /**
- * Fetch multiple genes by their token IDs
+ * Fetch multiple genes by their token IDs or composite IDs
+ * Handles both formats:
+ * - Token IDs: "123", "456"
+ * - Composite IDs: "0x14336fd396682bc93d89bd5f7c7f0b52ce6c30c3-8"
  */
 export const useGenesByIds = (ids: string[]) => {
   return usePonderQuery({
@@ -264,13 +267,24 @@ export const useGenesByIds = (ids: string[]) => {
           .where(eq(schema.geneNFT.tokenId, 0n));
       }
 
-      // Convert string IDs to bigints for comparison with tokenId
-      const tokenIds = ids.map((id) => BigInt(id));
+      // Check if IDs are composite (contain '-') or just token IDs
+      const isCompositeId = ids[0]?.includes('-');
 
-      return db
-        .select()
-        .from(schema.geneNFT)
-        .where(inArray(schema.geneNFT.tokenId, tokenIds));
+      if (isCompositeId) {
+        // Query by composite ID
+        return db
+          .select()
+          .from(schema.geneNFT)
+          .where(inArray(schema.geneNFT.id, ids as `0x${string}`[]));
+      } else {
+        // Convert string IDs to bigints for comparison with tokenId
+        const tokenIds = ids.map((id) => BigInt(id));
+
+        return db
+          .select()
+          .from(schema.geneNFT)
+          .where(inArray(schema.geneNFT.tokenId, tokenIds));
+      }
     },
     enabled: ids.length > 0,
   });
