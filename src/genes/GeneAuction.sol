@@ -151,10 +151,10 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Emitted when an auction is settled and child is spawned
     /// @param auctionId The settled auction
     /// @param winningDesignId The winning design ID
-    /// @param winningGeneIds Array of winning gene IDs by category
+    /// @param winningGeneIds Array of winning gene IDs (up to 10)
     /// @param totalTreasuryTransferred Total ETH paid to gene creators
     event VotingSettled(
-        uint256 indexed auctionId, uint256 winningDesignId, uint256[8] winningGeneIds, uint256 totalTreasuryTransferred
+        uint256 indexed auctionId, uint256 winningDesignId, uint256[10] winningGeneIds, uint256 totalTreasuryTransferred
     );
 
     /// @notice Emitted when a gene creator receives payment for their winning gene
@@ -168,14 +168,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param auctionId The auction the design is proposed for
     /// @param designId The unique design ID
     /// @param proposer Address of the proposer
-    /// @param geneIds Array of 8 gene IDs comprising the design
-    /// @param placements Array of 8 placement metadata for the genes
+    /// @param geneIds Array of up to 10 gene IDs comprising the design
+    /// @param placements Array of up to 10 placement metadata for the genes
     event DesignProposed(
         uint256 indexed auctionId,
         uint256 indexed designId,
         address indexed proposer,
-        uint256[8] geneIds,
-        GeneMetadata[8] placements
+        uint256[10] geneIds,
+        GeneMetadata[10] placements
     );
 
     /// @notice Emitted when someone votes to remove a design from consideration
@@ -209,8 +209,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Thrown when non-Factory contract tries to call restricted functions
     error OnlyFactory();
 
-    /// @notice Thrown when providing an invalid trait category
-    error InvalidCategory();
+    /// @notice Thrown when providing too many or too few genes in a design
+    error InvalidGeneCount();
 
     /// @notice Thrown when user lacks sufficient love for an action
     error InsufficientLove();
@@ -325,23 +325,16 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         auction.settled = true;
 
-        uint256[8] memory winningGeneIds;
+        uint256[10] memory winningGeneIds;
         uint256 totalTreasuryTransferred = 0;
 
         // Select winning design
         uint256 winningDesignId = _selectWinningDesign(auction);
 
-        // Get the winning design's traits
+        // Get the winning design's genes
         if (winningDesignId != 0) {
             AminalDesign storage winningDesign = auction.designs[winningDesignId];
-            winningGeneIds[0] = winningDesign.backId;
-            winningGeneIds[1] = winningDesign.armId;
-            winningGeneIds[2] = winningDesign.tailId;
-            winningGeneIds[3] = winningDesign.earsId;
-            winningGeneIds[4] = winningDesign.bodyId;
-            winningGeneIds[5] = winningDesign.faceId;
-            winningGeneIds[6] = winningDesign.mouthId;
-            winningGeneIds[7] = winningDesign.miscId;
+            winningGeneIds = winningDesign.geneIds;
         } else {
             // Fallback to random parent design if no votes
             winningGeneIds = _selectRandomParentDesign(auction);
@@ -356,12 +349,24 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 treasuryFromAminalOne = (aminalOneTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
         uint256 treasuryFromAminalTwo = (aminalTwoTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
 
-        // Pre-calculate treasury per gene to avoid repeated division
-        uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / 8;
-        uint256 treasuryPerGeneHalf = treasuryPerGene / 2;
+        // Count actual genes (non-zero slots)
+        uint256 actualGeneCount = 0;
+        for (uint256 i = 0; i < 10;) {
+            if (winningGeneIds[i] != 0) actualGeneCount++;
+            unchecked {
+                ++i;
+            }
+        }
+
+        // Only divide treasury if there are genes
+        uint256 treasuryPerGeneHalf = 0;
+        if (actualGeneCount > 0) {
+            uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / actualGeneCount;
+            treasuryPerGeneHalf = treasuryPerGene / 2;
+        }
 
         // Transfer treasury to each gene creator
-        for (uint256 i = 0; i < 8;) {
+        for (uint256 i = 0; i < 10;) {
             uint256 selectedGeneId = winningGeneIds[i];
 
             if (selectedGeneId != 0 && geneRegistry.isValidGene(selectedGeneId)) {
@@ -381,13 +386,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Propose a complete Aminal design (all 8 traits) for voting
-     * @dev Anyone can propose designs. Each trait must be valid for its category.
+     * @notice Propose a complete Aminal design (1-10 genes) for voting
+     * @dev Anyone can propose designs. Must have at least 1 gene and at most 10.
      * @param auctionId The auction to propose the design for
-     * @param geneIds Array of 8 gene IDs (one per trait category)
-     * @param placements Array of 8 placement metadata for positioning each gene
+     * @param geneIds Array of up to 10 gene IDs (0 = unused slot)
+     * @param placements Array of up to 10 placement metadata for positioning each gene
      */
-    function proposeDesign(uint256 auctionId, uint256[8] calldata geneIds, GeneMetadata[8] calldata placements)
+    function proposeDesign(uint256 auctionId, uint256[10] calldata geneIds, GeneMetadata[10] calldata placements)
         external
         validVoting(auctionId)
     {
@@ -396,20 +401,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
         if (auction.settled) revert VotingAlreadySettled();
 
-        // Validate all genes upfront
-        for (uint256 i = 0; i < 8;) {
+        // Count and validate genes
+        uint256 geneCount = 0;
+        for (uint256 i = 0; i < 10;) {
             if (geneIds[i] != 0) {
                 // Verify gene exists and is from the registry
                 if (!geneRegistry.isValidGene(geneIds[i])) revert InvalidGene();
-
-                // Verify gene is in the correct category
-                VisualsCat geneCategory = geneRegistry.getGeneCategory(geneIds[i]);
-                if (uint256(geneCategory) != i) revert InvalidCategory();
+                geneCount++;
             }
             unchecked {
                 ++i;
             }
         }
+
+        // Ensure at least 1 gene and at most 10
+        if (geneCount == 0 || geneCount > 10) revert InvalidGeneCount();
 
         // Consume love from user and energy via squeakFrom
         IAminal(aminalFactory.getAminalByIndex(auction.aminalOne)).squeakFrom(msg.sender, PROPOSE_DESIGN_COST);
@@ -418,20 +424,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Create the new design
         uint256 designId = ++designCounter;
         AminalDesign storage newDesign = auction.designs[designId];
-        newDesign.backId = geneIds[0];
-        newDesign.armId = geneIds[1];
-        newDesign.tailId = geneIds[2];
-        newDesign.earsId = geneIds[3];
-        newDesign.bodyId = geneIds[4];
-        newDesign.faceId = geneIds[5];
-        newDesign.mouthId = geneIds[6];
-        newDesign.miscId = geneIds[7];
+        newDesign.geneIds = geneIds;
         newDesign.proposer = msg.sender;
         newDesign.votes = 0;
         newDesign.removed = false;
 
-        // Store placement metadata for each trait
-        for (uint256 i = 0; i < 8;) {
+        // Store placement metadata for each gene slot
+        for (uint256 i = 0; i < 10;) {
             newDesign.placements[i] = placements[i];
             unchecked {
                 ++i;
@@ -610,16 +609,16 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Get parent traits for an auction
+     * @notice Get parent genes for an auction
      */
-    function getParentTraits(uint256 auctionId)
+    function getParentGenes(uint256 auctionId)
         external
         view
         validVoting(auctionId)
-        returns (uint256[8] memory parentOneTraits, uint256[8] memory parentTwoTraits)
+        returns (uint256[10] memory parentOneGenes, uint256[10] memory parentTwoGenes)
     {
         Auction storage auction = auctions[auctionId];
-        return (auction.parentOneTraits, auction.parentTwoTraits);
+        return (auction.parentOneGenes, auction.parentTwoGenes);
     }
 
     /**
@@ -644,16 +643,16 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Get placement metadata for a design's traits
+     * @notice Get placement metadata for a design's genes
      * @param auctionId The auction containing the design
      * @param designId The design ID to get placements for
-     * @return placements Array of 8 placement metadata for the design
+     * @return placements Array of up to 10 placement metadata for the design
      */
     function getDesignPlacements(uint256 auctionId, uint256 designId)
         external
         view
         validVoting(auctionId)
-        returns (GeneMetadata[8] memory placements)
+        returns (GeneMetadata[10] memory placements)
     {
         return auctions[auctionId].designs[designId].placements;
     }
@@ -672,20 +671,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Add parent one's design
         uint256 parentOneDesignId = ++designCounter;
         AminalDesign storage parentOneDesign = auction.designs[parentOneDesignId];
-        parentOneDesign.backId = auction.parentOneTraits[0];
-        parentOneDesign.armId = auction.parentOneTraits[1];
-        parentOneDesign.tailId = auction.parentOneTraits[2];
-        parentOneDesign.earsId = auction.parentOneTraits[3];
-        parentOneDesign.bodyId = auction.parentOneTraits[4];
-        parentOneDesign.faceId = auction.parentOneTraits[5];
-        parentOneDesign.mouthId = auction.parentOneTraits[6];
-        parentOneDesign.miscId = auction.parentOneTraits[7];
+        parentOneDesign.geneIds = auction.parentOneGenes;
         parentOneDesign.proposer = address(0); // System proposed
         parentOneDesign.votes = 0;
         parentOneDesign.removed = false;
 
-        // Set default placement for all traits
-        for (uint256 i = 0; i < 8;) {
+        // Set default placement for all gene slots
+        for (uint256 i = 0; i < 10;) {
             parentOneDesign.placements[i] = defaultPlacement;
             unchecked {
                 ++i;
@@ -696,8 +688,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         // Add parent two's design if different
         bool isDifferent = false;
-        for (uint256 i = 0; i < 8; i++) {
-            if (auction.parentOneTraits[i] != auction.parentTwoTraits[i]) {
+        for (uint256 i = 0; i < 10; i++) {
+            if (auction.parentOneGenes[i] != auction.parentTwoGenes[i]) {
                 isDifferent = true;
                 break;
             }
@@ -706,20 +698,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         if (isDifferent) {
             uint256 parentTwoDesignId = ++designCounter;
             AminalDesign storage parentTwoDesign = auction.designs[parentTwoDesignId];
-            parentTwoDesign.backId = auction.parentTwoTraits[0];
-            parentTwoDesign.armId = auction.parentTwoTraits[1];
-            parentTwoDesign.tailId = auction.parentTwoTraits[2];
-            parentTwoDesign.earsId = auction.parentTwoTraits[3];
-            parentTwoDesign.bodyId = auction.parentTwoTraits[4];
-            parentTwoDesign.faceId = auction.parentTwoTraits[5];
-            parentTwoDesign.mouthId = auction.parentTwoTraits[6];
-            parentTwoDesign.miscId = auction.parentTwoTraits[7];
+            parentTwoDesign.geneIds = auction.parentTwoGenes;
             parentTwoDesign.proposer = address(0); // System proposed
             parentTwoDesign.votes = 0;
             parentTwoDesign.removed = false;
 
-            // Set default placement for all traits
-            for (uint256 i = 0; i < 8;) {
+            // Set default placement for all gene slots
+            for (uint256 i = 0; i < 10;) {
                 parentTwoDesign.placements[i] = defaultPlacement;
                 unchecked {
                     ++i;
@@ -821,15 +806,15 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /**
      * @notice Select a random parent design when no votes are cast
      */
-    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[8] memory) {
+    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[10] memory) {
         // Randomly choose between parent designs
         uint256 random = _generateRandomness(1, 2);
-        if (random == 0) return auction.parentOneTraits;
-        else return auction.parentTwoTraits;
+        if (random == 0) return auction.parentOneGenes;
+        else return auction.parentTwoGenes;
     }
 
     /**
-     * @notice Capture parent traits for inheritance fallback
+     * @notice Capture parent genes for inheritance fallback
      */
     function _captureParentTraits(Auction storage auction, uint256 aminalOne, uint256 aminalTwo) internal {
         address aminalOneAddress = aminalFactory.getAminalByIndex(aminalOne);
@@ -838,24 +823,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         Visuals memory parentOneVisuals = IAminal(aminalOneAddress).getVisuals();
         Visuals memory parentTwoVisuals = IAminal(aminalTwoAddress).getVisuals();
 
-        // Store parent traits in order of VisualsCat enum
-        auction.parentOneTraits[0] = parentOneVisuals.backId;
-        auction.parentOneTraits[1] = parentOneVisuals.armId;
-        auction.parentOneTraits[2] = parentOneVisuals.tailId;
-        auction.parentOneTraits[3] = parentOneVisuals.earsId;
-        auction.parentOneTraits[4] = parentOneVisuals.bodyId;
-        auction.parentOneTraits[5] = parentOneVisuals.faceId;
-        auction.parentOneTraits[6] = parentOneVisuals.mouthId;
-        auction.parentOneTraits[7] = parentOneVisuals.miscId;
-
-        auction.parentTwoTraits[0] = parentTwoVisuals.backId;
-        auction.parentTwoTraits[1] = parentTwoVisuals.armId;
-        auction.parentTwoTraits[2] = parentTwoVisuals.tailId;
-        auction.parentTwoTraits[3] = parentTwoVisuals.earsId;
-        auction.parentTwoTraits[4] = parentTwoVisuals.bodyId;
-        auction.parentTwoTraits[5] = parentTwoVisuals.faceId;
-        auction.parentTwoTraits[6] = parentTwoVisuals.mouthId;
-        auction.parentTwoTraits[7] = parentTwoVisuals.miscId;
+        // Store parent genes
+        auction.parentOneGenes = parentOneVisuals.genes;
+        auction.parentTwoGenes = parentTwoVisuals.genes;
     }
 
     /**

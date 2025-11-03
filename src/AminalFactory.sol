@@ -77,7 +77,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     int256 public constant VRGDA_TIME_SCALE = 20 ether;
 
     /// @notice Number of trait categories in the visual system
-    uint256 public constant TRAIT_CATEGORIES = 8;
+    uint256 public constant MAX_GENES = 10;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
@@ -121,14 +121,14 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param parentOne First parent (mother) - can be address(0) for genesis
      * @param parentTwo Second parent (father) - can be address(0) for genesis
      * @param auctionId Gene auction ID that created this child (0 for genesis)
-     * @param geneIds Array of 8 gene IDs for traits [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
+     * @param geneIds Array of up to 10 gene IDs
      */
     event AminalSpawned(
         address indexed child,
         address indexed parentOne,
         address indexed parentTwo,
         uint256 auctionId,
-        uint256[TRAIT_CATEGORIES] geneIds
+        uint256[MAX_GENES] geneIds
     );
 
     /**
@@ -249,14 +249,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
                 address(0), // No parents for genesis Aminals
                 address(0),
                 0, // No auction ID for genesis Aminals
-                _visuals[i].backId,
-                _visuals[i].armId,
-                _visuals[i].tailId,
-                _visuals[i].earsId,
-                _visuals[i].bodyId,
-                _visuals[i].faceId,
-                _visuals[i].mouthId,
-                _visuals[i].miscId
+                _visuals[i].genes
             );
         }
     }
@@ -277,33 +270,19 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param parentOne Address of the first parent Aminal
      * @param parentTwo Address of the second parent Aminal
      * @param auctionId Gene auction ID that created this child
-     * @param winningGeneIds Array of 8 gene IDs selected by auction for each trait
+     * @param winningGeneIds Array of up to 10 gene IDs selected by auction
      * @return childAddress Address of the newly spawned Aminal
      */
     function spawnAminal(
         address parentOne,
         address parentTwo,
         uint256 auctionId,
-        uint256[TRAIT_CATEGORIES] calldata winningGeneIds
+        uint256[MAX_GENES] calldata winningGeneIds
     ) external onlyAuction returns (address childAddress) {
         require(isAminal[parentOne], "AminalFactory: invalid parent one");
         require(isAminal[parentTwo], "AminalFactory: invalid parent two");
 
-        // Map winning gene IDs to trait categories in order:
-        // [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
-        return _spawnAminal(
-            parentOne,
-            parentTwo,
-            auctionId,
-            winningGeneIds[0], // BACK
-            winningGeneIds[1], // ARM
-            winningGeneIds[2], // TAIL
-            winningGeneIds[3], // EARS
-            winningGeneIds[4], // BODY
-            winningGeneIds[5], // FACE
-            winningGeneIds[6], // MOUTH
-            winningGeneIds[7] // MISC
-        );
+        return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds);
     }
 
     /**
@@ -394,42 +373,19 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param parentOne First parent address (address(0) for genesis)
      * @param parentTwo Second parent address (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child (0 for genesis)
-     * @param backId Background trait gene ID
-     * @param armId Arm trait gene ID
-     * @param tailId Tail trait gene ID
-     * @param earsId Ears trait gene ID
-     * @param bodyId Body trait gene ID
-     * @param faceId Face trait gene ID
-     * @param mouthId Mouth trait gene ID
-     * @param miscId Miscellaneous trait gene ID
+     * @param geneIds Array of up to 10 gene IDs
      * @return childAddress Address of the newly created Aminal
      */
     function _spawnAminal(
         address parentOne,
         address parentTwo,
         uint256 auctionId,
-        uint256 backId,
-        uint256 armId,
-        uint256 tailId,
-        uint256 earsId,
-        uint256 bodyId,
-        uint256 faceId,
-        uint256 mouthId,
-        uint256 miscId
+        uint256[MAX_GENES] memory geneIds
     ) internal returns (address childAddress) {
         require(address(loveVRGDA) != address(0), "AminalFactory: VRGDA not deployed");
 
         // Construct visual genetics for the new Aminal
-        Visuals memory visuals = Visuals({
-            backId: backId,
-            armId: armId,
-            tailId: tailId,
-            earsId: earsId,
-            bodyId: bodyId,
-            faceId: faceId,
-            mouthId: mouthId,
-            miscId: miscId
-        });
+        Visuals memory visuals = Visuals({genes: geneIds});
 
         // Deploy new Aminal contract with full genetic and factory context
         AminalContract newAminal = new AminalContract(
@@ -448,13 +404,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         aminalsByIndex[totalAminals] = childAddress;
         totalAminals++;
 
-        emit AminalSpawned(
-            childAddress,
-            parentOne,
-            parentTwo,
-            auctionId,
-            [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
-        );
+        emit AminalSpawned(childAddress, parentOne, parentTwo, auctionId, geneIds);
 
         return childAddress;
     }
