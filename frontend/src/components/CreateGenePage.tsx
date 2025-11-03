@@ -52,12 +52,6 @@ function CreateGenePage({
   const [showContextPreview, setShowContextPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Placement metadata state
-  const [offsetX, setOffsetX] = useState(0);
-  const [offsetY, setOffsetY] = useState(0);
-  const [scale, setScale] = useState(100);
-  const [rotation, setRotation] = useState(0);
-
   const {
     writeContract,
     data: hash,
@@ -97,10 +91,6 @@ function CreateGenePage({
       setDescription('');
       setCategory(preSelectedCategory);
       setSvg('<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>');
-      setOffsetX(0);
-      setOffsetY(0);
-      setScale(100);
-      setRotation(0);
       setCurrentStep('design');
       onSuccess?.();
       onClose();
@@ -344,19 +334,11 @@ function CreateGenePage({
 
     setIsCreating(true);
 
-    // Create metadata tuple
-    const metadata = {
-      offsetX,
-      offsetY,
-      scale,
-      rotation,
-    };
-
     writeContract({
       address: geneRegistryAddress,
       abi: geneRegistryAbi,
       functionName: 'createGene',
-      args: [svg, category, metadata],
+      args: [svg, category],
     });
   };
 
@@ -598,20 +580,16 @@ Note: SVG wrapper tags are not required"
                         <circle cx="500" cy="500" r="300" fill="#e0e0e0" />
                         <circle cx="400" cy="450" r="50" fill="#333" />
                         <circle cx="600" cy="450" r="50" fill="#333" />
-                        {/* Render the user's trait with transforms */}
-                        <g
-                          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                          dangerouslySetInnerHTML={{ __html: svg }}
-                        />
+                        {/* Render the user's trait */}
+                        <g dangerouslySetInnerHTML={{ __html: svg }} />
                       </svg>
                     ) : (
                       // Isolated preview
-                      <svg viewBox="0 0 1000 1000" className="w-full h-full">
-                        <g
-                          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                          dangerouslySetInnerHTML={{ __html: svg }}
-                        />
-                      </svg>
+                      <svg
+                        viewBox="0 0 1000 1000"
+                        className="w-full h-full"
+                        dangerouslySetInnerHTML={{ __html: svg }}
+                      />
                     )}
                   </div>
                 </div>
@@ -651,18 +629,14 @@ Note: SVG wrapper tags are not required"
                           <circle cx="500" cy="500" r="300" fill="#e0e0e0" />
                           <circle cx="400" cy="450" r="50" fill="#333" />
                           <circle cx="600" cy="450" r="50" fill="#333" />
-                          <g
-                            transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                            dangerouslySetInnerHTML={{ __html: svg }}
-                          />
+                          <g dangerouslySetInnerHTML={{ __html: svg }} />
                         </svg>
                       ) : (
-                        <svg viewBox="0 0 1000 1000" className="w-full h-full">
-                          <g
-                            transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation} 500 500) scale(${scale / 100})`}
-                            dangerouslySetInnerHTML={{ __html: svg }}
-                          />
-                        </svg>
+                        <svg
+                          viewBox="0 0 1000 1000"
+                          className="w-full h-full"
+                          dangerouslySetInnerHTML={{ __html: svg }}
+                        />
                       )}
                     </div>
                   </div>
@@ -788,113 +762,6 @@ Note: SVG wrapper tags are not required"
                     />
                     <div className="text-xs text-muted-foreground mt-1">
                       {description.length}/100 characters
-                    </div>
-                  </div>
-
-                  {/* Placement Controls */}
-                  <div className="border-t border-border pt-6">
-                    <Label className="text-sm font-medium mb-4 block">
-                      🎯 Trait Placement
-                    </Label>
-                    <div className="space-y-4">
-                      {/* Offset X */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="offset-x" className="text-xs">
-                            Horizontal Offset
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {offsetX}px
-                          </span>
-                        </div>
-                        <input
-                          id="offset-x"
-                          type="range"
-                          min="-500"
-                          max="500"
-                          value={offsetX}
-                          onChange={(e) => setOffsetX(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Offset Y */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="offset-y" className="text-xs">
-                            Vertical Offset
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {offsetY}px
-                          </span>
-                        </div>
-                        <input
-                          id="offset-y"
-                          type="range"
-                          min="-500"
-                          max="500"
-                          value={offsetY}
-                          onChange={(e) => setOffsetY(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Scale */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="scale" className="text-xs">
-                            Scale
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {scale}%
-                          </span>
-                        </div>
-                        <input
-                          id="scale"
-                          type="range"
-                          min="10"
-                          max="500"
-                          value={scale}
-                          onChange={(e) => setScale(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Rotation */}
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <Label htmlFor="rotation" className="text-xs">
-                            Rotation
-                          </Label>
-                          <span className="text-xs font-mono text-muted-foreground">
-                            {rotation}°
-                          </span>
-                        </div>
-                        <input
-                          id="rotation"
-                          type="range"
-                          min="0"
-                          max="359"
-                          value={rotation}
-                          onChange={(e) => setRotation(Number(e.target.value))}
-                          className="w-full"
-                        />
-                      </div>
-
-                      {/* Reset Button */}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setOffsetX(0);
-                          setOffsetY(0);
-                          setScale(100);
-                          setRotation(0);
-                        }}
-                        className="w-full"
-                      >
-                        Reset to Defaults
-                      </Button>
                     </div>
                   </div>
 
