@@ -163,7 +163,9 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        for (uint256 i = 0; i < 8; i++) {
+            additionalVisuals[0].genes[i] = 2;
+        }
         factory.spawnInitialAminals(additionalVisuals);
         address aminal2Address = factory.getAminalByIndex(1);
         AminalContract aminal2 = AminalContract(payable(aminal2Address));
@@ -184,7 +186,9 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        for (uint256 i = 0; i < 8; i++) {
+            additionalVisuals[0].genes[i] = 2;
+        }
         factory.spawnInitialAminals(additionalVisuals);
         // address aminal2Address = factory.getAminalByIndex(1); // Not needed for this test
 
