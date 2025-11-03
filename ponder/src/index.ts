@@ -15,8 +15,6 @@ import {
   geneAuction,
   geneCreatorPayout,
   geneNFT,
-  geneProposal,
-  geneVote,
   relationship,
   skillUsedEvent,
   user,
@@ -26,14 +24,13 @@ import {
   makeAuctionId,
   makeEventId,
   makeGeneNFTId,
-  makeProposalId,
   makeRelationshipId,
   normalizeAddress,
-  normalizeTraitArray,
+  normalizeGeneArray,
 } from "./utils/helpers";
 import {
   assertValidParentGeneIds,
-  assertValidTraitArray,
+  assertValidGeneArray,
 } from "./utils/validation";
 
 // ============================================================================
@@ -48,8 +45,8 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   const { child, parentOne, parentTwo, auctionId, geneIds } = event.args;
   const { db, client } = context;
 
-  // Validate trait array
-  assertValidTraitArray(geneIds, "AminalSpawned");
+  // Validate gene array (1-10 genes)
+  assertValidGeneArray(geneIds, "AminalSpawned");
 
   const factoryId = normalizeAddress(event.log.address);
 
@@ -104,7 +101,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   }
 
   const aminalId = normalizeAddress(child);
-  const traitsArray = normalizeTraitArray(geneIds);
+  const genesArray = normalizeGeneArray(geneIds);
 
   // Create Aminal entity
   await db.insert(aminal).values({
@@ -115,7 +112,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     parentOneId: hasParentOne ? normalizeAddress(parentOne) : null,
     parentTwoId: hasParentTwo ? normalizeAddress(parentTwo) : null,
     auctionId: auctionId > 0n ? auctionId : null,
-    traits: traitsArray,
+    genes: genesArray,
     energy: 0n,
     totalLove: 0n,
     ethBalance: 0n,
@@ -132,19 +129,19 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     });
   }
 
-  // Create AminalGene join table entries for each trait
-  // traits array order: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
-  for (let traitType = 0; traitType < traitsArray.length; traitType++) {
-    const geneTokenId = traitsArray[traitType];
+  // Create AminalGene join table entries for each gene slot
+  // genes array: 10 elements (0-9 slot indices)
+  for (let slotIndex = 0; slotIndex < genesArray.length; slotIndex++) {
+    const geneTokenId = genesArray[slotIndex];
 
-    // Skip if gene is 0 (no gene for this trait)
-    if (geneTokenId === 0n) continue;
+    // Skip if gene is 0 or undefined (no gene for this slot)
+    if (!geneTokenId || geneTokenId === 0n) continue;
 
     await db.insert(aminalGene).values({
-      id: makeAminalGeneId(child, geneTokenId, traitType),
+      id: makeAminalGeneId(child, geneTokenId, slotIndex),
       aminalId,
       geneNFTId: makeGeneNFTId(geneTokenId),
-      traitType,
+      slotIndex,
     });
   }
 });
@@ -290,7 +287,7 @@ ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
  * Creates new GeneNFT entity when gene is registered
  */
 ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
-  const { geneId, creator, category, svg, metadata } = event.args;
+  const { geneId, creator, svg } = event.args;
   const { db, client, contracts } = context;
 
   const creatorId = normalizeAddress(creator);
@@ -305,29 +302,21 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Note: The Genes contract's getGeneInfo returns (svg, category)
-  // Name and description are generated in the tokenURI and not stored separately
-  // So we'll just use null for these fields or generate simple defaults
+  // Note: Name and description are generated in the tokenURI and not stored separately
+  // So we'll just use simple defaults
   const name: string = `Gene #${geneId}`;
   const description: string = "An Aminal gene trait";
 
-  // Create GeneNFT entity with placement metadata
-  // Old contract versions don't have metadata, so use defaults
-  const hasMetadata = metadata && typeof metadata === 'object';
-
+  // Create GeneNFT entity
+  // No more category or placement metadata - those are per-Aminal now
   await db.insert(geneNFT).values({
     id: makeGeneNFTId(geneId),
     tokenId: geneId,
-    traitType: Number(category),
     ownerId: creatorId, // Creator is initial owner
     creatorId,
     svg,
     name,
     description,
-    offsetX: hasMetadata && metadata.offsetX !== undefined ? Number(metadata.offsetX) : 0,
-    offsetY: hasMetadata && metadata.offsetY !== undefined ? Number(metadata.offsetY) : 0,
-    scale: hasMetadata && metadata.scale !== undefined ? Number(metadata.scale) : 100,
-    rotation: hasMetadata && metadata.rotation !== undefined ? Number(metadata.rotation) : 0,
     totalEarnings: 0n,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
@@ -445,11 +434,11 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
     return;
   }
 
-  // Cache parent gene IDs for bulk vote optimization
-  // Array of 16: [parent1: 8 traits, parent2: 8 traits]
+  // Cache parent gene IDs for optimization
+  // Array of 20: [parent1: up to 10 genes, parent2: up to 10 genes]
   const parentGeneIds = [
-    ...aminal1.traits, // Parent 1: indices 0-7
-    ...aminal2.traits, // Parent 2: indices 8-15
+    ...aminal1.genes, // Parent 1: indices 0-9
+    ...aminal2.genes, // Parent 2: indices 10-19
   ];
 
   assertValidParentGeneIds(parentGeneIds, "VotingCreated");
@@ -492,6 +481,7 @@ ponder.on("GeneAuction:VotingSettled", async ({ event, context }) => {
   });
 });
 
+<<<<<<< HEAD
 /**
  * Handle GeneAuction:GeneProposed
  * Creates proposal entity for a gene in an auction
@@ -743,6 +733,22 @@ ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
     }));
   }
 });
+=======
+// ============================================================================
+// DESIGN PROPOSAL/VOTING HANDLERS (TODO - NOT YET IMPLEMENTED)
+// ============================================================================
+//
+// The old per-gene voting system has been removed.
+// New design-based voting needs to be implemented with these events:
+//
+// TODO: Implement GeneAuction:DesignProposed handler
+// TODO: Implement GeneAuction:DesignVoted handler
+// TODO: Implement GeneAuction:DesignRemovalVoted handler (if applicable)
+//
+// See /ponder/MIGRATION_NOTES.md for detailed implementation guide
+//
+// ============================================================================
+>>>>>>> b19907e (feat: update subgraph)
 
 /**
  * Handle GeneAuction:GeneCreatorPayout
