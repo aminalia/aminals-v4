@@ -45,6 +45,8 @@ const AuctionPage: NextPage = () => {
     error: proposeGenesError,
   } = useGeneProposalsByAuctionId(isRouterReady ? auctionId : '');
 
+  console.log('auction', auction);
+
   // Calculate auction end time
   const auctionEndTime = useMemo(() => {
     if (!auction?.blockTimestamp) return 0;
