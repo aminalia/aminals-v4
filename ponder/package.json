@@ -9,10 +9,12 @@
     "db": "ponder db",
     "codegen": "ponder codegen",
     "lint": "eslint .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "wagmi:generate": "wagmi generate"
   },
   "dependencies": {
     "hono": "^4.5.0",
+    "mimic-fn": "^4.0.0",
     "ponder": "^0.13.9",
     "viem": "^2.21.3"
   },
@@ -20,6 +22,7 @@
     "@types/node": "^20.9.0",
     "@typescript-eslint/eslint-plugin": "^6.3.0",
     "@typescript-eslint/parser": "^6.3.0",
+    "@wagmi/cli": "^2.7.1",
     "eslint": "^8.53.0",
     "eslint-config-ponder": "^0.13.9",
     "typescript": "^5.2.2"
