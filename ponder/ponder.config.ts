@@ -25,7 +25,7 @@ export default createConfig({
       chain: "sepolia",
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
-      startBlock: 9519646,
+      startBlock: 9559150,
     },
     Aminal: {
       chain: "sepolia",
@@ -33,7 +33,7 @@ export default createConfig({
       address: factory({
         address: aminalFactoryAddress,
         event: parseAbiItem(
-          "event AminalSpawned(address indexed child, address indexed parentOne, address indexed parentTwo, uint256 auctionId, uint256[8] geneIds)"
+          "event AminalSpawned(address indexed child, address indexed parentOne, address indexed parentTwo, uint256 auctionId, uint256[10] geneIds)"
         ),
         parameter: "child",
       }),

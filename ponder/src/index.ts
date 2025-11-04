@@ -10,13 +10,13 @@ import type { Address, Hex } from "viem";
 import {
   aminal,
   aminalGene,
+  designProposal,
+  designVote,
   factory,
   feedEvent,
   geneAuction,
   geneCreatorPayout,
   geneNFT,
-  geneProposal,
-  geneVote,
   relationship,
   skillUsedEvent,
   user,
@@ -24,16 +24,16 @@ import {
 import {
   makeAminalGeneId,
   makeAuctionId,
+  makeDesignId,
   makeEventId,
   makeGeneNFTId,
-  makeProposalId,
   makeRelationshipId,
   normalizeAddress,
-  normalizeTraitArray,
+  normalizeGeneArray,
 } from "./utils/helpers";
 import {
   assertValidParentGeneIds,
-  assertValidTraitArray,
+  assertValidGeneArray,
 } from "./utils/validation";
 
 // ============================================================================
@@ -48,8 +48,8 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   const { child, parentOne, parentTwo, auctionId, geneIds } = event.args;
   const { db, client } = context;
 
-  // Validate trait array
-  assertValidTraitArray(geneIds, "AminalSpawned");
+  // Validate gene array (1-10 genes)
+  assertValidGeneArray(geneIds, "AminalSpawned");
 
   const factoryId = normalizeAddress(event.log.address);
 
@@ -104,7 +104,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   }
 
   const aminalId = normalizeAddress(child);
-  const traitsArray = normalizeTraitArray(geneIds);
+  const genesArray = normalizeGeneArray(geneIds);
 
   // Create Aminal entity
   await db.insert(aminal).values({
@@ -115,7 +115,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     parentOneId: hasParentOne ? normalizeAddress(parentOne) : null,
     parentTwoId: hasParentTwo ? normalizeAddress(parentTwo) : null,
     auctionId: auctionId > 0n ? auctionId : null,
-    traits: traitsArray,
+    genes: genesArray,
     energy: 0n,
     totalLove: 0n,
     ethBalance: 0n,
@@ -132,19 +132,19 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     });
   }
 
-  // Create AminalGene join table entries for each trait
-  // traits array order: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
-  for (let traitType = 0; traitType < traitsArray.length; traitType++) {
-    const geneTokenId = traitsArray[traitType];
+  // Create AminalGene join table entries for each gene slot
+  // genes array: 10 elements (0-9 slot indices)
+  for (let slotIndex = 0; slotIndex < genesArray.length; slotIndex++) {
+    const geneTokenId = genesArray[slotIndex];
 
-    // Skip if gene is 0 (no gene for this trait)
-    if (geneTokenId === 0n) continue;
+    // Skip if gene is 0 or undefined (no gene for this slot)
+    if (!geneTokenId || geneTokenId === 0n) continue;
 
     await db.insert(aminalGene).values({
-      id: makeAminalGeneId(child, geneTokenId, traitType),
+      id: makeAminalGeneId(child, geneTokenId, slotIndex),
       aminalId,
       geneNFTId: makeGeneNFTId(geneTokenId),
-      traitType,
+      slotIndex,
     });
   }
 });
@@ -290,7 +290,7 @@ ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
  * Creates new GeneNFT entity when gene is registered
  */
 ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
-  const { geneId, creator, category, svg } = event.args;
+  const { geneId, creator, svg } = event.args;
   const { db, client, contracts } = context;
 
   const creatorId = normalizeAddress(creator);
@@ -305,17 +305,16 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Note: The Genes contract's getGeneInfo returns (svg, category)
-  // Name and description are generated in the tokenURI and not stored separately
-  // So we'll just use null for these fields or generate simple defaults
+  // Note: Name and description are generated in the tokenURI and not stored separately
+  // So we'll just use simple defaults
   const name: string = `Gene #${geneId}`;
   const description: string = "An Aminal gene trait";
 
   // Create GeneNFT entity
+  // No more category or placement metadata - those are per-Aminal now
   await db.insert(geneNFT).values({
     id: makeGeneNFTId(geneId),
     tokenId: geneId,
-    traitType: Number(category),
     ownerId: creatorId, // Creator is initial owner
     creatorId,
     svg,
@@ -438,11 +437,11 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
     return;
   }
 
-  // Cache parent gene IDs for bulk vote optimization
-  // Array of 16: [parent1: 8 traits, parent2: 8 traits]
+  // Cache parent gene IDs for optimization
+  // Array of 20: [parent1: up to 10 genes, parent2: up to 10 genes]
   const parentGeneIds = [
-    ...aminal1.traits, // Parent 1: indices 0-7
-    ...aminal2.traits, // Parent 2: indices 8-15
+    ...aminal1.genes, // Parent 1: indices 0-9
+    ...aminal2.genes, // Parent 2: indices 10-19
   ];
 
   assertValidParentGeneIds(parentGeneIds, "VotingCreated");
@@ -485,12 +484,16 @@ ponder.on("GeneAuction:VotingSettled", async ({ event, context }) => {
   });
 });
 
+// ============================================================================
+// DESIGN PROPOSAL/VOTING HANDLERS
+// ============================================================================
+
 /**
- * Handle GeneAuction:GeneProposed
- * Creates proposal entity for a gene in an auction
+ * Handle GeneAuction:DesignProposed
+ * Creates design proposal entity for a complete Aminal design (1-10 genes with placements)
  */
-ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
-  const { auctionId, category, geneId, proposer } = event.args;
+ponder.on("GeneAuction:DesignProposed", async ({ event, context }) => {
+  const { auctionId, designId, proposer, geneIds, placements } = event.args;
   const { db } = context;
 
   const proposerId = normalizeAddress(proposer);
@@ -505,14 +508,16 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Create proposal
-  await db.insert(geneProposal).values({
-    id: makeProposalId(auctionId, Number(category), geneId),
+  // Create design proposal
+  // Note: placements is a struct array, serialize to JSON for storage
+  await db.insert(designProposal).values({
+    id: makeDesignId(auctionId, designId),
     auctionId: makeAuctionId(auctionId),
-    geneNFTId: makeGeneNFTId(geneId),
-    traitType: Number(category),
+    designIndex: Number(designId),
     proposerId,
-    loveVotes: 0n,
+    geneIds: normalizeGeneArray(geneIds),
+    placements: JSON.stringify(placements), // Serialize placement metadata
+    votes: 0n,
     removeVotes: 0n,
     removed: false,
     blockNumber: event.block.number,
@@ -522,11 +527,11 @@ ponder.on("GeneAuction:GeneProposed", async ({ event, context }) => {
 });
 
 /**
- * Handle GeneAuction:GeneVoteCast
- * Records individual vote on a gene proposal
+ * Handle GeneAuction:DesignVoteCast
+ * Records vote on a complete Aminal design
  */
-ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
-  const { auctionId, category, geneId, voter, userVotingPower } = event.args;
+ponder.on("GeneAuction:DesignVoteCast", async ({ event, context }) => {
+  const { auctionId, designId, voter, userVotingPower } = event.args;
   const { db } = context;
 
   const voterId = normalizeAddress(voter);
@@ -541,34 +546,34 @@ ponder.on("GeneAuction:GeneVoteCast", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  const proposalId = makeProposalId(auctionId, Number(category), geneId);
+  const proposalId = makeDesignId(auctionId, designId);
   const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
 
-  // Create vote entity
-  await db.insert(geneVote).values({
+  // Create vote record
+  await db.insert(designVote).values({
     id: voteId,
     auctionId: makeAuctionId(auctionId),
     proposalId,
     voterId,
     isRemoveVote: false,
-    loveAmount: userVotingPower,
+    votingPower: userVotingPower,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,
   });
 
-  // Update proposal vote count
-  await db.update(geneProposal, { id: proposalId }).set((row) => ({
-    loveVotes: row.loveVotes + userVotingPower,
+  // Update design vote count
+  await db.update(designProposal, { id: proposalId }).set((row) => ({
+    votes: row.votes + userVotingPower,
   }));
 });
 
 /**
- * Handle GeneAuction:GeneRemovalVote
- * Records vote to remove a gene proposal
+ * Handle GeneAuction:DesignRemovalVote
+ * Records vote to remove a design from consideration
  */
-ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
-  const { auctionId, category, geneId, voter, voteWeight } = event.args;
+ponder.on("GeneAuction:DesignRemovalVote", async ({ event, context }) => {
+  const { auctionId, designId, voter, voteWeight } = event.args;
   const { db } = context;
 
   const voterId = normalizeAddress(voter);
@@ -583,158 +588,42 @@ ponder.on("GeneAuction:GeneRemovalVote", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  const proposalId = makeProposalId(auctionId, Number(category), geneId);
+  const proposalId = makeDesignId(auctionId, designId);
   const voteId = makeEventId(event.transaction.hash, event.log.logIndex);
 
-  // Create vote entity
-  await db.insert(geneVote).values({
+  // Create removal vote record
+  await db.insert(designVote).values({
     id: voteId,
     auctionId: makeAuctionId(auctionId),
     proposalId,
     voterId,
     isRemoveVote: true,
-    loveAmount: voteWeight,
+    votingPower: voteWeight,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,
   });
 
-  // Update proposal remove vote count
-  await db.update(geneProposal, { id: proposalId }).set((row) => ({
+  // Update design removal vote count
+  await db.update(designProposal, { id: proposalId }).set((row) => ({
     removeVotes: row.removeVotes + voteWeight,
   }));
 });
 
 /**
- * Handle GeneAuction:GeneRemoved
- * Marks proposal as removed from auction
+ * Handle GeneAuction:DesignRemoved
+ * Marks design as removed from auction
  */
-ponder.on("GeneAuction:GeneRemoved", async ({ event, context }) => {
-  const { auctionId, category, geneId } = event.args;
+ponder.on("GeneAuction:DesignRemoved", async ({ event, context }) => {
+  const { auctionId, designId } = event.args;
   const { db } = context;
 
-  const proposalId = makeProposalId(auctionId, Number(category), geneId);
+  const proposalId = makeDesignId(auctionId, designId);
 
-  // Mark proposal as removed
-  await db.update(geneProposal, { id: proposalId }).set({
+  // Mark design as removed
+  await db.update(designProposal, { id: proposalId }).set({
     removed: true,
   });
-});
-
-/**
- * Handle GeneAuction:BulkVoteCast
- * CRITICAL: Handles bulk voting with optimization using cached parent traits
- * This is the most complex handler due to implicit proposal creation
- */
-ponder.on("GeneAuction:BulkVoteCast", async ({ event, context }) => {
-  const { auctionId, voter, geneIds, userVotingPower } = event.args;
-  const { db } = context;
-
-  const voterId = normalizeAddress(voter);
-  const zeroAddress = "0x0000000000000000000000000000000000000000";
-
-  // Ensure voter exists
-  await db
-    .insert(user)
-    .values({
-      id: voterId,
-      address: voterId,
-      totalSpentFeeding: 0n,
-    })
-    .onConflictDoNothing();
-
-  // Ensure system user exists for implicit proposals
-  await db
-    .insert(user)
-    .values({
-      id: zeroAddress as Hex,
-      address: zeroAddress as Hex,
-      totalSpentFeeding: 0n,
-    })
-    .onConflictDoNothing();
-
-  // Load auction to get cached parent traits
-  const auction = await db.find(geneAuction, { id: makeAuctionId(auctionId) });
-
-  if (!auction) {
-    console.error(`Auction not found for bulk vote: ${auctionId}`);
-    return;
-  }
-
-  const parentGeneIds = auction.parentGeneIds;
-
-  // Process each gene ID in the bulk vote (8 traits)
-  for (let i = 0; i < geneIds.length; i++) {
-    const geneId = geneIds[i];
-
-    // Skip zero gene IDs (no vote for this category)
-    if (!geneId || geneId === 0n) {
-      continue;
-    }
-
-    const proposalId = makeProposalId(auctionId, i, geneId);
-
-    // Check if proposal exists
-    const proposalRecord = await db.find(geneProposal, { id: proposalId });
-
-    if (!proposalRecord) {
-      // Proposal doesn't exist - check if it's a parent trait
-      const parent1TraitId = parentGeneIds[i]; // Parent 1: indices 0-7
-      const parent2TraitId = parentGeneIds[i + 8]; // Parent 2: indices 8-15
-
-      const isParentTrait =
-        geneId === parent1TraitId || geneId === parent2TraitId;
-
-      if (!isParentTrait) {
-        console.warn(
-          `Gene ${geneId} is not a valid parent trait for auction ${auctionId} trait ${i} - skipping`
-        );
-        continue;
-      }
-
-      // Create implicit proposal for parent trait
-      await db.insert(geneProposal).values({
-        id: proposalId,
-        auctionId: makeAuctionId(auctionId),
-        geneNFTId: makeGeneNFTId(geneId),
-        traitType: i,
-        proposerId: zeroAddress as Hex, // System user
-        loveVotes: 0n,
-        removeVotes: 0n,
-        removed: false,
-        blockNumber: event.block.number,
-        blockTimestamp: event.block.timestamp,
-        transactionHash: event.transaction.hash,
-      });
-
-      console.log(
-        `Created implicit proposal for parent trait: auction ${auctionId} gene ${geneId} trait ${i}`
-      );
-    }
-
-    // Create vote entity for this trait
-    const voteId = makeEventId(
-      event.transaction.hash,
-      BigInt(event.log.logIndex) + BigInt(i)
-    );
-
-    await db.insert(geneVote).values({
-      id: voteId,
-      auctionId: makeAuctionId(auctionId),
-      proposalId,
-      voterId,
-      isRemoveVote: false,
-      loveAmount: userVotingPower,
-      blockNumber: event.block.number,
-      blockTimestamp: event.block.timestamp,
-      transactionHash: event.transaction.hash,
-    });
-
-    // Update proposal vote count
-    await db.update(geneProposal, { id: proposalId }).set((row) => ({
-      loveVotes: row.loveVotes + userVotingPower,
-    }));
-  }
 });
 
 /**

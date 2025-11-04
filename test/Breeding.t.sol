@@ -17,7 +17,7 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
  * @dev Comprehensive integration test covering the complete breeding flow:
  * 1. Aminals are fed to build love and energy
  * 2. Breeding is initiated
- * 3. Complete Aminal designs are proposed (all 8 traits together)
+ * 3. Complete Aminal designs are proposed (1-10 genes with placement metadata)
  * 4. Users vote on entire Aminal designs for visual consistency
  * 5. Child is born based on voted design (or random parent if no votes)
  * 6. Holders of selected gene NFTs are paid out
@@ -122,29 +122,27 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // This ensures parent Aminals have valid gene NFT IDs that actually exist
         Visuals[] memory initialVisuals = new Visuals[](2);
 
-        // Parent 1: Uses first set of genes (pastel theme)
-        initialVisuals[0] = Visuals({
-            backId: backgroundGeneId,
-            armId: armsGeneId,
-            tailId: tailGeneId,
-            earsId: earsGeneId,
-            bodyId: bodyGeneId,
-            faceId: faceGeneId,
-            mouthId: mouthGeneId,
-            miscId: miscGeneId
-        });
+        // Parent 1: Uses first set of genes (pastel theme) - 8 genes in first 8 slots
+        initialVisuals[0].genes[0] = backgroundGeneId;
+        initialVisuals[0].genes[1] = armsGeneId;
+        initialVisuals[0].genes[2] = tailGeneId;
+        initialVisuals[0].genes[3] = earsGeneId;
+        initialVisuals[0].genes[4] = bodyGeneId;
+        initialVisuals[0].genes[5] = faceGeneId;
+        initialVisuals[0].genes[6] = mouthGeneId;
+        initialVisuals[0].genes[7] = miscGeneId;
+        // genes[8] and genes[9] are 0 (unused)
 
         // Parent 2: Uses alternative set of genes (vibrant theme) for variety
-        initialVisuals[1] = Visuals({
-            backId: altBackgroundGeneId,
-            armId: altArmsGeneId,
-            tailId: altTailGeneId,
-            earsId: altEarsGeneId,
-            bodyId: altBodyGeneId,
-            faceId: altFaceGeneId,
-            mouthId: altMouthGeneId,
-            miscId: altMiscGeneId
-        });
+        initialVisuals[1].genes[0] = altBackgroundGeneId;
+        initialVisuals[1].genes[1] = altArmsGeneId;
+        initialVisuals[1].genes[2] = altTailGeneId;
+        initialVisuals[1].genes[3] = altEarsGeneId;
+        initialVisuals[1].genes[4] = altBodyGeneId;
+        initialVisuals[1].genes[5] = altFaceGeneId;
+        initialVisuals[1].genes[6] = altMouthGeneId;
+        initialVisuals[1].genes[7] = altMiscGeneId;
+        // genes[8] and genes[9] are 0 (unused)
 
         factory.spawnInitialAminals(initialVisuals);
         aminal1Address = factory.getAminalByIndex(0);
@@ -154,55 +152,55 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     }
 
     function _createGeneNFTs() internal {
-        // First design genes
+        // First design genes (no categories needed)
         vm.prank(alice);
-        backgroundGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND, VisualsCat.BACK);
+        backgroundGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Background", "", "Background");
 
         vm.prank(bob);
-        armsGeneId = geneRegistry.createGene(SAMPLE_ARMS, VisualsCat.ARM);
+        armsGeneId = geneRegistry.createGene(SAMPLE_ARMS, "Arms", "", "Arms");
 
         vm.prank(charlie);
-        tailGeneId = geneRegistry.createGene(SAMPLE_TAIL, VisualsCat.TAIL);
+        tailGeneId = geneRegistry.createGene(SAMPLE_TAIL, "Tail", "", "Tail");
 
         vm.prank(david);
-        earsGeneId = geneRegistry.createGene(SAMPLE_EARS, VisualsCat.EARS);
+        earsGeneId = geneRegistry.createGene(SAMPLE_EARS, "Ears", "", "Ears");
 
         vm.prank(eve);
-        bodyGeneId = geneRegistry.createGene(SAMPLE_BODY, VisualsCat.BODY);
+        bodyGeneId = geneRegistry.createGene(SAMPLE_BODY, "Body", "", "Body");
 
         vm.prank(alice);
-        faceGeneId = geneRegistry.createGene(SAMPLE_FACE, VisualsCat.FACE);
+        faceGeneId = geneRegistry.createGene(SAMPLE_FACE, "Face", "", "Face");
 
         vm.prank(bob);
-        mouthGeneId = geneRegistry.createGene(SAMPLE_MOUTH, VisualsCat.MOUTH);
+        mouthGeneId = geneRegistry.createGene(SAMPLE_MOUTH, "Mouth", "", "Mouth");
 
         vm.prank(charlie);
-        miscGeneId = geneRegistry.createGene(SAMPLE_MISC, VisualsCat.MISC);
+        miscGeneId = geneRegistry.createGene(SAMPLE_MISC, "Misc", "", "Misc");
 
-        // Alternative design genes
+        // Alternative design genes (no categories needed)
         vm.prank(david);
-        altBackgroundGeneId = geneRegistry.createGene(ALT_BACKGROUND, VisualsCat.BACK);
+        altBackgroundGeneId = geneRegistry.createGene(ALT_BACKGROUND, "Alt Background", "", "Background");
 
         vm.prank(eve);
-        altArmsGeneId = geneRegistry.createGene(ALT_ARMS, VisualsCat.ARM);
+        altArmsGeneId = geneRegistry.createGene(ALT_ARMS, "Alt Arms", "", "Arms");
 
         vm.prank(alice);
-        altTailGeneId = geneRegistry.createGene(ALT_TAIL, VisualsCat.TAIL);
+        altTailGeneId = geneRegistry.createGene(ALT_TAIL, "Alt Tail", "", "Tail");
 
         vm.prank(bob);
-        altEarsGeneId = geneRegistry.createGene(ALT_EARS, VisualsCat.EARS);
+        altEarsGeneId = geneRegistry.createGene(ALT_EARS, "Alt Ears", "", "Ears");
 
         vm.prank(charlie);
-        altBodyGeneId = geneRegistry.createGene(ALT_BODY, VisualsCat.BODY);
+        altBodyGeneId = geneRegistry.createGene(ALT_BODY, "Alt Body", "", "Body");
 
         vm.prank(david);
-        altFaceGeneId = geneRegistry.createGene(ALT_FACE, VisualsCat.FACE);
+        altFaceGeneId = geneRegistry.createGene(ALT_FACE, "Alt Face", "", "Face");
 
         vm.prank(eve);
-        altMouthGeneId = geneRegistry.createGene(ALT_MOUTH, VisualsCat.MOUTH);
+        altMouthGeneId = geneRegistry.createGene(ALT_MOUTH, "Alt Mouth", "", "Mouth");
 
         vm.prank(alice);
-        altMiscGeneId = geneRegistry.createGene(ALT_MISC, VisualsCat.MISC);
+        altMiscGeneId = geneRegistry.createGene(ALT_MISC, "Alt Misc", "", "Misc");
     }
 
     /**
@@ -290,6 +288,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         }
     }
 
+    function _getDefaultPlacements() internal pure returns (GeneMetadata[10] memory placements) {
+        // Default placement: centered, 100% scale, no rotation
+        GeneMetadata memory defaultPlacement = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        for (uint256 i = 0; i < 10; i++) {
+            placements[i] = defaultPlacement;
+        }
+    }
+
     function _initiateBreeding() internal returns (uint256 auctionId) {
         console.log("Initiating breeding through simplified flow...");
 
@@ -330,14 +336,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     }
 
     function _proposeCompleteDesigns(uint256 auctionId) internal returns (uint256[] memory) {
-        console.log("Proposing complete Aminal designs (all 8 traits together)...");
+        console.log("Proposing complete Aminal designs (8 genes in 10 slots)...");
 
-        // First design: Cohesive pastel theme
-        uint256[8] memory design1 =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
+        // First design: Cohesive pastel theme - 8 genes in first 8 slots
+        uint256[10] memory design1 =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0, 0];
 
-        // Second design: Alternative vibrant theme
-        uint256[8] memory design2 = [
+        // Second design: Alternative vibrant theme - 8 genes in first 8 slots
+        uint256[10] memory design2 = [
             altBackgroundGeneId,
             altArmsGeneId,
             altTailGeneId,
@@ -345,8 +351,13 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
             altBodyGeneId,
             altFaceGeneId,
             altMouthGeneId,
-            altMiscGeneId
+            altMiscGeneId,
+            0,
+            0
         ];
+
+        // Default placement metadata for all gene slots
+        GeneMetadata[10] memory defaultPlacements = _getDefaultPlacements();
 
         // Get initial design count (includes parent designs)
         GeneAuction.AuctionVoteInfo memory initialVoteInfo = geneAuction.getAuctionVoting(auctionId);
@@ -354,12 +365,12 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Alice proposes first complete design
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design1);
+        geneAuction.proposeDesign(auctionId, design1, defaultPlacements);
         console.log("Alice proposed first complete Aminal design");
 
         // Bob proposes second complete design
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, design2);
+        geneAuction.proposeDesign(auctionId, design2, defaultPlacements);
         console.log("Bob proposed second complete Aminal design");
 
         // Verify designs were proposed
@@ -478,24 +489,22 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         Visuals memory childVisuals = child.getVisuals();
 
         console.log("Child Aminal created with complete design:");
-        console.log("- Background gene:", childVisuals.backId);
-        console.log("- Arm gene:", childVisuals.armId);
-        console.log("- Tail gene:", childVisuals.tailId);
-        console.log("- Ears gene:", childVisuals.earsId);
-        console.log("- Body gene:", childVisuals.bodyId);
-        console.log("- Face gene:", childVisuals.faceId);
-        console.log("- Mouth gene:", childVisuals.mouthId);
-        console.log("- Misc gene:", childVisuals.miscId);
+        for (uint256 i = 0; i < 10; i++) {
+            if (childVisuals.genes[i] != 0) {
+                console.log("- Gene slot", i, ":", childVisuals.genes[i]);
+            }
+        }
 
-        // Verify all traits are set (not zero unless parent had zero)
-        bool hasNonZeroTraits = childVisuals.backId != 0 || childVisuals.armId != 0 || childVisuals.tailId != 0
-            || childVisuals.earsId != 0 || childVisuals.bodyId != 0 || childVisuals.faceId != 0
-            || childVisuals.mouthId != 0 || childVisuals.miscId != 0;
+        // Verify at least one trait is set (not all zero)
+        bool hasNonZeroTraits = false;
+        for (uint256 i = 0; i < 10; i++) {
+            if (childVisuals.genes[i] != 0) {
+                hasNonZeroTraits = true;
+                break;
+            }
+        }
 
-        assertTrue(
-            hasNonZeroTraits || (childVisuals.backId == 0 && childVisuals.armId == 0),
-            "Child should have traits from winning design"
-        );
+        assertTrue(hasNonZeroTraits, "Child should have at least one gene from winning design");
 
         console.log("Child birth and design application verified successfully");
     }
@@ -536,12 +545,13 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         _feedAminals();
         uint256 auctionId = _initiateBreeding();
 
-        // Propose a design
-        uint256[8] memory design =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId];
+        // Propose a design - 8 genes in 10 slots
+        uint256[10] memory design =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0, 0];
+        GeneMetadata[10] memory defaultPlacements = _getDefaultPlacements();
 
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design);
+        geneAuction.proposeDesign(auctionId, design, defaultPlacements);
 
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];

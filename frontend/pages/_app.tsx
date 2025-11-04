@@ -1,9 +1,5 @@
 import { PonderProvider } from '@ponder/react';
-import {
-  getDefaultConfig,
-  lightTheme,
-  RainbowKitProvider,
-} from '@rainbow-me/rainbowkit';
+import { getDefaultConfig, lightTheme } from '@rainbow-me/rainbowkit';
 import '@rainbow-me/rainbowkit/styles.css';
 import { QueryClientProvider } from '@tanstack/react-query';
 import type { AppProps } from 'next/app';
@@ -11,6 +7,7 @@ import { Roboto_Mono } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { sepolia } from 'viem/chains';
 import { WagmiProvider } from 'wagmi';
+import { ClientRainbowKitProvider } from '../src/components/ClientRainbowKitProvider';
 import { ErrorBoundary } from '../src/components/ErrorBoundary';
 import { ponderClient } from '../src/lib/ponderClient';
 import { createQueryClient } from '../src/lib/queryClient';
@@ -45,7 +42,7 @@ function AminalsApp({ Component, pageProps }: AppProps) {
         <WagmiProvider config={wagmiConfig}>
           <PonderProvider client={ponderClient}>
             <QueryClientProvider client={queryClient}>
-              <RainbowKitProvider theme={rainbowTheme}>
+              <ClientRainbowKitProvider theme={rainbowTheme}>
                 <Component {...pageProps} />
                 <Toaster
                   position="top-right"
@@ -76,7 +73,7 @@ function AminalsApp({ Component, pageProps }: AppProps) {
                     },
                   }}
                 />
-              </RainbowKitProvider>
+              </ClientRainbowKitProvider>
             </QueryClientProvider>
           </PonderProvider>
         </WagmiProvider>

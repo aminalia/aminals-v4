@@ -9,28 +9,21 @@ import { genesAddress } from '../contracts/generated';
 
 // Type inference from Ponder schema
 type GeneNFT = typeof schema.geneNFT.$inferSelect;
-type GeneProposal = typeof schema.geneProposal.$inferSelect;
+type DesignProposal = typeof schema.designProposal.$inferSelect;
 type GeneCreatorPayout = typeof schema.geneCreatorPayout.$inferSelect;
 type User = typeof schema.user.$inferSelect;
 
 export type GeneFilter = 'all' | 'yours';
 export type GeneSort = 'aminals-count' | 'created-at';
-export type CategoryFilter =
-  | 'all'
-  | '0'
-  | '1'
-  | '2'
-  | '3'
-  | '4'
-  | '5'
-  | '6'
-  | '7';
+// Note: Category filter removed - genes are now flexible (no fixed categories)
+export type CategoryFilter = 'all';
 
 // Extended type with relationships (matches hook return type)
 export interface GeneNFTWithRelations extends GeneNFT {
   owner?: User;
   creator?: User;
-  proposals?: GeneProposal[];
+  // Note: Design proposals are complete designs, not per-gene
+  proposals?: DesignProposal[];
   payouts?: GeneCreatorPayout[];
 }
 
@@ -56,12 +49,8 @@ export const transformGenes = (
     );
   }
 
-  // Apply category filter
-  if (category !== 'all') {
-    processedGenes = processedGenes.filter(
-      (gene) => gene.traitType === Number(category)
-    );
-  }
+  // Note: Category filter removed - genes are now flexible (no fixed categories)
+  // The category parameter is kept for API compatibility but ignored
 
   // Apply sort
   processedGenes.sort((a, b) => {
@@ -107,6 +96,7 @@ export const calculateGeneStats = (gene: GeneNFTWithRelations) => {
 
 /**
  * Format gene display data
+ * Note: Genes no longer have fixed trait types/categories
  */
 export const formatGeneForDisplay = (gene: GeneNFTWithRelations) => {
   const stats = calculateGeneStats(gene);
@@ -116,8 +106,7 @@ export const formatGeneForDisplay = (gene: GeneNFTWithRelations) => {
     tokenId: gene.tokenId.toString(),
     displayName: gene.name || `Gene #${gene.tokenId}`,
     description: gene.description || '',
-    traitType: gene.traitType,
-    traitTypeName: getTraitTypeName(gene.traitType),
+    // Note: traitType removed - genes are now flexible (no fixed categories)
     svg: gene.svg,
     owner: gene.owner,
     creator: gene.creator,
@@ -130,20 +119,11 @@ export const formatGeneForDisplay = (gene: GeneNFTWithRelations) => {
 };
 
 /**
- * Get trait type name from number
+ * Get slot name from index (0-9)
+ * Note: Replaces old getTraitTypeName - genes are now ordered by rendering layer
  */
-export const getTraitTypeName = (traitType: number): string => {
-  const traitNames = {
-    0: 'Background',
-    1: 'Arm',
-    2: 'Tail',
-    3: 'Ears',
-    4: 'Body',
-    5: 'Face',
-    6: 'Mouth',
-    7: 'Misc',
-  };
-  return traitNames[traitType as keyof typeof traitNames] || 'Unknown';
+export const getSlotName = (slotIndex: number): string => {
+  return `Slot ${slotIndex}`; // Simple naming - slots are just rendering order now
 };
 
 /**
@@ -163,13 +143,11 @@ export const filterGenesBySearch = (
     const name = gene.name?.toLowerCase() || '';
     const description = gene.description?.toLowerCase() || '';
     const tokenId = gene.tokenId?.toString() || '';
-    const traitTypeName = getTraitTypeName(gene.traitType).toLowerCase();
 
     return (
       name.includes(lowerSearchTerm) ||
       description.includes(lowerSearchTerm) ||
-      tokenId.includes(lowerSearchTerm) ||
-      traitTypeName.includes(lowerSearchTerm)
+      tokenId.includes(lowerSearchTerm)
     );
   });
 };
@@ -189,12 +167,8 @@ export const groupGenesByTraitType = (genes: GeneNFTWithRelations[]) => {
     7: [] as GeneNFTWithRelations[], // Misc
   };
 
-  genes.forEach((gene) => {
-    const traitType = gene.traitType;
-    if (traitType >= 0 && traitType <= 7) {
-      groups[traitType as keyof typeof groups].push(gene);
-    }
-  });
+  // Note: Genes no longer have traitType - this function is deprecated
+  // Return empty groups for backwards compatibility
 
   return groups;
 };

@@ -4,60 +4,64 @@
  * Type guards and validation functions for event data
  */
 
-import { TRAIT_NAMES } from "./constants";
-import type { TraitType } from "./constants";
+/**
+ * Type for slot index (0-9 for 10 gene slots)
+ */
+export type SlotIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 /**
- * Validate trait type is within valid range (0-7)
+ * Validate slot index is within valid range (0-9)
  */
-export function isValidTraitType(traitType: number): traitType is TraitType {
-  return traitType >= 0 && traitType <= 7;
+export function isValidSlotIndex(slotIndex: number): slotIndex is SlotIndex {
+  return slotIndex >= 0 && slotIndex <= 9;
 }
 
 /**
- * Validate trait array has exactly 8 elements
+ * Validate gene array has 1-10 elements
  */
-export function isValidTraitArray(traits: readonly bigint[]): boolean {
-  return traits.length === 8;
+export function isValidGeneArray(genes: readonly bigint[]): boolean {
+  return genes.length >= 1 && genes.length <= 10;
 }
 
 /**
- * Validate parent gene IDs cache has exactly 16 elements
- * (8 traits from parent1 + 8 traits from parent2)
+ * Validate gene array is exactly 10 elements (contract format)
+ */
+export function isValidGeneArrayFixed(genes: readonly bigint[]): boolean {
+  return genes.length === 10;
+}
+
+/**
+ * Validate parent gene IDs cache has exactly 20 elements
+ * (up to 10 genes from parent1 + up to 10 genes from parent2)
  */
 export function isValidParentGeneIds(parentGeneIds: bigint[]): boolean {
-  return parentGeneIds.length === 16;
+  return parentGeneIds.length === 20;
 }
 
 /**
- * Get trait name from trait type index
+ * Count actual genes in a gene array (non-zero values)
  */
-export function getTraitName(traitType: number): string {
-  if (!isValidTraitType(traitType)) {
-    throw new Error(`Invalid trait type: ${traitType}`);
-  }
-  return TRAIT_NAMES[traitType];
+export function countGenes(genes: readonly bigint[]): number {
+  return genes.filter(g => g !== 0n).length;
 }
 
 /**
- * Assert trait array is valid, throw if not
+ * Assert gene array is valid fixed format, throw if not
  */
-export function assertValidTraitArray(
-  traits: readonly bigint[],
+export function assertValidGeneArray(
+  genes: readonly bigint[],
   context: string
-): asserts traits is readonly [
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint
-] {
-  if (!isValidTraitArray(traits)) {
+): void {
+  if (!isValidGeneArrayFixed(genes)) {
     throw new Error(
-      `${context}: Invalid trait array length. Expected 8, got ${traits.length}`
+      `${context}: Invalid gene array length. Expected 10, got ${genes.length}`
+    );
+  }
+
+  const geneCount = countGenes(genes);
+  if (geneCount < 1 || geneCount > 10) {
+    throw new Error(
+      `${context}: Invalid gene count. Must have 1-10 non-zero genes, got ${geneCount}`
     );
   }
 }
@@ -71,7 +75,26 @@ export function assertValidParentGeneIds(
 ): void {
   if (!isValidParentGeneIds(parentGeneIds)) {
     throw new Error(
-      `${context}: Invalid parentGeneIds length. Expected 16, got ${parentGeneIds.length}`
+      `${context}: Invalid parentGeneIds length. Expected 20, got ${parentGeneIds.length}`
+    );
+  }
+}
+
+// Legacy functions for backwards compatibility (deprecated)
+export type TraitType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export function isValidTraitType(traitType: number): traitType is TraitType {
+  return traitType >= 0 && traitType <= 7;
+}
+export function isValidTraitArray(traits: readonly bigint[]): boolean {
+  return traits.length === 8;
+}
+export function assertValidTraitArray(
+  traits: readonly bigint[],
+  context: string
+): void {
+  if (!isValidTraitArray(traits)) {
+    throw new Error(
+      `${context}: Invalid trait array length. Expected 8, got ${traits.length}`
     );
   }
 }

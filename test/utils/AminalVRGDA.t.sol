@@ -45,8 +45,9 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[0].genes[i] = 1;
+        }
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);

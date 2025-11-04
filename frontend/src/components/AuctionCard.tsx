@@ -10,7 +10,7 @@ import {
   CardSection,
   CardTitle,
 } from '@components/ui/Card';
-import type { GeneAuction } from '@hooks';
+import type { GeneAuction, GeneAuctionWithRelations } from '@hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -21,11 +21,13 @@ import '../../styles/index.module.css';
 // VOTING_DURATION from the contract (1 hour = 3600 seconds)
 const VOTING_DURATION = 3600;
 
-export default function AuctionCard({ auction }: { auction: GeneAuction }) {
-  // TODO: Fetch aminals via separate queries using aminalOneId and aminalTwoId
-  // For now, we'll need to pass the full auction with relations from parent
-  const aminalOne = (auction as any).aminalOne;
-  const aminalTwo = (auction as any).aminalTwo;
+export default function AuctionCard({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   // Calculate auction end time
@@ -74,7 +76,7 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
     }
   };
 
-  const childAminal = (auction as any).childAminal;
+  const childAminal = auction.childAminal;
   console.log(childAminal);
 
   return (
@@ -204,10 +206,14 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
   );
 }
 
-export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
-  const aminalOne = (auction as any).aminalOne;
-  const aminalTwo = (auction as any).aminalTwo;
-  const childAminal = (auction as any).childAminal;
+export function AuctionCardActive({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
+  const childAminal = auction.childAminal;
 
   return (
     <>
@@ -248,10 +254,14 @@ export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
   );
 }
 
-export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
-  const aminalOne = (auction as any).aminalOne;
-  const aminalTwo = (auction as any).aminalTwo;
-  const childAminal = (auction as any).childAminal;
+export function AuctionCardInActive({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
+  const childAminal = auction.childAminal;
 
   return (
     <>

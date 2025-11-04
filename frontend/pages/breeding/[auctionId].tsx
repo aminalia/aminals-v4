@@ -1,31 +1,58 @@
-import BulkVoteButton from '@components/actions/BulkVoteButton';
-import EndAuctionButton from '@components/actions/EndAuctionButton';
-import { AminalVisualImage } from '@components/AminalCard';
-import CountdownTimer from '@components/CountdownTimer';
-import ProposeGeneModal from '@components/ProposeGeneModal';
-import TraitSelector, {
-  SelectedParts,
-  TraitParts,
-} from '@components/TraitSelector';
-import VoteStats from '@components/VoteStats';
-import {
-  makeGeneNFTId,
-  useAuction,
-  useGeneProposalsByAuctionId,
-  useGenesByIds,
-} from '@hooks';
+/**
+ * Breeding Auction Page - Refactored for Design-Based Voting
+ *
+ * Features:
+ * - Tab navigation: Browse Designs | Create New Design
+ * - DesignGallery for browsing and voting on proposals
+ * - DesignBuilder for creating new designs
+ * - Parent design templates
+ * - Real-time voting stats
+ */
+
+import { useState, useMemo, useCallback } from 'react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useEffect, useMemo, useState } from 'react';
+import { useAccount } from 'wagmi';
 import Layout from '../_layout';
+
+// Components
+import { AminalVisualImage } from '@components/AminalCard';
+import CountdownTimer from '@components/CountdownTimer';
+import EndAuctionButton from '@components/actions/EndAuctionButton';
+import DesignBuilder from '@components/breeding/DesignBuilder';
+import DesignGallery from '@components/breeding/DesignGallery';
+import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
+import VoteOnDesignButton from '@components/breeding/VoteOnDesignButton';
+import DesignVoteStats from '@components/breeding/DesignVoteStats';
+import { Button } from '@components/ui/Button';
+
+// Hooks & Types
+import {
+  useAuction,
+  useDesignProposals,
+  useUserVotingPower,
+  useUserVotedDesign,
+  useAuctionVoting,
+  useParentGenes,
+  useIsVotingActive,
+  useGenesByIds,
+  makeGeneNFTId,
+  type Gene,
+  type GeneMetadata,
+  type DesignProposal,
+  createDesignFromGenes,
+} from '@hooks';
 
 // VOTING_DURATION from the contract (1 hour = 3600 seconds)
 const VOTING_DURATION = 3600;
 
+type TabType = 'browse' | 'create';
+
 const AuctionPage: NextPage = () => {
   const router = useRouter();
   const auctionId = router.query.auctionId as string;
+  const { address } = useAccount();
 
   // Show loading state if router is not ready or ID is not available
   const isRouterReady =
@@ -34,21 +61,58 @@ const AuctionPage: NextPage = () => {
     typeof auctionId === 'string' &&
     auctionId !== 'undefined';
 
+  // Tab state
+  const [activeTab, setActiveTab] = useState<TabType>('browse');
+
+  // Design builder state
+  const [currentGeneIds, setCurrentGeneIds] = useState<bigint[]>([]);
+  const [currentPlacements, setCurrentPlacements] = useState<GeneMetadata[]>([]);
+  const [builderKey, setBuilderKey] = useState(0); // Force remount when loading templates
+
+  // Fetch auction data
   const {
     data: auction,
     isLoading: isLoadingAuction,
     error,
   } = useAuction(isRouterReady ? auctionId : '');
+
+  // Fetch design proposals
   const {
-    data: proposeGenes,
-    isLoading: isLoadingProposeGenes,
-    error: proposeGenesError,
-  } = useGeneProposalsByAuctionId(isRouterReady ? auctionId : '');
+    data: designs = [],
+    isLoading: isLoadingDesigns,
+    refetch: refetchDesigns,
+  } = useDesignProposals(isRouterReady ? auctionId : '');
+
+  // Fetch user voting power
+  const { data: userVotingPower = 0n } = useUserVotingPower(
+    isRouterReady ? auctionId : '',
+    address
+  );
+
+  // Fetch user's current vote
+  const { data: userVotedDesignId = 0n } = useUserVotedDesign(
+    isRouterReady ? auctionId : '',
+    address
+  );
+
+  // Fetch auction voting info
+  const { data: auctionVoting } = useAuctionVoting(
+    isRouterReady ? auctionId : ''
+  );
+
+  // Fetch parent genes
+  const { data: parentGenesData } = useParentGenes(
+    isRouterReady ? auctionId : ''
+  );
+
+  // Check if voting is active
+  const { data: isVotingActive = false } = useIsVotingActive(
+    isRouterReady ? auctionId : ''
+  );
 
   // Calculate auction end time
   const auctionEndTime = useMemo(() => {
     if (!auction?.blockTimestamp) return 0;
-    // Convert BigInt to number and add voting duration
     return Number(auction.blockTimestamp) + VOTING_DURATION;
   }, [auction?.blockTimestamp]);
 
@@ -59,325 +123,116 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
-  // Get gene IDs from parent Aminals only (proposals already have gene data loaded)
-  const geneIds = useMemo(() => {
+  // Get all unique gene IDs from parents
+  const parentGeneIds = useMemo(() => {
     if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
-    // Convert parent trait token IDs to geneNFT ID format
-    const parentIds = [
-      auction.aminalOne.backId,
-      auction.aminalOne.armId,
-      auction.aminalOne.tailId,
-      auction.aminalOne.earsId,
-      auction.aminalOne.bodyId,
-      auction.aminalOne.faceId,
-      auction.aminalOne.mouthId,
-      auction.aminalOne.miscId,
-      auction.aminalTwo.backId,
-      auction.aminalTwo.armId,
-      auction.aminalTwo.tailId,
-      auction.aminalTwo.earsId,
-      auction.aminalTwo.bodyId,
-      auction.aminalTwo.faceId,
-      auction.aminalTwo.mouthId,
-      auction.aminalTwo.miscId,
-    ]
-      .filter((id) => {
-        const idStr = id ? id.toString() : '';
-        return idStr !== '' && idStr !== '0';
-      })
-      .map((id) => makeGeneNFTId(id!)); // Convert token ID to geneNFT ID format
+    const allGeneIds = [
+      ...(auction.aminalOne.genes || []),
+      ...(auction.aminalTwo.genes || []),
+    ].filter((id) => id && id !== 0n);
 
-    return Array.from(new Set(parentIds)); // Remove duplicates
+    return Array.from(new Set(allGeneIds));
   }, [auction]);
 
-  // Fetch gene NFT data for the gene IDs
-  const { data: geneData, isLoading: isLoadingGenes } = useGenesByIds(geneIds);
+  // Fetch parent gene data with SVGs
+  const { data: parentGenesWithSvg } = useGenesByIds(
+    parentGeneIds.map((id) => id.toString())
+  );
 
-  // State for selected gene parts
-  const [selectedParts, setSelectedParts] = useState<SelectedParts>({
-    background: 0,
-    tail: 0,
-    arm: 0,
-    ears: 0,
-    body: 0,
-    face: 0,
-    mouth: 0,
-    misc: 0,
-  });
+  // Convert parent genes to Gene[] format for DesignBuilder
+  const availableGenes = useMemo((): Gene[] => {
+    const allGenes: Gene[] = [];
+    const seenGeneIds = new Set<string>();
 
-  // State for randomized preview
-  const [hasRandomized, setHasRandomized] = useState(false);
-
-  // State for propose gene modal
-  const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
-
-  // Create a lookup map for gene data
-  const geneMap = useMemo(() => {
-    if (!geneData) return {};
-
-    const map: { [key: string]: any } = {};
-    geneData.forEach((gene) => {
-      if (gene && gene.tokenId) {
-        map[gene.tokenId.toString()] = gene;
-      }
-    });
-    return map;
-  }, [geneData]);
-
-  // Define the gene parts from the auction data with community proposals
-  const parts: TraitParts = useMemo(() => {
-    if (!auction?.aminalOne || !auction?.aminalTwo) {
-      return {
-        background: [],
-        body: [],
-        face: [],
-        mouth: [],
-        ears: [],
-        arm: [],
-        tail: [],
-        misc: [],
-      };
-    }
-
-    const getGeneForId = (id: any) => {
-      if (!id || id.toString() === '0') {
-        return null;
-      }
-      const idStr = id.toString();
-      const gene = geneMap[idStr];
-      if (!gene) {
-        console.warn(
-          `Gene not found for ID: ${idStr}, available keys:`,
-          Object.keys(geneMap).slice(0, 5)
-        );
-      }
-      return gene ? { ...gene, visualId: gene.tokenId } : null;
-    };
-
-    // Mark parent genes with source metadata
-    const markAsParentGene = (gene: any, parentIndex: number) => {
-      return gene ? { ...gene, isParentGene: true, parentIndex } : null;
-    };
-
-    const parentGenes = {
-      background: [
-        markAsParentGene(getGeneForId(auction.aminalOne.backId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.backId), 2),
-      ].filter(Boolean),
-      body: [
-        markAsParentGene(getGeneForId(auction.aminalOne.bodyId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.bodyId), 2),
-      ].filter(Boolean),
-      face: [
-        markAsParentGene(getGeneForId(auction.aminalOne.faceId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.faceId), 2),
-      ].filter(Boolean),
-      mouth: [
-        markAsParentGene(getGeneForId(auction.aminalOne.mouthId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.mouthId), 2),
-      ].filter(Boolean),
-      ears: [
-        markAsParentGene(getGeneForId(auction.aminalOne.earsId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.earsId), 2),
-      ].filter(Boolean),
-      arm: [
-        markAsParentGene(getGeneForId(auction.aminalOne.armId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.armId), 2),
-      ].filter(Boolean),
-      tail: [
-        markAsParentGene(getGeneForId(auction.aminalOne.tailId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.tailId), 2),
-      ].filter(Boolean),
-      misc: [
-        markAsParentGene(getGeneForId(auction.aminalOne.miscId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.miscId), 2),
-      ].filter(Boolean),
-    };
-
-    // Add community proposals to each trait category
-    const traitMapping = {
-      0: 'background',
-      1: 'arm',
-      2: 'tail',
-      3: 'ears',
-      4: 'body',
-      5: 'face',
-      6: 'mouth',
-      7: 'misc',
-    };
-
-    const communityGenes = {
-      background: [],
-      body: [],
-      face: [],
-      mouth: [],
-      ears: [],
-      arm: [],
-      tail: [],
-      misc: [],
-    };
-
-    // Group proposals by trait type and mark as community genes
-    if (proposeGenes) {
-      proposeGenes.forEach((proposal) => {
-        const traitKey =
-          traitMapping[proposal.traitType as keyof typeof traitMapping];
-        // Use gene NFT data that's already loaded with the proposal
-        const geneNFT = proposal.geneNFT;
-        if (traitKey && geneNFT) {
-          (communityGenes as any)[traitKey].push({
-            ...geneNFT,
-            visualId: geneNFT.tokenId,
-            svg: geneNFT.svg,
-            isCommunityGene: true,
-          });
+    // First, add parent genes
+    if (parentGenesWithSvg) {
+      parentGenesWithSvg.forEach((gene) => {
+        if (gene && !seenGeneIds.has(gene.id)) {
+          seenGeneIds.add(gene.id);
+          allGenes.push(gene);
         }
       });
     }
 
-    // Combine parent genes first, then community proposals (remove duplicates)
-    const combineUnique = (parentArray: any[], communityArray: any[]) => {
-      const combined = [...parentArray];
-      const existingIds = new Set(
-        parentArray.map((gene) => gene?.visualId || gene?.tokenId)
-      );
-
-      communityArray.forEach((gene) => {
-        if (gene && !existingIds.has(gene.visualId || gene.tokenId)) {
-          combined.push(gene);
-          existingIds.add(gene.visualId || gene.tokenId);
-        }
-      });
-
-      return combined;
-    };
-
-    const result = {
-      background: combineUnique(
-        parentGenes.background,
-        communityGenes.background
-      ),
-      body: combineUnique(parentGenes.body, communityGenes.body),
-      face: combineUnique(parentGenes.face, communityGenes.face),
-      mouth: combineUnique(parentGenes.mouth, communityGenes.mouth),
-      ears: combineUnique(parentGenes.ears, communityGenes.ears),
-      arm: combineUnique(parentGenes.arm, communityGenes.arm),
-      tail: combineUnique(parentGenes.tail, communityGenes.tail),
-      misc: combineUnique(parentGenes.misc, communityGenes.misc),
-    };
-
-    return result;
-  }, [auction, geneMap, proposeGenes]);
-
-  // Parent genes only (for randomization)
-  const parentParts: TraitParts = useMemo(() => {
-    if (!auction?.aminalOne || !auction?.aminalTwo) {
-      return {
-        background: [],
-        body: [],
-        face: [],
-        mouth: [],
-        ears: [],
-        arm: [],
-        tail: [],
-        misc: [],
-      };
-    }
-
-    const getGeneForId = (id: any) => {
-      if (!id || id.toString() === '0') {
-        return null;
-      }
-      const gene = geneMap[id.toString()];
-      return gene ? { ...gene, visualId: gene.tokenId } : null;
-    };
-
-    return {
-      background: [
-        getGeneForId(auction.aminalOne.backId),
-        getGeneForId(auction.aminalTwo.backId),
-      ].filter(Boolean),
-      body: [
-        getGeneForId(auction.aminalOne.bodyId),
-        getGeneForId(auction.aminalTwo.bodyId),
-      ].filter(Boolean),
-      face: [
-        getGeneForId(auction.aminalOne.faceId),
-        getGeneForId(auction.aminalTwo.faceId),
-      ].filter(Boolean),
-      mouth: [
-        getGeneForId(auction.aminalOne.mouthId),
-        getGeneForId(auction.aminalTwo.mouthId),
-      ].filter(Boolean),
-      ears: [
-        getGeneForId(auction.aminalOne.earsId),
-        getGeneForId(auction.aminalTwo.earsId),
-      ].filter(Boolean),
-      arm: [
-        getGeneForId(auction.aminalOne.armId),
-        getGeneForId(auction.aminalTwo.armId),
-      ].filter(Boolean),
-      tail: [
-        getGeneForId(auction.aminalOne.tailId),
-        getGeneForId(auction.aminalTwo.tailId),
-      ].filter(Boolean),
-      misc: [
-        getGeneForId(auction.aminalOne.miscId),
-        getGeneForId(auction.aminalTwo.miscId),
-      ].filter(Boolean),
-    };
-  }, [auction, geneMap]);
-
-  // Randomize preview on page load using only parent genes
-  useEffect(() => {
-    if (!hasRandomized && parentParts && auction && geneData) {
-      // Wait for all data to be loaded
-      const hasData = Object.values(parentParts).some(
-        (genes) => genes.length > 0
-      );
-
-      if (hasData) {
-        const randomizedParts = Object.keys(parentParts).reduce((acc, key) => {
-          const availableGenes = parentParts[key as keyof typeof parentParts];
-          if (availableGenes.length > 0) {
-            const randomIndex = Math.floor(
-              Math.random() * availableGenes.length
-            );
-            acc[key] = randomIndex;
-          } else {
-            acc[key] = -1; // Empty if no genes available
+    // Then add any additional genes from designs
+    if (designs && designs.length > 0) {
+      designs.forEach((design) => {
+        design.genes?.forEach((gene) => {
+          if (!seenGeneIds.has(gene.id)) {
+            seenGeneIds.add(gene.id);
+            allGenes.push(gene);
           }
-          return acc;
-        }, {} as SelectedParts);
-
-        setSelectedParts(randomizedParts);
-        setHasRandomized(true);
-      }
+        });
+      });
     }
-  }, [parentParts, hasRandomized, auction, geneData]);
 
-  // Handler for gene selection
-  const handlePartSelection = (part: string, index: number) => {
-    setSelectedParts((prev) => ({
-      ...prev,
-      [part]: index,
+    return allGenes;
+  }, [parentGenesWithSvg, designs]);
+
+  // Load parent 1 template
+  const handleLoadParent1 = useCallback(() => {
+    if (!auction?.aminalOne?.genes) return;
+
+    const genes = auction.aminalOne.genes.filter((g) => g !== 0n);
+    const placements = genes.map(() => ({
+      offsetX: 0,
+      offsetY: 0,
+      scale: 100,
+      rotation: 0,
     }));
-  };
 
-  // Function to get parent Aminal contract addresses
-  const getParentAddresses = () => {
-    if (!auction?.aminalOne || !auction?.aminalTwo)
-      return { parentOne: '?', parentTwo: '?' };
-    return {
-      parentOne:
-        auction.aminalOne.contractAddress || auction.aminalOne.aminalIndex,
-      parentTwo:
-        auction.aminalTwo.contractAddress || auction.aminalTwo.aminalIndex,
-    };
-  };
+    setCurrentGeneIds(genes);
+    setCurrentPlacements(placements);
+    setBuilderKey((k) => k + 1); // Force remount
+  }, [auction]);
 
-  const { parentOne, parentTwo } = getParentAddresses();
+  // Load parent 2 template
+  const handleLoadParent2 = useCallback(() => {
+    if (!auction?.aminalTwo?.genes) return;
+
+    const genes = auction.aminalTwo.genes.filter((g) => g !== 0n);
+    const placements = genes.map(() => ({
+      offsetX: 0,
+      offsetY: 0,
+      scale: 100,
+      rotation: 0,
+    }));
+
+    setCurrentGeneIds(genes);
+    setCurrentPlacements(placements);
+    setBuilderKey((k) => k + 1); // Force remount
+  }, [auction]);
+
+  // Handle design change from DesignBuilder
+  const handleDesignChange = useCallback(
+    (geneIds: bigint[], placements: GeneMetadata[]) => {
+      setCurrentGeneIds(geneIds);
+      setCurrentPlacements(placements);
+    },
+    []
+  );
+
+  // Handle vote success
+  const handleVoteSuccess = useCallback(() => {
+    refetchDesigns();
+  }, [refetchDesigns]);
+
+  // Handle propose success
+  const handleProposeSuccess = useCallback(() => {
+    refetchDesigns();
+    setActiveTab('browse');
+    setCurrentGeneIds([]);
+    setCurrentPlacements([]);
+  }, [refetchDesigns]);
+
+  // Handle view design
+  const handleViewDesign = useCallback((design: DesignProposal) => {
+    // Load design into builder (read-only initially, but can be remixed)
+    setCurrentGeneIds(design.geneIds.filter((id) => id !== 0n));
+    setCurrentPlacements(design.placements.filter((_, i) => design.geneIds[i] !== 0n));
+    setActiveTab('create');
+  }, []);
 
   // Handle fallback state for static export (production only)
   if (router.isFallback) {
@@ -416,7 +271,7 @@ const AuctionPage: NextPage = () => {
             </div>
           </div>
 
-          {!isRouterReady || isLoadingAuction || isLoadingGenes ? (
+          {!isRouterReady || isLoadingAuction ? (
             <div className="flex justify-center items-center h-64">
               <div className="flex flex-col items-center gap-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-love"></div>
@@ -428,9 +283,9 @@ const AuctionPage: NextPage = () => {
           ) : (
             <>
               {/* Main Content */}
-              <div className="bg-card rounded-lg border border-border overflow-hidden -mt-8">
+              <div className="bg-card rounded-lg border border-border overflow-hidden">
                 {/* Parents Info with Countdown Timer */}
-                <div className="bg-muted border border-border rounded-lg px-6 py-4">
+                <div className="bg-muted border-b border-border px-6 py-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-6">
                       <Link
@@ -476,7 +331,7 @@ const AuctionPage: NextPage = () => {
                   </div>
                 </div>
 
-                {/* Show new Aminal if auction is finished, show winning combination if ended but not born, otherwise show builder */}
+                {/* Show new Aminal if auction is finished */}
                 {auction?.finished && auction?.childAminal ? (
                   <div className="p-4">
                     <div className="bg-success/10 border border-success/30 rounded-xl p-6">
@@ -545,15 +400,6 @@ const AuctionPage: NextPage = () => {
                             </div>
                           </div>
 
-                          <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
-                            <div className="text-sm text-success font-medium">
-                              Contract Address
-                            </div>
-                            <div className="text-sm font-mono text-success mt-1">
-                              {auction.childAminal.contractAddress}
-                            </div>
-                          </div>
-
                           <div className="text-center lg:text-left">
                             <Link
                               href={`/aminals/${auction.childAminal.contractAddress}`}
@@ -568,227 +414,129 @@ const AuctionPage: NextPage = () => {
                       </div>
                     </div>
                   </div>
-                ) : isAuctionEnded &&
-                  (!auction?.finished || !auction?.childAminal) ? (
-                  <div></div>
                 ) : (
-                  <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 p-4">
-                    {/* Left Column - Preview */}
-                    <div className="xl:col-span-2">
-                      <div className="bg-muted rounded-lg p-4 border border-border">
-                        <h3 className="text-sm font-medium text-foreground mb-3">
-                          Preview
-                        </h3>
-                        <div className="aspect-square rounded-lg overflow-hidden bg-card border border-border">
-                          <svg
-                            viewBox="0 0 1000 1000"
-                            className="w-full h-full"
-                            dangerouslySetInnerHTML={{
-                              __html: [
-                                // Correct rendering order: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
-                                'background',
-                                'arm',
-                                'tail',
-                                'ears',
-                                'body',
-                                'face',
-                                'mouth',
-                                'misc',
-                              ]
-                                .map((part) => {
-                                  const index = selectedParts[part];
-                                  // Handle empty gene selection (index -1)
-                                  if (index === -1) return '';
-                                  return parts[part][index]?.svg || '';
-                                })
-                                .join(''),
-                            }}
-                          />
-                        </div>
+                  <>
+                    {/* Tab Navigation */}
+                    <div className="border-b border-border">
+                      <div className="flex gap-4 px-6">
+                        <button
+                          onClick={() => setActiveTab('browse')}
+                          className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'browse'
+                              ? 'border-energy text-energy'
+                              : 'border-transparent text-muted-foreground hover:text-foreground'
+                          }`}
+                          disabled={isAuctionEnded}
+                        >
+                          📊 Browse Designs
+                        </button>
+                        <button
+                          onClick={() => setActiveTab('create')}
+                          className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
+                            activeTab === 'create'
+                              ? 'border-energy text-energy'
+                              : 'border-transparent text-muted-foreground hover:text-foreground'
+                          }`}
+                          disabled={isAuctionEnded}
+                        >
+                          ✨ Create New Design
+                        </button>
                       </div>
                     </div>
 
-                    {/* Right Column - Gene Selector */}
-                    <div className="space-y-4 xl:col-span-2">
-                      <TraitSelector
-                        parts={parts}
-                        selectedParts={selectedParts}
-                        onPartSelection={handlePartSelection}
-                        disabled={auction?.finished || isAuctionEnded}
-                        onProposeGene={() => setIsProposalModalOpen(true)}
-                        showProposeButton={
-                          !auction?.finished && !isAuctionEnded
-                        }
-                      />
-
-                      {/* Vote Button */}
-                      {!auction?.finished && !isAuctionEnded && (
-                        <div>
-                          <BulkVoteButton
-                            auctionId={auctionId}
-                            backId={
-                              selectedParts.background === -1
-                                ? '0'
-                                : parts.background[selectedParts.background]
-                                    ?.visualId || '0'
-                            }
-                            armId={
-                              selectedParts.arm === -1
-                                ? '0'
-                                : parts.arm[selectedParts.arm]?.visualId || '0'
-                            }
-                            tailId={
-                              selectedParts.tail === -1
-                                ? '0'
-                                : parts.tail[selectedParts.tail]?.visualId ||
-                                  '0'
-                            }
-                            earsId={
-                              selectedParts.ears === -1
-                                ? '0'
-                                : parts.ears[selectedParts.ears]?.visualId ||
-                                  '0'
-                            }
-                            bodyId={
-                              selectedParts.body === -1
-                                ? '0'
-                                : parts.body[selectedParts.body]?.visualId ||
-                                  '0'
-                            }
-                            faceId={
-                              selectedParts.face === -1
-                                ? '0'
-                                : parts.face[selectedParts.face]?.visualId ||
-                                  '0'
-                            }
-                            mouthId={
-                              selectedParts.mouth === -1
-                                ? '0'
-                                : parts.mouth[selectedParts.mouth]?.visualId ||
-                                  '0'
-                            }
-                            miscId={
-                              selectedParts.misc === -1
-                                ? '0'
-                                : parts.misc[selectedParts.misc]?.visualId ||
-                                  '0'
-                            }
-                          />
-                        </div>
-                      )}
-
-                      {auction?.finished && (
-                        <div className="text-center py-4 bg-success/10 rounded-lg border border-success/30">
-                          <div className="text-success font-medium">
-                            Auction Complete - New Aminal Created
+                    {/* Tab Content */}
+                    <div className="p-6">
+                      {activeTab === 'browse' ? (
+                        <DesignGallery
+                          auctionId={auctionId}
+                          designs={designs}
+                          userVotedDesignId={userVotedDesignId}
+                          userVotingPower={userVotingPower}
+                          totalLove={auction?.totalLove || 0n}
+                          winningDesignId={auctionVoting?.winningDesignId}
+                          onVoteSuccess={handleVoteSuccess}
+                          onViewDesign={handleViewDesign}
+                          disabled={isAuctionEnded}
+                          isLoading={isLoadingDesigns}
+                        />
+                      ) : (
+                        <div className="space-y-6">
+                          {/* Quick Start Templates */}
+                          <div className="bg-muted rounded-lg border border-border p-4">
+                            <h3 className="text-sm font-semibold mb-3">
+                              💡 Quick Start Templates
+                            </h3>
+                            <div className="flex gap-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleLoadParent1}
+                                disabled={isAuctionEnded}
+                              >
+                                Start with Parent 1
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={handleLoadParent2}
+                                disabled={isAuctionEnded}
+                              >
+                                Start with Parent 2
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setCurrentGeneIds([]);
+                                  setCurrentPlacements([]);
+                                  setBuilderKey((k) => k + 1); // Force remount
+                                }}
+                                disabled={isAuctionEnded}
+                              >
+                                Start Fresh
+                              </Button>
+                            </div>
                           </div>
+
+                          {/* Design Builder */}
+                          <DesignBuilder
+                            key={builderKey}
+                            initialGeneIds={currentGeneIds}
+                            initialPlacements={currentPlacements}
+                            availableGenes={availableGenes}
+                            onDesignChange={handleDesignChange}
+                            disabled={isAuctionEnded}
+                          />
+
+                          {/* Propose Button */}
+                          {!isAuctionEnded && (
+                            <ProposeDesignButton
+                              auctionId={auctionId}
+                              geneIds={currentGeneIds}
+                              placements={currentPlacements}
+                              onSuccess={handleProposeSuccess}
+                            />
+                          )}
                         </div>
                       )}
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
 
-              {/* Additional breeding information section - only show if auction is finished */}
-              {auction?.finished && auction?.childAminal && (
-                <div className="bg-card rounded-lg border border-border p-6">
-                  <div className="text-center mb-6">
-                    <h3 className="text-lg font-semibold text-foreground mb-2">
-                      Breeding Details
-                    </h3>
-                    <p className="text-muted-foreground">
-                      This Aminal was created through community voting in
-                      auction #{auctionId}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-foreground flex items-center gap-2">
-                        <span>👨‍👩‍👧‍👦</span>
-                        Parent Information
-                      </h4>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm text-muted-foreground">
-                            Parent A
-                          </span>
-                          <Link
-                            href={`/aminals/${auction.aminalOne?.contractAddress}`}
-                            className="text-sm font-medium text-energy hover:text-energy/80"
-                          >
-                            Aminal #{auction.aminalOne?.aminalIndex}
-                          </Link>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm text-muted-foreground">
-                            Parent B
-                          </span>
-                          <Link
-                            href={`/aminals/${auction.aminalTwo?.contractAddress}`}
-                            className="text-sm font-medium text-energy hover:text-energy/80"
-                          >
-                            Aminal #{auction.aminalTwo?.aminalIndex}
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-foreground flex items-center gap-2">
-                        <span>📊</span>
-                        Auction Statistics
-                      </h4>
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm text-muted-foreground">
-                            Total Voting Power
-                          </span>
-                          <span className="text-sm font-medium text-foreground">
-                            {Number(auction.totalLove).toFixed(2)} ❤️
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                          <span className="text-sm text-muted-foreground">
-                            Status
-                          </span>
-                          <span className="text-sm font-medium text-success">
-                            ✅ Completed
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Vote Statistics - Always show, but "Current Winning Combination" section is hidden if auction is finished */}
+              {/* Vote Statistics */}
               <div className="bg-card rounded-lg border border-border p-4">
-                <VoteStats
+                <DesignVoteStats
                   auctionId={auctionId}
-                  forceShowWinningCombination={
-                    isAuctionEnded &&
-                    (!auction?.finished || !auction?.childAminal)
-                  }
+                  totalLove={auction?.totalLove || 0n}
                 />
               </div>
             </>
           )}
         </div>
       </div>
-
-      {/* Propose Gene Modal */}
-      {!auction?.finished && !isAuctionEnded && (
-        <ProposeGeneModal
-          auctionId={auctionId}
-          isOpen={isProposalModalOpen}
-          onClose={() => setIsProposalModalOpen(false)}
-        />
-      )}
     </Layout>
   );
 };
 
 export default AuctionPage;
-
-// Remove static generation - use server-side rendering for dynamic routes

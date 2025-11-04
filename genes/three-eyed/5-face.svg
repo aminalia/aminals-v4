@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .st10 { fill: #265a5d; }
+      .st11 { fill: #271b27; }
+      .st12 { fill: #2b565b; }
+      .st13 { fill: #ffffff; }
+    </style>
+  </defs>
+  <g id="FACE">
+    <path d="M673 351c0 75-26 111-175 115-133 4-171-44-171-119s85-156 174-156 172 85 172 160z" fill="#70968c"/>
+    <path d="M659 345c0 51-24 59-163 62-123 2-159-14-159-66s76-90 159-90 163 42 163 94z" fill="#438786"/>
+    <circle cx="389" cy="343" r="43" class="st10"/>
+    <path d="M389 308a36 36 0 1 0 0 71 36 36 0 0 0 0-71zm-1 39c-15 0-27-8-27-18s12-18 27-18 27 8 27 18-12 18-27 18z" class="st11"/>
+    <ellipse cx="388" cy="329" class="st12" rx="27" ry="18"/>
+    <circle cx="369" cy="324" r="3" class="st13"/>
+    <circle cx="376" cy="319" r="2" class="st13"/>
+    <circle cx="500" cy="300" r="43" class="st10"/>
+    <path d="M500 265a36 36 0 1 0 0 71 36 36 0 0 0 0-71zm-1 39c-15 0-27-8-27-18s12-18 27-18 27 8 27 18-12 18-27 18z" class="st11"/>
+    <ellipse cx="499" cy="286" class="st12" rx="27" ry="18"/>
+    <circle cx="480" cy="281" r="3" class="st13"/>
+    <circle cx="486" cy="276" r="2" class="st13"/>
+    <circle cx="604" cy="343" r="43" class="st10"/>
+    <path d="M604 308a36 36 0 1 0 0 71 36 36 0 0 0 0-71zm0 39c-15 0-27-8-27-18s12-18 27-18 26 8 26 18-12 18-26 18z" class="st11"/>
+    <ellipse cx="604" cy="329" class="st12" rx="27" ry="18"/>
+    <circle cx="584" cy="324" r="3" class="st13"/>
+    <circle cx="591" cy="319" r="2" class="st13"/>
+  </g>
+</svg>
