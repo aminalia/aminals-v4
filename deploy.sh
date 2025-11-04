@@ -16,17 +16,17 @@ if [ -z "$PRIVATE_KEY" ]; then
     exit 1
 fi
 
-# echo "📋 Configuration:"
-# echo "   RPC URL: $RPC_URL"
+echo "📋 Configuration:"
+echo "   RPC URL: $RPC_URL"
 
-# # Step 1: Deploy core contracts
-# echo "Step 1: Deploying core contracts..."
-# forge script script/DeployContracts.s.sol \
-#     --rpc-url $RPC_URL \
-#     --private-key $PRIVATE_KEY \
-#     --broadcast \
-#     --verify \
-#     --etherscan-api-key $ETHERSCAN_API_KEY
+# Step 1: Deploy core contracts
+echo "Step 1: Deploying core contracts..."
+forge script script/DeployContracts.s.sol \
+    --rpc-url $RPC_URL \
+    --private-key $PRIVATE_KEY \
+    --broadcast \
+    --verify \
+    --etherscan-api-key $ETHERSCAN_API_KEY
 
 # if [ $? -ne 0 ]; then
 #     echo "Core contract deployment failed"
@@ -36,42 +36,42 @@ fi
 echo "Core contracts deployed successfully!"
 
 # Step 2: Mint initial genes using mint-all-genes.sh script
-echo "Step 2: Minting initial genes (32 genes)..."
-./script/mint-all-genes.sh
+# echo "Step 2: Minting initial genes (32 genes)..."
+./script/create-all.sh
 
-if [ $? -ne 0 ]; then
-    echo "Initial genes minting failed"
-    echo "   This could be due to:"
-    echo "   - Network congestion (try again later)"
-    echo "   - Insufficient gas price (check network conditions)"
-    echo "   - RPC rate limiting (try different RPC endpoint)"
-    exit 1
-fi
+# if [ $? -ne 0 ]; then
+#     echo "Initial genes minting failed"
+#     echo "   This could be due to:"
+#     echo "   - Network congestion (try again later)"
+#     echo "   - Insufficient gas price (check network conditions)"
+#     echo "   - RPC rate limiting (try different RPC endpoint)"
+#     exit 1
+# fi
 
-echo "Initial genes minted successfully!"
+# echo "Initial genes minted successfully!"
 
-# Step 3: Spawn initial Aminals
-echo "Step 3: Spawning initial Aminals..."
-forge script script/SpawnInitialAminals.s.sol \
-    --rpc-url $RPC_URL \
-    --private-key $PRIVATE_KEY \
-    --broadcast \
-    --verify \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+# # Step 3: Spawn initial Aminals
+# echo "Step 3: Spawning initial Aminals..."
+# forge script script/SpawnInitialAminals.s.sol \
+#     --rpc-url $RPC_URL \
+#     --private-key $PRIVATE_KEY \
+#     --broadcast \
+#     --verify \
+#     --etherscan-api-key $ETHERSCAN_API_KEY
 
-if [ $? -eq 0 ]; then
-    echo "Initial Aminals spawned successfully!"
+# if [ $? -eq 0 ]; then
+#     echo "Initial Aminals spawned successfully!"
 
 
 
-    echo "Full deployment process completed!"
-    echo ""
-    echo "📝 Next steps:"
-    echo "1. Check deployment-summary.json for contract addresses"
-    echo "2. Update contract addresses in graph/subgraph.yaml"
-    echo "3. Update start blocks to deployment blocks"
-    echo "4. Deploy subgraph with: cd graph && npm run deploy:sepolia"
-else
-    echo "Initial Aminals spawning failed"
-    exit 1
-fi
+#     echo "Full deployment process completed!"
+#     echo ""
+#     echo "📝 Next steps:"
+#     echo "1. Check deployment-summary.json for contract addresses"
+#     echo "2. Update contract addresses in graph/subgraph.yaml"
+#     echo "3. Update start blocks to deployment blocks"
+#     echo "4. Deploy subgraph with: cd graph && npm run deploy:sepolia"
+# else
+#     echo "Initial Aminals spawning failed"
+#     exit 1
+# fi
