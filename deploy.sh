@@ -16,17 +16,17 @@ if [ -z "$PRIVATE_KEY" ]; then
     exit 1
 fi
 
-echo "📋 Configuration:"
-echo "   RPC URL: $RPC_URL"
+# echo "📋 Configuration:"
+# echo "   RPC URL: $RPC_URL"
 
-# Step 1: Deploy core contracts
-echo "Step 1: Deploying core contracts..."
-forge script script/DeployContracts.s.sol \
-    --rpc-url $RPC_URL \
-    --private-key $PRIVATE_KEY \
-    --broadcast \
-    --verify \
-    --etherscan-api-key $ETHERSCAN_API_KEY
+# # Step 1: Deploy core contracts
+# echo "Step 1: Deploying core contracts..."
+# forge script script/DeployContracts.s.sol \
+#     --rpc-url $RPC_URL \
+#     --private-key $PRIVATE_KEY \
+#     --broadcast \
+#     --verify \
+#     --etherscan-api-key $ETHERSCAN_API_KEY
 
 # if [ $? -ne 0 ]; then
 #     echo "Core contract deployment failed"

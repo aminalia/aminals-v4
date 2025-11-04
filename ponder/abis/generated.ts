@@ -949,7 +949,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0x8364df6bCDDfc3eE749263f5A6D4C8B937fe0E84' as const
+  '0x06fB0b3feee8cBBaC108c51e8210BEA1Ac71950D' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1678,7 +1678,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0x3329bC1De8612423b571b3353DB318995081125e' as const
+  '0x5ceC16D733789799525111C9f94Bfe45468145fA' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1845,7 +1845,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0x7078E24274d797f641dcBB2b4B5D0BF31B4d0cb2' as const
+  '0xe27E526879fD981ac7A774Bac914b771C5Dd2cFE' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2199,6 +2199,90 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0x14336FD396682Bc93d89Bd5f7c7f0b52ce6c30C3' as const
+  '0x8738774a2feb8a9F917de3fD6D3F1a450bB8D948' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Move2D
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+export const move2DAbi = [
+  {
+    type: 'constructor',
+    inputs: [{ name: '_factory', internalType: 'address', type: 'address' }],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'aminalContract', internalType: 'address', type: 'address' },
+    ],
+    name: 'Coords2D',
+    outputs: [
+      { name: 'x', internalType: 'uint256', type: 'uint256' },
+      { name: 'y', internalType: 'uint256', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'factory',
+    outputs: [
+      { name: '', internalType: 'contract AminalFactory', type: 'address' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'aminalContract', internalType: 'address', type: 'address' },
+    ],
+    name: 'getCoords',
+    outputs: [
+      { name: '', internalType: 'uint256', type: 'uint256' },
+      { name: '', internalType: 'uint256', type: 'uint256' },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'x', internalType: 'uint256', type: 'uint256' },
+      { name: 'y', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'getSkillData',
+    outputs: [{ name: 'data', internalType: 'bytes', type: 'bytes' }],
+    stateMutability: 'pure',
+  },
+  {
+    type: 'function',
+    inputs: [
+      { name: 'x', internalType: 'uint256', type: 'uint256' },
+      { name: 'y', internalType: 'uint256', type: 'uint256' },
+    ],
+    name: 'move',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'data', internalType: 'bytes', type: 'bytes' }],
+    name: 'skillCost',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'interfaceId', internalType: 'bytes4', type: 'bytes4' }],
+    name: 'supportsInterface',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+] as const
+
+export const move2DAddress =
+  '0x10919117d2AbDa21E09534ccB4BC175964D19b6D' as const
+
+export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const
