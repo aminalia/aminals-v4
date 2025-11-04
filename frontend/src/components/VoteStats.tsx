@@ -47,14 +47,17 @@ const VoteStats = ({
       const bulkVoteSize = nonRemoveVotes.length;
 
       txVotes.forEach((vote) => {
-        // Skip votes without proposal data
-        if (!vote.proposal || !vote.proposal.geneNFT) return;
+        // TODO: Refactor for design-based voting
+        // Note: Design votes now vote for complete designs (10 genes + placements), not individual genes
+        // This needs to be redesigned to show voting stats for designs, not per-trait
+        if (!vote.proposal) return;
 
-        const traitType = vote.proposal.traitType;
-        const geneId = String(vote.proposal.geneNFT.tokenId);
-        const geneName = vote.proposal.geneNFT.name || `Gene #${geneId}`;
-        const svg = vote.proposal.geneNFT.svg || '';
-        const loveAmount = Number(vote.loveAmount);
+        // Temporary placeholder - needs redesign for multi-gene designs
+        const designId = vote.proposal.id;
+        const votingPower = Number(vote.votingPower || 0n);
+
+        // Skip for now - this component needs complete refactoring
+        return;
 
         if (!stats[traitType]) {
           stats[traitType] = {};
@@ -139,14 +142,14 @@ const VoteStats = ({
       if (!acc[key]) {
         acc[key] = {
           voter: vote.voter.address,
-          loveAmount: Number(vote.loveAmount),
-          traitTypes: new Set([vote.proposal.traitType]),
+          votingPower: Number(vote.votingPower || 0n),
+          designs: new Set([vote.proposal.id]),
         };
       } else {
-        acc[key].traitTypes.add(vote.proposal.traitType);
+        acc[key].designs.add(vote.proposal.id);
       }
       return acc;
-    }, {} as Record<string, { voter: string; loveAmount: number; traitTypes: Set<number> }>);
+    }, {} as Record<string, { voter: string; votingPower: number; designs: Set<string> }>);
 
     // Calculate correct totals accounting for bulk vote distribution
     const uniqueTransactions = Object.values(votesByVoterAndTx);

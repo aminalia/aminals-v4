@@ -2,6 +2,7 @@ import { desc, eq, inArray } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import * as schema from '../../ponder.schema';
+import { makeGeneNFTId } from '../lib/geneTransformers';
 import type {
   Aminal,
   AminalWithRelations,
@@ -244,8 +245,12 @@ export const useAuctionVotes = (auctionId: string) => {
   const proposals = proposalsResult.data || [];
 
   // Get unique gene IDs from proposals
+  // Note: Design proposals now have geneIds array (1-10 genes), not a single geneNFTId
+  // Convert bigint token IDs to hex format for querying
   const geneIds = proposals.length
-    ? Array.from(new Set(proposals.map((p) => p.geneNFTId)))
+    ? Array.from(
+        new Set(proposals.flatMap((p) => (p.geneIds || []).map(makeGeneNFTId)))
+      )
     : [];
 
   // Fetch genes
@@ -295,9 +300,8 @@ export const useAuctionVotes = (auctionId: string) => {
 
   // Create lookup maps
   const geneMap = new Map(genes.map((g) => [g.id, g]));
-  const proposalMap = new Map(
-    proposals.map((p) => [p.id, { ...p, geneNFT: geneMap.get(p.geneNFTId) }])
-  );
+  // Note: Design proposals now have multiple genes, not a single geneNFT
+  const proposalMap = new Map(proposals.map((p) => [p.id, p]));
   const voterMap = new Map(voters.map((v) => [v.id, v]));
 
   // Combine votes with proposals, genes, and voters

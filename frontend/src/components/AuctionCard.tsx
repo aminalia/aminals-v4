@@ -21,11 +21,13 @@ import '../../styles/index.module.css';
 // VOTING_DURATION from the contract (1 hour = 3600 seconds)
 const VOTING_DURATION = 3600;
 
-export default function AuctionCard({ auction }: { auction: GeneAuction }) {
-  // TODO: Fetch aminals via separate queries using aminalOneId and aminalTwoId
-  // For now, we'll need to pass the full auction with relations from parent
-  const aminalOne = (auction).aminalOne;
-  const aminalTwo = (auction).aminalTwo;
+export default function AuctionCard({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   // Calculate auction end time
@@ -74,7 +76,7 @@ export default function AuctionCard({ auction }: { auction: GeneAuction }) {
     }
   };
 
-  const childAminal = (auction).childAminal;
+  const childAminal = auction.childAminal;
   console.log(childAminal);
 
   return (

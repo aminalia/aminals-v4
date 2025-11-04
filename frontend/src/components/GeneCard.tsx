@@ -6,12 +6,12 @@ import {
   CardMedia,
   CardSection,
 } from '@components/ui/Card';
-import type { GeneProposalWithRelations } from '@hooks/useGeneProposals';
+import type { DesignProposalWithRelations } from '@hooks/useGeneProposals';
 import Link from 'next/link';
 import VoteButton from './actions/VoteButton';
 
 interface GeneCardProps {
-  gene: GeneProposalWithRelations;
+  gene: DesignProposalWithRelations;
   userLove?: bigint;
 }
 
