@@ -19,6 +19,7 @@ import {
   DEFAULT_PLACEMENT,
   countGenes,
 } from '@hooks';
+import GenePickerModal from './GenePickerModal';
 
 export interface DesignBuilderProps {
   initialGeneIds?: bigint[];
@@ -63,6 +64,22 @@ export default function DesignBuilder({
 
   const [showGenePickerIndex, setShowGenePickerIndex] = useState<number | null>(null);
 
+  // Cache for genes that have been added to the design (including custom genes)
+  const [geneCache, setGeneCache] = useState<Map<string, Gene>>(new Map());
+
+  // Initialize cache with availableGenes (parent genes)
+  useEffect(() => {
+    if (availableGenes && availableGenes.length > 0) {
+      setGeneCache((prev) => {
+        const newCache = new Map(prev);
+        availableGenes.forEach((gene) => {
+          newCache.set(gene.tokenId.toString(), gene);
+        });
+        return newCache;
+      });
+    }
+  }, [availableGenes]);
+
   // Notify parent of changes
   useEffect(() => {
     if (design.isDirty && onDesignChange) {
@@ -72,6 +89,13 @@ export default function DesignBuilder({
 
   // Add gene to first empty slot
   const handleAddGene = useCallback((gene: Gene) => {
+    // Add gene to cache
+    setGeneCache((prev) => {
+      const newCache = new Map(prev);
+      newCache.set(gene.tokenId.toString(), gene);
+      return newCache;
+    });
+
     setDesign((prev) => {
       const firstEmptyIndex = prev.geneIds.findIndex((id) => id === 0n);
       if (firstEmptyIndex === -1) return prev; // No empty slots
@@ -177,9 +201,14 @@ export default function DesignBuilder({
   // Helper to get gene data by ID
   const getGeneById = useCallback(
     (geneId: bigint): Gene | undefined => {
+      // First check the cache (for custom genes added from "All Genes")
+      const cached = geneCache.get(geneId.toString());
+      if (cached) return cached;
+
+      // Fall back to availableGenes (parent genes)
       return availableGenes.find((g) => BigInt(g.tokenId) === geneId);
     },
-    [availableGenes]
+    [availableGenes, geneCache]
   );
 
   // Render gene SVG with placement transforms
@@ -329,46 +358,13 @@ export default function DesignBuilder({
           </button>
         )}
 
-        {/* Gene Picker Modal (TODO: Extract to separate component) */}
+        {/* Gene Picker Modal */}
         {showGenePickerIndex !== null && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-            <div className="bg-card rounded-lg border border-border p-6 max-w-2xl w-full max-h-[80vh] overflow-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Select Gene</h3>
-                <button
-                  onClick={() => setShowGenePickerIndex(null)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  ×
-                </button>
-              </div>
-
-              {availableGenes.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No genes available
-                </div>
-              ) : (
-                <div className="grid grid-cols-3 gap-3">
-                  {availableGenes.map((gene) => (
-                    <button
-                      key={gene.id}
-                      className="aspect-square bg-muted rounded-lg border-2 border-border hover:border-energy transition-colors overflow-hidden"
-                      onClick={() => handleAddGene(gene)}
-                    >
-                      <svg
-                        viewBox="0 0 1000 1000"
-                        className="w-full h-full"
-                        dangerouslySetInnerHTML={{ __html: gene.svg }}
-                      />
-                      <div className="text-xs text-center py-1 bg-card/80">
-                        Gene #{gene.tokenId}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          <GenePickerModal
+            availableGenes={availableGenes}
+            onSelectGene={handleAddGene}
+            onClose={() => setShowGenePickerIndex(null)}
+          />
         )}
       </div>
 
@@ -463,7 +459,7 @@ export default function DesignBuilder({
               <input
                 type="range"
                 min="10"
-                max="200"
+                max="400"
                 value={selectedPlacement?.scale || 100}
                 onChange={(e) =>
                   handleUpdatePlacement(design.selectedGeneIndex!, {

@@ -24,7 +24,7 @@ import DesignBuilder from '@components/breeding/DesignBuilder';
 import DesignGallery from '@components/breeding/DesignGallery';
 import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
 import VoteOnDesignButton from '@components/breeding/VoteOnDesignButton';
-import VoteStats from '@components/VoteStats';
+import DesignVoteStats from '@components/breeding/DesignVoteStats';
 import { Button } from '@components/ui/Button';
 
 // Hooks & Types
@@ -67,6 +67,7 @@ const AuctionPage: NextPage = () => {
   // Design builder state
   const [currentGeneIds, setCurrentGeneIds] = useState<bigint[]>([]);
   const [currentPlacements, setCurrentPlacements] = useState<GeneMetadata[]>([]);
+  const [builderKey, setBuilderKey] = useState(0); // Force remount when loading templates
 
   // Fetch auction data
   const {
@@ -183,6 +184,7 @@ const AuctionPage: NextPage = () => {
 
     setCurrentGeneIds(genes);
     setCurrentPlacements(placements);
+    setBuilderKey((k) => k + 1); // Force remount
   }, [auction]);
 
   // Load parent 2 template
@@ -199,6 +201,7 @@ const AuctionPage: NextPage = () => {
 
     setCurrentGeneIds(genes);
     setCurrentPlacements(placements);
+    setBuilderKey((k) => k + 1); // Force remount
   }, [auction]);
 
   // Handle design change from DesignBuilder
@@ -486,6 +489,7 @@ const AuctionPage: NextPage = () => {
                                 onClick={() => {
                                   setCurrentGeneIds([]);
                                   setCurrentPlacements([]);
+                                  setBuilderKey((k) => k + 1); // Force remount
                                 }}
                                 disabled={isAuctionEnded}
                               >
@@ -496,6 +500,7 @@ const AuctionPage: NextPage = () => {
 
                           {/* Design Builder */}
                           <DesignBuilder
+                            key={builderKey}
                             initialGeneIds={currentGeneIds}
                             initialPlacements={currentPlacements}
                             availableGenes={availableGenes}
@@ -521,12 +526,9 @@ const AuctionPage: NextPage = () => {
 
               {/* Vote Statistics */}
               <div className="bg-card rounded-lg border border-border p-4">
-                <VoteStats
+                <DesignVoteStats
                   auctionId={auctionId}
-                  forceShowWinningCombination={
-                    isAuctionEnded &&
-                    (!auction?.finished || !auction?.childAminal)
-                  }
+                  totalLove={auction?.totalLove || 0n}
                 />
               </div>
             </>
