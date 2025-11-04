@@ -1,7 +1,6 @@
 {
-  "name": "ponder-aminals",
-  "version": "0.0.1",
-  "private": true,
+  "name": "@aminalia/aminals-indexer",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "ponder dev",

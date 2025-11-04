@@ -1,7 +1,7 @@
 {
-  "name": "aminals-v2",
+  "name": "@aminalia/aminals",
   "version": "0.0.1",
-  "description": "V2 iteraction of Aminals",
+  "description": "V4 iteration of Aminals",
   "main": "index.js",
   "private": true,
   "directories": {
