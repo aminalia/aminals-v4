@@ -1,4 +1,5 @@
 import { Button } from '@components/ui/Button';
+import { Tooltip } from '@components/ui/Tooltip';
 import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import { useState } from 'react';
 
@@ -83,8 +84,9 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
     >
       {/* Header with Propose Gene Button */}
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-foreground">
+        <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
           Gene Selection
+          <Tooltip content="Vote on which genes the offspring will inherit. Voting power is weighted by your love relationship with both parents." />
         </h3>
         {showProposeButton && onProposeGene && (
           <Button

@@ -13,19 +13,22 @@ Ponder provides a modern approach to querying indexed blockchain data using SQL 
 Creates a typed SQL client for querying Ponder databases over HTTP.
 
 **Installation:**
+
 ```bash
 npm add @ponder/client
 ```
 
 **Setup:**
-```typescript
-import { createClient } from "@ponder/client";
-import * as schema from "../../ponder/ponder.schema";
 
-const client = createClient("https://your-ponder-server.com/sql", { schema });
+```typescript
+import { createClient } from '@ponder/client';
+import * as schema from '../../ponder/ponder.schema';
+
+const client = createClient('https://your-ponder-server.com/sql', { schema });
 ```
 
 **Basic Usage:**
+
 ```typescript
 // Simple query
 const accounts = await client.db
@@ -45,12 +48,13 @@ const status = await client.getStatus();
 ```
 
 **Live Queries:**
+
 ```typescript
 // Subscribe to live updates via server-sent events
 const unsubscribe = client.live(
   (db) => db.select().from(schema.account),
   (data) => {
-    console.log("Updated data:", data);
+    console.log('Updated data:', data);
   }
 );
 
@@ -63,17 +67,19 @@ unsubscribe();
 React hooks for querying Ponder databases with automatic reactivity.
 
 **Installation:**
+
 ```bash
 npm add @ponder/react @ponder/client @tanstack/react-query
 ```
 
 **Setup Provider:**
-```typescript
-import { PonderProvider } from "@ponder/react";
-import { createClient } from "@ponder/client";
-import * as schema from "../../ponder/ponder.schema";
 
-const client = createClient("https://your-ponder-server.com/sql", { schema });
+```typescript
+import { PonderProvider } from '@ponder/react';
+import { createClient } from '@ponder/client';
+import * as schema from '../../ponder/ponder.schema';
+
+const client = createClient('https://your-ponder-server.com/sql', { schema });
 
 function App() {
   return (
@@ -87,6 +93,7 @@ function App() {
 **Hooks:**
 
 1. **usePonderQuery** - Main hook for querying data with live updates
+
 ```typescript
 function AccountList() {
   const { data, isLoading, error, refetch } = usePonderQuery({
@@ -102,7 +109,7 @@ function AccountList() {
 
   return (
     <div>
-      {data.map(account => (
+      {data.map((account) => (
         <div key={account.id}>{account.balance}</div>
       ))}
     </div>
@@ -111,13 +118,14 @@ function AccountList() {
 ```
 
 2. **usePonderStatus** - Query indexing status
+
 ```typescript
 function IndexingStatus() {
   const { data: status } = usePonderStatus();
 
   return (
     <div>
-      {status?.chains.map(chain => (
+      {status?.chains.map((chain) => (
         <div key={chain.name}>
           {chain.name}: {chain.blockNumber} / {chain.targetBlockNumber}
         </div>
@@ -128,6 +136,7 @@ function IndexingStatus() {
 ```
 
 3. **usePonderClient** - Access client instance
+
 ```typescript
 function CustomQuery() {
   const client = usePonderClient();
@@ -147,6 +156,7 @@ function CustomQuery() {
 Utility functions for common Ponder operations.
 
 **Installation:**
+
 ```bash
 npm add @ponder/utils
 ```
@@ -154,15 +164,17 @@ npm add @ponder/utils
 **Key Functions:**
 
 1. **mergeAbis** - Combine multiple ABIs
+
 ```typescript
-import { mergeAbis } from "@ponder/utils";
+import { mergeAbis } from '@ponder/utils';
 
 const tokenAbi = mergeAbis([erc20Abi, erc4626Abi]);
 ```
 
 2. **replaceBigInts** - Handle BigInt serialization
+
 ```typescript
-import { replaceBigInts } from "@ponder/utils";
+import { replaceBigInts } from '@ponder/utils';
 
 // Convert to strings
 const jsonData = replaceBigInts(obj, (v) => String(v));
@@ -172,20 +184,22 @@ const hexData = replaceBigInts(obj, (v) => `0x${v.toString(16)}`);
 ```
 
 3. **loadBalance** - Distribute RPC requests
+
 ```typescript
-import { loadBalance } from "@ponder/utils";
+import { loadBalance } from '@ponder/utils';
 
 const transport = loadBalance([
-  http("https://rpc1.example.com"),
-  http("https://rpc2.example.com"),
+  http('https://rpc1.example.com'),
+  http('https://rpc2.example.com'),
 ]);
 ```
 
 4. **rateLimit** - Limit requests per second
-```typescript
-import { rateLimit } from "@ponder/utils";
 
-const transport = rateLimit(http("https://rpc.example.com"), {
+```typescript
+import { rateLimit } from '@ponder/utils';
+
+const transport = rateLimit(http('https://rpc.example.com'), {
   requestsPerSecond: 50,
 });
 ```
@@ -203,11 +217,7 @@ const transport = rateLimit(http("https://rpc.example.com"), {
 
 ```typescript
 // Pagination
-const page1 = await client.db
-  .select()
-  .from(schema.account)
-  .limit(10)
-  .offset(0);
+const page1 = await client.db.select().from(schema.account).limit(10).offset(0);
 
 // Joins and relations
 const aminalsWithStats = await client.db
@@ -227,12 +237,7 @@ const stats = await client.db
 const results = await client.db
   .select()
   .from(schema.aminal)
-  .where(
-    and(
-      gt(schema.aminal.energy, 0),
-      like(schema.aminal.name, "%cat%")
-    )
-  )
+  .where(and(gt(schema.aminal.energy, 0), like(schema.aminal.name, '%cat%')))
   .orderBy(desc(schema.aminal.createdAt));
 ```
 
@@ -241,21 +246,25 @@ const results = await client.db
 ### From GraphQL to Ponder
 
 1. **Remove GraphQL dependencies**
+
    - `graphql`
    - `.graphclient/`
    - GraphQL queries and hooks in `src/resources/`
 
 2. **Install Ponder packages**
+
    ```bash
    npm add @ponder/react @ponder/client @tanstack/react-query
    ```
 
 3. **Setup client and provider**
+
    - Create client configuration
    - Wrap app with PonderProvider
    - Import schema from `ponder.schema.ts`
 
 4. **Convert queries**
+
    - Replace GraphQL queries with Drizzle SQL queries
    - Move hooks from `src/resources/` to `src/hooks/`
    - Use `usePonderQuery` instead of GraphQL hooks

@@ -4,6 +4,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import * as schema from '../../ponder.schema';
 import type {
   Aminal,
+  FeedEvent,
   GeneAuction,
   GeneCreatorPayout,
   GeneNFT,
@@ -121,6 +122,17 @@ export const useUserProfile = (
     enabled: !!address,
   }) as UseQueryResult<GeneCreatorPayout[], Error>;
 
+  // Fetch feed events
+  const feedEventsResult = usePonderQuery({
+    queryFn: (db) => {
+      return db
+        .select()
+        .from(schema.feedEvent)
+        .where(eq(schema.feedEvent.senderId, address as `0x${string}`));
+    },
+    enabled: !!address,
+  }) as UseQueryResult<FeedEvent[], Error>;
+
   // Combine data client-side
   const processedData =
     userResult.data?.[0] &&
@@ -128,7 +140,8 @@ export const useUserProfile = (
     genesCreatedResult.data &&
     genesOwnedResult.data &&
     geneVotesResult.data &&
-    receivedPayoutsResult.data
+    receivedPayoutsResult.data &&
+    feedEventsResult.data
       ? processUserProfile(
           userResult.data[0],
           relationshipsResult.data,
@@ -138,7 +151,8 @@ export const useUserProfile = (
           geneVotesResult.data,
           geneProposalsResult.data || [],
           geneAuctionsResult.data || [],
-          receivedPayoutsResult.data
+          receivedPayoutsResult.data,
+          feedEventsResult.data
         )
       : undefined;
 
@@ -160,7 +174,8 @@ function processUserProfile(
   geneVotes: GeneVote[],
   geneProposals: GeneProposal[],
   geneAuctions: GeneAuction[],
-  receivedPayouts: GeneCreatorPayout[]
+  receivedPayouts: GeneCreatorPayout[],
+  feedEvents: FeedEvent[]
 ): UserWithRelations {
   // Create maps for efficient lookups
   const aminalsMap = new Map(aminals.map((a) => [a.id.toLowerCase(), a]));
@@ -202,6 +217,7 @@ function processUserProfile(
     genesOwned,
     geneVotes: geneVotesWithRelations,
     receivedPayouts,
+    feedEvents,
   } as UserWithRelations;
 }
 

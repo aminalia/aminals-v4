@@ -11,7 +11,7 @@
  * 5. Explicit relationships using references and relations
  */
 
-import { onchainTable, relations } from "ponder";
+import { onchainTable, relations } from 'ponder';
 
 // ============================================================================
 // CORE ENTITIES
@@ -20,7 +20,7 @@ import { onchainTable, relations } from "ponder";
 /**
  * AminalFactory - The factory contract that spawns individual Aminals
  */
-export const factory = onchainTable("factory", (t) => ({
+export const factory = onchainTable('factory', (t) => ({
   id: t.hex().primaryKey(), // Factory contract address
   totalAminals: t.bigint().notNull(),
   blockNumber: t.bigint().notNull(),
@@ -34,7 +34,7 @@ export const factory = onchainTable("factory", (t) => ({
  * Breaking change from Graph: traits stored as array instead of 8 separate fields
  * traits array order: [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
  */
-export const aminal = onchainTable("aminal", (t) => ({
+export const aminal = onchainTable('aminal', (t) => ({
   id: t.hex().primaryKey(), // Aminal contract address
   contractAddress: t.hex().notNull(), // Same as id, kept for compatibility
   aminalIndex: t.bigint().notNull(), // Index in factory (for sorting)
@@ -73,7 +73,7 @@ export const aminal = onchainTable("aminal", (t) => ({
 /**
  * User - Ethereum addresses that interact with the system
  */
-export const user = onchainTable("user", (t) => ({
+export const user = onchainTable('user', (t) => ({
   id: t.hex().primaryKey(), // User address
   address: t.hex().notNull(), // Same as id, kept for compatibility
 
@@ -85,7 +85,7 @@ export const user = onchainTable("user", (t) => ({
  * Relationship - Love relationship between a User and an Aminal
  * This is a many-to-many join table
  */
-export const relationship = onchainTable("relationship", (t) => ({
+export const relationship = onchainTable('relationship', (t) => ({
   id: t.hex().primaryKey(), // user address + aminal address concatenated
   userId: t.hex().notNull(),
   aminalId: t.hex().notNull(),
@@ -103,7 +103,7 @@ export const relationship = onchainTable("relationship", (t) => ({
 /**
  * GeneNFT - Gene trait NFTs that can be used in breeding
  */
-export const geneNFT = onchainTable("geneNFT", (t) => ({
+export const geneNFT = onchainTable('geneNFT', (t) => ({
   id: t.hex().primaryKey(), // Genes contract address + token ID
   tokenId: t.bigint().notNull(),
   traitType: t.integer().notNull(), // 0-7 for trait categories
@@ -135,7 +135,7 @@ export const geneNFT = onchainTable("geneNFT", (t) => ({
  * AminalGene - Join table tracking which Aminals have which genes
  * This is a many-to-many relationship for efficient querying
  */
-export const aminalGene = onchainTable("aminalGene", (t) => ({
+export const aminalGene = onchainTable('aminalGene', (t) => ({
   id: t.hex().primaryKey(), // aminal address + gene token ID + trait type
   aminalId: t.hex().notNull(),
   geneNFTId: t.hex().notNull(),
@@ -154,7 +154,7 @@ export const aminalGene = onchainTable("aminalGene", (t) => ({
 /**
  * GeneAuction - Breeding auctions where users vote on genes
  */
-export const geneAuction = onchainTable("geneAuction", (t) => ({
+export const geneAuction = onchainTable('geneAuction', (t) => ({
   id: t.hex().primaryKey(), // Composite: "auction" + auction ID
   auctionId: t.bigint().notNull(),
 
@@ -187,7 +187,7 @@ export const geneAuction = onchainTable("geneAuction", (t) => ({
 /**
  * GeneProposal - Proposed genes for a specific trait slot in an auction
  */
-export const geneProposal = onchainTable("geneProposal", (t) => ({
+export const geneProposal = onchainTable('geneProposal', (t) => ({
   id: t.hex().primaryKey(), // auction ID + trait type + gene ID
   auctionId: t.hex().notNull(),
   geneNFTId: t.hex().notNull(),
@@ -212,7 +212,7 @@ export const geneProposal = onchainTable("geneProposal", (t) => ({
 /**
  * GeneVote - Individual vote on a gene proposal
  */
-export const geneVote = onchainTable("geneVote", (t) => ({
+export const geneVote = onchainTable('geneVote', (t) => ({
   id: t.hex().primaryKey(), // transaction hash + log index
   auctionId: t.hex().notNull(),
   proposalId: t.hex().notNull(),
@@ -235,7 +235,7 @@ export const geneVote = onchainTable("geneVote", (t) => ({
 /**
  * GeneCreatorPayout - Payments to gene creators from auction settlements
  */
-export const geneCreatorPayout = onchainTable("geneCreatorPayout", (t) => ({
+export const geneCreatorPayout = onchainTable('geneCreatorPayout', (t) => ({
   id: t.hex().primaryKey(), // transaction hash + log index
   auctionId: t.hex().notNull(),
   geneNFTId: t.hex().notNull(),
@@ -265,7 +265,7 @@ export const geneCreatorPayout = onchainTable("geneCreatorPayout", (t) => ({
 /**
  * FeedAminalEvent - Record of feeding events
  */
-export const feedEvent = onchainTable("feedEvent", (t) => ({
+export const feedEvent = onchainTable('feedEvent', (t) => ({
   id: t.hex().primaryKey(), // transaction hash + log index
   aminalId: t.hex().notNull(),
   senderId: t.hex().notNull(),
@@ -288,7 +288,7 @@ export const feedEvent = onchainTable("feedEvent", (t) => ({
 /**
  * SkillUsed - Record of skill usage events
  */
-export const skillUsedEvent = onchainTable("skillUsedEvent", (t) => ({
+export const skillUsedEvent = onchainTable('skillUsedEvent', (t) => ({
   id: t.hex().primaryKey(), // transaction hash + log index
   aminalId: t.hex().notNull(),
   callerId: t.hex().notNull(),
@@ -334,10 +334,10 @@ export const aminalRelations = relations(aminal, ({ one, many }) => ({
     references: [aminal.id],
   }),
   childrenAsParentOne: many(aminal, {
-    relationName: "parentOneChildren",
+    relationName: 'parentOneChildren',
   }),
   childrenAsParentTwo: many(aminal, {
-    relationName: "parentTwoChildren",
+    relationName: 'parentTwoChildren',
   }),
   lovers: many(relationship),
   feeds: many(feedEvent),
@@ -348,10 +348,10 @@ export const aminalRelations = relations(aminal, ({ one, many }) => ({
 export const userRelations = relations(user, ({ many }) => ({
   lovers: many(relationship),
   genesCreated: many(geneNFT, {
-    relationName: "createdGenes",
+    relationName: 'createdGenes',
   }),
   genesOwned: many(geneNFT, {
-    relationName: "ownedGenes",
+    relationName: 'ownedGenes',
   }),
   geneVotes: many(geneVote),
   proposedGenes: many(geneProposal),
@@ -375,12 +375,12 @@ export const geneNFTRelations = relations(geneNFT, ({ one, many }) => ({
   owner: one(user, {
     fields: [geneNFT.ownerId],
     references: [user.id],
-    relationName: "ownedGenes",
+    relationName: 'ownedGenes',
   }),
   creator: one(user, {
     fields: [geneNFT.creatorId],
     references: [user.id],
-    relationName: "createdGenes",
+    relationName: 'createdGenes',
   }),
   proposals: many(geneProposal),
   payouts: many(geneCreatorPayout),
@@ -402,12 +402,12 @@ export const geneAuctionRelations = relations(geneAuction, ({ one, many }) => ({
   aminalOne: one(aminal, {
     fields: [geneAuction.aminalOneId],
     references: [aminal.id],
-    relationName: "auctionAsParentOne",
+    relationName: 'auctionAsParentOne',
   }),
   aminalTwo: one(aminal, {
     fields: [geneAuction.aminalTwoId],
     references: [aminal.id],
-    relationName: "auctionAsParentTwo",
+    relationName: 'auctionAsParentTwo',
   }),
   childAminal: one(aminal, {
     fields: [geneAuction.childAminalId],

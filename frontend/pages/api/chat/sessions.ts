@@ -172,12 +172,9 @@ export default async function handler(
           typeof aminalAddress !== 'string' ||
           typeof userAddress !== 'string'
         ) {
-          return res
-            .status(400)
-            .json({
-              error:
-                'aminalAddress and userAddress are required for bulk delete',
-            });
+          return res.status(400).json({
+            error: 'aminalAddress and userAddress are required for bulk delete',
+          });
         }
 
         await deleteAllUserSessions(userAddress, aminalAddress);

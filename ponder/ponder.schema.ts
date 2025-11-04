@@ -78,6 +78,9 @@ export const user = onchainTable("user", (t) => ({
   id: t.hex().primaryKey(), // User address
   address: t.hex().notNull(), // Same as id, kept for compatibility
 
+  // Feeding statistics
+  totalSpentFeeding: t.bigint().notNull(),
+
   // Computed fields (derived from relationships)
   // Note: These will be available via GraphQL relations, no need to store
 }));

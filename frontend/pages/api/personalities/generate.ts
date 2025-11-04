@@ -38,11 +38,9 @@ export default async function handler(
     const { aminalAddress, geneIds }: GeneratePersonalityRequest = req.body;
 
     if (!aminalAddress || !geneIds) {
-      return res
-        .status(400)
-        .json({
-          error: 'aminalAddress and geneIds are required',
-        } as GeneratePersonalityResponse);
+      return res.status(400).json({
+        error: 'aminalAddress and geneIds are required',
+      } as GeneratePersonalityResponse);
     }
 
     // Collect all valid gene IDs and map them to trait types
@@ -58,11 +56,9 @@ export default async function handler(
       .map(([_, id]) => id as string);
 
     if (geneIdArray.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: 'No valid gene IDs provided',
-        } as GeneratePersonalityResponse);
+      return res.status(400).json({
+        error: 'No valid gene IDs provided',
+      } as GeneratePersonalityResponse);
     }
 
     // Fetch gene data from Ponder
@@ -103,11 +99,9 @@ export default async function handler(
     }
 
     if (geneData.length === 0) {
-      return res
-        .status(400)
-        .json({
-          error: 'No valid genes found with SVG data',
-        } as GeneratePersonalityResponse);
+      return res.status(400).json({
+        error: 'No valid genes found with SVG data',
+      } as GeneratePersonalityResponse);
     }
 
     // Generate personality from genes
@@ -126,10 +120,8 @@ export default async function handler(
     });
   } catch (error) {
     console.error('Error generating personality:', error);
-    res
-      .status(500)
-      .json({
-        error: 'Failed to generate personality',
-      } as GeneratePersonalityResponse);
+    res.status(500).json({
+      error: 'Failed to generate personality',
+    } as GeneratePersonalityResponse);
   }
 }

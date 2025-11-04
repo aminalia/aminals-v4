@@ -17,9 +17,18 @@ export const TRAIT_INDICES = {
   MISC: 7,
 } as const;
 
-export const TRAIT_NAMES = ['BACK', 'ARM', 'TAIL', 'EARS', 'BODY', 'FACE', 'MOUTH', 'MISC'] as const;
+export const TRAIT_NAMES = [
+  'BACK',
+  'ARM',
+  'TAIL',
+  'EARS',
+  'BODY',
+  'FACE',
+  'MOUTH',
+  'MISC',
+] as const;
 
-export type TraitName = typeof TRAIT_NAMES[number];
+export type TraitName = (typeof TRAIT_NAMES)[number];
 
 /**
  * Interface for Aminal with traits array (from Ponder)
@@ -47,7 +56,9 @@ export interface AminalWithTraitFields {
 /**
  * Convert traits array to individual trait fields for backward compatibility
  */
-export function traitsArrayToFields(aminal: AminalWithTraitsArray): AminalWithTraitFields {
+export function traitsArrayToFields(
+  aminal: AminalWithTraitsArray
+): AminalWithTraitFields {
   const traits = aminal.traits || [];
 
   return {
@@ -75,7 +86,10 @@ export function convertAminalsTraits<T extends AminalWithTraitsArray>(
 /**
  * Get a specific trait from an Aminal by name
  */
-export function getTrait(aminal: AminalWithTraitsArray, traitName: TraitName): string {
+export function getTrait(
+  aminal: AminalWithTraitsArray,
+  traitName: TraitName
+): string {
   const index = TRAIT_INDICES[traitName];
   return aminal.traits[index]?.toString() || '0';
 }
@@ -83,7 +97,9 @@ export function getTrait(aminal: AminalWithTraitsArray, traitName: TraitName): s
 /**
  * Get all traits as an object with named properties
  */
-export function getTraitsObject(aminal: AminalWithTraitsArray): Record<TraitName, string> {
+export function getTraitsObject(
+  aminal: AminalWithTraitsArray
+): Record<TraitName, string> {
   return {
     BACK: getTrait(aminal, 'BACK'),
     ARM: getTrait(aminal, 'ARM'),

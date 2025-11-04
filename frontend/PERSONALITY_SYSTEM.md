@@ -7,7 +7,7 @@
 ## Key Features
 
 - **Gene-specific traits**: Each gene NFT contributes one personality trait
-- **Trait consistency**: Aminals with the same gene always share that trait  
+- **Trait consistency**: Aminals with the same gene always share that trait
 - **Compositional**: Full Aminal personality combines all gene traits
 - **Two-level caching**: Traits cached per gene, personalities cached per Aminal
 - **Auto-updates**: Personalities regenerate when gene composition changes
@@ -38,6 +38,7 @@
 ## API Changes
 
 ### Chat API Request
+
 ```typescript
 interface ChatRequest {
   message: string;
@@ -50,6 +51,7 @@ interface ChatRequest {
 ```
 
 ### Session Creation
+
 ```typescript
 interface CreateSessionRequest {
   aminalAddress: string;
@@ -83,6 +85,7 @@ Each Aminal's personality is stored as:
 ## Data Storage
 
 All personality-related data is stored in the `data/` directory:
+
 - Gene traits: `data/gene-traits/{geneId}.json`
 - Aminal personalities: `data/personalities/{aminalAddress}.json`
 - Chat sessions: `data/chat-sessions/`

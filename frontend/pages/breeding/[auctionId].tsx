@@ -402,7 +402,7 @@ const AuctionPage: NextPage = () => {
           {/* Header Section */}
           <div className="flex items-center justify-between">
             <div>
-              <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center gap-3">
                 <Link
                   href="/breeding"
                   className="text-energy hover:text-energy/80 text-sm font-medium"
@@ -413,16 +413,6 @@ const AuctionPage: NextPage = () => {
                   #{auctionId}
                 </span>
               </div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-                {auction?.finished && auction?.childAminal
-                  ? `Aminal #${auction.childAminal.aminalIndex}`
-                  : 'Gene Selection'}
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                {auction?.finished && auction?.childAminal
-                  ? 'Has been born!'
-                  : 'Select genes for each trait category'}
-              </p>
             </div>
           </div>
 

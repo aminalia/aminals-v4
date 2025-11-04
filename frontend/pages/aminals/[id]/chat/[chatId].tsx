@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useAccount } from 'wagmi';
 import { Message } from '../../../../lib/chat-storage';
 import { useAminalByContractAddress } from '../../../../src/hooks/useAminals';
@@ -122,6 +124,8 @@ const ChatSessionPage: NextPage = () => {
         mouthId: aminal?.mouthId?.toString(),
         miscId: aminal?.miscId?.toString(),
       };
+
+      console.log('aminal: ', aminal);
 
       // Send the initial message automatically
       setIsLoading(true);
@@ -401,9 +405,15 @@ const ChatSessionPage: NextPage = () => {
                     : 'bg-card text-foreground rounded-bl-sm border border-border'
                 }`}
               >
-                <p className="text-sm leading-relaxed break-words whitespace-pre-wrap font-mono">
-                  {message.text}
-                </p>
+                <div className="text-sm leading-relaxed break-words font-mono prose prose-sm max-w-none dark:prose-invert prose-p:my-2 prose-pre:bg-muted prose-pre:text-foreground prose-code:text-foreground prose-blockquote:border-l-energy prose-blockquote:text-foreground/80 prose-strong:text-foreground prose-em:text-foreground">
+                  {message.sender === 'user' ? (
+                    <p className="whitespace-pre-wrap my-0">{message.text}</p>
+                  ) : (
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {message.text}
+                    </ReactMarkdown>
+                  )}
+                </div>
                 <p
                   className={`text-xs mt-1 ${
                     message.sender === 'user'

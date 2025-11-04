@@ -1,6 +1,6 @@
+import { cn } from '@lib/utils';
 import * as React from 'react';
 import { createPortal } from 'react-dom';
-import { cn } from '@lib/utils';
 import { robotoMono } from '../../../pages/_app';
 
 interface ModalProps {
@@ -21,7 +21,12 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
   if (!isOpen || !mounted) return null;
 
   return createPortal(
-    <div className={cn("fixed inset-0 z-50 flex items-center justify-center", robotoMono.className)}>
+    <div
+      className={cn(
+        'fixed inset-0 z-50 flex items-center justify-center',
+        robotoMono.className
+      )}
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"

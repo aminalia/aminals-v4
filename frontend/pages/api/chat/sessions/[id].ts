@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { getChatSession, ChatSession } from '../../../../lib/chat-storage';
+import { ChatSession, getChatSession } from '../../../../lib/chat-storage';
 
 export default async function handler(
   req: NextApiRequest,
@@ -18,7 +18,7 @@ export default async function handler(
     }
 
     const session = await getChatSession(sessionId);
-    
+
     if (!session) {
       return res.status(404).json({ error: 'Chat session not found' });
     }

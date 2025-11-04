@@ -75,6 +75,15 @@ const ChatSessionsPage: NextPage = () => {
     if (!aminal || !address || isCreating) return;
 
     setIsCreating(true);
+
+    // Show a loading toast that personality is being generated
+    const loadingToast = toast.loading(
+      'Creating chat session & generating personality...',
+      {
+        duration: Infinity,
+      }
+    );
+
     try {
       const response = await fetch('/api/chat/sessions', {
         method: 'POST',
@@ -95,10 +104,15 @@ const ChatSessionsPage: NextPage = () => {
 
       const newSession: ChatSession = await response.json();
 
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
+      toast.success('Chat session ready!');
+
       // Navigate to the new chat session
       router.push(`/aminals/${contractAddress}/chat/${newSession.id}`);
     } catch (error) {
       console.error('Error creating chat session:', error);
+      toast.dismiss(loadingToast);
       toast.error('Failed to create new chat session');
     } finally {
       setIsCreating(false);

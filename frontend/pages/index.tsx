@@ -26,7 +26,29 @@ const HomePage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Aminals</title>
+        <title>Aminals - Autonomous Digital Pets on Ethereum</title>
+        <meta
+          name="description"
+          content="Discover Aminals, autonomous digital pets living on Ethereum. Feed, breed, and interact with unique NFT creatures that have their own energy, skills, and personalities."
+        />
+        <meta
+          property="og:title"
+          content="Aminals - Autonomous Digital Pets on Ethereum"
+        />
+        <meta
+          property="og:description"
+          content="Discover Aminals, autonomous digital pets living on Ethereum. Feed, breed, and interact with unique NFT creatures that have their own energy, skills, and personalities."
+        />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:title"
+          content="Aminals - Autonomous Digital Pets"
+        />
+        <meta
+          name="twitter:description"
+          content="Discover Aminals, autonomous digital pets living on Ethereum. Feed, breed, and interact with unique NFT creatures."
+        />
         <link href="/favicon.ico" rel="icon" />
       </Head>
       <Layout>
