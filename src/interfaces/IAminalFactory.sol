@@ -35,14 +35,19 @@ interface IAminalFactory is IAminalStructs {
      * @param dadAddress Address of the father Aminal (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child
      * @param winningGeneIds Array of 1-10 gene IDs (0 means no gene in that slot)
+     * @param placements Array of placement metadata for each gene (position, scale, rotation)
      *
      * @return newAminalAddress Address of the newly spawned Aminal contract
      *
      * @custom:emits AminalSpawned
      */
-    function spawnAminal(address momAddress, address dadAddress, uint256 auctionId, uint256[10] calldata winningGeneIds)
-        external
-        returns (address newAminalAddress);
+    function spawnAminal(
+        address momAddress,
+        address dadAddress,
+        uint256 auctionId,
+        uint256[10] calldata winningGeneIds,
+        GeneMetadata[10] calldata placements
+    ) external returns (address newAminalAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   🔍 QUERY OPERATIONS

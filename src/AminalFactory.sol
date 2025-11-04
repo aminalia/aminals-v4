@@ -245,12 +245,19 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
         initialAminalSpawned = true;
 
+        // Default placement: centered, 100% scale, no rotation
+        GeneMetadata[MAX_GENES] memory defaultPlacements;
+        for (uint256 j = 0; j < MAX_GENES; j++) {
+            defaultPlacements[j] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        }
+
         for (uint256 i = 0; i < _visuals.length; i++) {
             _spawnAminal(
                 address(0), // No parents for genesis Aminals
                 address(0),
                 0, // No auction ID for genesis Aminals
-                _visuals[i].genes
+                _visuals[i].genes,
+                defaultPlacements
             );
         }
     }
@@ -278,12 +285,13 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
-        uint256[MAX_GENES] calldata winningGeneIds
+        uint256[MAX_GENES] calldata winningGeneIds,
+        GeneMetadata[MAX_GENES] calldata placements
     ) external onlyAuction returns (address childAddress) {
         require(isAminal[parentOne], "AminalFactory: invalid parent one");
         require(isAminal[parentTwo], "AminalFactory: invalid parent two");
 
-        return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds);
+        return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds, placements);
     }
 
     /**
@@ -381,7 +389,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
-        uint256[MAX_GENES] memory geneIds
+        uint256[MAX_GENES] memory geneIds,
+        GeneMetadata[MAX_GENES] memory placements
     ) internal returns (address childAddress) {
         require(address(loveVRGDA) != address(0), "AminalFactory: VRGDA not deployed");
 
@@ -394,6 +403,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             parentOne, // First parent (or address(0) for genesis)
             parentTwo, // Second parent (or address(0) for genesis)
             visuals, // Complete genetic visual profile
+            placements, // Placement metadata for each gene
             totalAminals, // Unique index for this Aminal
             address(loveVRGDA) // VRGDA system for love calculations
         );

@@ -326,18 +326,20 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         auction.settled = true;
 
         uint256[10] memory winningGeneIds;
+        GeneMetadata[10] memory winningPlacements;
         uint256 totalTreasuryTransferred = 0;
 
         // Select winning design
         uint256 winningDesignId = _selectWinningDesign(auction);
 
-        // Get the winning design's genes
+        // Get the winning design's genes and placements
         if (winningDesignId != 0) {
             AminalDesign storage winningDesign = auction.designs[winningDesignId];
             winningGeneIds = winningDesign.geneIds;
+            winningPlacements = winningDesign.placements;
         } else {
             // Fallback to random parent design if no votes
-            winningGeneIds = _selectRandomParentDesign(auction);
+            (winningGeneIds, winningPlacements) = _selectRandomParentDesign(auction);
         }
 
         // Process treasury payouts to gene creators
@@ -381,8 +383,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         emit VotingSettled(auctionId, winningDesignId, winningGeneIds, totalTreasuryTransferred);
 
-        // Spawn the child Aminal with winning traits
-        aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, winningGeneIds);
+        // Spawn the child Aminal with winning traits and placements
+        aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, winningGeneIds, winningPlacements);
     }
 
     /**
@@ -806,11 +808,17 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /**
      * @notice Select a random parent design when no votes are cast
      */
-    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[10] memory) {
+    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[10] memory, GeneMetadata[10] memory) {
+        // Default placement for parent designs (centered, 100% scale, no rotation)
+        GeneMetadata[10] memory defaultPlacements;
+        for (uint256 i = 0; i < 10; i++) {
+            defaultPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        }
+
         // Randomly choose between parent designs
         uint256 random = _generateRandomness(1, 2);
-        if (random == 0) return auction.parentOneGenes;
-        else return auction.parentTwoGenes;
+        if (random == 0) return (auction.parentOneGenes, defaultPlacements);
+        else return (auction.parentTwoGenes, defaultPlacements);
     }
 
     /**

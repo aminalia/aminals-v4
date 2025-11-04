@@ -86,10 +86,19 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice The visual DNA that defines this Aminal's appearance
     Visuals internal _visuals;
 
+    /// @notice Placement metadata for each gene (positioning, scale, rotation)
+    GeneMetadata[10] internal _placements;
+
     /// @notice Get the visuals for this Aminal
     /// @return The visuals struct containing all gene IDs
     function getVisuals() external view returns (Visuals memory) {
         return _visuals;
+    }
+
+    /// @notice Get the placement metadata for this Aminal's genes
+    /// @return The array of placement metadata for each gene slot
+    function getPlacements() external view returns (GeneMetadata[10] memory) {
+        return _placements;
     }
 
     /// @notice Unique identifier within the Aminal ecosystem
@@ -216,6 +225,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param _momAddress Address of the mother Aminal (0x0 for genesis)
     /// @param _dadAddress Address of the father Aminal (0x0 for genesis)
     /// @param visualTraits Visual traits that define this Aminal's appearance
+    /// @param placements Placement metadata for each gene (position, scale, rotation)
     /// @param _aminalIndex Unique identifier within the Aminal ecosystem
     /// @param _loveVRGDA Address of the VRGDA contract for love calculations
     constructor(
@@ -223,6 +233,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         address _momAddress,
         address _dadAddress,
         Visuals memory visualTraits,
+        GeneMetadata[10] memory placements,
         uint256 _aminalIndex,
         address _loveVRGDA
     )
@@ -236,6 +247,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         momAddress = _momAddress;
         dadAddress = _dadAddress;
         _visuals = visualTraits;
+        _placements = placements;
         aminalIndex = _aminalIndex;
         loveVRGDA = AminalVRGDA(_loveVRGDA);
 
@@ -469,6 +481,14 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     function getAminalVisualsByID(uint256 aminalID) public view virtual override returns (Visuals memory) {
         require(aminalID == aminalIndex, "Invalid aminal ID");
         return _visuals;
+    }
+
+    /// @notice Implementation of abstract function from GeneRenderer
+    /// @param aminalID The Aminal ID to get placements for (must match this Aminal)
+    /// @return placements The placement metadata for this Aminal's genes
+    function getAminalPlacementsByID(uint256 aminalID) public view virtual override returns (GeneMetadata[10] memory) {
+        require(aminalID == aminalIndex, "Invalid aminal ID");
+        return _placements;
     }
 
     /// @notice Generate token URI using GeneRenderer
