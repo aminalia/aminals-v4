@@ -10,15 +10,18 @@ pragma solidity ^0.8.20;
  * @custom:security-contact security@aminals.art
  */
 interface IAminalStructs {
+    /// @notice Maximum number of genes that can be assigned to an Aminal
+    uint256 constant MAX_GENES = 10;
+
     /**
      * @notice Visual trait configuration for an Aminal
      * @dev Contains the complete genetic visual profile of an Aminal
      * @dev Supports 1-10 genes with flexible ordering determined by placement metadata
      * @dev A value of 0 for a geneId indicates an unused slot
-     * @param genes Array of up to 10 gene NFT IDs (0 = unused slot)
+     * @param genes Array of up to MAX_GENES gene NFT IDs (0 = unused slot)
      */
     struct Visuals {
-        uint256[10] genes;
+        uint256[MAX_GENES] genes;
     }
 
     /**

@@ -76,8 +76,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Time scale for VRGDA curve smoothness
     int256 public constant VRGDA_TIME_SCALE = 20 ether;
 
-    /// @notice Number of trait categories in the visual system
-    uint256 public constant MAX_GENES = 10;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
