@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <g id="misc" opacity="0.8">
+    <path fill="#ffffff" d="M526 205c-24 0-44-19-44-44 0-12 4-23 12-31a44 44 0 1 0 44 73l-12 2Z"/>
+    <path fill="#fcfcfc" d="m500 549-19-34-20-34h78l-20 34-19 34z"/>
+    <animate attributeName="opacity" values="0.8; 1; 0.8" dur="2s" repeatCount="indefinite"/>
+  </g>
+</svg>

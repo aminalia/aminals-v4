@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <defs>
+    <style>
+      .st2 { fill: #d3b36d; }
+    </style>
+  </defs>
+  <g id="BACK">
+    <path d="M0 0h1000v1000H0z" fill="#e9d6a2"/>
+    <ellipse cx="500" cy="976" rx="164" ry="12" fill="#d7af65"/>
+    <circle cx="147" cy="907" r="44" class="st2"/>
+    <circle cx="283" cy="874" r="11" class="st2"/>
+    <circle cx="464" cy="907" r="15" class="st2"/>
+    <circle cx="331" cy="906" r="5" class="st2"/>
+    <circle cx="574" cy="841" r="6" class="st2"/>
+    <circle cx="646" cy="824" r="17" class="st2"/>
+    <circle cx="764" cy="821" r="7" class="st2"/>
+    <circle cx="827" cy="782" r="16" class="st2"/>
+    <circle cx="207" cy="549" r="29" class="st2"/>
+    <circle cx="894" cy="600" r="40" class="st2"/>
+    <circle cx="935" cy="833" r="19" class="st2"/>
+    <circle cx="182" cy="664" r="19" class="st2"/>
+    <circle cx="810" cy="269" r="13" class="st2"/>
+    <circle cx="77" cy="261" r="6" class="st2"/>
+    <circle cx="245" cy="719" r="5" class="st2"/>
+    <circle cx="931" cy="916" r="36" class="st2"/>
+  </g>
+</svg>
