@@ -54,7 +54,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneCreation() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Sky Background", "A blue sky", "Background");
 
         assertEq(geneId, 0, "First gene should have ID 0");
         assertEq(genes.ownerOf(geneId), alice, "Alice should own the gene");
@@ -71,7 +71,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneTransfer() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Alice transfers to Bob
         vm.prank(alice);
@@ -84,15 +84,15 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         // Ensure that createGene cannot mint to the zero address
         vm.expectRevert("ERC721: mint to the zero address");
         vm.prank(address(0));
-        geneRegistry.createGene(SAMPLE_BACKGROUND);
+        geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
     }
 
     function testMultipleGeneCreation() public {
         vm.prank(alice);
-        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         vm.prank(bob);
-        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         assertEq(gene1, 0, "First gene ID should be 0");
         assertEq(gene2, 1, "Second gene ID should be 1");
@@ -103,10 +103,10 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testSameContentForDifferentGenes() public {
         // Same SVG content can be used for different gene NFTs
         vm.prank(alice);
-        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 gene1 = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         vm.prank(bob);
-        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         assertEq(genes.getGeneSVG(gene1), SAMPLE_BACKGROUND, "Gene1 SVG matches");
         assertEq(genes.getGeneSVG(gene2), SAMPLE_BACKGROUND, "Gene2 SVG matches");
@@ -115,14 +115,14 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneOwnershipQuery() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         assertEq(genes.ownerOf(geneId), alice, "Correct owner returned");
     }
 
     function testGeneValidation() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         assertTrue(geneRegistry.isValidGene(geneId), "Created gene should be valid");
         assertFalse(geneRegistry.isValidGene(geneId + 1), "Non-existent gene should not be valid");
@@ -161,7 +161,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneFor() public {
         // Alice creates a gene for Bob
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Verify gene was created correctly
         assertEq(geneId, 0, "First gene should have ID 0");
@@ -171,7 +171,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testCreateGeneForZeroAddress() public {
         vm.prank(alice);
         vm.expectRevert("ERC721: mint to the zero address");
-        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND);
+        geneRegistry.createGeneFor(address(0), SAMPLE_BACKGROUND, "Test Gene", "", "Background");
     }
 
     function testSVGStorageAndRetrieval() public {
@@ -179,7 +179,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
             '<svg width="1000" height="1000"><rect x="0" y="0" width="1000" height="1000" fill="blue"/><circle cx="500" cy="500" r="200" fill="yellow"/></svg>';
 
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(longSvg);
+        uint256 geneId = geneRegistry.createGene(longSvg, "Test Gene", "", "Background");
 
         assertEq(genes.getGeneSVG(geneId), longSvg, "Long SVG should be stored and retrieved correctly");
     }
@@ -187,9 +187,9 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testGeneBalance() public {
         // Alice creates multiple genes
         vm.startPrank(alice);
-        geneRegistry.createGene(SAMPLE_BACKGROUND);
-        geneRegistry.createGene(SAMPLE_BACKGROUND);
-        geneRegistry.createGene(SAMPLE_BACKGROUND);
+        geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
+        geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
+        geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
         vm.stopPrank();
 
         assertEq(genes.balanceOf(alice), 3, "Alice should own 3 genes");
@@ -198,7 +198,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testGeneApproval() public {
         vm.prank(alice);
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Alice approves Bob
         vm.prank(alice);

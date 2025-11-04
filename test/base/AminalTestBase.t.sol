@@ -80,4 +80,14 @@ abstract contract AminalTestBase is Test, IAminalStructs {
         address aminal2 = factory.getAminalByIndex(1);
         return (aminal1, aminal2);
     }
+
+    /**
+     * @dev Helper function to create a gene with metadata for testing
+     */
+    function createTestGene(string memory svg, string memory name, string memory category)
+        internal
+        returns (uint256)
+    {
+        return geneRegistry.createGene(svg, name, "", category);
+    }
 }

@@ -80,6 +80,16 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @param geneRegistry Address of the new Gene Registry contract
     event Setup(address aminalFactory, address geneRegistry);
 
+    /// @notice Emitted when a new gene is minted with metadata
+    /// @param tokenId The ID of the newly minted gene
+    /// @param to Address receiving the gene NFT
+    /// @param name Human-readable name for the gene
+    /// @param description Description of the gene
+    /// @param category Category/tag for filtering
+    event GeneMetadata(
+        uint256 indexed tokenId, address indexed to, string name, string description, string category
+    );
+
     // ============ CONSTRUCTOR ============
 
     /// @notice Initialize the Genes contract
@@ -102,12 +112,24 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @dev Can only be called by the Gene Registry contract
     /// @param to Address to mint the gene to
     /// @param geneSVG SVG content for the visual representation
-    function mint(address to, string calldata geneSVG) external onlyRegistry {
+    /// @param name Human-readable name for the gene
+    /// @param description Optional description of the gene
+    /// @param category Category/tag for filtering (e.g., "eyes", "hat", "background")
+    function mint(
+        address to,
+        string calldata geneSVG,
+        string calldata name,
+        string calldata description,
+        string calldata category
+    ) external onlyRegistry {
         uint256 tokenId = currentId;
         geneSVGPointers[tokenId] = SSTORE2.write(bytes(geneSVG));
 
         ++currentId;
         _mint(to, tokenId);
+
+        // Emit metadata as event for indexers to pick up
+        emit GeneMetadata(tokenId, to, name, description, category);
     }
 
     /// @notice Burn a Gene NFT

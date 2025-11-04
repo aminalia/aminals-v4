@@ -154,53 +154,53 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function _createGeneNFTs() internal {
         // First design genes (no categories needed)
         vm.prank(alice);
-        backgroundGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND);
+        backgroundGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Background", "", "Background");
 
         vm.prank(bob);
-        armsGeneId = geneRegistry.createGene(SAMPLE_ARMS);
+        armsGeneId = geneRegistry.createGene(SAMPLE_ARMS, "Arms", "", "Arms");
 
         vm.prank(charlie);
-        tailGeneId = geneRegistry.createGene(SAMPLE_TAIL);
+        tailGeneId = geneRegistry.createGene(SAMPLE_TAIL, "Tail", "", "Tail");
 
         vm.prank(david);
-        earsGeneId = geneRegistry.createGene(SAMPLE_EARS);
+        earsGeneId = geneRegistry.createGene(SAMPLE_EARS, "Ears", "", "Ears");
 
         vm.prank(eve);
-        bodyGeneId = geneRegistry.createGene(SAMPLE_BODY);
+        bodyGeneId = geneRegistry.createGene(SAMPLE_BODY, "Body", "", "Body");
 
         vm.prank(alice);
-        faceGeneId = geneRegistry.createGene(SAMPLE_FACE);
+        faceGeneId = geneRegistry.createGene(SAMPLE_FACE, "Face", "", "Face");
 
         vm.prank(bob);
-        mouthGeneId = geneRegistry.createGene(SAMPLE_MOUTH);
+        mouthGeneId = geneRegistry.createGene(SAMPLE_MOUTH, "Mouth", "", "Mouth");
 
         vm.prank(charlie);
-        miscGeneId = geneRegistry.createGene(SAMPLE_MISC);
+        miscGeneId = geneRegistry.createGene(SAMPLE_MISC, "Misc", "", "Misc");
 
         // Alternative design genes (no categories needed)
         vm.prank(david);
-        altBackgroundGeneId = geneRegistry.createGene(ALT_BACKGROUND);
+        altBackgroundGeneId = geneRegistry.createGene(ALT_BACKGROUND, "Alt Background", "", "Background");
 
         vm.prank(eve);
-        altArmsGeneId = geneRegistry.createGene(ALT_ARMS);
+        altArmsGeneId = geneRegistry.createGene(ALT_ARMS, "Alt Arms", "", "Arms");
 
         vm.prank(alice);
-        altTailGeneId = geneRegistry.createGene(ALT_TAIL);
+        altTailGeneId = geneRegistry.createGene(ALT_TAIL, "Alt Tail", "", "Tail");
 
         vm.prank(bob);
-        altEarsGeneId = geneRegistry.createGene(ALT_EARS);
+        altEarsGeneId = geneRegistry.createGene(ALT_EARS, "Alt Ears", "", "Ears");
 
         vm.prank(charlie);
-        altBodyGeneId = geneRegistry.createGene(ALT_BODY);
+        altBodyGeneId = geneRegistry.createGene(ALT_BODY, "Alt Body", "", "Body");
 
         vm.prank(david);
-        altFaceGeneId = geneRegistry.createGene(ALT_FACE);
+        altFaceGeneId = geneRegistry.createGene(ALT_FACE, "Alt Face", "", "Face");
 
         vm.prank(eve);
-        altMouthGeneId = geneRegistry.createGene(ALT_MOUTH);
+        altMouthGeneId = geneRegistry.createGene(ALT_MOUTH, "Alt Mouth", "", "Mouth");
 
         vm.prank(alice);
-        altMiscGeneId = geneRegistry.createGene(ALT_MISC);
+        altMiscGeneId = geneRegistry.createGene(ALT_MISC, "Alt Misc", "", "Misc");
     }
 
     /**

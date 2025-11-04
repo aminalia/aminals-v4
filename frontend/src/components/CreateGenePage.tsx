@@ -38,7 +38,10 @@ function CreateGenePage({
   const [currentStep, setCurrentStep] = useState<WizardStep>('design');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<number>(preSelectedCategory);
+  const [category, setCategory] = useState<string>(
+    TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
+      ?.name || 'Background'
+  );
   const [svg, setSvg] = useState(
     '<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>'
   );
@@ -69,7 +72,10 @@ function CreateGenePage({
 
   // Update category when prop changes
   useEffect(() => {
-    setCategory(preSelectedCategory);
+    const categoryName =
+      TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
+        ?.name || 'Background';
+    setCategory(categoryName);
   }, [preSelectedCategory]);
 
   // Validate SVG in real-time
@@ -89,7 +95,10 @@ function CreateGenePage({
       // Reset form
       setName('');
       setDescription('');
-      setCategory(preSelectedCategory);
+      const categoryName =
+        TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
+          ?.name || 'Background';
+      setCategory(categoryName);
       setSvg('<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>');
       setCurrentStep('design');
       onSuccess?.();
@@ -334,12 +343,12 @@ function CreateGenePage({
 
     setIsCreating(true);
 
-    // Note: Genes are now flexible - no category parameter needed
+    // Create gene with metadata (name, description, category as strings)
     writeContract({
       address: geneRegistryAddress,
       abi: geneRegistryAbi,
       functionName: 'createGene',
-      args: [svg],
+      args: [svg, name, description, category],
     });
   };
 
@@ -729,12 +738,12 @@ Note: SVG wrapper tags are not required"
                     <select
                       id="gene-category"
                       value={category}
-                      onChange={(e) => setCategory(Number(e.target.value))}
+                      onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
                     >
                       {Object.entries(TRAIT_CATEGORIES).map(
                         ([key, { name, emoji }]) => (
-                          <option key={key} value={key}>
+                          <option key={key} value={name}>
                             {emoji} {name}
                           </option>
                         )
