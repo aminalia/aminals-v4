@@ -17,11 +17,15 @@ export type User = typeof schema.user.$inferSelect;
 export type Relationship = typeof schema.relationship.$inferSelect;
 export type GeneNFT = typeof schema.geneNFT.$inferSelect;
 export type GeneAuction = typeof schema.geneAuction.$inferSelect;
-export type GeneProposal = typeof schema.geneProposal.$inferSelect;
-export type GeneVote = typeof schema.geneVote.$inferSelect;
+export type DesignProposal = typeof schema.designProposal.$inferSelect;
+export type DesignVote = typeof schema.designVote.$inferSelect;
 export type GeneCreatorPayout = typeof schema.geneCreatorPayout.$inferSelect;
 export type FeedEvent = typeof schema.feedEvent.$inferSelect;
 export type SkillUsedEvent = typeof schema.skillUsedEvent.$inferSelect;
+
+// Legacy aliases for backwards compatibility (deprecated)
+export type GeneProposal = DesignProposal;
+export type GeneVote = DesignVote;
 
 // ============================================================================
 // Extended Types with Relations
@@ -34,15 +38,7 @@ export interface AminalWithRelations extends Aminal {
   parentTwo?: Aminal | null;
   feeds?: FeedEvent[];
   skillsUsed?: SkillUsedEvent[];
-  // Trait helper properties (extracted from traits array for backward compatibility)
-  backId?: bigint;
-  armId?: bigint;
-  tailId?: bigint;
-  earsId?: bigint;
-  bodyId?: bigint;
-  faceId?: bigint;
-  mouthId?: bigint;
-  miscId?: bigint;
+  // Note: genes array now supports 1-10 flexible genes (no categories)
 }
 
 export interface GeneNFTWithRelations extends GeneNFT {
@@ -55,39 +51,42 @@ export interface GeneNFTWithRelations extends GeneNFT {
 }
 
 export interface GeneAuctionWithRelations extends GeneAuction {
-  proposals?: GeneProposal[];
+  proposals?: DesignProposal[];
   aminalOne?: AminalWithRelations;
   aminalTwo?: AminalWithRelations;
   childAminal?: AminalWithRelations | null;
-  votes?: GeneVote[];
+  votes?: DesignVote[];
   payouts?: GeneCreatorPayout[];
 }
 
-export interface GeneProposalWithRelations extends GeneProposal {
-  geneNFT?: GeneNFT;
+export interface DesignProposalWithRelations extends DesignProposal {
   auction?: GeneAuction;
   proposer?: User;
-  votes?: GeneVote[];
+  votes?: DesignVote[];
 }
+
+// Legacy alias (deprecated)
+export type GeneProposalWithRelations = DesignProposalWithRelations;
 
 export interface RelationshipWithAminal extends Relationship {
   aminal: Aminal;
 }
 
-export interface GeneVoteWithRelations extends GeneVote {
-  proposal?: {
-    geneNFT?: GeneNFT;
-  } & GeneProposal;
+export interface DesignVoteWithRelations extends DesignVote {
+  proposal?: DesignProposal;
   voter?: User;
   auction?: GeneAuction;
 }
+
+// Legacy alias (deprecated)
+export type GeneVoteWithRelations = DesignVoteWithRelations;
 
 export interface UserWithRelations extends User {
   lovers?: RelationshipWithAminal[];
   genesCreated?: GeneNFT[];
   genesOwned?: GeneNFT[];
-  geneVotes?: GeneVoteWithRelations[];
-  proposedGenes?: GeneProposal[];
+  designVotes?: DesignVoteWithRelations[];
+  proposedDesigns?: DesignProposal[];
   receivedPayouts?: GeneCreatorPayout[];
   feedEvents?: FeedEvent[];
   skillEvents?: SkillUsedEvent[];
@@ -115,29 +114,11 @@ export type UserSingle = User | null | undefined;
 // Helper Types
 // ============================================================================
 
-// Trait array type (8 bigints)
-export type TraitArray = readonly [
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint,
-  bigint
-];
+// Gene array type (1-10 flexible genes, no categories)
+export type GeneArray = readonly bigint[];
 
-// Trait type enum (matches schema)
-export enum TraitType {
-  BACK = 0,
-  ARM = 1,
-  TAIL = 2,
-  EARS = 3,
-  BODY = 4,
-  FACE = 5,
-  MOUTH = 6,
-  MISC = 7,
-}
+// Slot index type (0-9 for 10 possible gene slots)
+export type SlotIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
 // Helper to extract array element type
 export type ArrayElement<T> = T extends (infer U)[] ? U : T;

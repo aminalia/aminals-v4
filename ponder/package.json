@@ -13,6 +13,7 @@
     "wagmi:generate": "wagmi generate"
   },
   "dependencies": {
+    "atomic-sleep": "^1.0.0",
     "hono": "^4.5.0",
     "mimic-fn": "^4.0.0",
     "ponder": "^0.13.9",

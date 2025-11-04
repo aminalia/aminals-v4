@@ -91,15 +91,9 @@ function processAminals(
       ...aminal,
       lovers: { items: aminalLovers },
       userLove: userRelationship?.love || 0n,
-      // Extract trait IDs from traits array for backward compatibility
-      backId: aminal.traits[0],
-      armId: aminal.traits[1],
-      tailId: aminal.traits[2],
-      earsId: aminal.traits[3],
-      bodyId: aminal.traits[4],
-      faceId: aminal.traits[5],
-      mouthId: aminal.traits[6],
-      miscId: aminal.traits[7],
+      // Note: Now using flexible genes (1-10) instead of fixed traits (8)
+      // For backward compatibility with components expecting trait IDs,
+      // we provide genes array directly
     };
   });
 
@@ -254,15 +248,7 @@ function processAminalDetail(
     userLove: userRelationship?.love || 0n,
     parentOne: parentOne || null,
     parentTwo: parentTwo || null,
-    // Extract trait IDs from traits array for backward compatibility
-    backId: aminal.traits[0],
-    armId: aminal.traits[1],
-    tailId: aminal.traits[2],
-    earsId: aminal.traits[3],
-    bodyId: aminal.traits[4],
-    faceId: aminal.traits[5],
-    mouthId: aminal.traits[6],
-    miscId: aminal.traits[7],
+    // Note: Now using flexible genes (1-10) instead of fixed traits (8)
   };
 }
 
