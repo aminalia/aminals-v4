@@ -56,7 +56,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.prank(alice);
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Sky Background", "A blue sky", "Background");
 
-        assertEq(geneId, 0, "First gene should have ID 0");
+        assertEq(geneId, 1, "First gene should have ID 1 (not 0, to avoid empty slot collision)");
         assertEq(genes.ownerOf(geneId), alice, "Alice should own the gene");
         assertEq(genes.getGeneSVG(geneId), SAMPLE_BACKGROUND, "SVG should match");
         assertTrue(geneRegistry.isValidGene(geneId), "Gene should be valid");
@@ -94,8 +94,8 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         vm.prank(bob);
         uint256 gene2 = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
-        assertEq(gene1, 0, "First gene ID should be 0");
-        assertEq(gene2, 1, "Second gene ID should be 1");
+        assertEq(gene1, 1, "First gene ID should be 1 (not 0, to avoid empty slot collision)");
+        assertEq(gene2, 2, "Second gene ID should be 2");
         assertEq(genes.ownerOf(gene1), alice, "Alice owns first gene");
         assertEq(genes.ownerOf(gene2), bob, "Bob owns second gene");
     }
@@ -164,7 +164,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGeneFor(bob, SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Verify gene was created correctly
-        assertEq(geneId, 0, "First gene should have ID 0");
+        assertEq(geneId, 1, "First gene should have ID 1 (not 0, to avoid empty slot collision)");
         assertEq(genes.ownerOf(geneId), bob, "Bob should own the gene");
     }
 

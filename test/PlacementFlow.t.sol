@@ -55,6 +55,22 @@ contract PlacementFlowTest is Test, IAminalStructs {
     }
 
     /**
+     * @notice Test that the first gene starts at ID 1 (not 0) to avoid empty slot collision
+     */
+    function testFirstGeneStartsAtOne() public {
+        vm.prank(alice);
+        uint256 firstGeneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "First Gene", "", "Background");
+
+        // First gene should be ID 1, not 0
+        assertEq(firstGeneId, 1, "First gene should have ID 1");
+        assertEq(genes.ownerOf(firstGeneId), alice, "Alice should own gene ID 1");
+
+        // Gene ID 0 should not exist
+        vm.expectRevert("ERC721: invalid token ID");
+        genes.ownerOf(0);
+    }
+
+    /**
      * @notice Test that genesis Aminals get default placement (centered, 100% scale, 0° rotation)
      */
     function testGenesisAminalDefaultPlacement() public {
@@ -287,11 +303,9 @@ contract PlacementFlowTest is Test, IAminalStructs {
      * @notice Test extreme placement values
      */
     function testExtremePlacementValues() public {
-        // Create gene NFTs FIRST - create 2 to avoid using gene ID 0
-        vm.startPrank(alice);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, "Dummy", "", "Background"); // Gene ID 0 - skip it
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background"); // Gene ID 1
-        vm.stopPrank();
+        // Create gene NFT
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parent Aminals
         Visuals[] memory initialVisuals = new Visuals[](2);
@@ -407,11 +421,9 @@ contract PlacementFlowTest is Test, IAminalStructs {
      * @notice Test placement data persists correctly in design proposals
      */
     function testPlacementPersistsInDesign() public {
-        // Create gene NFTs FIRST - avoid gene ID 0
-        vm.startPrank(alice);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, "Dummy", "", "Background"); // Gene ID 0 - skip it
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background"); // Gene ID 1
-        vm.stopPrank();
+        // Create gene NFT
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parents
         Visuals[] memory initialVisuals = new Visuals[](2);
@@ -468,11 +480,9 @@ contract PlacementFlowTest is Test, IAminalStructs {
      * @notice Test getDesignPlacements view function
      */
     function testGetDesignPlacements() public {
-        // Create gene NFT FIRST - avoid gene ID 0
-        vm.startPrank(alice);
-        geneRegistry.createGene(SAMPLE_BACKGROUND, "Dummy", "", "Background"); // Gene ID 0 - skip it
-        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background"); // Gene ID 1
-        vm.stopPrank();
+        // Create gene NFT
+        vm.prank(alice);
+        uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parents
         Visuals[] memory initialVisuals = new Visuals[](2);

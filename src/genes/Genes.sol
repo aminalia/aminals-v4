@@ -36,7 +36,8 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
 
     /// @notice Current token ID counter for minting
     /// @dev Incremented with each new gene minted
-    uint256 public currentId;
+    /// @dev Starts at 1 to avoid collision with 0 (which indicates "empty slot" in Visuals)
+    uint256 public currentId = 1;
 
     /// @notice Mapping from gene ID to its SVG content **storage pointer**
     /// @dev Contains **SSTORE2 pointer** to the actual visual representation of the gene
