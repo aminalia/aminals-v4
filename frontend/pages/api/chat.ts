@@ -140,13 +140,13 @@ export default async function handler(
           // Note: Type cast needed due to drizzle-orm version mismatch between ponder and @ponder/client
           const genes = await (ponderClient.db
             .select()
-            .from(schema.geneNFT as any)
+            .from(schema.geneNFT)
             .where(
               inArray(
                 schema.geneNFT.tokenId,
                 existingGeneIds.map((id) => BigInt(id))
               )
-            ) as any);
+            ));
 
           if (genes && genes.length > 0) {
             // Transform to expected format

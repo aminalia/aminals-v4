@@ -226,7 +226,7 @@ const AuctionPage: NextPage = () => {
         // Use gene NFT data that's already loaded with the proposal
         const geneNFT = proposal.geneNFT;
         if (traitKey && geneNFT) {
-          (communityGenes as any)[traitKey].push({
+          (communityGenes)[traitKey].push({
             ...geneNFT,
             visualId: geneNFT.tokenId,
             svg: geneNFT.svg,
