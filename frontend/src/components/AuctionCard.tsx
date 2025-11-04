@@ -10,7 +10,7 @@ import {
   CardSection,
   CardTitle,
 } from '@components/ui/Card';
-import type { GeneAuction } from '@hooks';
+import type { GeneAuction, GeneAuctionWithRelations } from '@hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
@@ -206,10 +206,14 @@ export default function AuctionCard({
   );
 }
 
-export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
-  const aminalOne = (auction).aminalOne;
-  const aminalTwo = (auction).aminalTwo;
-  const childAminal = (auction).childAminal;
+export function AuctionCardActive({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
+  const childAminal = auction.childAminal;
 
   return (
     <>
@@ -250,10 +254,14 @@ export function AuctionCardActive({ auction }: { auction: GeneAuction }) {
   );
 }
 
-export function AuctionCardInActive({ auction }: { auction: GeneAuction }) {
-  const aminalOne = (auction).aminalOne;
-  const aminalTwo = (auction).aminalTwo;
-  const childAminal = (auction).childAminal;
+export function AuctionCardInActive({
+  auction,
+}: {
+  auction: GeneAuctionWithRelations;
+}) {
+  const aminalOne = auction.aminalOne;
+  const aminalTwo = auction.aminalTwo;
+  const childAminal = auction.childAminal;
 
   return (
     <>

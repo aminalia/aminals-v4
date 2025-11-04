@@ -16,6 +16,24 @@ interface GeneCardProps {
 }
 
 const GeneCard = ({ gene, userLove }: GeneCardProps) => {
+  // TODO: Complete refactoring for design-based proposals
+  // Note: DesignProposal now represents a complete Aminal design (1-10 genes + placements)
+  // This component was designed for single-gene proposals and needs to be redesigned
+  // to show complete designs instead
+
+  return (
+    <Card className="p-4 text-center text-muted-foreground">
+      <div className="text-4xl mb-2">🎨</div>
+      <div className="font-medium">Design Proposal</div>
+      <div className="text-sm mt-2">
+        {(gene.geneIds || []).length} genes in design
+      </div>
+      <div className="text-xs mt-1">Component needs refactoring</div>
+    </Card>
+  );
+
+  // Old single-gene proposal code (NEEDS REFACTORING):
+  /*
   const geneTypeNames = [
     'Background',
     'Arms',
@@ -100,7 +118,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
               </div>
             </div>
 
-            {/* View Details Indicator */}
+            {/* View Details Indicator *\/}
             <div className="flex items-center justify-center pt-2">
               <div className="text-sm text-muted-foreground group-hover:text-primary transition-colors">
                 Click to view details →
@@ -110,7 +128,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
         </CardSection>
       </Link>
 
-      {/* Actions - positioned outside the link to prevent nested interactivity */}
+      {/* Actions - positioned outside the link to prevent nested interactivity *\/}
       <div className="p-4 pt-0 border-t bg-muted/30">
         <VoteButton
           auctionId={gene.auctionId}
@@ -120,6 +138,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
       </div>
     </Card>
   );
+  */
 };
 
 export default GeneCard;
