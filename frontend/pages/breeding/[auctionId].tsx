@@ -63,24 +63,11 @@ const AuctionPage: NextPage = () => {
   const geneIds = useMemo(() => {
     if (!auction?.aminalOne || !auction?.aminalTwo) return [];
 
-    // Convert parent trait token IDs to geneNFT ID format
+    // Convert parent gene token IDs to geneNFT ID format
+    // Note: Aminals now have flexible genes array (1-10 genes)
     const parentIds = [
-      auction.aminalOne.backId,
-      auction.aminalOne.armId,
-      auction.aminalOne.tailId,
-      auction.aminalOne.earsId,
-      auction.aminalOne.bodyId,
-      auction.aminalOne.faceId,
-      auction.aminalOne.mouthId,
-      auction.aminalOne.miscId,
-      auction.aminalTwo.backId,
-      auction.aminalTwo.armId,
-      auction.aminalTwo.tailId,
-      auction.aminalTwo.earsId,
-      auction.aminalTwo.bodyId,
-      auction.aminalTwo.faceId,
-      auction.aminalTwo.mouthId,
-      auction.aminalTwo.miscId,
+      ...(auction.aminalOne.genes || []),
+      ...(auction.aminalTwo.genes || []),
     ]
       .filter((id) => {
         const idStr = id ? id.toString() : '';
@@ -160,53 +147,30 @@ const AuctionPage: NextPage = () => {
       return gene ? { ...gene, isParentGene: true, parentIndex } : null;
     };
 
+    // TODO: Refactor for 10-gene flexible system
+    // Note: Aminals now have a genes array (1-10 flexible genes), not fixed trait slots
+    // This trait-based categorization needs to be redesigned for the new design-based voting system
     const parentGenes = {
-      background: [
-        markAsParentGene(getGeneForId(auction.aminalOne.backId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.backId), 2),
-      ].filter(Boolean),
-      body: [
-        markAsParentGene(getGeneForId(auction.aminalOne.bodyId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.bodyId), 2),
-      ].filter(Boolean),
-      face: [
-        markAsParentGene(getGeneForId(auction.aminalOne.faceId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.faceId), 2),
-      ].filter(Boolean),
-      mouth: [
-        markAsParentGene(getGeneForId(auction.aminalOne.mouthId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.mouthId), 2),
-      ].filter(Boolean),
-      ears: [
-        markAsParentGene(getGeneForId(auction.aminalOne.earsId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.earsId), 2),
-      ].filter(Boolean),
-      arm: [
-        markAsParentGene(getGeneForId(auction.aminalOne.armId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.armId), 2),
-      ].filter(Boolean),
-      tail: [
-        markAsParentGene(getGeneForId(auction.aminalOne.tailId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.tailId), 2),
-      ].filter(Boolean),
-      misc: [
-        markAsParentGene(getGeneForId(auction.aminalOne.miscId), 1),
-        markAsParentGene(getGeneForId(auction.aminalTwo.miscId), 2),
-      ].filter(Boolean),
+      background: (auction.aminalOne.genes || [])
+        .map((geneId) => markAsParentGene(getGeneForId(geneId), 1))
+        .concat(
+          (auction.aminalTwo.genes || []).map((geneId) =>
+            markAsParentGene(getGeneForId(geneId), 2)
+          )
+        )
+        .filter(Boolean),
+      body: [],
+      face: [],
+      mouth: [],
+      ears: [],
+      arm: [],
+      tail: [],
+      misc: [],
     };
 
-    // Add community proposals to each trait category
-    const traitMapping = {
-      0: 'background',
-      1: 'arm',
-      2: 'tail',
-      3: 'ears',
-      4: 'body',
-      5: 'face',
-      6: 'mouth',
-      7: 'misc',
-    };
-
+    // TODO: Refactor proposals for design-based voting
+    // Note: Design proposals are now complete designs (10 genes + placements), not per-trait proposals
+    // This section needs to be completely redesigned to show full designs instead of grouping by trait type
     const communityGenes = {
       background: [],
       body: [],
@@ -218,23 +182,9 @@ const AuctionPage: NextPage = () => {
       misc: [],
     };
 
-    // Group proposals by trait type and mark as community genes
-    if (proposeGenes) {
-      proposeGenes.forEach((proposal) => {
-        const traitKey =
-          traitMapping[proposal.traitType as keyof typeof traitMapping];
-        // Use gene NFT data that's already loaded with the proposal
-        const geneNFT = proposal.geneNFT;
-        if (traitKey && geneNFT) {
-          (communityGenes)[traitKey].push({
-            ...geneNFT,
-            visualId: geneNFT.tokenId,
-            svg: geneNFT.svg,
-            isCommunityGene: true,
-          });
-        }
-      });
-    }
+    // Skip community gene grouping for now - needs redesign
+    // Old system: proposals were per-trait with traitType field
+    // New system: proposals are complete designs with geneIds array (1-10 genes) and placements metadata
 
     // Combine parent genes first, then community proposals (remove duplicates)
     const combineUnique = (parentArray: any[], communityArray: any[]) => {
@@ -293,39 +243,24 @@ const AuctionPage: NextPage = () => {
       return gene ? { ...gene, visualId: gene.tokenId } : null;
     };
 
+    // TODO: Refactor for 10-gene flexible system
+    // Note: This trait-based structure needs to be redesigned for the new design-based voting
+    const allParentGenes = [
+      ...(auction.aminalOne.genes || []),
+      ...(auction.aminalTwo.genes || []),
+    ]
+      .map((geneId) => getGeneForId(geneId))
+      .filter(Boolean);
+
     return {
-      background: [
-        getGeneForId(auction.aminalOne.backId),
-        getGeneForId(auction.aminalTwo.backId),
-      ].filter(Boolean),
-      body: [
-        getGeneForId(auction.aminalOne.bodyId),
-        getGeneForId(auction.aminalTwo.bodyId),
-      ].filter(Boolean),
-      face: [
-        getGeneForId(auction.aminalOne.faceId),
-        getGeneForId(auction.aminalTwo.faceId),
-      ].filter(Boolean),
-      mouth: [
-        getGeneForId(auction.aminalOne.mouthId),
-        getGeneForId(auction.aminalTwo.mouthId),
-      ].filter(Boolean),
-      ears: [
-        getGeneForId(auction.aminalOne.earsId),
-        getGeneForId(auction.aminalTwo.earsId),
-      ].filter(Boolean),
-      arm: [
-        getGeneForId(auction.aminalOne.armId),
-        getGeneForId(auction.aminalTwo.armId),
-      ].filter(Boolean),
-      tail: [
-        getGeneForId(auction.aminalOne.tailId),
-        getGeneForId(auction.aminalTwo.tailId),
-      ].filter(Boolean),
-      misc: [
-        getGeneForId(auction.aminalOne.miscId),
-        getGeneForId(auction.aminalTwo.miscId),
-      ].filter(Boolean),
+      background: allParentGenes,
+      body: [],
+      face: [],
+      mouth: [],
+      ears: [],
+      arm: [],
+      tail: [],
+      misc: [],
     };
   }, [auction, geneMap]);
 

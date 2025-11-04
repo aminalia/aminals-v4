@@ -179,7 +179,7 @@ function addTraitHelpers(
 }
 
 /**
- * Fetch gene proposals for a specific auction
+ * Fetch design proposals for a specific auction
  */
 export const useAuctionProposeGenes = (auctionId: string) => {
   // Convert auction ID to Ponder format: 0xauction-{auctionId}
@@ -189,9 +189,9 @@ export const useAuctionProposeGenes = (auctionId: string) => {
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneProposal)
+        .from(schema.designProposal)
         .where(
-          eq(schema.geneProposal.auctionId, hexAuctionId as `0x${string}`)
+          eq(schema.designProposal.auctionId, hexAuctionId as `0x${string}`)
         );
     },
     enabled: !!auctionId,
@@ -210,8 +210,8 @@ export const useAuctionVotes = (auctionId: string) => {
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneVote)
-        .where(eq(schema.geneVote.auctionId, hexAuctionId as `0x${string}`));
+        .from(schema.designVote)
+        .where(eq(schema.designVote.auctionId, hexAuctionId as `0x${string}`));
     },
     enabled: !!auctionId,
   });
@@ -229,14 +229,14 @@ export const useAuctionVotes = (auctionId: string) => {
       if (proposalIds.length === 0) {
         return db
           .select()
-          .from(schema.geneProposal)
-          .where(eq(schema.geneProposal.id, '' as `0x${string}`))
+          .from(schema.designProposal)
+          .where(eq(schema.designProposal.id, '' as `0x${string}`))
           .limit(0);
       }
       return db
         .select()
-        .from(schema.geneProposal)
-        .where(inArray(schema.geneProposal.id, proposalIds as `0x${string}`[]));
+        .from(schema.designProposal)
+        .where(inArray(schema.designProposal.id, proposalIds as `0x${string}`[]));
     },
     enabled: proposalIds.length > 0,
   });

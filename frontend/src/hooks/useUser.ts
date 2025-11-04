@@ -192,20 +192,13 @@ function processUserProfile(
   }));
 
   // Match votes with proposals and auctions
+  // Note: Design proposals now have geneIds (array), not a single geneNFTId
   const geneVotesWithRelations = geneVotes.map((vote) => {
     const proposal = proposalsMap.get(vote.proposalId);
-    const geneNFT = proposal
-      ? genesMap.get(proposal.geneNFTId.toLowerCase())
-      : undefined;
 
     return {
       ...vote,
-      proposal: proposal
-        ? {
-            ...proposal,
-            geneNFT,
-          }
-        : undefined,
+      proposal,
       auction: auctionsMap.get(vote.auctionId),
     };
   });
