@@ -27,14 +27,8 @@ export const useGenes = (
 ) => {
   const genesResult = usePonderQuery({
     queryFn: (db) => {
-      // Apply category filter at SQL level for efficiency
-      if (category !== 'all') {
-        return db
-          .select()
-          .from(schema.geneNFT)
-          .where(eq(schema.geneNFT.traitType, Number(category)));
-      }
-
+      // Note: Category filter removed - genes are now flexible (no fixed categories)
+      // The category parameter is kept for API compatibility but ignored
       return db.select().from(schema.geneNFT);
     },
   });
@@ -172,15 +166,18 @@ export const useGene = (id: string) => {
     enabled: !!aminalGenesResult.data && aminalGenesResult.data.length > 0,
   });
 
-  // Fetch proposals for this gene
+  // Note: Design proposals are now complete designs (10 genes), not per-gene
+  // Querying proposals by individual gene is not supported in new schema
   const proposalsResult = usePonderQuery({
     queryFn: (db) => {
+      // Return empty result - design proposals work differently now
       return db
         .select()
-        .from(schema.geneProposal)
-        .where(eq(schema.geneProposal.geneNFTId, id as `0x${string}`));
+        .from(schema.designProposal)
+        .where(eq(schema.designProposal.id, '' as `0x${string}`))
+        .limit(0);
     },
-    enabled: !!id,
+    enabled: false,
   });
 
   // Fetch payouts for this gene

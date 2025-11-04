@@ -82,21 +82,21 @@ export const useUserProfile = (
     enabled: !!address,
   }) as UseQueryResult<GeneNFT[], Error>;
 
-  // Fetch gene votes
+  // Fetch design votes (renamed from gene votes)
   const geneVotesResult = usePonderQuery({
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneVote)
-        .where(eq(schema.geneVote.voterId, address as `0x${string}`));
+        .from(schema.designVote)
+        .where(eq(schema.designVote.voterId, address as `0x${string}`));
     },
     enabled: !!address,
   }) as UseQueryResult<GeneVote[], Error>;
 
-  // Fetch all gene proposals (to match with votes)
+  // Fetch all design proposals (to match with votes)
   const geneProposalsResult = usePonderQuery({
     queryFn: (db) => {
-      return db.select().from(schema.geneProposal);
+      return db.select().from(schema.designProposal);
     },
     enabled: !!address && (geneVotesResult.data?.length || 0) > 0,
   }) as UseQueryResult<GeneProposal[], Error>;

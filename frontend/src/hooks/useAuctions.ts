@@ -164,7 +164,8 @@ export const useAuction = (
 };
 
 /**
- * Helper to add trait properties to an aminal
+ * Helper to convert Aminal to AminalWithRelations
+ * Note: Traits removed - genes are now flexible (1-10 per Aminal)
  */
 function addTraitHelpers(
   aminal: Aminal | undefined
@@ -173,16 +174,8 @@ function addTraitHelpers(
 
   return {
     ...aminal,
-    // Extract trait IDs from traits array for backward compatibility
-    backId: aminal.traits[0],
-    armId: aminal.traits[1],
-    tailId: aminal.traits[2],
-    earsId: aminal.traits[3],
-    bodyId: aminal.traits[4],
-    faceId: aminal.traits[5],
-    mouthId: aminal.traits[6],
-    miscId: aminal.traits[7],
-  };
+    // Note: No longer extracting trait IDs - genes are flexible
+  } as AminalWithRelations;
 }
 
 /**

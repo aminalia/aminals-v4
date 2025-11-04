@@ -143,13 +143,11 @@ export const filterGenesBySearch = (
     const name = gene.name?.toLowerCase() || '';
     const description = gene.description?.toLowerCase() || '';
     const tokenId = gene.tokenId?.toString() || '';
-    const traitTypeName = getTraitTypeName(gene.traitType).toLowerCase();
 
     return (
       name.includes(lowerSearchTerm) ||
       description.includes(lowerSearchTerm) ||
-      tokenId.includes(lowerSearchTerm) ||
-      traitTypeName.includes(lowerSearchTerm)
+      tokenId.includes(lowerSearchTerm)
     );
   });
 };
@@ -169,12 +167,8 @@ export const groupGenesByTraitType = (genes: GeneNFTWithRelations[]) => {
     7: [] as GeneNFTWithRelations[], // Misc
   };
 
-  genes.forEach((gene) => {
-    const traitType = gene.traitType;
-    if (traitType >= 0 && traitType <= 7) {
-      groups[traitType as keyof typeof groups].push(gene);
-    }
-  });
+  // Note: Genes no longer have traitType - this function is deprecated
+  // Return empty groups for backwards compatibility
 
   return groups;
 };
