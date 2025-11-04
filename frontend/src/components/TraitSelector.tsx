@@ -138,9 +138,9 @@ const TraitSelector: React.FC<TraitSelectorProps> = ({
         <div className="grid grid-cols-3 gap-2">
           {/* Parent and Community Genes First */}
           {parts[activeCategory]?.map((trait: Trait, index: number) => {
-            const isParent = (trait as any)?.isParentGene;
-            const isCommunity = (trait as any)?.isCommunityGene;
-            const parentIndex = (trait as any)?.parentIndex;
+            const isParent = (trait)?.isParentGene;
+            const isCommunity = (trait)?.isCommunityGene;
+            const parentIndex = (trait)?.parentIndex;
 
             return (
               <div

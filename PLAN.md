@@ -1,7 +1,10 @@
 # Plan
 
 # Bugs
-- Empty traits are not working, voting no trait means a random one get's selected.
+- TEST: Empty traits are not working, voting no trait means a random one get's selected.
+
+## Refactor
+- When creating gene, store extra metadata (name, description, category, etc.)
 
 ## UI
 

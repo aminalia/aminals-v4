@@ -155,15 +155,16 @@ function ComposedAminalImage({ aminal }: ComposedAminalImageProps) {
             : 'Unknown'}
         </div>
         <div className="text-xs text-muted-foreground space-y-1">
-          <div>Back: {aminal.backId || '?'}</div>
-          <div>Body: {aminal.bodyId || '?'}</div>
-          <div>Face: {aminal.faceId || '?'}</div>
-          <div>Arms: {aminal.armId || '?'}</div>
-          <div>Tail: {aminal.tailId || '?'}</div>
-          <div>Ears: {aminal.earsId || '?'}</div>
+          <div>Genes: {(aminal.genes || []).length} / 10</div>
+          {(aminal.genes || []).slice(0, 3).map((gene, i) => (
+            <div key={i}>
+              Slot {i}: {gene?.toString() || '0'}
+            </div>
+          ))}
+          {(aminal.genes || []).length > 3 && <div>...</div>}
         </div>
         <div className="text-xs text-primary mt-2">
-          🔧 Visual composition in development
+          🔧 Flexible gene system (1-10 genes)
         </div>
       </div>
     </div>

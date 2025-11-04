@@ -49,10 +49,11 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Skills are globally accessible - no registration needed
 
-        // Spawn a test Aminal
+        // Spawn a test Aminal - use 8 genes in first 8 slots
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[0].genes[i] = 1;
+        }
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -65,16 +66,14 @@ contract IndividualAminalTest is Test, IAminalStructs {
         assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
-        // Test visuals
+        // Test visuals - check first 8 genes are set to 1
         Visuals memory visuals = aminal.getVisuals();
-        assertEq(visuals.backId, 1);
-        assertEq(visuals.armId, 1);
-        assertEq(visuals.tailId, 1);
-        assertEq(visuals.earsId, 1);
-        assertEq(visuals.bodyId, 1);
-        assertEq(visuals.faceId, 1);
-        assertEq(visuals.mouthId, 1);
-        assertEq(visuals.miscId, 1);
+        for (uint256 i = 0; i < 8; i++) {
+            assertEq(visuals.genes[i], 1, "Gene should be set to 1");
+        }
+        // Last 2 slots should be 0
+        assertEq(visuals.genes[8], 0);
+        assertEq(visuals.genes[9], 0);
 
         // Test parents (should be zero addresses for initial Aminals)
         (address mom, address dad) = aminal.getParents();
@@ -164,7 +163,9 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        for (uint256 i = 0; i < 8; i++) {
+            additionalVisuals[0].genes[i] = 2;
+        }
         factory.spawnInitialAminals(additionalVisuals);
         address aminal2Address = factory.getAminalByIndex(1);
         AminalContract aminal2 = AminalContract(payable(aminal2Address));
@@ -185,7 +186,9 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        for (uint256 i = 0; i < 8; i++) {
+            additionalVisuals[0].genes[i] = 2;
+        }
         factory.spawnInitialAminals(additionalVisuals);
         // address aminal2Address = factory.getAminalByIndex(1); // Not needed for this test
 

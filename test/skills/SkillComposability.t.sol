@@ -49,8 +49,9 @@ contract SkillComposabilityTest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] =
-            Visuals({backId: 1, armId: 1, tailId: 1, earsId: 1, bodyId: 1, faceId: 1, mouthId: 1, miscId: 1});
+        for (uint256 i = 0; i < 8; i++) {
+            initialVisuals[0].genes[i] = 1;
+        }
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -111,7 +112,9 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        additionalVisuals[0] = Visuals(2, 2, 2, 2, 2, 2, 2, 2);
+        for (uint256 i = 0; i < 8; i++) {
+            additionalVisuals[0].genes[i] = 2;
+        }
         factory.spawnInitialAminals(additionalVisuals);
         address aminal2Address = factory.getAminalByIndex(1);
         AminalContract aminal2 = AminalContract(payable(aminal2Address));

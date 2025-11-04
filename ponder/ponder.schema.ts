@@ -31,8 +31,8 @@ export const factory = onchainTable("factory", (t) => ({
 /**
  * Aminal - Individual Aminal contracts (each Aminal is its own ERC-721)
  *
- * Breaking change from Graph: traits stored as array instead of 8 separate fields
- * traits array order: [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
+ * Breaking change: traits now support 1-10 flexible genes (no categories)
+ * Genes array can contain 1-10 gene IDs, with 0 indicating an empty slot
  */
 export const aminal = onchainTable("aminal", (t) => ({
   id: t.hex().primaryKey(), // Aminal contract address
@@ -47,9 +47,10 @@ export const aminal = onchainTable("aminal", (t) => ({
   // Auction info
   auctionId: t.bigint(), // Gene auction ID that created this child (null for genesis)
 
-  // Visual traits - array of 8 gene NFT IDs
-  // Order: [BACK, ARM, TAIL, EARS, BODY, FACE, MOUTH, MISC]
-  traits: t.bigint().array().notNull(),
+  // Visual traits - array of up to 10 gene NFT IDs (flexible system)
+  // No categories - any gene can be in any slot (0 means empty slot)
+  // Genes are rendered in order (gene[0] is background, gene[9] is foreground)
+  genes: t.bigint().array().notNull(),
 
   // State
   energy: t.bigint().notNull(),
@@ -105,11 +106,13 @@ export const relationship = onchainTable("relationship", (t) => ({
 
 /**
  * GeneNFT - Gene trait NFTs that can be used in breeding
+ *
+ * No categories - genes are flexible and can be placed anywhere
+ * Placement metadata is now per-Aminal (stored in auction design proposals)
  */
 export const geneNFT = onchainTable("geneNFT", (t) => ({
   id: t.hex().primaryKey(), // Genes contract address + token ID
   tokenId: t.bigint().notNull(),
-  traitType: t.integer().notNull(), // 0-7 for trait categories
 
   // Ownership
   ownerId: t.hex().notNull(),
@@ -139,10 +142,10 @@ export const geneNFT = onchainTable("geneNFT", (t) => ({
  * This is a many-to-many relationship for efficient querying
  */
 export const aminalGene = onchainTable("aminalGene", (t) => ({
-  id: t.hex().primaryKey(), // aminal address + gene token ID + trait type
+  id: t.hex().primaryKey(), // aminal address + gene token ID + slot index
   aminalId: t.hex().notNull(),
   geneNFTId: t.hex().notNull(),
-  traitType: t.integer().notNull(), // 0-7 for trait position (BACK, ARM, etc.)
+  slotIndex: t.integer().notNull(), // 0-9 for gene slot position (rendering order)
 }));
 
 // Composite indexes for lookups
@@ -155,7 +158,10 @@ export const aminalGene = onchainTable("aminalGene", (t) => ({
 // ============================================================================
 
 /**
- * GeneAuction - Breeding auctions where users vote on genes
+ * GeneAuction - Breeding auctions where users vote on complete designs
+ *
+ * Changed from per-trait voting to full-design voting
+ * Users propose complete 1-10 gene designs with placement metadata
  */
 export const geneAuction = onchainTable("geneAuction", (t) => ({
   id: t.hex().primaryKey(), // Composite: "auction" + auction ID
@@ -168,8 +174,8 @@ export const geneAuction = onchainTable("geneAuction", (t) => ({
   // Voting power
   totalLove: t.bigint().notNull(),
 
-  // Cached parent traits for optimization (same as Graph optimization)
-  // Array of 16 gene IDs: [parent1: 8 traits, parent2: 8 traits]
+  // Cached parent genes for optimization
+  // Array of up to 20 gene IDs: [parent1: up to 10 genes, parent2: up to 10 genes]
   parentGeneIds: t.bigint().array().notNull(),
 
   // Status
@@ -188,17 +194,26 @@ export const geneAuction = onchainTable("geneAuction", (t) => ({
 // CREATE INDEX gene_auctions_parents ON gene_auctions(aminalOneId, aminalTwoId);
 
 /**
- * GeneProposal - Proposed genes for a specific trait slot in an auction
+ * DesignProposal - Complete Aminal design proposed for an auction
+ *
+ * Changed from per-gene proposals to complete design proposals
+ * Each proposal contains 1-10 genes with placement metadata
  */
-export const geneProposal = onchainTable("geneProposal", (t) => ({
-  id: t.hex().primaryKey(), // auction ID + trait type + gene ID
+export const designProposal = onchainTable("designProposal", (t) => ({
+  id: t.hex().primaryKey(), // auction ID + design index
   auctionId: t.hex().notNull(),
-  geneNFTId: t.hex().notNull(),
-  traitType: t.integer().notNull(), // 0-7
+  designIndex: t.integer().notNull(), // Index of this design in the auction
   proposerId: t.hex().notNull(),
 
+  // Design genes (1-10 gene IDs, 0 for empty slots)
+  geneIds: t.bigint().array().notNull(),
+
+  // Placement metadata for each gene slot (serialized as JSON)
+  // Array of 10 placement objects: {offsetX, offsetY, scale, rotation}
+  placements: t.text().notNull(), // JSON string
+
   // Voting stats
-  loveVotes: t.bigint().notNull(),
+  votes: t.bigint().notNull(),
   removeVotes: t.bigint().notNull(),
   removed: t.boolean().notNull(),
 
@@ -213,17 +228,17 @@ export const geneProposal = onchainTable("geneProposal", (t) => ({
 // CREATE INDEX gene_proposals_auction_trait ON gene_proposals(auctionId, traitType);
 
 /**
- * GeneVote - Individual vote on a gene proposal
+ * DesignVote - Individual vote on a complete design proposal
  */
-export const geneVote = onchainTable("geneVote", (t) => ({
+export const designVote = onchainTable("designVote", (t) => ({
   id: t.hex().primaryKey(), // transaction hash + log index
   auctionId: t.hex().notNull(),
-  proposalId: t.hex().notNull(),
+  proposalId: t.hex().notNull(), // References designProposal
   voterId: t.hex().notNull(),
 
   // Vote details
   isRemoveVote: t.boolean().notNull(),
-  loveAmount: t.bigint().notNull(),
+  votingPower: t.bigint().notNull(), // User's love for both parents
 
   // Creation info
   blockNumber: t.bigint().notNull(),
@@ -356,8 +371,8 @@ export const userRelations = relations(user, ({ many }) => ({
   genesOwned: many(geneNFT, {
     relationName: "ownedGenes",
   }),
-  geneVotes: many(geneVote),
-  proposedGenes: many(geneProposal),
+  designVotes: many(designVote),
+  proposedDesigns: many(designProposal),
   receivedPayouts: many(geneCreatorPayout),
   feedEvents: many(feedEvent),
   skillEvents: many(skillUsedEvent),
@@ -385,7 +400,6 @@ export const geneNFTRelations = relations(geneNFT, ({ one, many }) => ({
     references: [user.id],
     relationName: "createdGenes",
   }),
-  proposals: many(geneProposal),
   payouts: many(geneCreatorPayout),
   aminalGenes: many(aminalGene),
 }));
@@ -416,41 +430,37 @@ export const geneAuctionRelations = relations(geneAuction, ({ one, many }) => ({
     fields: [geneAuction.childAminalId],
     references: [aminal.id],
   }),
-  proposals: many(geneProposal),
-  votes: many(geneVote),
+  designs: many(designProposal),
+  votes: many(designVote),
   payouts: many(geneCreatorPayout),
 }));
 
-export const geneProposalRelations = relations(
-  geneProposal,
+export const designProposalRelations = relations(
+  designProposal,
   ({ one, many }) => ({
     auction: one(geneAuction, {
-      fields: [geneProposal.auctionId],
+      fields: [designProposal.auctionId],
       references: [geneAuction.id],
     }),
-    geneNFT: one(geneNFT, {
-      fields: [geneProposal.geneNFTId],
-      references: [geneNFT.id],
-    }),
     proposer: one(user, {
-      fields: [geneProposal.proposerId],
+      fields: [designProposal.proposerId],
       references: [user.id],
     }),
-    votes: many(geneVote),
+    votes: many(designVote),
   })
 );
 
-export const geneVoteRelations = relations(geneVote, ({ one }) => ({
+export const designVoteRelations = relations(designVote, ({ one }) => ({
   auction: one(geneAuction, {
-    fields: [geneVote.auctionId],
+    fields: [designVote.auctionId],
     references: [geneAuction.id],
   }),
-  proposal: one(geneProposal, {
-    fields: [geneVote.proposalId],
-    references: [geneProposal.id],
+  proposal: one(designProposal, {
+    fields: [designVote.proposalId],
+    references: [designProposal.id],
   }),
   voter: one(user, {
-    fields: [geneVote.voterId],
+    fields: [designVote.voterId],
     references: [user.id],
   }),
 }));
@@ -496,35 +506,46 @@ export const skillUsedEventRelations = relations(skillUsedEvent, ({ one }) => ({
 }));
 
 /**
- * NOTES ON BREAKING CHANGES FROM GRAPH SCHEMA:
+ * NOTES ON BREAKING CHANGES:
  *
- * 1. Aminal.traits is now an array instead of 8 separate fields
- *    - Old: backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId
- *    - New: traits[0..7]
+ * 1. Aminal genes changed from 8 fixed categories to 1-10 flexible genes
+ *    - Old: 8 trait fields (backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId)
+ *    - New: genes array with 1-10 gene IDs (0 means empty slot)
  *    - Frontend will need to update to use array indexing
+ *    - No more categories - any gene can be in any slot
  *
- * 2. Table names use snake_case (Postgres convention)
- *    - Old: GeneNFT
- *    - New: gene_nfts
- *    - GraphQL will auto-generate camelCase field names
+ * 2. GeneNFT no longer has placement metadata or traitType
+ *    - Old: offsetX, offsetY, scale, rotation, traitType
+ *    - New: None - placement is now per-Aminal in designProposal
+ *    - Genes are category-free and can be used anywhere
  *
- * 3. All IDs now use consistent naming
- *    - aminalId instead of just aminal (for references)
- *    - Makes relationships clearer
+ * 3. Auction voting changed from per-trait to complete designs
+ *    - Old: geneProposal (vote on individual genes per trait slot)
+ *    - New: designProposal (vote on complete 1-10 gene designs with placement)
+ *    - Proposals include placement metadata for each gene
  *
- * 4. Removed contractAddress field duplication where id is already address
- *    - Kept for backward compatibility in some places
+ * 4. AminalGene join table updated
+ *    - Old: traitType (0-7 for BACK, ARM, etc.)
+ *    - New: slotIndex (0-9 for rendering order)
  *
- * 5. Timestamp fields remain as bigint for consistency with blocks
- *    - Could use Ponder's timestamp() type but bigint is fine
+ * 5. Parent gene caching in auctions
+ *    - Old: 16 gene IDs (8 per parent)
+ *    - New: up to 20 gene IDs (up to 10 per parent)
  *
  * MIGRATION PATH FOR FRONTEND:
  *
- * 1. Update trait access:
- *    OLD: aminal.backId, aminal.armId, etc.
- *    NEW: aminal.traits[0], aminal.traits[1], etc.
+ * 1. Update gene access:
+ *    OLD: aminal.traits[0..7] (8 fixed slots)
+ *    NEW: aminal.genes[0..9] (10 flexible slots, 0 for empty)
  *
- * 2. Query syntax mostly unchanged, filtering/pagination improved
+ * 2. Remove category-based filtering
+ *    OLD: Filter genes by traitType
+ *    NEW: All genes are equal, filter by other criteria
  *
- * 3. Relationship queries work similarly but with better type safety
+ * 3. Update auction proposal UI
+ *    OLD: Propose genes per trait type
+ *    NEW: Propose complete design with placement metadata
+ *
+ * 4. Placement metadata now lives in designProposal.placements (JSON)
+ *    Parse JSON to get placement for each gene slot
  */

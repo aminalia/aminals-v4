@@ -34,23 +34,20 @@ interface IAminalFactory is IAminalStructs {
      * @param momAddress Address of the mother Aminal (address(0) for genesis)
      * @param dadAddress Address of the father Aminal (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child
-     * @param winningGeneIds Array of 8 winning gene IDs for each trait category:
-     *   [0] BACK - Background/environment gene ID
-     *   [1] ARM - Limb/appendage gene ID
-     *   [2] TAIL - Tail variation gene ID
-     *   [3] EARS - Ear shape gene ID
-     *   [4] BODY - Body structure gene ID
-     *   [5] FACE - Facial features gene ID
-     *   [6] MOUTH - Mouth/expression gene ID
-     *   [7] MISC - Accessory/special gene ID
+     * @param winningGeneIds Array of 1-10 gene IDs (0 means no gene in that slot)
+     * @param placements Array of placement metadata for each gene (position, scale, rotation)
      *
      * @return newAminalAddress Address of the newly spawned Aminal contract
      *
      * @custom:emits AminalSpawned
      */
-    function spawnAminal(address momAddress, address dadAddress, uint256 auctionId, uint256[8] calldata winningGeneIds)
-        external
-        returns (address newAminalAddress);
+    function spawnAminal(
+        address momAddress,
+        address dadAddress,
+        uint256 auctionId,
+        uint256[10] calldata winningGeneIds,
+        GeneMetadata[10] calldata placements
+    ) external returns (address newAminalAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   🔍 QUERY OPERATIONS
@@ -87,7 +84,7 @@ interface IAminalFactory is IAminalStructs {
      * - aminalAddress must be a valid Aminal contract (verified via isAminal)
      *
      * @param aminalAddress Address of the Aminal to query
-     * @return visuals Complete Visuals struct containing all 8 trait gene IDs
+     * @return visuals Complete Visuals struct containing 1-10 gene IDs
      *
      * @custom:throws Invalid address if not a registered Aminal contract
      */

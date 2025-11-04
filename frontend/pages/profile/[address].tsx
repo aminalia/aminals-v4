@@ -382,7 +382,7 @@ const ProfilePage: NextPage = () => {
                         trait={{
                           id: gene.id,
                           tokenId: gene.tokenId.toString(),
-                          traitType: gene.traitType,
+                          traitType: 0, // Note: traitType removed - genes are flexible now
                           svg: gene.svg,
                           name: gene.name,
                           creator: {
@@ -429,9 +429,7 @@ const ProfilePage: NextPage = () => {
                                 {gene.name || `Gene #${gene.tokenId}`}
                               </h3>
                               <Badge variant="secondary" className="mt-1">
-                                {TRAIT_CATEGORIES[
-                                  gene.traitType as keyof typeof TRAIT_CATEGORIES
-                                ]?.name || `Type ${gene.traitType}`}
+                                Gene
                               </Badge>
                             </div>
                             <div className="text-right mt-2 sm:mt-0">
@@ -504,10 +502,10 @@ const ProfilePage: NextPage = () => {
                   </div>
                   <div className="bg-energy/10 border border-energy/30 rounded-xl p-4 text-center">
                     <div className="text-2xl font-bold text-energy">
-                      {userProfile.geneVotes?.length || 0}
+                      {userProfile.designVotes?.length || 0}
                     </div>
                     <div className="text-sm text-energy font-medium">
-                      Gene Votes Cast
+                      Design Votes Cast
                     </div>
                   </div>
                   <div className="bg-secondary/50 border border-border rounded-xl p-4 text-center">
@@ -521,14 +519,14 @@ const ProfilePage: NextPage = () => {
                 </div>
 
                 {/* Recent Votes */}
-                {userProfile.geneVotes && userProfile.geneVotes.length > 0 ? (
+                {userProfile.designVotes && userProfile.designVotes.length > 0 ? (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-foreground mb-4">
-                      Recent Gene Votes
+                      Recent Design Votes
                     </h3>
-                    {userProfile.geneVotes.slice(0, 5).map((vote) => {
-                      // Skip votes without proposal or gene data
-                      if (!vote.proposal?.geneNFT) return null;
+                    {userProfile.designVotes.slice(0, 5).map((vote: any) => {
+                      // Skip votes without proposal data
+                      if (!vote.proposal) return null;
 
                       return (
                         <div

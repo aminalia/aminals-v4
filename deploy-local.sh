@@ -38,7 +38,7 @@ echo "Core contracts deployed successfully!"
 
 # Step 2: Mint initial genes using mint-all-genes.sh script
 echo "Step 2: Minting initial genes (32 genes)..."
-./script/mint-all-genes2.sh
+./script/mint-all-genes.sh
 
 if [ $? -ne 0 ]; then
     echo "Initial genes minting failed"
@@ -56,7 +56,7 @@ echo "Step 3: Spawning initial Aminals..."
 forge script script/SpawnInitialAminals.s.sol \
     --rpc-url $RPC_URL \
     --private-key $PRIVATE_KEY \
-    --broadcast 
+    --broadcast
 
 if [ $? -eq 0 ]; then
     echo "Initial Aminals spawned successfully!"
