@@ -13,9 +13,6 @@ importers:
 
   frontend:
     dependencies:
-      '@metamask/rpc-errors':
-        specifier: ^7.0.2
-        version: 7.0.2
       '@ponder/client':
         specifier: ^0.13.9
         version: 0.13.14(@electric-sql/pglite@0.2.13)(@opentelemetry/api@1.9.0)(kysely@0.26.3)(pg@8.16.3)(typescript@5.9.3)
@@ -43,24 +40,6 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.60.5
         version: 5.90.5(react@18.3.1)
-      '@vanilla-extract/dynamic':
-        specifier: ^2.1.4
-        version: 2.1.4
-      '@vanilla-extract/sprinkles':
-        specifier: ^1.6.4
-        version: 1.6.4(@vanilla-extract/css@1.17.3)
-      base64-js:
-        specifier: ^1.5.1
-        version: 1.5.1
-      browserslist:
-        specifier: ^4.27.0
-        version: 4.27.0
-      buffer:
-        specifier: ^6.0.3
-        version: 6.0.3
-      caniuse-lite:
-        specifier: ^1.0.30001753
-        version: 1.0.30001753
       class-variance-authority:
         specifier: ^0.7.0
         version: 0.7.1
@@ -70,27 +49,15 @@ importers:
       critters:
         specifier: ^0.0.25
         version: 0.0.25
-      eventsource:
-        specifier: ^3.0.7
-        version: 3.0.7
-      fraction.js:
-        specifier: ^4.3.7
-        version: 4.3.7
-      ieee754:
-        specifier: ^1.2.1
-        version: 1.2.1
-      import-fresh:
-        specifier: ^3.3.1
-        version: 3.3.1
       lucide-react:
         specifier: ^0.525.0
         version: 0.525.0(react@18.3.1)
       next:
         specifier: ^14.0.1
         version: 14.2.33(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      normalize-range:
-        specifier: ^0.1.2
-        version: 0.1.2
+      ponder:
+        specifier: ^0.13.14
+        version: 0.13.14(@opentelemetry/api@1.9.0)(@types/node@18.19.130)(bufferutil@4.0.9)(hono@4.10.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.38.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12))(zod@4.1.12)
       react:
         specifier: ^18.2.0
         version: 18.3.1
@@ -106,9 +73,6 @@ importers:
       remark-gfm:
         specifier: ^4.0.1
         version: 4.0.1
-      styled-jsx:
-        specifier: ^5.1.1
-        version: 5.1.1(react@18.3.1)
       tailwind-merge:
         specifier: ^2.0.0
         version: 2.6.0
@@ -149,9 +113,6 @@ importers:
       eslint-config-prettier:
         specifier: ^9.0.0
         version: 9.1.2(eslint@8.57.1)
-      ponder:
-        specifier: ^0.13.14
-        version: 0.13.14(@opentelemetry/api@1.9.0)(@types/node@18.19.130)(bufferutil@4.0.9)(hono@4.10.3)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.38.4(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.1.12))(zod@4.1.12)
       postcss:
         specifier: ^8.4.31
         version: 8.5.6
