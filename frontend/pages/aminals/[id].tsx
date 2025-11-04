@@ -60,9 +60,9 @@ const AminalPage: NextPage = () => {
   const geneIds = useMemo(() => {
     if (!aminal) return [];
 
-    return aminal.traits
-      .filter((id) => id && id.toString() !== '0')
-      .map((id) => id.toString());
+    return aminal.genes
+      .filter((id: bigint) => id && id.toString() !== '0')
+      .map((id: bigint) => id.toString());
   }, [aminal]);
 
   // Fetch gene data for trait images
@@ -471,95 +471,55 @@ const AminalPage: NextPage = () => {
                           traitType: number;
                         }>
                       ) => {
-                        return traits.map((gene, i) => {
-                          // Find gene data for this trait
-                          const traitId = (gene as any).id;
-                          const geneInfo = geneData?.find(
-                            (g: any) => g?.tokenId === traitId
-                          );
-                          const geneId = geneInfo?.id || traitId || '';
+                        return aminal.genes
+                          .map((geneTokenId, slotIndex) => {
+                            // Skip empty gene slots
+                            if (!geneTokenId || geneTokenId === 0n) return null;
 
-                          return (
-                            <Link
-                              key={i}
-                              href={`/genes/${geneId}`}
-                              className="p-3 rounded-lg border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors"
-                            >
-                              <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-card rounded border border-border overflow-hidden flex-shrink-0">
-                                  {geneInfo?.svg ? (
-                                    <svg
-                                      viewBox="0 0 1000 1000"
-                                      className="w-full h-full"
-                                      dangerouslySetInnerHTML={{
-                                        __html: geneInfo.svg,
-                                      }}
-                                    />
-                                  ) : (
-                                    <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                                      ?
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="min-w-0 flex-1">
-                                  <div className="text-sm font-medium truncate">
-                                    {gene.name}
+                            // Find gene data for this gene
+                            const geneInfo = geneData?.find(
+                              (g: any) => g?.tokenId === geneTokenId
+                            );
+                            const geneId = geneInfo?.id || geneTokenId.toString() || '';
+
+                            return (
+                              <Link
+                                key={slotIndex}
+                                href={`/genes/${geneId}`}
+                                className="p-3 rounded-lg border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-card rounded border border-border overflow-hidden flex-shrink-0">
+                                    {geneInfo?.svg ? (
+                                      <svg
+                                        viewBox="0 0 1000 1000"
+                                        className="w-full h-full"
+                                        dangerouslySetInnerHTML={{
+                                          __html: geneInfo.svg,
+                                        }}
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                                        ?
+                                      </div>
+                                    )}
                                   </div>
-                                  {/*<div className="text-xs text-primary font-medium hover:text-primary/80 truncate">
-                                  Gene #{gene.id}
-                                </div>*/}
-                                  {geneInfo?.name && (
-                                    <div className="text-xs text-muted-foreground truncate">
-                                      {geneInfo.name}
+                                  <div className="min-w-0 flex-1">
+                                    <div className="text-sm font-medium truncate">
+                                      Slot {slotIndex}
                                     </div>
-                                  )}
+                                    {geneInfo?.name && (
+                                      <div className="text-xs text-muted-foreground truncate">
+                                        {geneInfo.name}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </Link>
-                          );
-                        });
-                      })([
-                        {
-                          name: 'Background',
-                          id: aminal.traits[0],
-                          traitType: 0,
-                        },
-                        {
-                          name: 'Arms',
-                          id: aminal.traits[1],
-                          traitType: 1,
-                        },
-                        {
-                          name: 'Tail',
-                          id: aminal.traits[2],
-                          traitType: 2,
-                        },
-                        {
-                          name: 'Ears',
-                          id: aminal.traits[3],
-                          traitType: 3,
-                        },
-                        {
-                          name: 'Body',
-                          id: aminal.traits[4],
-                          traitType: 4,
-                        },
-                        {
-                          name: 'Face',
-                          id: aminal.traits[5],
-                          traitType: 5,
-                        },
-                        {
-                          name: 'Mouth',
-                          id: aminal.traits[6],
-                          traitType: 6,
-                        },
-                        {
-                          name: 'Misc',
-                          id: aminal.traits[7],
-                          traitType: 7,
-                        },
-                      ])}
+                              </Link>
+                            );
+                          })
+                          .filter((item) => item !== null);
+                      })()}
                     </div>
                   </div>
                 </div>
