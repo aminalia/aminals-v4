@@ -59,10 +59,12 @@ export interface GeneAuctionWithRelations extends GeneAuction {
   payouts?: GeneCreatorPayout[];
 }
 
-export interface DesignProposalWithRelations extends DesignProposal {
+export interface DesignProposalWithRelations
+  extends Omit<DesignProposal, 'votes'> {
   auction?: GeneAuction;
   proposer?: User;
-  votes?: DesignVote[];
+  voteRecords?: DesignVote[]; // Renamed from votes to avoid conflict
+  votes: bigint; // Vote count from base DesignProposal
 }
 
 // Legacy alias (deprecated)

@@ -82,8 +82,7 @@ export type {
   Relationship,
   SkillUsedEvent,
   // Helper types
-  TraitArray,
-  TraitType,
+  // Note: TraitArray and TraitType removed - genes are now flexible (no categories)
   User,
   UserSingle,
   UserWithRelations,
