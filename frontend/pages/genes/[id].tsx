@@ -62,7 +62,7 @@ const GeneDetailPage: NextPage = () => {
   }
 
   // Note: traitType removed - genes are now flexible (no fixed categories)
-  const category = 'Gene'; // Placeholder
+  const category = { name: 'Gene', emoji: '🧬' }; // Placeholder
 
   // Get aminals that have this gene in their traits
   const aminalsWithGene = gene.aminals || [];

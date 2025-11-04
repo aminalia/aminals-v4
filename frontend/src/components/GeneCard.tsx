@@ -96,9 +96,9 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
           </CardHeader>
 
           <CardContent className="p-4 space-y-3">
-            {/* Metadata */}
+            {/* Metadata *\/}
             <div className="space-y-2">
-              {/* Proposer */}
+              {/* Proposer *\/}
               {gene.proposer && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Proposed by:</span>
@@ -109,7 +109,7 @@ const GeneCard = ({ gene, userLove }: GeneCardProps) => {
                 </div>
               )}
 
-              {/* Vote count */}
+              {/* Vote count *\/}
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Votes:</span>
                 <Badge variant="love" size="sm">

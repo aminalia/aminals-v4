@@ -154,8 +154,8 @@ const VoteStats = ({
     // Calculate correct totals accounting for bulk vote distribution
     const uniqueTransactions = Object.values(votesByVoterAndTx);
     const totalLoveSpent = uniqueTransactions.reduce((sum, tx) => {
-      // Each transaction represents the full love amount spent by that voter
-      return sum + tx.loveAmount;
+      // Each transaction represents the full voting power spent by that voter
+      return sum + tx.votingPower;
     }, 0);
 
     const uniqueVoters = new Set(uniqueTransactions.map((tx) => tx.voter)).size;
