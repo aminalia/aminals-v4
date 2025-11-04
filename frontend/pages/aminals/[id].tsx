@@ -5,6 +5,7 @@ import BreedingModal from '@components/BreedingModal';
 import { Button } from '@components/ui/Button';
 import { Tooltip } from '@components/ui/Tooltip';
 import { useAminalByContractAddress, useGenesByIds } from '@hooks';
+import type { GeneNFT } from '@/types/ponder';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -66,7 +67,9 @@ const AminalPage: NextPage = () => {
   }, [aminal]);
 
   // Fetch gene data for trait images
-  const { data: geneData } = useGenesByIds(geneIds);
+  const { data: geneData } = useGenesByIds(geneIds) as {
+    data: GeneNFT[] | undefined;
+  };
 
   // Children tracking removed from schema
 
@@ -464,23 +467,16 @@ const AminalPage: NextPage = () => {
                       <Tooltip content="Each Aminal has 8 trait types (Background, Arms, Tail, Ears, Body, Face, Mouth, Misc). Traits are Gene NFTs created by the community. Gene owners earn revenue when offspring inherit their genes." />
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
-                      {((
-                        traits: Array<{
-                          name: string;
-                          id: any;
-                          traitType: number;
-                        }>
-                      ) => {
-                        return aminal.genes
+                      {aminal.genes
                           .map((geneTokenId, slotIndex) => {
                             // Skip empty gene slots
                             if (!geneTokenId || geneTokenId === 0n) return null;
 
                             // Find gene data for this gene
                             const geneInfo = geneData?.find(
-                              (g: any) => g?.tokenId === geneTokenId
+                              (g) => g?.tokenId === geneTokenId
                             );
-                            const geneId = geneInfo?.id || geneTokenId.toString() || '';
+                            const geneId = geneInfo?.id || `0xgene-${geneTokenId}` || '';
 
                             return (
                               <Link
@@ -518,8 +514,7 @@ const AminalPage: NextPage = () => {
                               </Link>
                             );
                           })
-                          .filter((item) => item !== null);
-                      })()}
+                          .filter((item) => item !== null)}
                     </div>
                   </div>
                 </div>
