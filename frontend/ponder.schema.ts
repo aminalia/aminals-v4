@@ -11,7 +11,7 @@
  * 5. Explicit relationships using references and relations
  */
 
-import { onchainTable, relations } from "@ponder/client";
+import { onchainTable, relations } from "ponder";
 
 // ============================================================================
 // CORE ENTITIES
