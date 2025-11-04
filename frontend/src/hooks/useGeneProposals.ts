@@ -4,23 +4,22 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import * as schema from '../../ponder.schema';
 import type {
-  GeneNFT,
-  GeneProposal,
-  GeneProposalWithRelations,
-  GeneVote,
+  DesignProposal,
+  DesignProposalWithRelations,
+  DesignVote,
   User,
 } from '../types/ponder';
 
 // Re-export types
-export type { GeneNFT, GeneProposal, GeneProposalWithRelations, GeneVote };
+export type { DesignProposal, DesignProposalWithRelations, DesignVote };
 
 /**
- * Fetch gene proposals filtered by auction ID with related data
+ * Fetch design proposals filtered by auction ID with related data
  */
-export const useGeneProposalsByAuctionId = (
+export const useDesignProposalsByAuctionId = (
   auctionId: string
-): Omit<UseQueryResult<GeneProposal[], Error>, 'data'> & {
-  data: GeneProposalWithRelations[] | undefined;
+): Omit<UseQueryResult<DesignProposal[], Error>, 'data'> & {
+  data: DesignProposalWithRelations[] | undefined;
 } => {
   // Convert auction ID to Ponder format: 0xauction-{auctionId}
   const hexAuctionId = auctionId ? `0xauction-${auctionId}` : '';
@@ -30,23 +29,15 @@ export const useGeneProposalsByAuctionId = (
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneProposal)
+        .from(schema.designProposal)
         .where(
-          eq(schema.geneProposal.auctionId, hexAuctionId as `0x${string}`)
+          eq(schema.designProposal.auctionId, hexAuctionId as `0x${string}`)
         );
     },
     enabled: !!auctionId,
-  }) as UseQueryResult<GeneProposal[], Error>;
+  }) as UseQueryResult<DesignProposal[], Error>;
 
   const proposals = proposalsResult.data;
-
-  // Collect all unique gene NFT IDs
-  const geneNFTIds = useMemo(() => {
-    if (!proposals) return [];
-    return Array.from(
-      new Set(proposals.map((p) => p.geneNFTId).filter((id) => id))
-    );
-  }, [proposals]);
 
   // Collect all unique proposer IDs
   const proposerIds = useMemo(() => {
@@ -55,24 +46,6 @@ export const useGeneProposalsByAuctionId = (
       new Set(proposals.map((p) => p.proposerId).filter((id) => id))
     );
   }, [proposals]);
-
-  // Fetch all gene NFTs
-  const geneNFTsResult = usePonderQuery({
-    queryFn: (db) => {
-      if (geneNFTIds.length === 0) {
-        return db
-          .select()
-          .from(schema.geneNFT)
-          .where(eq(schema.geneNFT.id, '' as `0x${string}`))
-          .limit(0);
-      }
-      return db
-        .select()
-        .from(schema.geneNFT)
-        .where(inArray(schema.geneNFT.id, geneNFTIds as `0x${string}`[]));
-    },
-    enabled: geneNFTIds.length > 0,
-  }) as UseQueryResult<GeneNFT[], Error>;
 
   // Fetch all proposers
   const proposersResult = usePonderQuery({
@@ -94,15 +67,9 @@ export const useGeneProposalsByAuctionId = (
 
   // Process data to add relations
   const processedData = useMemo(() => {
-    if (!proposals || !geneNFTsResult.data || !proposersResult.data) {
+    if (!proposals || !proposersResult.data) {
       return undefined;
     }
-
-    // Create lookup maps
-    const geneNFTMap = new Map<string, GeneNFT>();
-    geneNFTsResult.data.forEach((gene) => {
-      geneNFTMap.set(gene.id, gene);
-    });
 
     const proposerMap = new Map<string, User>();
     proposersResult.data.forEach((user) => {
@@ -112,14 +79,16 @@ export const useGeneProposalsByAuctionId = (
     // Map proposals to include relations
     return proposals.map((proposal) => ({
       ...proposal,
-      geneNFT: geneNFTMap.get(proposal.geneNFTId),
       proposer: proposerMap.get(proposal.proposerId),
       // We already have auctionId, no need to fetch full auction here
-    })) as GeneProposalWithRelations[];
-  }, [proposals, geneNFTsResult.data, proposersResult.data]);
+    })) as DesignProposalWithRelations[];
+  }, [proposals, proposersResult.data]);
 
   return {
     ...proposalsResult,
     data: processedData,
   };
 };
+
+// Legacy alias (deprecated)
+export const useGeneProposalsByAuctionId = useDesignProposalsByAuctionId;
