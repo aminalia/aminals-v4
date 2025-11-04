@@ -217,15 +217,18 @@ export default function BulkVoteButton({
         timestamp: new Date().toISOString(),
       });
 
+      // TODO: Update for design-based voting
+      // Note: bulkVoteOnGenes no longer exists - designs are voted as complete units
+      // Commenting out to fix build - needs refactoring
+      console.warn('BulkVoteButton needs refactoring for design-based voting');
+      /*
       writeContract({
         abi: geneAuctionAbi,
         address: geneAuctionAddress,
-        functionName: 'bulkVoteOnGenes',
-        args: [
-          BigInt(auctionId),
-          geneIds, // 8-element tuple as required by contract
-        ],
+        functionName: 'voteOnDesign',
+        args: [BigInt(auctionId), designIndex],
       });
+      */
     } else {
       console.warn('⚠️ Bulk vote attempted but wallet not connected:', {
         isConnected,

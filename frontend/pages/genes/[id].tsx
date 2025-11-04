@@ -61,8 +61,8 @@ const GeneDetailPage: NextPage = () => {
     );
   }
 
-  const category =
-    TRAIT_CATEGORIES[gene.traitType as keyof typeof TRAIT_CATEGORIES];
+  // Note: traitType removed - genes are now flexible (no fixed categories)
+  const category = 'Gene'; // Placeholder
 
   // Get aminals that have this gene in their traits
   const aminalsWithGene = gene.aminals || [];

@@ -57,8 +57,7 @@ const VoteStats = ({
         const votingPower = Number(vote.votingPower || 0n);
 
         // Skip for now - this component needs complete refactoring
-        return;
-
+        /*
         if (!stats[traitType]) {
           stats[traitType] = {};
         }
@@ -77,6 +76,7 @@ const VoteStats = ({
           // Divide love amount by bulk vote size to get actual love per gene
           stats[traitType][geneId].totalLove += loveAmount / bulkVoteSize;
         }
+        */
       });
     });
 
