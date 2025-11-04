@@ -55,6 +55,29 @@ import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
  */
 contract AminalFactory is IAminalFactory, Initializable, Ownable {
     // ═══════════════════════════════════════════════════════════════════════════════════
+    //                                     ⚠️ CUSTOM ERRORS
+    // ═══════════════════════════════════════════════════════════════════════════════════
+
+    error CallerNotAminal();
+    error CallerNotAuction();
+    error CallerNotProposal();
+    error InvalidAuctionAddress();
+    error InvalidProposalsAddress();
+    error InvalidGenesAddress();
+    error VRGDAAlreadyDeployed();
+    error GenesisAlreadyCompleted();
+    error MustSpawnAtLeastOne();
+    error InvalidParentOne();
+    error InvalidParentTwo();
+    error InvalidAminalAddresses();
+    error CannotBreedWithSelf();
+    error InsufficientLove();
+    error InsufficientEnergy();
+    error IndexOutOfBounds();
+    error NotRegisteredAminal();
+    error VRGDANotDeployed();
+
+    // ═══════════════════════════════════════════════════════════════════════════════════
     //                                     📊 CONSTANTS
     // ═══════════════════════════════════════════════════════════════════════════════════
 
@@ -148,7 +171,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Restricts function access to registered Aminal contracts only
      */
     modifier onlyAminal() {
-        require(isAminal[msg.sender], "AminalFactory: caller must be registered Aminal");
+        if (!isAminal[msg.sender]) revert CallerNotAminal();
         _;
     }
 
@@ -156,7 +179,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Restricts function access to the gene auction contract only
      */
     modifier onlyAuction() {
-        require(msg.sender == address(geneAuction), "AminalFactory: caller must be auction contract");
+        if (msg.sender != address(geneAuction)) revert CallerNotAuction();
         _;
     }
 
@@ -164,7 +187,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Restricts function access to the governance proposal contract only
      */
     modifier onlyProposal() {
-        require(msg.sender == address(proposals), "AminalFactory: caller must be proposal contract");
+        if (msg.sender != address(proposals)) revert CallerNotProposal();
         _;
     }
 
@@ -193,9 +216,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param _genes Address of the gene NFT contract
      */
     function initialize(address _geneAuction, address _aminalProposals, address _genes) external initializer onlyOwner {
-        require(_geneAuction != address(0), "AminalFactory: invalid auction address");
-        require(_aminalProposals != address(0), "AminalFactory: invalid proposals address");
-        require(_genes != address(0), "AminalFactory: invalid genes address");
+        if (_geneAuction == address(0)) revert InvalidAuctionAddress();
+        if (_aminalProposals == address(0)) revert InvalidProposalsAddress();
+        if (_genes == address(0)) revert InvalidGenesAddress();
 
         geneAuction = GeneAuction(_geneAuction);
         genes = Genes(_genes);
@@ -211,7 +234,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * - Uses predefined constants for optimal love curve parameters
      */
     function setup() external onlyOwner {
-        require(address(loveVRGDA) == address(0), "AminalFactory: VRGDA already deployed");
+        if (address(loveVRGDA) != address(0)) revert VRGDAAlreadyDeployed();
 
         // Deploy VRGDA with optimal parameters for love curves
         loveVRGDA = new AminalVRGDA(
@@ -240,8 +263,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      *  the digital Adam and Eve of the blockchain paradise."
      */
     function spawnInitialAminals(Visuals[] calldata _visuals) external onlyOwner {
-        require(!initialAminalSpawned, "AminalFactory: genesis already completed");
-        require(_visuals.length > 0, "AminalFactory: must spawn at least one genesis Aminal");
+        if (initialAminalSpawned) revert GenesisAlreadyCompleted();
+        if (_visuals.length == 0) revert MustSpawnAtLeastOne();
 
         initialAminalSpawned = true;
 
@@ -288,8 +311,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         uint256[MAX_GENES] calldata winningGeneIds,
         GeneMetadata[MAX_GENES] calldata placements
     ) external onlyAuction returns (address childAddress) {
-        require(isAminal[parentOne], "AminalFactory: invalid parent one");
-        require(isAminal[parentTwo], "AminalFactory: invalid parent two");
+        if (!isAminal[parentOne]) revert InvalidParentOne();
+        if (!isAminal[parentTwo]) revert InvalidParentTwo();
 
         return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds, placements);
     }
@@ -313,21 +336,20 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      *  through algorithms of affection, creating new life from pure emotion"
      */
     function breedAminals(address aminalOne, address aminalTwo) external returns (uint256 auctionId) {
-        require(isAminal[aminalOne] && isAminal[aminalTwo], "AminalFactory: invalid Aminal addresses");
-        require(aminalOne != aminalTwo, "AminalFactory: cannot breed with self");
+        if (!isAminal[aminalOne] || !isAminal[aminalTwo]) revert InvalidAminalAddresses();
+        if (aminalOne == aminalTwo) revert CannotBreedWithSelf();
 
         AminalContract aminal1 = AminalContract(payable(aminalOne));
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
         // Check if caller has sufficient love for both Aminals
-        require(aminal1.getLoveByUser(msg.sender) >= MIN_LOVE_REQUIRED, "AminalFactory: insufficient love");
-        require(aminal2.getLoveByUser(msg.sender) >= MIN_LOVE_REQUIRED, "AminalFactory: insufficient love");
+        if (aminal1.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        if (aminal2.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
 
         // Check if both Aminals have sufficient energy to breed
-        require(
-            aminal1.getEnergy() >= MIN_ENERGY_REQUIRED && aminal2.getEnergy() >= MIN_ENERGY_REQUIRED,
-            "AminalFactory: insufficient energy for breeding"
-        );
+        if (aminal1.getEnergy() < MIN_ENERGY_REQUIRED || aminal2.getEnergy() < MIN_ENERGY_REQUIRED) {
+            revert InsufficientEnergy();
+        }
 
         // Calculate total love investment from caller for both Aminals
         uint256 totalLove = aminal1.getLoveByUser(msg.sender) + aminal2.getLoveByUser(msg.sender);
@@ -355,7 +377,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @return aminalAddress Address of the Aminal at specified index
      */
     function getAminalByIndex(uint256 index) external view returns (address aminalAddress) {
-        require(index < totalAminals, "AminalFactory: index out of bounds");
+        if (index >= totalAminals) revert IndexOutOfBounds();
         return aminalsByIndex[index];
     }
 
@@ -367,7 +389,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @return visuals Complete Visuals struct with all trait gene IDs
      */
     function getAminalVisualsByAddress(address aminalAddress) external view returns (Visuals memory visuals) {
-        require(isAminal[aminalAddress], "AminalFactory: not a registered Aminal");
+        if (!isAminal[aminalAddress]) revert NotRegisteredAminal();
         return AminalContract(payable(aminalAddress)).getVisuals();
     }
 
@@ -392,7 +414,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         uint256[MAX_GENES] memory geneIds,
         GeneMetadata[MAX_GENES] memory placements
     ) internal returns (address childAddress) {
-        require(address(loveVRGDA) != address(0), "AminalFactory: VRGDA not deployed");
+        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
 
         // Construct visual genetics for the new Aminal
         Visuals memory visuals = Visuals({genes: geneIds});
