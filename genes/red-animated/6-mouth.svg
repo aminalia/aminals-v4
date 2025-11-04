@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <g id="mouth">
+    <rect width="77" height="45" x="461" y="335" fill="#0a3035" rx="22" ry="22"/>
+    <path fill="#fffbd0" d="M492 336c0 2-2 5-5 5s-5-2-5-5M518 336c0 2-2 5-5 5s-5-2-5-5"/>
+    <circle cx="499" cy="364" r="13" fill="#001a2a"/>
+    <path fill="#7c0506" d="M485 380c0-8 7-12 14-12s14 4 14 12"/>
+  </g>
+</svg>
