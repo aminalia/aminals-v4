@@ -334,11 +334,12 @@ function CreateGenePage({
 
     setIsCreating(true);
 
+    // Note: Genes are now flexible - no category parameter needed
     writeContract({
       address: geneRegistryAddress,
       abi: geneRegistryAbi,
       functionName: 'createGene',
-      args: [svg, category],
+      args: [svg],
     });
   };
 

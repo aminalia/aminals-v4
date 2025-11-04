@@ -238,7 +238,7 @@ export default function ProposeButton({
       return;
     }
 
-    if (geneInfo && geneInfo[1] !== catId) {
+    if (geneInfo && Number(geneInfo[1]) !== catId) {
       const actualCategory =
         CATEGORIES[Number(geneInfo[1])]?.label || 'Unknown';
       const selectedCategory = CATEGORIES[catId]?.label || 'Unknown';
@@ -277,7 +277,7 @@ export default function ProposeButton({
 
   const isTransacting = isPending || isConfirming;
   const canPropose =
-    enabled && vizId > 0 && isValidGene && (!geneInfo || geneInfo[1] === catId);
+    enabled && vizId > 0 && isValidGene && (!geneInfo || Number(geneInfo[1]) === catId);
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -330,7 +330,7 @@ export default function ProposeButton({
           ? 'Enter gene ID'
           : !isValidGene
           ? 'Gene not found'
-          : geneInfo && geneInfo[1] !== catId
+          : geneInfo && Number(geneInfo[1]) !== catId
           ? 'Wrong category'
           : 'Propose New Gene'}
       </Button>
@@ -342,7 +342,7 @@ export default function ProposeButton({
             <span className="text-destructive">
               ❌ Gene ID {vizId} not found
             </span>
-          ) : geneInfo && geneInfo[1] !== catId ? (
+          ) : geneInfo && Number(geneInfo[1]) !== catId ? (
             <span className="text-warning">
               ⚠️ Gene is {CATEGORIES[Number(geneInfo[1])]?.label}, not{' '}
               {CATEGORIES[catId]?.label}
