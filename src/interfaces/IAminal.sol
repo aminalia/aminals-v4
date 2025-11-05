@@ -22,11 +22,6 @@ interface IAminal is IAminalStructs {
                            EXPRESSION MECHANICS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Express through the Aminal's voice by consuming love and energy
-    /// @param amount The intensity of the squeak (love and energy required)
-    /// @custom:deprecated This function may be deprecated in future versions
-    function squeak(uint256 amount) external payable;
-
     /// @notice Factory-only function to consume love and energy on behalf of a user
     /// @param user The user whose love should be consumed
     /// @param amount The amount of love and energy to consume

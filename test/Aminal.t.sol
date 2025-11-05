@@ -8,6 +8,7 @@ import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
+import {SqueakSkill} from "src/skills/SqueakSkill.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
@@ -18,6 +19,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
     Genes public genes;
     GeneRegistry public geneFactory;
     Move2D public move2DSkill;
+    SqueakSkill public squeakSkill;
 
     AminalContract public aminal;
 
@@ -40,8 +42,9 @@ contract IndividualAminalTest is Test, IAminalStructs {
         geneAuction.setup(address(factory));
         factory.setup();
 
-        // Deploy a skill
+        // Deploy skills
         move2DSkill = new Move2D(address(factory));
+        squeakSkill = new SqueakSkill();
 
         // Skills are globally accessible - no registration needed
 
@@ -127,9 +130,10 @@ contract IndividualAminalTest is Test, IAminalStructs {
         uint256 initialEnergy = aminal.getEnergy();
         uint256 initialLove = aminal.getLoveByUser(alice);
 
-        // Squeak
+        // Squeak using the skill
         vm.prank(alice);
-        aminal.squeak{value: 0.001 ether}(1000);
+        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 1000);
+        aminal.useSkill(address(squeakSkill), squeakData);
 
         // Energy should decrease
         assertTrue(aminal.getEnergy() < initialEnergy);
@@ -140,10 +144,11 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalSqueakingWithoutLove() public {
         vm.deal(alice, 1 ether);
 
-        // Try to squeak without love
+        // Try to squeak without love using the skill
         vm.prank(alice);
+        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 1000);
         vm.expectRevert();
-        aminal.squeak{value: 0.001 ether}(1000);
+        aminal.useSkill(address(squeakSkill), squeakData);
     }
 
     function testAminalBreedingSettings() public {
