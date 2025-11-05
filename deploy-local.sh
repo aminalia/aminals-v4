@@ -27,7 +27,7 @@ echo "Step 1: Deploying core contracts..."
 forge script script/DeployContracts.s.sol \
     --rpc-url $RPC_URL \
     --private-key $PRIVATE_KEY \
-    --broadcast
+    --broadcast 
 
 # if [ $? -ne 0 ]; then
 #     echo "Core contract deployment failed"
