@@ -4,10 +4,8 @@ pragma solidity 0.8.20;
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalFactory} from "src/interfaces/IAminalFactory.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
-import {IProposals} from "src/interfaces/IProposals.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
@@ -45,7 +43,6 @@ import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
  * - 📋 Maintain registry of all Aminals in the ecosystem
  * - 💞 Orchestrate breeding ceremonies through gene auctions
  * - 🧬 Interface with Gene NFT system for trait inheritance
- * - 🏛️ Connect to governance proposals for ecosystem evolution
  * - 🎭 Spawn genesis Aminals to seed the initial population
  *
  * @author The Aminals Collective
@@ -58,9 +55,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     error CallerNotAminal();
     error CallerNotAuction();
-    error CallerNotProposal();
     error InvalidAuctionAddress();
-    error InvalidProposalsAddress();
     error InvalidGenesAddress();
     error VRGDAAlreadyDeployed();
     error GenesisAlreadyCompleted();
@@ -125,9 +120,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Gene auction system for breeding mechanics 🧬
     GeneAuction public geneAuction;
 
-    /// @notice Governance system for ecosystem evolution 🏛️
-    AminalProposals public proposals;
-
     /// @notice Gene NFT system for trait management 🎨
     Genes public genes;
 
@@ -189,14 +181,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     }
 
     /**
-     * @notice Restricts function access to the governance proposal contract only
-     */
-    modifier onlyProposal() {
-        if (msg.sender != address(proposals)) revert CallerNotProposal();
-        _;
-    }
-
-    /**
      * @notice Ensures factory is fully initialized before critical operations
      */
     modifier whenInitialized() {
@@ -218,24 +202,21 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     /**
      * @notice Initialize external contract dependencies
-     * @dev Sets up connections to auction, proposal, and gene systems
+     * @dev Sets up connections to auction and gene systems
      *
      * Requirements:
      * - Can only be called once due to initializer modifier
      * - Must be called by contract owner
      *
      * @param _geneAuction Address of the gene auction contract
-     * @param _aminalProposals Address of the governance proposals contract
      * @param _genes Address of the gene NFT contract
      */
-    function initialize(address _geneAuction, address _aminalProposals, address _genes) external initializer onlyOwner {
+    function initialize(address _geneAuction, address _genes) external initializer onlyOwner {
         if (_geneAuction == address(0)) revert InvalidAuctionAddress();
-        if (_aminalProposals == address(0)) revert InvalidProposalsAddress();
         if (_genes == address(0)) revert InvalidGenesAddress();
 
         geneAuction = GeneAuction(_geneAuction);
         genes = Genes(_genes);
-        proposals = AminalProposals(_aminalProposals);
     }
 
     /**

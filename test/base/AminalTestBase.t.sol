@@ -8,7 +8,6 @@ import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
@@ -19,7 +18,6 @@ import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 abstract contract AminalTestBase is Test, IAminalStructs {
     AminalFactory public factory;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
     Genes public genes;
     GeneRegistry public geneRegistry;
 
@@ -34,16 +32,14 @@ abstract contract AminalTestBase is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
 
         // Deploy AminalFactory
         factory = new AminalFactory();
-        factory.initialize(address(geneAuction), address(proposals), address(genes));
+        factory.initialize(address(geneAuction), address(genes));
 
         // Setup contracts
         genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory)); // AminalFactory is the aminalsContract
-        proposals.setup(address(factory));
         factory.setup();
 
         // Give test accounts ETH

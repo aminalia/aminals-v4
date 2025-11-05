@@ -8,7 +8,6 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
 /**
@@ -21,7 +20,6 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     Genes public genes;
     GeneRegistry public geneRegistry;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
 
     address public alice = address(0x1);
     address public bob = address(0x2);
@@ -35,14 +33,11 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
         aminalFactory = new AminalFactory();
 
         // Initialize contracts
-        aminalFactory.initialize(address(geneAuction), address(proposals), address(genes));
         genes.setup(address(aminalFactory), address(geneRegistry));
         geneAuction.setup(address(aminalFactory));
-        proposals.setup(address(aminalFactory));
         aminalFactory.setup();
 
         // Give test users ETH
