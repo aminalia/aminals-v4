@@ -85,7 +85,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
     /// @notice Complete Aminal design proposal (1-10 genes with placement info)
     struct AminalDesign {
-        uint256[9] geneIds; // Up to 10 gene NFT IDs (0 = unused slot)
+        uint256[9] geneIds; // Up to 9 gene NFT IDs (0 = unused slot)
         address proposer; // Address that proposed this design
         uint256 votes; // Total voting power for this design
         bool removed; // Whether this design has been removed
