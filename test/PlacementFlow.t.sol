@@ -86,7 +86,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneMetadata[9] memory placements = aminal.getPlacements();
 
         // Verify all placements are default (centered, 100% scale, 0° rotation)
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             assertEq(placements[i].offsetX, 0, "Default offsetX should be 0");
             assertEq(placements[i].offsetY, 0, "Default offsetY should be 0");
             assertEq(placements[i].scale, 100, "Default scale should be 100");
@@ -105,7 +105,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         customPlacements[2] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 200, rotation: 180});
 
         // Set remaining to default
-        for (uint256 i = 3; i < 10; i++) {
+        for (uint256 i = 3; i < 9; i++) {
             customPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
@@ -177,7 +177,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         designPlacements[2] = GeneMetadata({offsetX: 25, offsetY: -25, scale: 80, rotation: 45}); // Face offset, scaled, rotated
 
         // Fill remaining slots with default placement
-        for (uint256 i = 3; i < 10; i++) {
+        for (uint256 i = 3; i < 9; i++) {
             designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
@@ -345,7 +345,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
             rotation: 359 // Max rotation
         });
 
-        for (uint256 i = 1; i < 10; i++) {
+        for (uint256 i = 1; i < 9; i++) {
             designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
@@ -409,7 +409,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneAuction.AminalDesign memory parentDesign = geneAuction.getDesign(auctionId, 1);
 
         // Verify parent design has default placements
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             assertEq(parentDesign.placements[i].offsetX, 0, "Parent design offsetX should be default");
             assertEq(parentDesign.placements[i].offsetY, 0, "Parent design offsetY should be default");
             assertEq(parentDesign.placements[i].scale, 100, "Parent design scale should be default");
@@ -457,7 +457,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneMetadata[9] memory designPlacements;
         designPlacements[0] = GeneMetadata({offsetX: 123, offsetY: -456, scale: 175, rotation: 270});
 
-        for (uint256 i = 1; i < 10; i++) {
+        for (uint256 i = 1; i < 9; i++) {
             designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
@@ -516,7 +516,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneMetadata[9] memory designPlacements;
         designPlacements[0] = GeneMetadata({offsetX: 42, offsetY: -84, scale: 133, rotation: 99});
 
-        for (uint256 i = 1; i < 10; i++) {
+        for (uint256 i = 1; i < 9; i++) {
             designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 

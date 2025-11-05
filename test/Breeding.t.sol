@@ -291,7 +291,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function _getDefaultPlacements() internal pure returns (GeneMetadata[9] memory placements) {
         // Default placement: centered, 100% scale, no rotation
         GeneMetadata memory defaultPlacement = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             placements[i] = defaultPlacement;
         }
     }
@@ -488,7 +488,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         Visuals memory childVisuals = child.getVisuals();
 
         console.log("Child Aminal created with complete design:");
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             if (childVisuals.genes[i] != 0) {
                 console.log("- Gene slot", i, ":", childVisuals.genes[i]);
             }
@@ -496,7 +496,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Verify at least one trait is set (not all zero)
         bool hasNonZeroTraits = false;
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             if (childVisuals.genes[i] != 0) {
                 hasNonZeroTraits = true;
                 break;

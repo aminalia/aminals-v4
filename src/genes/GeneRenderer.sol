@@ -90,8 +90,8 @@ abstract contract GeneRenderer is IAminalStructs {
         string memory attributes = "";
         bool firstAttribute = true;
 
-        // Iterate through all gene slots (0-9)
-        for (uint256 i = 0; i < 10; i++) {
+        // Iterate through all gene slots (0-8)
+        for (uint256 i = 0; i < 9; i++) {
             uint256 geneId = visuals.genes[i];
 
             if (geneId != 0) {
