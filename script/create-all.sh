@@ -200,11 +200,11 @@ for folder in genes/*/; do
     echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"
     echo ""
 
-    # Array to store gene IDs for this Aminal (indices 0-9)
+    # Array to store gene IDs for this Aminal (indices 0-8, MAX_GENES=9)
     declare -a GENE_IDS=()
 
-    # Loop through traits 0-9
-    for i in {0..9}; do
+    # Loop through traits 0-8
+    for i in {0..8}; do
         # Find any file starting with "${i}-" in the folder
         file=$(find "$folder" -maxdepth 1 -name "${i}-*.svg" -print -quit)
 
@@ -231,14 +231,14 @@ for folder in genes/*/; do
 
     echo ""
     echo -e "${CYAN}  Gene mapping for $display_name:${NC}"
-    echo -e "${CYAN}    [${GENE_IDS[0]}, ${GENE_IDS[1]}, ${GENE_IDS[2]}, ${GENE_IDS[3]}, ${GENE_IDS[4]}, ${GENE_IDS[5]}, ${GENE_IDS[6]}, ${GENE_IDS[7]}, ${GENE_IDS[8]}, ${GENE_IDS[9]}]${NC}"
+    echo -e "${CYAN}    [${GENE_IDS[0]}, ${GENE_IDS[1]}, ${GENE_IDS[2]}, ${GENE_IDS[3]}, ${GENE_IDS[4]}, ${GENE_IDS[5]}, ${GENE_IDS[6]}, ${GENE_IDS[7]}, ${GENE_IDS[8]}]${NC}"
     echo ""
 
     # Store this gene array for spawning later
-    ALL_AMINAL_GENES+=("${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]},${GENE_IDS[9]}")
+    ALL_AMINAL_GENES+=("${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]}")
 
     # Add aminal gene mapping to deployment summary
-    GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg name "$aminal_name" --arg display "$display_name" --argjson genes "[${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]},${GENE_IDS[9]}]" \
+    GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg name "$aminal_name" --arg display "$display_name" --argjson genes "[${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]}]" \
         '.aminals[$name] = {"displayName": $display, "geneIds": $genes}')
 done
 
@@ -262,7 +262,7 @@ else
     VISUALS_ARRAY="["
     for i in "${!ALL_AMINAL_GENES[@]}"; do
         IFS=',' read -ra GENES <<< "${ALL_AMINAL_GENES[$i]}"
-        VISUALS_ARRAY+="([${GENES[0]},${GENES[1]},${GENES[2]},${GENES[3]},${GENES[4]},${GENES[5]},${GENES[6]},${GENES[7]},${GENES[8]},${GENES[9]}])"
+        VISUALS_ARRAY+="([${GENES[0]},${GENES[1]},${GENES[2]},${GENES[3]},${GENES[4]},${GENES[5]},${GENES[6]},${GENES[7]},${GENES[8]}])"
         if [ $i -lt $((${#ALL_AMINAL_GENES[@]} - 1)) ]; then
             VISUALS_ARRAY+=","
         fi
@@ -273,12 +273,14 @@ else
     echo -e "${CYAN}Visuals array: $VISUALS_ARRAY${NC}"
     echo ""
 
-    # Call spawnInitialAminals on the factory
+    # Call spawnInitialAminals on the factory with explicit gas limit
+    # Gas limit set high enough for spawning multiple aminals (each aminal deployment costs ~2-3M gas)
     cast send $AMINAL_FACTORY \
-        'spawnInitialAminals((uint256[10])[])' \
+        'spawnInitialAminals((uint256[9])[])' \
         "$VISUALS_ARRAY" \
         --private-key $PRIVATE_KEY \
-        --rpc-url $RPC_URL
+        --rpc-url $RPC_URL \
+        --gas-limit 30000000
 
     if [ $? -eq 0 ]; then
         echo ""

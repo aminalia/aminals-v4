@@ -15,7 +15,7 @@ export default defineConfig({
     {
       abi: ABI.AminalFactory.abi,
       name: 'AminalFactory',
-      address: '0x4b938B36E4425235DD10ea103c1B5104652CAdd7',
+      address: '0xcC13d6872c343007B34A1C0a6e5EaAF0D2dACd0C',
     },
     {
       abi: ABI.Aminal.abi,
@@ -26,22 +26,22 @@ export default defineConfig({
     {
       abi: ABI.GeneAuction.abi,
       name: 'GeneAuction',
-      address: '0xF7dD65fbFb00424F92B4f82a3067b19e701107B0',
+      address: '0x4c99c3bf6732c66D31c9bEEe7Aabc5d83b398E09',
     },
     {
       abi: ABI.Genes.abi,
       name: 'Genes',
-      address: '0x47998dC9f4617bE031642954250544De34ebB17E',
+      address: '0x2B5c0FDD243D14708507f5754EEA9308F1B6229E',
     },
     {
       abi: ABI.GeneRegistry.abi,
       name: 'GeneRegistry',
-      address: '0xfbd88f99b014A01820EB3336CedE1713acB361ec',
+      address: '0x3866Ee60CF6F3A98793ecE4Bb03aEB82BB81406D',
     },
     {
       abi: ABI.Move2D.abi,
       name: 'Move2D',
-      address: '0xf7A7a163B7ca89E351F3B223e9A5B6a6551D14f6',
+      address: '0x4D006B8d0c84A2C1D82ECD7F9a1a7D6F4d6604B2',
     },
   ],
 });
