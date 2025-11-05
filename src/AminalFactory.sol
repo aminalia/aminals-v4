@@ -162,6 +162,12 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      */
     event BreedAminal(address indexed aminalOne, address indexed aminalTwo, uint256 auctionId);
 
+    /**
+     * @notice Emitted when VRGDA is deployed
+     * @param vrgdaAddress Address of the deployed VRGDA contract
+     */
+    event VRGDADeployed(address indexed vrgdaAddress);
+
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                      🛡️ MODIFIERS
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -250,6 +256,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             VRGDA_LOGISTIC_ASYMPTOTE, // Maximum units in logistic curve
             VRGDA_TIME_SCALE // Time scaling factor for smooth curves
         );
+
+        emit VRGDADeployed(address(loveVRGDA));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════

@@ -76,6 +76,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Mapping from gene ID to failed payout information
     mapping(uint256 => FailedPayout) public failedPayouts;
 
+    /// @notice Mapping from auction ID to pause status
+    mapping(uint256 => bool) public pausedAuctions;
+
     /*//////////////////////////////////////////////////////////////
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
@@ -106,6 +109,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         mapping(address => uint256) userVoteWeight; // user => vote weight they cast
         mapping(address => bool) userHasVoted; // user => whether they have voted
         mapping(uint256 => uint256) designRemovalVotes; // designId => removal vote weight
+        mapping(address => mapping(uint256 => uint256)) userRemovalVotes; // user => designId => removal votes cast
         uint256 winningDesignId; // Current winning design ID
         uint256 highestVotes; // Highest vote count achieved
         uint256[] tiedDesignIds; // Array of designs tied for highest votes
@@ -185,6 +189,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param voteWeight Weight of the removal vote
     event DesignRemovalVote(uint256 indexed auctionId, uint256 indexed designId, address voter, uint256 voteWeight);
 
+    /// @notice Emitted when an auction is paused
+    /// @param auctionId The auction that was paused
+    event AuctionPausedEvent(uint256 indexed auctionId);
+
+    /// @notice Emitted when an auction is unpaused
+    /// @param auctionId The auction that was unpaused
+    event AuctionUnpaused(uint256 indexed auctionId);
+
     /// @notice Emitted when a design is successfully removed from an auction
     /// @param auctionId The auction the design was removed from
     /// @param designId The removed design ID
@@ -224,6 +236,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Thrown when referencing an invalid or non-existent design
     error InvalidDesign();
 
+    /// @notice Thrown when trying to interact with a paused auction
+    error AuctionPaused();
+
     /// @notice Failed payout information
     struct FailedPayout {
         uint256 amountFromParentOne;
@@ -257,6 +272,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         _;
     }
 
+    /// @notice Ensures auction is not paused
+    /// @param auctionId The auction ID to check
+    modifier whenNotPaused(uint256 auctionId) {
+        if (pausedAuctions[auctionId]) revert AuctionPaused();
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -274,6 +296,28 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @custom:access Only owner can call during initialization
     function setup(address _aminalFactory) external initializer onlyOwner {
         aminalFactory = IAminalFactory(_aminalFactory);
+    }
+
+    /**
+     * @notice Pause an auction in case of emergency
+     * @dev Only owner can pause auctions
+     * @param auctionId The auction to pause
+     */
+    function pauseAuction(uint256 auctionId) external onlyOwner validVoting(auctionId) {
+        if (pausedAuctions[auctionId]) revert AuctionPaused();
+        pausedAuctions[auctionId] = true;
+        emit AuctionPausedEvent(auctionId);
+    }
+
+    /**
+     * @notice Unpause an auction
+     * @dev Only owner can unpause auctions
+     * @param auctionId The auction to unpause
+     */
+    function unpauseAuction(uint256 auctionId) external onlyOwner validVoting(auctionId) {
+        if (!pausedAuctions[auctionId]) revert InvalidDesign(); // Using existing error for "not paused"
+        pausedAuctions[auctionId] = false;
+        emit AuctionUnpaused(auctionId);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -317,7 +361,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @dev Can be called by anyone after voting ends. Distributes treasury to gene creators.
      * @param auctionId The auction to settle
      */
-    function settleAuction(uint256 auctionId) external validVoting(auctionId) nonReentrant {
+    function settleAuction(uint256 auctionId) external validVoting(auctionId) whenNotPaused(auctionId) nonReentrant {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp < uint256(auction.endTime)) revert VotingNotEnded();
@@ -343,11 +387,17 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         }
 
         // Process treasury payouts to gene creators
+        // Cache Aminal addresses to avoid redundant external calls
         address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
         address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
-        uint256 aminalOneTreasury = IAminal(aminalOneAddress).getTreasuryBalance();
-        uint256 aminalTwoTreasury = IAminal(aminalTwoAddress).getTreasuryBalance();
+        // Cache Aminal interfaces
+        IAminal aminal1 = IAminal(aminalOneAddress);
+        IAminal aminal2 = IAminal(aminalTwoAddress);
+
+        // Cache treasury balances
+        uint256 aminalOneTreasury = aminal1.getTreasuryBalance();
+        uint256 aminalTwoTreasury = aminal2.getTreasuryBalance();
         uint256 treasuryFromAminalOne = (aminalOneTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
         uint256 treasuryFromAminalTwo = (aminalTwoTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
 
@@ -507,7 +557,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         // Calculate user's voting power
         uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
-        if (voteWeight > userVotingPower) revert InsufficientLove();
+
+        // Check if user has already voted for removal and prevent exceeding voting power
+        uint256 alreadyVoted = auction.userRemovalVotes[msg.sender][designId];
+        if (alreadyVoted + voteWeight > userVotingPower) revert InsufficientLove();
+
+        // Track user's removal votes for this design
+        auction.userRemovalVotes[msg.sender][designId] += voteWeight;
 
         // Add removal vote
         auction.designRemovalVotes[designId] += voteWeight;
@@ -853,7 +909,18 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @notice Generate pseudo-random number for tie-breaking
      * @dev Uses block.prevrandao (post-merge randomness) combined with auction-specific data
      *      This provides good randomness for non-critical decisions like tie-breaking
-     *      For high-value randomness, consider using Chainlink VRF
+     *
+     * ⚠️ SECURITY NOTICE - Manipulatable Randomness:
+     * - Block proposers CAN manipulate prevrandao and timestamp values
+     * - In high-value auctions, this creates economic incentive for manipulation
+     * - Gene creators receiving payouts could be influenced by proposer bias
+     * - Acceptable for community voting ties but NOT for high-stakes financial outcomes
+     *
+     * Production recommendations for high-value breeding:
+     * - Integrate Chainlink VRF for verifiable randomness
+     * - Or implement commit-reveal scheme
+     * - Or use time-weighted selection to reduce manipulation window
+     *
      * @param seed Additional entropy (e.g., auctionId or specific use case)
      * @param max Upper bound (exclusive) for the random number
      * @return Random number in range [0, max)
