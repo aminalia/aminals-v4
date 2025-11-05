@@ -25,7 +25,7 @@ export default createConfig({
       chain: "sepolia",
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
-      startBlock: 9561914,
+      startBlock: 9568321,
     },
     Aminal: {
       chain: "sepolia",
