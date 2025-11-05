@@ -9,10 +9,10 @@
  * - Real-time voting stats
  */
 
-import { useState, useMemo, useCallback } from 'react';
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useCallback, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
@@ -22,26 +22,23 @@ import CountdownTimer from '@components/CountdownTimer';
 import EndAuctionButton from '@components/actions/EndAuctionButton';
 import DesignBuilder from '@components/breeding/DesignBuilder';
 import DesignGallery from '@components/breeding/DesignGallery';
-import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
-import VoteOnDesignButton from '@components/breeding/VoteOnDesignButton';
 import DesignVoteStats from '@components/breeding/DesignVoteStats';
+import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
 import { Button } from '@components/ui/Button';
 
 // Hooks & Types
 import {
   useAuction,
-  useDesignProposals,
-  useUserVotingPower,
-  useUserVotedDesign,
   useAuctionVoting,
-  useParentGenes,
-  useIsVotingActive,
+  useDesignProposals,
   useGenesByIds,
-  makeGeneNFTId,
+  useIsVotingActive,
+  useParentGenes,
+  useUserVotedDesign,
+  useUserVotingPower,
+  type DesignProposal,
   type Gene,
   type GeneMetadata,
-  type DesignProposal,
-  createDesignFromGenes,
 } from '@hooks';
 
 // VOTING_DURATION from the contract (1 hour = 3600 seconds)
@@ -66,7 +63,9 @@ const AuctionPage: NextPage = () => {
 
   // Design builder state
   const [currentGeneIds, setCurrentGeneIds] = useState<bigint[]>([]);
-  const [currentPlacements, setCurrentPlacements] = useState<GeneMetadata[]>([]);
+  const [currentPlacements, setCurrentPlacements] = useState<GeneMetadata[]>(
+    []
+  );
   const [builderKey, setBuilderKey] = useState(0); // Force remount when loading templates
 
   // Fetch auction data
@@ -230,7 +229,9 @@ const AuctionPage: NextPage = () => {
   const handleViewDesign = useCallback((design: DesignProposal) => {
     // Load design into builder (read-only initially, but can be remixed)
     setCurrentGeneIds(design.geneIds.filter((id) => id !== 0n));
-    setCurrentPlacements(design.placements.filter((_, i) => design.geneIds[i] !== 0n));
+    setCurrentPlacements(
+      design.placements.filter((_, i) => design.geneIds[i] !== 0n)
+    );
     setActiveTab('create');
   }, []);
 

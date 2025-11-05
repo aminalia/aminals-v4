@@ -171,9 +171,10 @@ export function createDesignFromGenes(
 /**
  * Helper to validate design
  */
-export function validateDesign(
-  geneIds: bigint[]
-): { isValid: boolean; error?: string } {
+export function validateDesign(geneIds: bigint[]): {
+  isValid: boolean;
+  error?: string;
+} {
   const nonEmptyGenes = geneIds.filter((id) => id !== 0n);
 
   if (nonEmptyGenes.length === 0) {

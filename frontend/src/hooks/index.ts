@@ -39,16 +39,16 @@ export { useGeneProposalsByAuctionId } from './useGeneProposals';
 
 // Breeding/Design hooks
 export {
-  useDesignProposals,
-  useDesign,
-  useUserVotingPower,
-  useUserVotedDesign,
   useAuctionVoting,
-  useParentGenes,
-  useIsVotingActive,
-  useGenesByIds as useGenesByIdsBreeding,
-  useDesignRemovalVotes,
+  useDesign,
   useDesignPlacements,
+  useDesignProposals,
+  useDesignRemovalVotes,
+  useGenesByIds as useGenesByIdsBreeding,
+  useIsVotingActive,
+  useParentGenes,
+  useUserVotedDesign,
+  useUserVotingPower,
 } from './useBreeding';
 
 // Trait utilities
@@ -104,21 +104,21 @@ export type {
 
 // Re-export breeding types
 export type {
-  GeneMetadata,
   AminalDesign,
-  DesignProposal,
-  Gene,
-  DesignVote,
   AuctionVoteInfo,
   DesignBuilderState,
+  DesignProposal,
+  DesignVote,
+  Gene,
+  GeneMetadata,
 } from '../types/breeding';
 
 export {
   DEFAULT_PLACEMENT,
-  createEmptyDesign,
-  createDesignFromGenes,
-  validateDesign,
-  countGenes,
-  placementToContractFormat,
   contractFormatToPlacement,
+  countGenes,
+  createDesignFromGenes,
+  createEmptyDesign,
+  placementToContractFormat,
+  validateDesign,
 } from '../types/breeding';

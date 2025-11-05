@@ -3,10 +3,10 @@
  * Modal for selecting genes from available genes, browsing all genes, or creating new ones
  */
 
-import { useState, useMemo } from 'react';
-import type { Gene } from '@types/breeding';
 import { Button } from '@components/ui/Button';
-import { useGenes, CategoryFilter } from '@hooks';
+import { CategoryFilter, useGenes } from '@hooks';
+import type { Gene } from '@types/breeding';
+import { useMemo, useState } from 'react';
 import CreateGenePage from '../CreateGenePage';
 
 const CATEGORIES = [
@@ -49,7 +49,7 @@ export default function GenePickerModal({
   );
 
   // Determine which genes to show
-  const genesToShow = view === 'parent' ? availableGenes : (allGenes || []);
+  const genesToShow = view === 'parent' ? availableGenes : allGenes || [];
 
   const handleSelectGene = (gene: Gene) => {
     onSelectGene(gene);

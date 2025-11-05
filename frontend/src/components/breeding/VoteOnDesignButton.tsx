@@ -3,6 +3,7 @@
  * Vote on a complete Aminal design in a breeding auction
  */
 
+import { Button } from '@components/ui/Button';
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
@@ -11,7 +12,6 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneAuctionAbi, geneAuctionAddress } from '../../contracts/generated';
-import { Button } from '@components/ui/Button';
 
 export interface VoteOnDesignButtonProps {
   auctionId: string;
@@ -149,10 +149,7 @@ export default function VoteOnDesignButton({
         timestamp: new Date().toISOString(),
       };
 
-      console.error(
-        '❌ Vote transaction receipt error:',
-        receiptErrorDetails
-      );
+      console.error('❌ Vote transaction receipt error:', receiptErrorDetails);
       toast.error('Vote failed. Please try again.', {
         id: 'vote-design-tx',
       });

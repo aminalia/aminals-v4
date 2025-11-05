@@ -7,7 +7,6 @@ import {
   useWriteContract,
 } from 'wagmi';
 import {
-  geneAuctionAbi,
   geneAuctionAddress,
   geneRegistryAbi,
   geneRegistryAddress,
@@ -277,7 +276,10 @@ export default function ProposeButton({
 
   const isTransacting = isPending || isConfirming;
   const canPropose =
-    enabled && vizId > 0 && isValidGene && (!geneInfo || Number(geneInfo[1]) === catId);
+    enabled &&
+    vizId > 0 &&
+    isValidGene &&
+    (!geneInfo || Number(geneInfo[1]) === catId);
 
   return (
     <div className={`space-y-3 ${className}`}>

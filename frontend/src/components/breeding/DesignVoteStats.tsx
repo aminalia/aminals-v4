@@ -3,9 +3,9 @@
  * Display voting statistics for design-based breeding auctions
  */
 
-import { useMemo } from 'react';
-import { useDesignProposals, useAuctionVoting } from '@hooks';
+import { useAuctionVoting, useDesignProposals } from '@hooks';
 import type { DesignProposal } from '@types/breeding';
+import { useMemo } from 'react';
 
 interface DesignVoteStatsProps {
   auctionId: string;
@@ -61,7 +61,9 @@ export default function DesignVoteStats({
         const { offsetX, offsetY, scale, rotation } = placement;
 
         return `
-          <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${scale / 100})">
+          <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
+          scale / 100
+        })">
             ${gene.svg}
           </g>
         `;
@@ -133,8 +135,8 @@ export default function DesignVoteStats({
                   isWinning
                     ? 'border-success bg-success/5'
                     : index === 0
-                      ? 'border-energy bg-energy/5'
-                      : 'border-border'
+                    ? 'border-energy bg-energy/5'
+                    : 'border-border'
                 }`}
               >
                 <div className="flex gap-4">
@@ -181,7 +183,10 @@ export default function DesignVoteStats({
                     <div className="text-xs text-muted-foreground mb-2">
                       {design.isParentDesign
                         ? 'System (Parent Design)'
-                        : `By ${design.proposer.address.slice(0, 6)}...${design.proposer.address.slice(-4)}`}
+                        : `By ${design.proposer.address.slice(
+                            0,
+                            6
+                          )}...${design.proposer.address.slice(-4)}`}
                     </div>
 
                     <div className="flex items-center gap-3 text-xs">
@@ -212,8 +217,8 @@ export default function DesignVoteStats({
                           isWinning
                             ? 'bg-success'
                             : index === 0
-                              ? 'bg-energy'
-                              : 'bg-love'
+                            ? 'bg-energy'
+                            : 'bg-love'
                         }`}
                         style={{ width: `${Math.min(votePercentage, 100)}%` }}
                       />
