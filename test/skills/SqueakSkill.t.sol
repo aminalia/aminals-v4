@@ -11,8 +11,7 @@ contract SqueakSkillTest is SkillTestBase {
     SqueakSkill public squeakSkill;
 
     event Squeaked(address indexed aminal, uint256 amount);
-    event EnergyLost(address indexed user, uint256 amount, uint256 remainingEnergy);
-    event LoveConsumed(address indexed user, uint256 amount, uint256 remainingLove);
+    event ResourcesConsumed(address indexed user, uint256 amount, uint256 remainingEnergy, uint256 remainingLove);
     // SkillTestBase already declares SkillUsed event
 
     function setUp() public override {
@@ -38,10 +37,7 @@ contract SqueakSkillTest is SkillTestBase {
         emit Squeaked(testAminal1, squeakAmount);
 
         vm.expectEmit(true, false, false, true);
-        emit EnergyLost(alice, squeakAmount, initialEnergy - squeakAmount);
-
-        vm.expectEmit(true, false, false, true);
-        emit LoveConsumed(alice, squeakAmount, initialLove - squeakAmount);
+        emit ResourcesConsumed(alice, squeakAmount, initialEnergy - squeakAmount, initialLove - squeakAmount);
 
         vm.expectEmit(true, true, true, true);
         emit SkillUsed(alice, squeakAmount, address(squeakSkill), SqueakSkill.squeak.selector);

@@ -138,7 +138,7 @@ export default async function handler(
         if (existingGeneIds.length > 0) {
           // Fetch gene data from Ponder
           // Note: Type cast needed due to drizzle-orm version mismatch between ponder and @ponder/client
-          const genes = await (ponderClient.db
+          const genes = await ponderClient.db
             .select()
             .from(schema.geneNFT as any)
             .where(
@@ -146,7 +146,7 @@ export default async function handler(
                 schema.geneNFT.tokenId,
                 existingGeneIds.map((id) => BigInt(id))
               )
-            ));
+            );
 
           if (genes && genes.length > 0) {
             // Transform to expected format

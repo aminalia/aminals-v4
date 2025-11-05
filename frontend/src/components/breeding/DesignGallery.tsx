@@ -3,10 +3,9 @@
  * Browse and vote on submitted design proposals
  */
 
-import { useState, useMemo } from 'react';
 import type { DesignProposal } from '@types/breeding';
+import { useMemo, useState } from 'react';
 import DesignCard from './DesignCard';
-import { Button } from '@components/ui/Button';
 
 export interface DesignGalleryProps {
   auctionId: string;
@@ -136,8 +135,8 @@ export default function DesignGallery({
             {filterBy === 'parent-only'
               ? 'No parent designs available'
               : filterBy === 'community-only'
-                ? 'No community designs yet. Be the first to propose one!'
-                : 'No designs proposed yet. Be the first!'}
+              ? 'No community designs yet. Be the first to propose one!'
+              : 'No designs proposed yet. Be the first!'}
           </p>
         </div>
       ) : (

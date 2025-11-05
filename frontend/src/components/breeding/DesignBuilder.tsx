@@ -8,17 +8,9 @@
  * - Placement controls (x, y, scale, rotation) per gene
  */
 
-import { useState, useCallback, useEffect } from 'react';
-import type {
-  DesignBuilderState,
-  GeneMetadata,
-  Gene,
-} from '@types/breeding';
-import {
-  createEmptyDesign,
-  DEFAULT_PLACEMENT,
-  countGenes,
-} from '@hooks';
+import { countGenes, createEmptyDesign, DEFAULT_PLACEMENT } from '@hooks';
+import type { DesignBuilderState, Gene, GeneMetadata } from '@types/breeding';
+import { useCallback, useEffect, useState } from 'react';
 import GenePickerModal from './GenePickerModal';
 
 export interface DesignBuilderProps {
@@ -62,7 +54,9 @@ export default function DesignBuilder({
     return createEmptyDesign();
   });
 
-  const [showGenePickerIndex, setShowGenePickerIndex] = useState<number | null>(null);
+  const [showGenePickerIndex, setShowGenePickerIndex] = useState<number | null>(
+    null
+  );
 
   // Cache for genes that have been added to the design (including custom genes)
   const [geneCache, setGeneCache] = useState<Map<string, Gene>>(new Map());
@@ -118,27 +112,34 @@ export default function DesignBuilder({
   }, []);
 
   // Remove gene from specific slot
-  const handleRemoveGene = useCallback((index: number) => {
-    if (disabled) return;
+  const handleRemoveGene = useCallback(
+    (index: number) => {
+      if (disabled) return;
 
-    setDesign((prev) => {
-      const newGeneIds = [...prev.geneIds];
-      newGeneIds[index] = 0n;
+      setDesign((prev) => {
+        const newGeneIds = [...prev.geneIds];
+        newGeneIds[index] = 0n;
 
-      return {
-        ...prev,
-        geneIds: newGeneIds,
-        selectedGeneIndex: prev.selectedGeneIndex === index ? null : prev.selectedGeneIndex,
-        isDirty: true,
-      };
-    });
-  }, [disabled]);
+        return {
+          ...prev,
+          geneIds: newGeneIds,
+          selectedGeneIndex:
+            prev.selectedGeneIndex === index ? null : prev.selectedGeneIndex,
+          isDirty: true,
+        };
+      });
+    },
+    [disabled]
+  );
 
   // Select gene for editing placement
-  const handleSelectGene = useCallback((index: number) => {
-    if (disabled) return;
-    setDesign((prev) => ({ ...prev, selectedGeneIndex: index }));
-  }, [disabled]);
+  const handleSelectGene = useCallback(
+    (index: number) => {
+      if (disabled) return;
+      setDesign((prev) => ({ ...prev, selectedGeneIndex: index }));
+    },
+    [disabled]
+  );
 
   // Update placement for a specific gene
   const handleUpdatePlacement = useCallback(
@@ -220,7 +221,9 @@ export default function DesignBuilder({
       const { offsetX, offsetY, scale, rotation } = placement;
 
       return `
-        <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${scale / 100})">
+        <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
+        scale / 100
+      })">
           ${gene.svg}
         </g>
       `;
@@ -240,7 +243,9 @@ export default function DesignBuilder({
 
   return (
     <div
-      className={`flex flex-col lg:flex-row gap-4 ${disabled ? 'opacity-60 pointer-events-none' : ''}`}
+      className={`flex flex-col lg:flex-row gap-4 ${
+        disabled ? 'opacity-60 pointer-events-none' : ''
+      }`}
     >
       {/* Gene Slots Panel (Left) */}
       <div className="w-full lg:w-64 bg-card rounded-lg border border-border p-4">
@@ -349,7 +354,9 @@ export default function DesignBuilder({
           <button
             className="w-full mt-3 py-2 text-sm border border-dashed border-border rounded hover:border-energy hover:bg-energy/5 transition-colors"
             onClick={() => {
-              const firstEmptyIndex = design.geneIds.findIndex((id) => id === 0n);
+              const firstEmptyIndex = design.geneIds.findIndex(
+                (id) => id === 0n
+              );
               setShowGenePickerIndex(firstEmptyIndex);
             }}
             disabled={disabled}

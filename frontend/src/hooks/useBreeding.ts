@@ -3,19 +3,18 @@
  * Provides data fetching for design-based voting
  */
 
-import { useQuery } from '@tanstack/react-query';
-import { useReadContract, useAccount } from 'wagmi';
-import { geneAuctionAddress, geneAuctionAbi } from '../contracts/generated';
-import type {
-  DesignProposal,
-  GeneMetadata,
-  AuctionVoteInfo,
-  Gene,
-} from '../types/breeding';
-import { usePonderQuery } from '@ponder/react';
 import { eq, inArray } from '@ponder/client';
+import { usePonderQuery } from '@ponder/react';
+import { useAccount, useReadContract } from 'wagmi';
 import * as schema from '../../ponder.schema';
+import { geneAuctionAbi, geneAuctionAddress } from '../contracts/generated';
 import { makeGeneNFTId } from '../lib/geneTransformers';
+import type {
+  AuctionVoteInfo,
+  DesignProposal,
+  Gene,
+  GeneMetadata,
+} from '../types/breeding';
 
 /**
  * Get all design proposals for an auction from Ponder
@@ -154,8 +153,7 @@ export const useDesignProposals = (auctionId: string) => {
       transactionHash: proposal.transactionHash,
       genes,
       isParentDesign:
-        proposal.proposerId ===
-        '0x0000000000000000000000000000000000000000',
+        proposal.proposerId === '0x0000000000000000000000000000000000000000',
     };
   });
 

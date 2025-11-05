@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
-
-import "forge-std/console.sol";
+pragma solidity 0.8.20;
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {ISkill} from "src/interfaces/ISkill.sol";
@@ -83,11 +81,14 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Address of the father Aminal (0x0 for genesis Aminals)
     address public immutable dadAddress;
 
+    /// @notice Address of the design proposer (0x0 for genesis or parent designs)
+    address public immutable proposerAddress;
+
     /// @notice The visual DNA that defines this Aminal's appearance
     Visuals internal _visuals;
 
     /// @notice Placement metadata for each gene (positioning, scale, rotation)
-    GeneMetadata[10] internal _placements;
+    GeneMetadata[9] internal _placements;
 
     /// @notice Get the visuals for this Aminal
     /// @return The visuals struct containing all gene IDs
@@ -97,7 +98,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
 
     /// @notice Get the placement metadata for this Aminal's genes
     /// @return The array of placement metadata for each gene slot
-    function getPlacements() external view returns (GeneMetadata[10] memory) {
+    function getPlacements() external view returns (GeneMetadata[9] memory) {
         return _placements;
     }
 
@@ -144,17 +145,12 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param energy Remaining energy
     event Squeak(address indexed sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
 
-    /// @notice Emitted when energy is consumed for skill usage
+    /// @notice Emitted when resources (energy and love) are consumed for skill usage
     /// @param user Address of the skill user
-    /// @param amount Amount of energy consumed
+    /// @param amount Amount of energy and love consumed (same for both)
     /// @param remainingEnergy Energy remaining after consumption
-    event EnergyLost(address indexed user, uint256 amount, uint256 remainingEnergy);
-
-    /// @notice Emitted when love is consumed for skill usage
-    /// @param user Address of the skill user
-    /// @param amount Amount of love consumed
     /// @param remainingLove Love remaining for user after consumption
-    event LoveConsumed(address indexed user, uint256 amount, uint256 remainingLove);
+    event ResourcesConsumed(address indexed user, uint256 amount, uint256 remainingEnergy, uint256 remainingLove);
 
     /// @notice Emitted when a skill is successfully used
     /// @param user Address of the skill user
@@ -203,16 +199,19 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Thrown when treasury transfer to recipient fails
     error TreasuryTransferFailed();
 
+    /// @notice Thrown when zero address is provided
+    error ZeroAddress();
+
+    /// @notice Thrown when unauthorized caller attempts restricted operation
+    error UnauthorizedCaller();
+
     /*//////////////////////////////////////////////////////////////
                                MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Restricts function access to the AminalFactory contract and gene auction only
     modifier onlyFactoryOrAuction() {
-        require(
-            msg.sender == address(factory) || msg.sender == address(factory.geneAuction()),
-            "Only factory or gene auction can call this"
-        );
+        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) revert UnauthorizedCaller();
         _;
     }
 
@@ -224,6 +223,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param _factory Address of the AminalFactory that created this Aminal
     /// @param _momAddress Address of the mother Aminal (0x0 for genesis)
     /// @param _dadAddress Address of the father Aminal (0x0 for genesis)
+    /// @param _proposerAddress Address of the design proposer (0x0 for genesis or parent designs)
     /// @param visualTraits Visual traits that define this Aminal's appearance
     /// @param placements Placement metadata for each gene (position, scale, rotation)
     /// @param _aminalIndex Unique identifier within the Aminal ecosystem
@@ -232,20 +232,19 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         address _factory,
         address _momAddress,
         address _dadAddress,
+        address _proposerAddress,
         Visuals memory visualTraits,
-        GeneMetadata[10] memory placements,
+        GeneMetadata[9] memory placements,
         uint256 _aminalIndex,
         address _loveVRGDA
     )
         ERC721("Aminal", "AMINAL")
-        GeneRenderer(
-            address(AminalFactory(_factory).genes()),
-            address(0) // TODO GeneRegistry to be added when implemented
-        )
+        GeneRenderer(address(AminalFactory(_factory).genes()), address(AminalFactory(_factory).genes().geneRegistry()))
     {
         factory = AminalFactory(_factory);
         momAddress = _momAddress;
         dadAddress = _dadAddress;
+        proposerAddress = _proposerAddress;
         _visuals = visualTraits;
         _placements = placements;
         aminalIndex = _aminalIndex;
@@ -301,7 +300,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
                            EXPRESSION MECHANICS
     //////////////////////////////////////////////////////////////*/
 
-    // TODO maybe kill and just make it a skill. : /
     /**
      * @notice Express yourself through this Aminal's voice 🗣️
      * @dev Consumes love and energy to create a squeak - a digital cry of expression
@@ -321,7 +319,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
     }
 
-    // TODO consider renaming, do we need a separate Squeak event? Maybe just use EnergyLost / LoveConsumed?
     /**
      * @notice Factory-only function to consume love and energy on behalf of a user for breeding
      * @dev Only callable by the factory contract for breeding mechanics
@@ -390,14 +387,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         if (!success) revert SkillCallFailed();
 
         // Consume resources only after successful execution
-        // squeakFrom(msg.sender, energyCost);
         energy -= energyCost;
         lovePerUser[msg.sender] -= energyCost;
         totalLove -= energyCost;
 
-        // TODO are these events needed if we use squeakFrom?
-        emit EnergyLost(msg.sender, energyCost, energy);
-        emit LoveConsumed(msg.sender, energyCost, lovePerUser[msg.sender]);
+        emit ResourcesConsumed(msg.sender, energyCost, energy, lovePerUser[msg.sender]);
         emit SkillUsed(msg.sender, energyCost, target, selector);
     }
 
@@ -414,9 +408,9 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
      *
      * @custom:security Only GeneAuction can call this to pay gene creators
      */
-    function payout(uint256 amount, address recipient) external returns (bool success) {
-        require(msg.sender == address(factory.geneAuction()), "Only gene auction can call payout");
-
+    function payout(uint256 amount, address recipient) external nonReentrant returns (bool success) {
+        if (msg.sender != address(factory.geneAuction())) revert UnauthorizedCaller();
+        if (recipient == address(0)) revert ZeroAddress();
         if (address(this).balance < amount) revert InsufficientTreasury();
 
         // Transfer ETH to recipient
@@ -486,7 +480,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Implementation of abstract function from GeneRenderer
     /// @param aminalID The Aminal ID to get placements for (must match this Aminal)
     /// @return placements The placement metadata for this Aminal's genes
-    function getAminalPlacementsByID(uint256 aminalID) public view virtual override returns (GeneMetadata[10] memory) {
+    function getAminalPlacementsByID(uint256 aminalID) public view virtual override returns (GeneMetadata[9] memory) {
         require(aminalID == aminalIndex, "Invalid aminal ID");
         return _placements;
     }

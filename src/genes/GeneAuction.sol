@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
-import "forge-std/console.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
@@ -77,35 +76,40 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Mapping from gene ID to failed payout information
     mapping(uint256 => FailedPayout) public failedPayouts;
 
+    /// @notice Mapping from auction ID to pause status
+    mapping(uint256 => bool) public pausedAuctions;
+
     /*//////////////////////////////////////////////////////////////
                                STRUCTURES
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Complete Aminal design proposal (1-10 genes with placement info)
     struct AminalDesign {
-        uint256[10] geneIds; // Up to 10 gene NFT IDs (0 = unused slot)
+        uint256[9] geneIds; // Up to 9 gene NFT IDs (0 = unused slot)
         address proposer; // Address that proposed this design
         uint256 votes; // Total voting power for this design
         bool removed; // Whether this design has been removed
-        GeneMetadata[10] placements; // Placement metadata for each gene
+        GeneMetadata[9] placements; // Placement metadata for each gene
     }
 
     /// @notice Core auction data structure
+    /// @dev Struct optimized for storage packing: uint64s and bool packed in first slot
     struct Auction {
+        uint64 startTime; // Auction start timestamp - packed together
+        uint64 endTime; // Auction end timestamp - packed together
+        bool settled; // Whether auction has been settled - packed together (17/32 bytes used)
         uint256 aminalOne; // Index of first parent Aminal
         uint256 aminalTwo; // Index of second parent Aminal
         uint256 totalLove; // Total love used for voting power calculation
-        uint64 startTime; // Auction start timestamp - packed to save gas
-        uint64 endTime; // Auction end timestamp - packed to save gas
-        bool settled; // Whether auction has been settled - packed with timestamps
-        uint256[10] parentOneGenes; // Parent 1 genes
-        uint256[10] parentTwoGenes; // Parent 2 genes
+        uint256[9] parentOneGenes; // Parent 1 genes
+        uint256[9] parentTwoGenes; // Parent 2 genes
         uint256[] proposedDesignIds; // Array of proposed design IDs
         mapping(uint256 => AminalDesign) designs; // designId => AminalDesign
         mapping(address => uint256) userVotedDesign; // user => designId they voted for
         mapping(address => uint256) userVoteWeight; // user => vote weight they cast
         mapping(address => bool) userHasVoted; // user => whether they have voted
         mapping(uint256 => uint256) designRemovalVotes; // designId => removal vote weight
+        mapping(address => mapping(uint256 => uint256)) userRemovalVotes; // user => designId => removal votes cast
         uint256 winningDesignId; // Current winning design ID
         uint256 highestVotes; // Highest vote count achieved
         uint256[] tiedDesignIds; // Array of designs tied for highest votes
@@ -154,7 +158,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param winningGeneIds Array of winning gene IDs (up to 10)
     /// @param totalTreasuryTransferred Total ETH paid to gene creators
     event VotingSettled(
-        uint256 indexed auctionId, uint256 winningDesignId, uint256[10] winningGeneIds, uint256 totalTreasuryTransferred
+        uint256 indexed auctionId, uint256 winningDesignId, uint256[9] winningGeneIds, uint256 totalTreasuryTransferred
     );
 
     /// @notice Emitted when a gene creator receives payment for their winning gene
@@ -174,8 +178,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         uint256 indexed auctionId,
         uint256 indexed designId,
         address indexed proposer,
-        uint256[10] geneIds,
-        GeneMetadata[10] placements
+        uint256[9] geneIds,
+        GeneMetadata[9] placements
     );
 
     /// @notice Emitted when someone votes to remove a design from consideration
@@ -184,6 +188,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @param voter Address voting for removal
     /// @param voteWeight Weight of the removal vote
     event DesignRemovalVote(uint256 indexed auctionId, uint256 indexed designId, address voter, uint256 voteWeight);
+
+    /// @notice Emitted when an auction is paused
+    /// @param auctionId The auction that was paused
+    event AuctionPausedEvent(uint256 indexed auctionId);
+
+    /// @notice Emitted when an auction is unpaused
+    /// @param auctionId The auction that was unpaused
+    event AuctionUnpaused(uint256 indexed auctionId);
 
     /// @notice Emitted when a design is successfully removed from an auction
     /// @param auctionId The auction the design was removed from
@@ -224,6 +236,9 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Thrown when referencing an invalid or non-existent design
     error InvalidDesign();
 
+    /// @notice Thrown when trying to interact with a paused auction
+    error AuctionPaused();
+
     /// @notice Failed payout information
     struct FailedPayout {
         uint256 amountFromParentOne;
@@ -257,6 +272,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         _;
     }
 
+    /// @notice Ensures auction is not paused
+    /// @param auctionId The auction ID to check
+    modifier whenNotPaused(uint256 auctionId) {
+        if (pausedAuctions[auctionId]) revert AuctionPaused();
+        _;
+    }
+
     /*//////////////////////////////////////////////////////////////
                               CONSTRUCTOR
     //////////////////////////////////////////////////////////////*/
@@ -274,6 +296,28 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @custom:access Only owner can call during initialization
     function setup(address _aminalFactory) external initializer onlyOwner {
         aminalFactory = IAminalFactory(_aminalFactory);
+    }
+
+    /**
+     * @notice Pause an auction in case of emergency
+     * @dev Only owner can pause auctions
+     * @param auctionId The auction to pause
+     */
+    function pauseAuction(uint256 auctionId) external onlyOwner validVoting(auctionId) {
+        if (pausedAuctions[auctionId]) revert AuctionPaused();
+        pausedAuctions[auctionId] = true;
+        emit AuctionPausedEvent(auctionId);
+    }
+
+    /**
+     * @notice Unpause an auction
+     * @dev Only owner can unpause auctions
+     * @param auctionId The auction to unpause
+     */
+    function unpauseAuction(uint256 auctionId) external onlyOwner validVoting(auctionId) {
+        if (!pausedAuctions[auctionId]) revert InvalidDesign(); // Using existing error for "not paused"
+        pausedAuctions[auctionId] = false;
+        emit AuctionUnpaused(auctionId);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -317,7 +361,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @dev Can be called by anyone after voting ends. Distributes treasury to gene creators.
      * @param auctionId The auction to settle
      */
-    function settleAuction(uint256 auctionId) external validVoting(auctionId) nonReentrant {
+    function settleAuction(uint256 auctionId) external validVoting(auctionId) whenNotPaused(auctionId) nonReentrant {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp < uint256(auction.endTime)) revert VotingNotEnded();
@@ -325,55 +369,64 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         auction.settled = true;
 
-        uint256[10] memory winningGeneIds;
-        GeneMetadata[10] memory winningPlacements;
+        uint256[9] memory winningGeneIds;
+        GeneMetadata[9] memory winningPlacements;
+        address proposer;
         uint256 totalTreasuryTransferred = 0;
 
         // Select winning design
         uint256 winningDesignId = _selectWinningDesign(auction);
 
-        // Get the winning design's genes and placements
+        // Get the winning design's genes, placements, and proposer
         if (winningDesignId != 0) {
             AminalDesign storage winningDesign = auction.designs[winningDesignId];
             winningGeneIds = winningDesign.geneIds;
             winningPlacements = winningDesign.placements;
+            proposer = winningDesign.proposer;
         } else {
             // Fallback to random parent design if no votes
             (winningGeneIds, winningPlacements) = _selectRandomParentDesign(auction);
+            proposer = address(0); // No proposer for parent designs
         }
 
         // Process treasury payouts to gene creators
+        // Cache Aminal addresses to avoid redundant external calls
         address aminalOneAddress = aminalFactory.getAminalByIndex(auction.aminalOne);
         address aminalTwoAddress = aminalFactory.getAminalByIndex(auction.aminalTwo);
 
-        uint256 aminalOneTreasury = IAminal(aminalOneAddress).getTreasuryBalance();
-        uint256 aminalTwoTreasury = IAminal(aminalTwoAddress).getTreasuryBalance();
+        // Cache Aminal interfaces
+        IAminal aminal1 = IAminal(aminalOneAddress);
+        IAminal aminal2 = IAminal(aminalTwoAddress);
+
+        // Cache treasury balances
+        uint256 aminalOneTreasury = aminal1.getTreasuryBalance();
+        uint256 aminalTwoTreasury = aminal2.getTreasuryBalance();
         uint256 treasuryFromAminalOne = (aminalOneTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
         uint256 treasuryFromAminalTwo = (aminalTwoTreasury * TREASURY_TRANSFER_PERCENTAGE) / 100;
+        uint256 totalTreasury = treasuryFromAminalOne + treasuryFromAminalTwo;
 
-        // Count actual genes (non-zero slots)
-        uint256 actualGeneCount = 0;
-        for (uint256 i = 0; i < 10;) {
-            if (winningGeneIds[i] != 0) actualGeneCount++;
-            unchecked {
-                ++i;
-            }
+        // Calculate per-recipient share: 1/10th for proposer + 1/10th for each of 9 gene creators
+        uint256 perRecipientShareFromOne = treasuryFromAminalOne / 10;
+        uint256 perRecipientShareFromTwo = treasuryFromAminalTwo / 10;
+
+        // Pay the proposer (1/10th of total treasury)
+        if (proposer != address(0)) {
+            bool successOne = aminal1.payout(perRecipientShareFromOne, proposer);
+            bool successTwo = aminal2.payout(perRecipientShareFromTwo, proposer);
+
+            if (successOne) totalTreasuryTransferred += perRecipientShareFromOne;
+            if (successTwo) totalTreasuryTransferred += perRecipientShareFromTwo;
+
+            emit GeneCreatorPayout(auctionId, 0, proposer, perRecipientShareFromOne + perRecipientShareFromTwo);
         }
 
-        // Only divide treasury if there are genes
-        uint256 treasuryPerGeneHalf = 0;
-        if (actualGeneCount > 0) {
-            uint256 treasuryPerGene = (treasuryFromAminalOne + treasuryFromAminalTwo) / actualGeneCount;
-            treasuryPerGeneHalf = treasuryPerGene / 2;
-        }
-
-        // Transfer treasury to each gene creator
-        for (uint256 i = 0; i < 10;) {
+        // Transfer treasury to each gene creator (1/10th each for up to 9 genes)
+        for (uint256 i = 0; i < 9;) {
             uint256 selectedGeneId = winningGeneIds[i];
 
             if (selectedGeneId != 0 && geneRegistry.isValidGene(selectedGeneId)) {
                 totalTreasuryTransferred += _payoutGeneCreator(
-                    auctionId, selectedGeneId, treasuryPerGeneHalf, aminalOneAddress, aminalTwoAddress
+                    auctionId, selectedGeneId, perRecipientShareFromOne, perRecipientShareFromTwo, aminalOneAddress, aminalTwoAddress
                 );
             }
             unchecked {
@@ -383,8 +436,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         emit VotingSettled(auctionId, winningDesignId, winningGeneIds, totalTreasuryTransferred);
 
-        // Spawn the child Aminal with winning traits and placements
-        aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, winningGeneIds, winningPlacements);
+        // Spawn the child Aminal with winning traits, placements, and proposer
+        aminalFactory.spawnAminal(aminalOneAddress, aminalTwoAddress, auctionId, proposer, winningGeneIds, winningPlacements);
     }
 
     /**
@@ -394,7 +447,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @param geneIds Array of up to 10 gene IDs (0 = unused slot)
      * @param placements Array of up to 10 placement metadata for positioning each gene
      */
-    function proposeDesign(uint256 auctionId, uint256[10] calldata geneIds, GeneMetadata[10] calldata placements)
+    function proposeDesign(uint256 auctionId, uint256[9] calldata geneIds, GeneMetadata[9] calldata placements)
         external
         validVoting(auctionId)
     {
@@ -405,7 +458,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         // Count and validate genes
         uint256 geneCount = 0;
-        for (uint256 i = 0; i < 10;) {
+        for (uint256 i = 0; i < 9;) {
             if (geneIds[i] != 0) {
                 // Verify gene exists and is from the registry
                 if (!geneRegistry.isValidGene(geneIds[i])) revert InvalidGene();
@@ -432,7 +485,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         newDesign.removed = false;
 
         // Store placement metadata for each gene slot
-        for (uint256 i = 0; i < 10;) {
+        for (uint256 i = 0; i < 9;) {
             newDesign.placements[i] = placements[i];
             unchecked {
                 ++i;
@@ -507,7 +560,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         // Calculate user's voting power
         uint256 userVotingPower = _calculateVotingPower(auction, msg.sender);
-        if (voteWeight > userVotingPower) revert InsufficientLove();
+
+        // Check if user has already voted for removal and prevent exceeding voting power
+        uint256 alreadyVoted = auction.userRemovalVotes[msg.sender][designId];
+        if (alreadyVoted + voteWeight > userVotingPower) revert InsufficientLove();
+
+        // Track user's removal votes for this design
+        auction.userRemovalVotes[msg.sender][designId] += voteWeight;
 
         // Add removal vote
         auction.designRemovalVotes[designId] += voteWeight;
@@ -617,7 +676,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         external
         view
         validVoting(auctionId)
-        returns (uint256[10] memory parentOneGenes, uint256[10] memory parentTwoGenes)
+        returns (uint256[9] memory parentOneGenes, uint256[9] memory parentTwoGenes)
     {
         Auction storage auction = auctions[auctionId];
         return (auction.parentOneGenes, auction.parentTwoGenes);
@@ -654,7 +713,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         external
         view
         validVoting(auctionId)
-        returns (GeneMetadata[10] memory placements)
+        returns (GeneMetadata[9] memory placements)
     {
         return auctions[auctionId].designs[designId].placements;
     }
@@ -679,7 +738,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         parentOneDesign.removed = false;
 
         // Set default placement for all gene slots
-        for (uint256 i = 0; i < 10;) {
+        for (uint256 i = 0; i < 9;) {
             parentOneDesign.placements[i] = defaultPlacement;
             unchecked {
                 ++i;
@@ -690,7 +749,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
         // Add parent two's design if different
         bool isDifferent = false;
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             if (auction.parentOneGenes[i] != auction.parentTwoGenes[i]) {
                 isDifferent = true;
                 break;
@@ -706,7 +765,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
             parentTwoDesign.removed = false;
 
             // Set default placement for all gene slots
-            for (uint256 i = 0; i < 10;) {
+            for (uint256 i = 0; i < 9;) {
                 parentTwoDesign.placements[i] = defaultPlacement;
                 unchecked {
                     ++i;
@@ -806,19 +865,29 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Select a random parent design when no votes are cast
+     * @notice Select random genes from parents when no votes are cast
+     * @dev Each gene slot is randomly inherited from either parent (like genetic inheritance)
      */
-    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[10] memory, GeneMetadata[10] memory) {
+    function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[9] memory, GeneMetadata[9] memory) {
+        uint256[9] memory childGenes;
+
         // Default placement for parent designs (centered, 100% scale, no rotation)
-        GeneMetadata[10] memory defaultPlacements;
-        for (uint256 i = 0; i < 10; i++) {
+        GeneMetadata[9] memory defaultPlacements;
+        for (uint256 i = 0; i < 9; i++) {
             defaultPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
-        // Randomly choose between parent designs
-        uint256 random = _generateRandomness(1, 2);
-        if (random == 0) return (auction.parentOneGenes, defaultPlacements);
-        else return (auction.parentTwoGenes, defaultPlacements);
+        // For each gene slot, randomly choose from parent one or parent two
+        for (uint256 i = 0; i < 9; i++) {
+            uint256 random = _generateRandomness(i, 2); // Use slot index as seed for variety
+            if (random == 0) {
+                childGenes[i] = auction.parentOneGenes[i];
+            } else {
+                childGenes[i] = auction.parentTwoGenes[i];
+            }
+        }
+
+        return (childGenes, defaultPlacements);
     }
 
     /**
@@ -853,7 +922,18 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @notice Generate pseudo-random number for tie-breaking
      * @dev Uses block.prevrandao (post-merge randomness) combined with auction-specific data
      *      This provides good randomness for non-critical decisions like tie-breaking
-     *      For high-value randomness, consider using Chainlink VRF
+     *
+     * ⚠️ SECURITY NOTICE - Manipulatable Randomness:
+     * - Block proposers CAN manipulate prevrandao and timestamp values
+     * - In high-value auctions, this creates economic incentive for manipulation
+     * - Gene creators receiving payouts could be influenced by proposer bias
+     * - Acceptable for community voting ties but NOT for high-stakes financial outcomes
+     *
+     * Production recommendations for high-value breeding:
+     * - Integrate Chainlink VRF for verifiable randomness
+     * - Or implement commit-reveal scheme
+     * - Or use time-weighted selection to reduce manipulation window
+     *
      * @param seed Additional entropy (e.g., auctionId or specific use case)
      * @param max Upper bound (exclusive) for the random number
      * @return Random number in range [0, max)
@@ -892,33 +972,34 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     function _payoutGeneCreator(
         uint256 auctionId,
         uint256 selectedGeneId,
-        uint256 treasuryPerGeneHalf,
+        uint256 amountFromOne,
+        uint256 amountFromTwo,
         address aminalOneAddress,
         address aminalTwoAddress
     ) internal returns (uint256 totalTransferred) {
-        if (treasuryPerGeneHalf > 0) {
+        if (amountFromOne > 0 || amountFromTwo > 0) {
             // Get current owner of the gene NFT
             address geneOwner = genes.ownerOf(selectedGeneId);
 
-            // Transfer treasury from parents to gene owner (split equally)
-            bool successOne = IAminal(aminalOneAddress).payout(treasuryPerGeneHalf, geneOwner);
-            bool successTwo = IAminal(aminalTwoAddress).payout(treasuryPerGeneHalf, geneOwner);
+            // Transfer treasury from parents to gene owner
+            bool successOne = IAminal(aminalOneAddress).payout(amountFromOne, geneOwner);
+            bool successTwo = IAminal(aminalTwoAddress).payout(amountFromTwo, geneOwner);
 
-            if (successOne) totalTransferred += treasuryPerGeneHalf;
-            if (successTwo) totalTransferred += treasuryPerGeneHalf;
+            if (successOne) totalTransferred += amountFromOne;
+            if (successTwo) totalTransferred += amountFromTwo;
 
             // Store failed payouts for later claiming
             if (!successOne || !successTwo) {
                 FailedPayout storage failed = failedPayouts[selectedGeneId];
                 if (!successOne) {
-                    failed.amountFromParentOne += treasuryPerGeneHalf;
+                    failed.amountFromParentOne += amountFromOne;
                     failed.parentOneAddress = aminalOneAddress;
-                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, amountFromOne);
                 }
                 if (!successTwo) {
-                    failed.amountFromParentTwo += treasuryPerGeneHalf;
+                    failed.amountFromParentTwo += amountFromTwo;
                     failed.parentTwoAddress = aminalTwoAddress;
-                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, treasuryPerGeneHalf);
+                    emit PayoutFailed(auctionId, selectedGeneId, geneOwner, amountFromTwo);
                 }
                 failed.auctionId = auctionId;
                 failed.claimed = false;

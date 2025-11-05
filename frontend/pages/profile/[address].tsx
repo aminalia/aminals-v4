@@ -2,7 +2,6 @@ import AminalGrid from '@components/AminalGrid';
 import TraitCard from '@components/TraitCard';
 import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import { useUserEarnings, useUserProfile } from '@hooks';
 import { useHasMounted } from '@hooks/useHasMounted';
 import { Check, Copy } from 'lucide-react';
@@ -519,7 +518,8 @@ const ProfilePage: NextPage = () => {
                 </div>
 
                 {/* Recent Votes */}
-                {userProfile.designVotes && userProfile.designVotes.length > 0 ? (
+                {userProfile.designVotes &&
+                userProfile.designVotes.length > 0 ? (
                   <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-foreground mb-4">
                       Recent Design Votes

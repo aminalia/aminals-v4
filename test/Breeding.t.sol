@@ -9,7 +9,6 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
 /**
@@ -29,7 +28,6 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     Genes public genes;
     GeneRegistry public geneRegistry;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
 
     // Test accounts
     address public alice = address(0x1);
@@ -91,16 +89,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
 
         // Deploy AminalFactory
         factory = new AminalFactory();
-        factory.initialize(address(geneAuction), address(proposals), address(genes));
+        factory.initialize(address(geneAuction), address(genes));
 
         // Setup contracts
         genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory)); // AminalFactory is the aminalsContract
-        proposals.setup(address(factory));
         factory.setup();
 
         // Give test accounts ETH
@@ -122,7 +118,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // This ensures parent Aminals have valid gene NFT IDs that actually exist
         Visuals[] memory initialVisuals = new Visuals[](2);
 
-        // Parent 1: Uses first set of genes (pastel theme) - 8 genes in first 8 slots
+        // Parent 1: Uses first set of genes (pastel theme) - 9 genes in first 9 slots
         initialVisuals[0].genes[0] = backgroundGeneId;
         initialVisuals[0].genes[1] = armsGeneId;
         initialVisuals[0].genes[2] = tailGeneId;
@@ -131,7 +127,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         initialVisuals[0].genes[5] = faceGeneId;
         initialVisuals[0].genes[6] = mouthGeneId;
         initialVisuals[0].genes[7] = miscGeneId;
-        // genes[8] and genes[9] are 0 (unused)
+        // genes[8] and genes[8] are 0 (unused)
 
         // Parent 2: Uses alternative set of genes (vibrant theme) for variety
         initialVisuals[1].genes[0] = altBackgroundGeneId;
@@ -142,7 +138,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         initialVisuals[1].genes[5] = altFaceGeneId;
         initialVisuals[1].genes[6] = altMouthGeneId;
         initialVisuals[1].genes[7] = altMiscGeneId;
-        // genes[8] and genes[9] are 0 (unused)
+        // genes[8] and genes[8] are 0 (unused)
 
         factory.spawnInitialAminals(initialVisuals);
         aminal1Address = factory.getAminalByIndex(0);
@@ -288,10 +284,10 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         }
     }
 
-    function _getDefaultPlacements() internal pure returns (GeneMetadata[10] memory placements) {
+    function _getDefaultPlacements() internal pure returns (GeneMetadata[9] memory placements) {
         // Default placement: centered, 100% scale, no rotation
         GeneMetadata memory defaultPlacement = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             placements[i] = defaultPlacement;
         }
     }
@@ -306,7 +302,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // New simplified system: Call breedAminals once to create auction directly
         console.log("Creating auction with single breedAminals call...");
         vm.prank(alice);
-        auctionId = factory.breedAminals(aminal1Address, aminal2Address);
+        auctionId = factory.breedAminals(aminal1Address, aminal2Address, 0);
 
         console.log("Auction created with ID:", auctionId);
 
@@ -336,14 +332,14 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     }
 
     function _proposeCompleteDesigns(uint256 auctionId) internal returns (uint256[] memory) {
-        console.log("Proposing complete Aminal designs (8 genes in 10 slots)...");
+        console.log("Proposing complete Aminal designs (9 genes in 9 slots)...");
 
-        // First design: Cohesive pastel theme - 8 genes in first 8 slots
-        uint256[10] memory design1 =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0, 0];
+        // First design: Cohesive pastel theme - 9 genes in all 9 slots
+        uint256[9] memory design1 =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0];
 
-        // Second design: Alternative vibrant theme - 8 genes in first 8 slots
-        uint256[10] memory design2 = [
+        // Second design: Alternative vibrant theme - 9 genes in all 9 slots
+        uint256[9] memory design2 = [
             altBackgroundGeneId,
             altArmsGeneId,
             altTailGeneId,
@@ -352,12 +348,11 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
             altFaceGeneId,
             altMouthGeneId,
             altMiscGeneId,
-            0,
             0
         ];
 
         // Default placement metadata for all gene slots
-        GeneMetadata[10] memory defaultPlacements = _getDefaultPlacements();
+        GeneMetadata[9] memory defaultPlacements = _getDefaultPlacements();
 
         // Get initial design count (includes parent designs)
         GeneAuction.AuctionVoteInfo memory initialVoteInfo = geneAuction.getAuctionVoting(auctionId);
@@ -489,7 +484,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         Visuals memory childVisuals = child.getVisuals();
 
         console.log("Child Aminal created with complete design:");
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             if (childVisuals.genes[i] != 0) {
                 console.log("- Gene slot", i, ":", childVisuals.genes[i]);
             }
@@ -497,7 +492,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Verify at least one trait is set (not all zero)
         bool hasNonZeroTraits = false;
-        for (uint256 i = 0; i < 10; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             if (childVisuals.genes[i] != 0) {
                 hasNonZeroTraits = true;
                 break;
@@ -545,10 +540,10 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         _feedAminals();
         uint256 auctionId = _initiateBreeding();
 
-        // Propose a design - 8 genes in 10 slots
-        uint256[10] memory design =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0, 0];
-        GeneMetadata[10] memory defaultPlacements = _getDefaultPlacements();
+        // Propose a design - 9 genes in 9 slots
+        uint256[9] memory design =
+            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0];
+        GeneMetadata[9] memory defaultPlacements = _getDefaultPlacements();
 
         vm.prank(alice);
         geneAuction.proposeDesign(auctionId, design, defaultPlacements);

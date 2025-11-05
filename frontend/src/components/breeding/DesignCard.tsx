@@ -3,9 +3,9 @@
  * Display card for a single design proposal with preview and voting info
  */
 
-import { useMemo } from 'react';
-import type { DesignProposal } from '@types/breeding';
 import { Button } from '@components/ui/Button';
+import type { DesignProposal } from '@types/breeding';
+import { useMemo } from 'react';
 import VoteOnDesignButton from './VoteOnDesignButton';
 
 export interface DesignCardProps {
@@ -57,7 +57,9 @@ export default function DesignCard({
         const { offsetX, offsetY, scale, rotation } = placement;
 
         return `
-          <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${scale / 100})">
+          <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
+          scale / 100
+        })">
             ${gene.svg}
           </g>
         `;
@@ -74,8 +76,8 @@ export default function DesignCard({
         isWinning
           ? 'border-success shadow-success/20 shadow-lg'
           : isUserVote
-            ? 'border-energy shadow-energy/20 shadow-lg'
-            : 'border-border hover:border-energy/50'
+          ? 'border-energy shadow-energy/20 shadow-lg'
+          : 'border-border hover:border-energy/50'
       } ${disabled ? 'opacity-60' : ''}`}
     >
       {/* Preview */}
@@ -116,7 +118,9 @@ export default function DesignCard({
         {/* Header */}
         <div>
           <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold">Design #{design.designIndex}</h3>
+            <h3 className="text-sm font-semibold">
+              Design #{design.designIndex}
+            </h3>
             {design.removed && (
               <span className="text-xs text-destructive">Removed</span>
             )}
@@ -125,7 +129,10 @@ export default function DesignCard({
           <div className="text-xs text-muted-foreground truncate">
             {design.isParentDesign
               ? 'System (Parent Design)'
-              : `By ${design.proposer.address.slice(0, 6)}...${design.proposer.address.slice(-4)}`}
+              : `By ${design.proposer.address.slice(
+                  0,
+                  6
+                )}...${design.proposer.address.slice(-4)}`}
           </div>
         </div>
 
@@ -142,11 +149,7 @@ export default function DesignCard({
           <div className="h-2 bg-muted rounded-full overflow-hidden">
             <div
               className={`h-full transition-all ${
-                isWinning
-                  ? 'bg-success'
-                  : isUserVote
-                    ? 'bg-energy'
-                    : 'bg-love'
+                isWinning ? 'bg-success' : isUserVote ? 'bg-energy' : 'bg-love'
               }`}
               style={{ width: `${Math.min(votePercentage, 100)}%` }}
             />
@@ -180,9 +183,7 @@ export default function DesignCard({
         {design.removeVotes > 0n && (
           <div className="text-xs text-destructive flex items-center gap-1">
             <span>⚠️</span>
-            <span>
-              {design.removeVotes.toString()} removal votes
-            </span>
+            <span>{design.removeVotes.toString()} removal votes</span>
           </div>
         )}
       </div>

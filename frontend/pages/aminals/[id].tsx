@@ -1,3 +1,4 @@
+import type { GeneNFT } from '@/types/ponder';
 import CallSkillButton from '@components/actions/CallSkillButton';
 import FeedButton from '@components/actions/FeedButton';
 import { AminalVisualImage } from '@components/AminalCard';
@@ -5,7 +6,6 @@ import BreedingModal from '@components/BreedingModal';
 import { Button } from '@components/ui/Button';
 import { Tooltip } from '@components/ui/Tooltip';
 import { useAminalByContractAddress, useGenesByIds } from '@hooks';
-import type { GeneNFT } from '@/types/ponder';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import Link from 'next/link';
@@ -468,53 +468,54 @@ const AminalPage: NextPage = () => {
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {aminal.genes
-                          .map((geneTokenId, slotIndex) => {
-                            // Skip empty gene slots
-                            if (!geneTokenId || geneTokenId === 0n) return null;
+                        .map((geneTokenId, slotIndex) => {
+                          // Skip empty gene slots
+                          if (!geneTokenId || geneTokenId === 0n) return null;
 
-                            // Find gene data for this gene
-                            const geneInfo = geneData?.find(
-                              (g) => g?.tokenId === geneTokenId
-                            );
-                            const geneId = geneInfo?.id || `0xgene-${geneTokenId}` || '';
+                          // Find gene data for this gene
+                          const geneInfo = geneData?.find(
+                            (g) => g?.tokenId === geneTokenId
+                          );
+                          const geneId =
+                            geneInfo?.id || `0xgene-${geneTokenId}` || '';
 
-                            return (
-                              <Link
-                                key={slotIndex}
-                                href={`/genes/${geneId}`}
-                                className="p-3 rounded-lg border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <div className="w-8 h-8 bg-card rounded border border-border overflow-hidden flex-shrink-0">
-                                    {geneInfo?.svg ? (
-                                      <svg
-                                        viewBox="0 0 1000 1000"
-                                        className="w-full h-full"
-                                        dangerouslySetInnerHTML={{
-                                          __html: geneInfo.svg,
-                                        }}
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
-                                        ?
-                                      </div>
-                                    )}
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div className="text-sm font-medium truncate">
-                                      Slot {slotIndex}
+                          return (
+                            <Link
+                              key={slotIndex}
+                              href={`/genes/${geneId}`}
+                              className="p-3 rounded-lg border bg-primary/10 border-primary/30 hover:bg-primary/20 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 bg-card rounded border border-border overflow-hidden flex-shrink-0">
+                                  {geneInfo?.svg ? (
+                                    <svg
+                                      viewBox="0 0 1000 1000"
+                                      className="w-full h-full"
+                                      dangerouslySetInnerHTML={{
+                                        __html: geneInfo.svg,
+                                      }}
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full bg-muted flex items-center justify-center text-muted-foreground text-xs">
+                                      ?
                                     </div>
-                                    {geneInfo?.name && (
-                                      <div className="text-xs text-muted-foreground truncate">
-                                        {geneInfo.name}
-                                      </div>
-                                    )}
-                                  </div>
+                                  )}
                                 </div>
-                              </Link>
-                            );
-                          })
-                          .filter((item) => item !== null)}
+                                <div className="min-w-0 flex-1">
+                                  <div className="text-sm font-medium truncate">
+                                    Slot {slotIndex}
+                                  </div>
+                                  {geneInfo?.name && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {geneInfo.name}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })
+                        .filter((item) => item !== null)}
                     </div>
                   </div>
                 </div>

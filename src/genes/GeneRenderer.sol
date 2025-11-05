@@ -7,7 +7,7 @@
 
 pragma solidity ^0.8.20;
 
-import {Base64} from "src/utils/Base64.sol";
+import {Base64} from "oz/utils/Base64.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
@@ -90,8 +90,8 @@ abstract contract GeneRenderer is IAminalStructs {
         string memory attributes = "";
         bool firstAttribute = true;
 
-        // Iterate through all gene slots (0-9)
-        for (uint256 i = 0; i < 10; i++) {
+        // Iterate through all gene slots (0-8)
+        for (uint256 i = 0; i < 9; i++) {
             uint256 geneId = visuals.genes[i];
 
             if (geneId != 0) {
@@ -160,14 +160,14 @@ abstract contract GeneRenderer is IAminalStructs {
     function _aminalImage(uint256 aminalId) internal view returns (string memory output) {
         // Get the visual trait configuration for this Aminal
         Visuals memory visuals = getAminalVisualsByID(aminalId);
-        GeneMetadata[10] memory placements = getAminalPlacementsByID(aminalId);
+        GeneMetadata[9] memory placements = getAminalPlacementsByID(aminalId);
 
         // Start SVG container with proper viewBox
         output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1000 1000">';
 
-        // Render all genes in order (0-9)
+        // Render all genes in order (0-8)
         // Genes are rendered back-to-front (first gene is background, last is foreground)
-        for (uint256 i = 0; i < 10;) {
+        for (uint256 i = 0; i < 9;) {
             if (visuals.genes[i] != 0) {
                 output = string(abi.encodePacked(output, _renderGeneWithPlacement(visuals.genes[i], placements[i])));
             }
@@ -340,5 +340,5 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @dev Must be implemented by inheriting contracts to provide Aminal-specific logic
     /// @param aminalID The Aminal token ID
     /// @return placements Array of placement metadata for each gene slot
-    function getAminalPlacementsByID(uint256 aminalID) public view virtual returns (GeneMetadata[10] memory placements);
+    function getAminalPlacementsByID(uint256 aminalID) public view virtual returns (GeneMetadata[9] memory placements);
 }

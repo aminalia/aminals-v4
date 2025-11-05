@@ -1,12 +1,14 @@
 {
-  "timestamp": "2025-11-04T13:36:45Z",
+  "timestamp": "2025-11-05T20:42:15Z",
   "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
-  "geneRegistry": "0x165e95b9348b0d05885c95BBAb21B826c90184Bf",
-  "aminalFactory": "0x626f99E28e71D98cf929ca4f904d8f3d66F2E3FE",
+  "geneRegistry": "0x3866Ee60CF6F3A98793ecE4Bb03aEB82BB81406D",
+  "aminalFactory": "0xcC13d6872c343007B34A1C0a6e5EaAF0D2dACd0C",
   "genes": {
     "42": {
-      "description": "Three Eyed - 7-misc.svg",
-      "transactionHash": "0xe2cb9d314501b4e770e494a84e27fad19b243a5bca4ae85d86f17cd47aff8071"
+      "name": "Three Eyed - misc",
+      "description": "Trait #7 for Three Eyed",
+      "category": "trait-7",
+      "transactionHash": "0xda1d29544c24719bfc75248c349551b01cce0f8c6ee7535f5af15dd1a9e3d769"
     }
   },
   "aminals": {
@@ -21,7 +23,6 @@
         6,
         7,
         8,
-        0,
         0
       ]
     },
@@ -36,7 +37,6 @@
         14,
         15,
         16,
-        0,
         0
       ]
     },
@@ -48,7 +48,6 @@
         0,
         0,
         17,
-        0,
         0,
         18,
         19,
@@ -66,8 +65,7 @@
         0,
         0,
         25,
-        26,
-        0
+        26
       ]
     },
     "red-animated": {
@@ -81,7 +79,6 @@
         32,
         33,
         34,
-        0,
         0
       ]
     }

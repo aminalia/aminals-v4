@@ -9,14 +9,12 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
 contract IndividualAminalTest is Test, IAminalStructs {
     AminalFactory public factory;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
     Genes public genes;
     GeneRegistry public geneFactory;
     Move2D public move2DSkill;
@@ -32,16 +30,14 @@ contract IndividualAminalTest is Test, IAminalStructs {
         genes = new Genes();
         geneFactory = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneFactory));
-        proposals = new AminalProposals();
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(address(geneAuction), address(proposals), address(genes));
+        factory.initialize(address(geneAuction), address(genes));
 
         // Setup contracts properly
         genes.setup(address(factory), address(geneFactory));
         geneAuction.setup(address(factory));
-        proposals.setup(address(factory));
         factory.setup();
 
         // Deploy a skill
@@ -71,9 +67,8 @@ contract IndividualAminalTest is Test, IAminalStructs {
         for (uint256 i = 0; i < 8; i++) {
             assertEq(visuals.genes[i], 1, "Gene should be set to 1");
         }
-        // Last 2 slots should be 0
+        // Last slot should be 0
         assertEq(visuals.genes[8], 0);
-        assertEq(visuals.genes[9], 0);
 
         // Test parents (should be zero addresses for initial Aminals)
         (address mom, address dad) = aminal.getParents();
@@ -163,7 +158,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             additionalVisuals[0].genes[i] = 2;
         }
         factory.spawnInitialAminals(additionalVisuals);
@@ -176,7 +171,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Initiate breeding - should create auction directly
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(address(aminal), aminal2Address);
+        uint256 auctionId = factory.breedAminals(address(aminal), aminal2Address, 0);
         assertTrue(auctionId > 0, "Should create auction and return auction ID");
     }
 
@@ -186,7 +181,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             additionalVisuals[0].genes[i] = 2;
         }
         factory.spawnInitialAminals(additionalVisuals);

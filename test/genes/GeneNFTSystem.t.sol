@@ -8,7 +8,6 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 
 /**
@@ -21,7 +20,6 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     Genes public genes;
     GeneRegistry public geneRegistry;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
 
     address public alice = address(0x1);
     address public bob = address(0x2);
@@ -35,14 +33,12 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
         aminalFactory = new AminalFactory();
 
         // Initialize contracts
-        aminalFactory.initialize(address(geneAuction), address(proposals), address(genes));
+        aminalFactory.initialize(address(geneAuction), address(genes));
         genes.setup(address(aminalFactory), address(geneRegistry));
         geneAuction.setup(address(aminalFactory));
-        proposals.setup(address(aminalFactory));
         aminalFactory.setup();
 
         // Give test users ETH
@@ -131,12 +127,12 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
     function testBreedingCreatesAuction() public {
         // First spawn some initial Aminals to test with
         Visuals[] memory initialVisuals = new Visuals[](2);
-        // Parent 1 - 8 genes in first 8 slots
-        for (uint256 i = 0; i < 8; i++) {
+        // Parent 1 - 9 genes in first 9 slots
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = i + 1;
         }
-        // Parent 2 - 8 different genes in first 8 slots
-        for (uint256 i = 0; i < 8; i++) {
+        // Parent 2 - 9 different genes in first 9 slots
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[1].genes[i] = i + 9;
         }
         aminalFactory.spawnInitialAminals(initialVisuals);
@@ -153,7 +149,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         // Alice breeds aminals which creates an auction
         vm.prank(alice);
-        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2, 0);
 
         assertTrue(geneAuction.isVotingActive(auctionId));
     }

@@ -237,7 +237,9 @@ export const useAuctionVotes = (auctionId: string) => {
       return db
         .select()
         .from(schema.designProposal)
-        .where(inArray(schema.designProposal.id, proposalIds as `0x${string}`[]));
+        .where(
+          inArray(schema.designProposal.id, proposalIds as `0x${string}`[])
+        );
     },
     enabled: proposalIds.length > 0,
   });

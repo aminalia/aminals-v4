@@ -10,7 +10,7 @@ import {
   CardSection,
   CardTitle,
 } from '@components/ui/Card';
-import type { GeneAuction, GeneAuctionWithRelations } from '@hooks';
+import type { GeneAuctionWithRelations } from '@hooks';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';

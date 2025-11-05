@@ -7,7 +7,6 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
@@ -16,7 +15,6 @@ contract AminalVRGDATest is Test, IAminalStructs {
     AminalContract public aminal;
     AminalVRGDA public vrgda;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
     Genes public genes;
     GeneRegistry public geneRegistry;
 
@@ -28,16 +26,14 @@ contract AminalVRGDATest is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(address(geneAuction), address(proposals), address(genes));
+        factory.initialize(address(geneAuction), address(genes));
 
         // Setup contracts properly
         genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory));
-        proposals.setup(address(factory));
         factory.setup(); // This deploys the VRGDA
 
         // Get the VRGDA instance from factory
@@ -45,7 +41,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = 1;
         }
 

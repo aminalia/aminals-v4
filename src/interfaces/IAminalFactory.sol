@@ -34,7 +34,8 @@ interface IAminalFactory is IAminalStructs {
      * @param momAddress Address of the mother Aminal (address(0) for genesis)
      * @param dadAddress Address of the father Aminal (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child
-     * @param winningGeneIds Array of 1-10 gene IDs (0 means no gene in that slot)
+     * @param proposer Address of the design proposer (address(0) for genesis/parent designs)
+     * @param winningGeneIds Array of 1-9 gene IDs (0 means no gene in that slot)
      * @param placements Array of placement metadata for each gene (position, scale, rotation)
      *
      * @return newAminalAddress Address of the newly spawned Aminal contract
@@ -45,8 +46,9 @@ interface IAminalFactory is IAminalStructs {
         address momAddress,
         address dadAddress,
         uint256 auctionId,
-        uint256[10] calldata winningGeneIds,
-        GeneMetadata[10] calldata placements
+        address proposer,
+        uint256[9] calldata winningGeneIds,
+        GeneMetadata[9] calldata placements
     ) external returns (address newAminalAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════

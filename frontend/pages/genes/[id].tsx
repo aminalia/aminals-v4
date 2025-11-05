@@ -3,7 +3,6 @@ import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
 import { EmptyState } from '@components/ui/EmptyState';
 import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
 import { genesAddress } from '@contracts/generated';
 import { useGene } from '@hooks';
 import { ExternalLink } from 'lucide-react';

@@ -4,7 +4,6 @@ import "forge-std/Script.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {FightSkill} from "src/skills/FightSkill.sol";
@@ -23,7 +22,6 @@ contract DeployContracts is Script {
     // Track deployed addresses for summary
     address public genesAddress;
     address public geneAuctionAddress;
-    address public proposalsAddress;
     address public factoryAddress;
     address public move2DAddress;
     address public fightSkillAddress;
@@ -42,24 +40,17 @@ contract DeployContracts is Script {
         geneAuctionAddress = address(_geneAuction);
         console.log("GeneAuction deployed to:", geneAuctionAddress);
 
-        AminalProposals _proposals = new AminalProposals();
-        proposalsAddress = address(_proposals);
-        console.log("AminalProposals deployed to:", proposalsAddress);
-
         AminalFactory _factory = new AminalFactory();
         factoryAddress = address(_factory);
         console.log("AminalFactory deployed to:", factoryAddress);
 
         // Initialize the factory
-        _factory.initialize(address(_geneAuction), address(_proposals), address(_Genes));
+        _factory.initialize(address(_geneAuction), address(_Genes));
         console.log("AminalFactory initialized");
 
         // Setup dependencies
         _geneAuction.setup(address(_factory));
         console.log("GeneAuction setup complete");
-
-        _proposals.setup(address(_factory));
-        console.log("AminalProposals setup complete");
 
         _Genes.setup(address(_factory), address(geneRegistry));
         console.log("Genes setup complete");
@@ -104,9 +95,6 @@ contract DeployContracts is Script {
             '",\n',
             '    "GeneAuction": "',
             vm.toString(geneAuctionAddress),
-            '",\n',
-            '    "AminalProposals": "',
-            vm.toString(proposalsAddress),
             '",\n',
             '    "AminalFactory": "',
             vm.toString(factoryAddress),

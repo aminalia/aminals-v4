@@ -265,21 +265,6 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
   });
 });
 
-/**
- * Handle Aminal:EnergyLost
- * Updates Aminal energy when lost through other means
- */
-ponder.on("Aminal:EnergyLost", async ({ event, context }) => {
-  const { user, amount, remainingEnergy } = event.args;
-  const { db } = context;
-
-  const aminalId = normalizeAddress(event.log.address);
-
-  // Update Aminal energy
-  await db.update(aminal, { id: aminalId }).set({
-    energy: remainingEnergy,
-  });
-});
 
 // ============================================================================
 // GENE REGISTRY EVENTS

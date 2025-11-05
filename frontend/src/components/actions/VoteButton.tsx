@@ -5,7 +5,7 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from 'wagmi';
-import { geneAuctionAbi, geneAuctionAddress } from '../../contracts/generated';
+import { geneAuctionAddress } from '../../contracts/generated';
 import { Button } from '../ui/Button';
 
 export default function VoteButton({

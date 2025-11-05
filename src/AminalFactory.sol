@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
-
-import "forge-std/console.sol";
+pragma solidity 0.8.20;
 
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {IAminalFactory} from "src/interfaces/IAminalFactory.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
-import {IProposals} from "src/interfaces/IProposals.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
@@ -47,7 +43,6 @@ import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
  * - 📋 Maintain registry of all Aminals in the ecosystem
  * - 💞 Orchestrate breeding ceremonies through gene auctions
  * - 🧬 Interface with Gene NFT system for trait inheritance
- * - 🏛️ Connect to governance proposals for ecosystem evolution
  * - 🎭 Spawn genesis Aminals to seed the initial population
  *
  * @author The Aminals Collective
@@ -60,9 +55,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     error CallerNotAminal();
     error CallerNotAuction();
-    error CallerNotProposal();
     error InvalidAuctionAddress();
-    error InvalidProposalsAddress();
     error InvalidGenesAddress();
     error VRGDAAlreadyDeployed();
     error GenesisAlreadyCompleted();
@@ -76,6 +69,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error IndexOutOfBounds();
     error NotRegisteredAminal();
     error VRGDANotDeployed();
+    error InsufficientTotalLove();
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                     📊 CONSTANTS
@@ -100,7 +94,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     int256 public constant VRGDA_TIME_SCALE = 20 ether;
 
     /// @notice Maximum number of genes that can be assigned to an Aminal
-    uint256 public constant MAX_GENES = 10;
+    uint256 public constant MAX_GENES = 9;
 
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -125,9 +119,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     /// @notice Gene auction system for breeding mechanics 🧬
     GeneAuction public geneAuction;
-
-    /// @notice Governance system for ecosystem evolution 🏛️
-    AminalProposals public proposals;
 
     /// @notice Gene NFT system for trait management 🎨
     Genes public genes;
@@ -163,6 +154,12 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      */
     event BreedAminal(address indexed aminalOne, address indexed aminalTwo, uint256 auctionId);
 
+    /**
+     * @notice Emitted when VRGDA is deployed
+     * @param vrgdaAddress Address of the deployed VRGDA contract
+     */
+    event VRGDADeployed(address indexed vrgdaAddress);
+
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                      🛡️ MODIFIERS
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -184,10 +181,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     }
 
     /**
-     * @notice Restricts function access to the governance proposal contract only
+     * @notice Ensures factory is fully initialized before critical operations
      */
-    modifier onlyProposal() {
-        if (msg.sender != address(proposals)) revert CallerNotProposal();
+    modifier whenInitialized() {
+        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
         _;
     }
 
@@ -205,24 +202,21 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     /**
      * @notice Initialize external contract dependencies
-     * @dev Sets up connections to auction, proposal, and gene systems
+     * @dev Sets up connections to auction and gene systems
      *
      * Requirements:
      * - Can only be called once due to initializer modifier
      * - Must be called by contract owner
      *
      * @param _geneAuction Address of the gene auction contract
-     * @param _aminalProposals Address of the governance proposals contract
      * @param _genes Address of the gene NFT contract
      */
-    function initialize(address _geneAuction, address _aminalProposals, address _genes) external initializer onlyOwner {
+    function initialize(address _geneAuction, address _genes) external initializer onlyOwner {
         if (_geneAuction == address(0)) revert InvalidAuctionAddress();
-        if (_aminalProposals == address(0)) revert InvalidProposalsAddress();
         if (_genes == address(0)) revert InvalidGenesAddress();
 
         geneAuction = GeneAuction(_geneAuction);
         genes = Genes(_genes);
-        proposals = AminalProposals(_aminalProposals);
     }
 
     /**
@@ -243,6 +237,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             VRGDA_LOGISTIC_ASYMPTOTE, // Maximum units in logistic curve
             VRGDA_TIME_SCALE // Time scaling factor for smooth curves
         );
+
+        emit VRGDADeployed(address(loveVRGDA));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -268,6 +264,11 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
         initialAminalSpawned = true;
 
+        // TODO: Update to accept custom placement metadata as parameter instead of using defaults
+        // Current: All genesis Aminals use default centered placement
+        // Desired: Allow specifying custom positioning, scale, and rotation for each gene
+        // This would enable more diverse initial Aminals with unique visual layouts
+
         // Default placement: centered, 100% scale, no rotation
         GeneMetadata[MAX_GENES] memory defaultPlacements;
         for (uint256 j = 0; j < MAX_GENES; j++) {
@@ -279,6 +280,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
                 address(0), // No parents for genesis Aminals
                 address(0),
                 0, // No auction ID for genesis Aminals
+                address(0), // No proposer for genesis Aminals
                 _visuals[i].genes,
                 defaultPlacements
             );
@@ -308,13 +310,14 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
+        address proposer,
         uint256[MAX_GENES] calldata winningGeneIds,
         GeneMetadata[MAX_GENES] calldata placements
     ) external onlyAuction returns (address childAddress) {
         if (!isAminal[parentOne]) revert InvalidParentOne();
         if (!isAminal[parentTwo]) revert InvalidParentTwo();
 
-        return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds, placements);
+        return _spawnAminal(parentOne, parentTwo, auctionId, proposer, winningGeneIds, placements);
     }
 
     /**
@@ -327,24 +330,34 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * - Both addresses must be valid Aminals
      * - Caller must have sufficient love for at both Aminals
      * - Both Aminals must have sufficient energy to breed
+     * - Total love meets minimum slippage threshold
      *
      * @param aminalOne First parent Aminal address
      * @param aminalTwo Second parent Aminal address
+     * @param minTotalLove Minimum total love required (slippage protection)
      * @return auctionId Gene auction ID
      *
      * "When two Aminals unite in love, their digital essence mingles
      *  through algorithms of affection, creating new life from pure emotion"
      */
-    function breedAminals(address aminalOne, address aminalTwo) external returns (uint256 auctionId) {
+    function breedAminals(address aminalOne, address aminalTwo, uint256 minTotalLove)
+        external
+        whenInitialized
+        returns (uint256 auctionId)
+    {
         if (!isAminal[aminalOne] || !isAminal[aminalTwo]) revert InvalidAminalAddresses();
         if (aminalOne == aminalTwo) revert CannotBreedWithSelf();
 
         AminalContract aminal1 = AminalContract(payable(aminalOne));
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
+        // Cache love values to avoid redundant external calls
+        uint256 love1 = aminal1.getLoveByUser(msg.sender);
+        uint256 love2 = aminal2.getLoveByUser(msg.sender);
+
         // Check if caller has sufficient love for both Aminals
-        if (aminal1.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
-        if (aminal2.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        if (love1 < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        if (love2 < MIN_LOVE_REQUIRED) revert InsufficientLove();
 
         // Check if both Aminals have sufficient energy to breed
         if (aminal1.getEnergy() < MIN_ENERGY_REQUIRED || aminal2.getEnergy() < MIN_ENERGY_REQUIRED) {
@@ -352,7 +365,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         }
 
         // Calculate total love investment from caller for both Aminals
-        uint256 totalLove = aminal1.getLoveByUser(msg.sender) + aminal2.getLoveByUser(msg.sender);
+        uint256 totalLove = love1 + love2;
+
+        // Slippage protection: ensure total love meets minimum threshold
+        if (totalLove < minTotalLove) revert InsufficientTotalLove();
 
         // Consume Love from caller and energy via squeakFrom
         aminal1.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);
@@ -411,6 +427,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
+        address proposer,
         uint256[MAX_GENES] memory geneIds,
         GeneMetadata[MAX_GENES] memory placements
     ) internal returns (address childAddress) {
@@ -424,6 +441,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             address(this), // Factory address for callbacks
             parentOne, // First parent (or address(0) for genesis)
             parentTwo, // Second parent (or address(0) for genesis)
+            proposer, // Design proposer (or address(0) for genesis/parent designs)
             visuals, // Complete genetic visual profile
             placements, // Placement metadata for each gene
             totalAminals, // Unique index for this Aminal

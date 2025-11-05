@@ -3,7 +3,10 @@
  * Submit a complete Aminal design as a proposal for community voting
  */
 
-import { useEffect, useRef, useMemo } from 'react';
+import { Button } from '@components/ui/Button';
+import { countGenes, placementToContractFormat, validateDesign } from '@hooks';
+import type { GeneMetadata } from '@types/breeding';
+import { useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -11,13 +14,6 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneAuctionAbi, geneAuctionAddress } from '../../contracts/generated';
-import { Button } from '@components/ui/Button';
-import type { GeneMetadata } from '@types/breeding';
-import {
-  validateDesign,
-  countGenes,
-  placementToContractFormat,
-} from '@hooks';
 
 export interface ProposeDesignButtonProps {
   auctionId: string;
@@ -336,7 +332,11 @@ export default function ProposeDesignButton({
         type="button"
         onClick={handlePropose}
         disabled={
-          !enabled || !validation.isValid || disabled || isPending || isConfirming
+          !enabled ||
+          !validation.isValid ||
+          disabled ||
+          isPending ||
+          isConfirming
         }
         variant="success"
         size="lg"

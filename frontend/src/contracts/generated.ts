@@ -9,12 +9,24 @@ export const aminalAbi = [
       { name: '_factory', internalType: 'address', type: 'address' },
       { name: '_momAddress', internalType: 'address', type: 'address' },
       { name: '_dadAddress', internalType: 'address', type: 'address' },
+      { name: '_proposerAddress', internalType: 'address', type: 'address' },
       {
         name: 'visualTraits',
         internalType: 'struct IAminalStructs.Visuals',
         type: 'tuple',
         components: [
-          { name: 'genes', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
+        ],
+      },
+      {
+        name: 'placements',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
         ],
       },
       { name: '_aminalIndex', internalType: 'uint256', type: 'uint256' },
@@ -157,6 +169,25 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [{ name: 'aminalID', internalType: 'uint256', type: 'uint256' }],
+    name: 'getAminalPlacementsByID',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: 'aminalID', internalType: 'uint256', type: 'uint256' }],
     name: 'getAminalVisualsByID',
     outputs: [
       {
@@ -164,7 +195,7 @@ export const aminalAbi = [
         internalType: 'struct IAminalStructs.Visuals',
         type: 'tuple',
         components: [
-          { name: 'genes', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
         ],
       },
     ],
@@ -211,6 +242,25 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
+    name: 'getPlacements',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
     name: 'getTotalLove',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
@@ -232,7 +282,7 @@ export const aminalAbi = [
         internalType: 'struct IAminalStructs.Visuals',
         type: 'tuple',
         components: [
-          { name: 'genes', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
         ],
       },
     ],
@@ -294,6 +344,13 @@ export const aminalAbi = [
     name: 'payout',
     outputs: [{ name: 'success', internalType: 'bool', type: 'bool' }],
     stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'proposerAddress',
+    outputs: [{ name: '', internalType: 'address', type: 'address' }],
+    stateMutability: 'view',
   },
   {
     type: 'function',
@@ -436,26 +493,6 @@ export const aminalAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
-      { name: 'user', internalType: 'address', type: 'address', indexed: true },
-      {
-        name: 'amount',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'remainingEnergy',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-    ],
-    name: 'EnergyLost',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
       {
         name: 'sender',
         internalType: 'address',
@@ -507,13 +544,19 @@ export const aminalAbi = [
         indexed: false,
       },
       {
+        name: 'remainingEnergy',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
+      {
         name: 'remainingLove',
         internalType: 'uint256',
         type: 'uint256',
         indexed: false,
       },
     ],
-    name: 'LoveConsumed',
+    name: 'ResourcesConsumed',
   },
   {
     type: 'event',
@@ -628,6 +671,8 @@ export const aminalAbi = [
   { type: 'error', inputs: [], name: 'SkillCallFailed' },
   { type: 'error', inputs: [], name: 'SkillNotSupported' },
   { type: 'error', inputs: [], name: 'TreasuryTransferFailed' },
+  { type: 'error', inputs: [], name: 'UnauthorizedCaller' },
+  { type: 'error', inputs: [], name: 'ZeroAddress' },
 ] as const
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -697,6 +742,7 @@ export const aminalFactoryAbi = [
     inputs: [
       { name: 'aminalOne', internalType: 'address', type: 'address' },
       { name: 'aminalTwo', internalType: 'address', type: 'address' },
+      { name: 'minTotalLove', internalType: 'uint256', type: 'uint256' },
     ],
     name: 'breedAminals',
     outputs: [{ name: 'auctionId', internalType: 'uint256', type: 'uint256' }],
@@ -739,7 +785,7 @@ export const aminalFactoryAbi = [
         internalType: 'struct IAminalStructs.Visuals',
         type: 'tuple',
         components: [
-          { name: 'genes', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
         ],
       },
     ],
@@ -756,7 +802,6 @@ export const aminalFactoryAbi = [
     type: 'function',
     inputs: [
       { name: '_geneAuction', internalType: 'address', type: 'address' },
-      { name: '_aminalProposals', internalType: 'address', type: 'address' },
       { name: '_genes', internalType: 'address', type: 'address' },
     ],
     name: 'initialize',
@@ -789,15 +834,6 @@ export const aminalFactoryAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'proposals',
-    outputs: [
-      { name: '', internalType: 'contract AminalProposals', type: 'address' },
-    ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
     name: 'renounceOwnership',
     outputs: [],
     stateMutability: 'nonpayable',
@@ -815,10 +851,22 @@ export const aminalFactoryAbi = [
       { name: 'parentOne', internalType: 'address', type: 'address' },
       { name: 'parentTwo', internalType: 'address', type: 'address' },
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
+      { name: 'proposer', internalType: 'address', type: 'address' },
       {
         name: 'winningGeneIds',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
+      },
+      {
+        name: 'placements',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
       },
     ],
     name: 'spawnAminal',
@@ -835,7 +883,7 @@ export const aminalFactoryAbi = [
         internalType: 'struct IAminalStructs.Visuals[]',
         type: 'tuple[]',
         components: [
-          { name: 'genes', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
         ],
       },
     ],
@@ -887,8 +935,8 @@ export const aminalFactoryAbi = [
       },
       {
         name: 'geneIds',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
         indexed: false,
       },
     ],
@@ -946,10 +994,40 @@ export const aminalFactoryAbi = [
     ],
     name: 'OwnershipTransferred',
   },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'vrgdaAddress',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'VRGDADeployed',
+  },
+  { type: 'error', inputs: [], name: 'CallerNotAminal' },
+  { type: 'error', inputs: [], name: 'CallerNotAuction' },
+  { type: 'error', inputs: [], name: 'CannotBreedWithSelf' },
+  { type: 'error', inputs: [], name: 'GenesisAlreadyCompleted' },
+  { type: 'error', inputs: [], name: 'IndexOutOfBounds' },
+  { type: 'error', inputs: [], name: 'InsufficientEnergy' },
+  { type: 'error', inputs: [], name: 'InsufficientLove' },
+  { type: 'error', inputs: [], name: 'InsufficientTotalLove' },
+  { type: 'error', inputs: [], name: 'InvalidAminalAddresses' },
+  { type: 'error', inputs: [], name: 'InvalidAuctionAddress' },
+  { type: 'error', inputs: [], name: 'InvalidGenesAddress' },
+  { type: 'error', inputs: [], name: 'InvalidParentOne' },
+  { type: 'error', inputs: [], name: 'InvalidParentTwo' },
+  { type: 'error', inputs: [], name: 'MustSpawnAtLeastOne' },
+  { type: 'error', inputs: [], name: 'NotRegisteredAminal' },
+  { type: 'error', inputs: [], name: 'VRGDAAlreadyDeployed' },
+  { type: 'error', inputs: [], name: 'VRGDANotDeployed' },
 ] as const
 
 export const aminalFactoryAddress =
-  '0x10a25AfF567aE9D8A77A8A1D7903Bb5Fc5843f80' as const
+  '0xcC13d6872c343007B34A1C0a6e5EaAF0D2dACd0C' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1018,12 +1096,12 @@ export const geneAuctionAbi = [
     inputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     name: 'auctions',
     outputs: [
-      { name: 'aminalOne', internalType: 'uint256', type: 'uint256' },
-      { name: 'aminalTwo', internalType: 'uint256', type: 'uint256' },
-      { name: 'totalLove', internalType: 'uint256', type: 'uint256' },
       { name: 'startTime', internalType: 'uint64', type: 'uint64' },
       { name: 'endTime', internalType: 'uint64', type: 'uint64' },
       { name: 'settled', internalType: 'bool', type: 'bool' },
+      { name: 'aminalOne', internalType: 'uint256', type: 'uint256' },
+      { name: 'aminalTwo', internalType: 'uint256', type: 'uint256' },
+      { name: 'totalLove', internalType: 'uint256', type: 'uint256' },
       { name: 'winningDesignId', internalType: 'uint256', type: 'uint256' },
       { name: 'highestVotes', internalType: 'uint256', type: 'uint256' },
     ],
@@ -1138,14 +1216,14 @@ export const geneAuctionAbi = [
         internalType: 'struct GeneAuction.AminalDesign',
         type: 'tuple',
         components: [
-          { name: 'geneIds', internalType: 'uint256[10]', type: 'uint256[10]' },
+          { name: 'geneIds', internalType: 'uint256[9]', type: 'uint256[9]' },
           { name: 'proposer', internalType: 'address', type: 'address' },
           { name: 'votes', internalType: 'uint256', type: 'uint256' },
           { name: 'removed', internalType: 'bool', type: 'bool' },
           {
             name: 'placements',
-            internalType: 'struct IAminalStructs.GeneMetadata[10]',
-            type: 'tuple[10]',
+            internalType: 'struct IAminalStructs.GeneMetadata[9]',
+            type: 'tuple[9]',
             components: [
               { name: 'offsetX', internalType: 'int16', type: 'int16' },
               { name: 'offsetY', internalType: 'int16', type: 'int16' },
@@ -1168,8 +1246,8 @@ export const geneAuctionAbi = [
     outputs: [
       {
         name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[10]',
-        type: 'tuple[10]',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
         components: [
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
@@ -1236,13 +1314,13 @@ export const geneAuctionAbi = [
     outputs: [
       {
         name: 'parentOneGenes',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
       },
       {
         name: 'parentTwoGenes',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
       },
     ],
     stateMutability: 'view',
@@ -1283,13 +1361,27 @@ export const geneAuctionAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'auctionId', internalType: 'uint256', type: 'uint256' }],
+    name: 'pauseAuction',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    name: 'pausedAuctions',
+    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
-      { name: 'geneIds', internalType: 'uint256[10]', type: 'uint256[10]' },
+      { name: 'geneIds', internalType: 'uint256[9]', type: 'uint256[9]' },
       {
         name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[10]',
-        type: 'tuple[10]',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
         components: [
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
@@ -1334,6 +1426,13 @@ export const geneAuctionAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'auctionId', internalType: 'uint256', type: 'uint256' }],
+    name: 'unpauseAuction',
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
       { name: 'designId', internalType: 'uint256', type: 'uint256' },
@@ -1363,6 +1462,32 @@ export const geneAuctionAbi = [
         type: 'uint256',
         indexed: true,
       },
+    ],
+    name: 'AuctionPausedEvent',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'auctionId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+    ],
+    name: 'AuctionUnpaused',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
+      {
+        name: 'auctionId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
       {
         name: 'designId',
         internalType: 'uint256',
@@ -1377,14 +1502,14 @@ export const geneAuctionAbi = [
       },
       {
         name: 'geneIds',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
         indexed: false,
       },
       {
         name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[10]',
-        type: 'tuple[10]',
+        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        type: 'tuple[9]',
         components: [
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
@@ -1652,8 +1777,8 @@ export const geneAuctionAbi = [
       },
       {
         name: 'winningGeneIds',
-        internalType: 'uint256[10]',
-        type: 'uint256[10]',
+        internalType: 'uint256[9]',
+        type: 'uint256[9]',
         indexed: false,
       },
       {
@@ -1665,6 +1790,7 @@ export const geneAuctionAbi = [
     ],
     name: 'VotingSettled',
   },
+  { type: 'error', inputs: [], name: 'AuctionPaused' },
   { type: 'error', inputs: [], name: 'DesignAlreadyRemoved' },
   { type: 'error', inputs: [], name: 'InsufficientLove' },
   { type: 'error', inputs: [], name: 'InvalidDesign' },
@@ -1678,7 +1804,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0x6Aa9B90d21028EBf7C806423925996937302D6E1' as const
+  '0x4c99c3bf6732c66D31c9bEEe7Aabc5d83b398E09' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1704,7 +1830,12 @@ export const geneRegistryAbi = [
   },
   {
     type: 'function',
-    inputs: [{ name: 'svg', internalType: 'string', type: 'string' }],
+    inputs: [
+      { name: 'svg', internalType: 'string', type: 'string' },
+      { name: 'name', internalType: 'string', type: 'string' },
+      { name: 'description', internalType: 'string', type: 'string' },
+      { name: 'category', internalType: 'string', type: 'string' },
+    ],
     name: 'createGene',
     outputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
@@ -1714,6 +1845,9 @@ export const geneRegistryAbi = [
     inputs: [
       { name: 'recipient', internalType: 'address', type: 'address' },
       { name: 'svg', internalType: 'string', type: 'string' },
+      { name: 'name', internalType: 'string', type: 'string' },
+      { name: 'description', internalType: 'string', type: 'string' },
+      { name: 'category', internalType: 'string', type: 'string' },
     ],
     name: 'createGeneFor',
     outputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
@@ -1742,6 +1876,13 @@ export const geneRegistryAbi = [
   },
   {
     type: 'function',
+    inputs: [{ name: 'creator', internalType: 'address', type: 'address' }],
+    name: 'getGeneCountByCreator',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [{ name: 'geneId', internalType: 'uint256', type: 'uint256' }],
     name: 'getGeneInfo',
     outputs: [
@@ -1752,10 +1893,15 @@ export const geneRegistryAbi = [
   },
   {
     type: 'function',
-    inputs: [{ name: 'creator', internalType: 'address', type: 'address' }],
+    inputs: [
+      { name: 'creator', internalType: 'address', type: 'address' },
+      { name: 'offset', internalType: 'uint256', type: 'uint256' },
+      { name: 'limit', internalType: 'uint256', type: 'uint256' },
+    ],
     name: 'getGenesByCreator',
     outputs: [
       { name: 'geneIds', internalType: 'uint256[]', type: 'uint256[]' },
+      { name: 'total', internalType: 'uint256', type: 'uint256' },
     ],
     stateMutability: 'view',
   },
@@ -1817,6 +1963,19 @@ export const geneRegistryAbi = [
         indexed: true,
       },
       { name: 'svg', internalType: 'string', type: 'string', indexed: false },
+      { name: 'name', internalType: 'string', type: 'string', indexed: false },
+      {
+        name: 'description',
+        internalType: 'string',
+        type: 'string',
+        indexed: false,
+      },
+      {
+        name: 'category',
+        internalType: 'string',
+        type: 'string',
+        indexed: false,
+      },
     ],
     name: 'GeneCreated',
   },
@@ -1839,13 +1998,14 @@ export const geneRegistryAbi = [
     ],
     name: 'OwnershipTransferred',
   },
+  { type: 'error', inputs: [], name: 'EmptyName' },
   { type: 'error', inputs: [], name: 'EmptySVG' },
   { type: 'error', inputs: [], name: 'InvalidSVG' },
   { type: 'error', inputs: [], name: 'SVGTooLarge' },
 ] as const
 
 export const geneRegistryAddress =
-  '0xf460D0f88fD376F322a834BDDe4d915748432fDF' as const
+  '0x3866Ee60CF6F3A98793ecE4Bb03aEB82BB81406D' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -1946,6 +2106,9 @@ export const genesAbi = [
     inputs: [
       { name: 'to', internalType: 'address', type: 'address' },
       { name: 'geneSVG', internalType: 'string', type: 'string' },
+      { name: 'name', internalType: 'string', type: 'string' },
+      { name: 'description', internalType: 'string', type: 'string' },
+      { name: 'category', internalType: 'string', type: 'string' },
     ],
     name: 'mint',
     outputs: [],
@@ -2134,6 +2297,33 @@ export const genesAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
+      {
+        name: 'tokenId',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: true,
+      },
+      { name: 'to', internalType: 'address', type: 'address', indexed: true },
+      { name: 'name', internalType: 'string', type: 'string', indexed: false },
+      {
+        name: 'description',
+        internalType: 'string',
+        type: 'string',
+        indexed: false,
+      },
+      {
+        name: 'category',
+        internalType: 'string',
+        type: 'string',
+        indexed: false,
+      },
+    ],
+    name: 'GeneMetadata',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
       { name: 'version', internalType: 'uint8', type: 'uint8', indexed: false },
     ],
     name: 'Initialized',
@@ -2199,7 +2389,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0xAd580787160574FD996615050622cAabD9e1ef86' as const
+  '0x2B5c0FDD243D14708507f5754EEA9308F1B6229E' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2283,6 +2473,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0x513Bd7e04D456c793A7c1227916Eb51EDBCd799b' as const
+  '0x4D006B8d0c84A2C1D82ECD7F9a1a7D6F4d6604B2' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const

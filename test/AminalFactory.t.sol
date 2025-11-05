@@ -9,14 +9,12 @@ import {Aminal as AminalContract} from "src/Aminal.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Move2D} from "src/skills/Move2D.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
-import {AminalProposals} from "src/proposals/AminalProposals.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
 contract AminalFactoryTest is Test, IAminalStructs {
     AminalFactory public factory;
     GeneAuction public geneAuction;
-    AminalProposals public proposals;
     Genes public genes;
     GeneRegistry public geneRegistry;
     Move2D public move2DSkill;
@@ -29,16 +27,14 @@ contract AminalFactoryTest is Test, IAminalStructs {
         genes = new Genes();
         geneRegistry = new GeneRegistry(address(genes));
         geneAuction = new GeneAuction(address(genes), address(geneRegistry));
-        proposals = new AminalProposals();
 
         // Deploy factory
         factory = new AminalFactory();
-        factory.initialize(address(geneAuction), address(proposals), address(genes));
+        factory.initialize(address(geneAuction), address(genes));
 
         // Setup contracts properly
         genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory));
-        proposals.setup(address(factory));
         factory.setup();
 
         // Deploy a skill
@@ -49,10 +45,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
         Visuals[] memory initialVisuals = new Visuals[](2);
 
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
 
@@ -73,7 +69,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn an Aminal first
         Visuals[] memory initialVisuals = new Visuals[](1);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -100,7 +96,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn an Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -129,9 +125,9 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn two Aminals
         Visuals[] memory initialVisuals = new Visuals[](2);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
         initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminal1Address = factory.getAminalByIndex(0);
@@ -149,7 +145,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Initiate breeding through factory (creates auction directly)
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1Address, aminal2Address);
+        uint256 auctionId = factory.breedAminals(aminal1Address, aminal2Address, 0);
         assertTrue(auctionId > 0, "Should create auction and return auction ID");
     }
 
@@ -158,7 +154,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         Visuals[] memory initialVisuals = new Visuals[](5);
         for (uint256 i = 0; i < 5; i++) {
             initialVisuals[i] =
-                Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+                Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
         }
 
         factory.spawnInitialAminals(initialVisuals);
