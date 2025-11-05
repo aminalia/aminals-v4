@@ -1,12 +1,14 @@
 {
-  "timestamp": "2025-11-04T13:36:45Z",
+  "timestamp": "2025-11-05T00:07:03Z",
   "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
-  "geneRegistry": "0x165e95b9348b0d05885c95BBAb21B826c90184Bf",
-  "aminalFactory": "0x626f99E28e71D98cf929ca4f904d8f3d66F2E3FE",
+  "geneRegistry": "0xfbd88f99b014A01820EB3336CedE1713acB361ec",
+  "aminalFactory": "0x4b938B36E4425235DD10ea103c1B5104652CAdd7",
   "genes": {
-    "42": {
-      "description": "Three Eyed - 7-misc.svg",
-      "transactionHash": "0xe2cb9d314501b4e770e494a84e27fad19b243a5bca4ae85d86f17cd47aff8071"
+    "45": {
+      "name": "Three Eyed - misc",
+      "description": "Trait #7 for Three Eyed",
+      "category": "trait-7",
+      "transactionHash": "0xe5d5f07d406bb5e5d5580e80a1206f796ae2d0c7d6973fd0aa334070139f5cbf"
     }
   },
   "aminals": {
@@ -70,17 +72,32 @@
         0
       ]
     },
+    "firefly-three": {
+      "displayName": "Firefly Three",
+      "geneIds": [
+        0,
+        0,
+        0,
+        0,
+        27,
+        0,
+        28,
+        29,
+        0,
+        0
+      ]
+    },
     "red-animated": {
       "displayName": "Red Animated",
       "geneIds": [
-        27,
-        28,
-        29,
         30,
         31,
         32,
         33,
         34,
+        35,
+        36,
+        37,
         0,
         0
       ]

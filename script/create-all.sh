@@ -93,27 +93,33 @@ fi
 # Function to mint a gene and return its ID
 mint_gene() {
     local svg=$1
-    local description=$2
+    local name=$2
+    local description=$3
+    local category=$4
 
-    # Check if this gene was already minted (by description)
-    EXISTING_GENE=$(echo "$GENE_DEPLOYMENT_JSON" | jq -r --arg desc "$description" '.genes | to_entries[] | select(.value.description == $desc) | .key')
+    # Check if this gene was already minted (by name)
+    EXISTING_GENE=$(echo "$GENE_DEPLOYMENT_JSON" | jq -r --arg name "$name" '.genes | to_entries[] | select(.value.name == $name) | .key')
 
     if [ -n "$EXISTING_GENE" ]; then
-        echo -e "${CYAN}  ↻ Already minted: $description (Gene ID: $EXISTING_GENE)${NC}" >&2
+        echo -e "${CYAN}  ↻ Already minted: $name (Gene ID: $EXISTING_GENE)${NC}" >&2
         echo "$EXISTING_GENE"
         return 0
     fi
 
-    echo -e "${YELLOW}  → Minting: $description${NC}" >&2
+    echo -e "${YELLOW}  → Minting: $name${NC}" >&2
 
-    # First get the current gene ID before minting
-    GENE_ID=$(cast call $GENE_REGISTRY "totalGenesCreated()(uint256)" --rpc-url $RPC_URL)
+    # Get the current gene ID from the Genes contract (this is the next ID that will be minted)
+    GENE_ID=$(cast call $GENE_REGISTRY "geneNFT()(address)" --rpc-url $RPC_URL)
+    GENE_ID=$(cast call $GENE_ID "currentId()(uint256)" --rpc-url $RPC_URL)
 
     # Send transaction and get result as JSON
     TX_RESULT=$(cast send $GENE_REGISTRY \
-        "createGeneFor(address,string)" \
+        "createGeneFor(address,string,string,string,string)" \
         $DEPLOYER \
         "$svg" \
+        "$name" \
+        "$description" \
+        "$category" \
         --private-key $PRIVATE_KEY \
         --rpc-url $RPC_URL \
         --json 2>&1)
@@ -137,8 +143,8 @@ mint_gene() {
         TOTAL_GENES=$((TOTAL_GENES + 1))
 
         # Add to gene deployment summary
-        GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg id "$GENE_ID" --arg desc "$description" --arg tx "$TX_HASH" \
-            '.genes[$id] = {"description": $desc, "transactionHash": $tx}')
+        GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg id "$GENE_ID" --arg name "$name" --arg desc "$description" --arg cat "$category" --arg tx "$TX_HASH" \
+            '.genes[$id] = {"name": $name, "description": $desc, "category": $cat, "transactionHash": $tx}')
 
         # Save progress immediately after each successful mint
         echo "$GENE_DEPLOYMENT_JSON" | jq '.' > gene-deployment-summary.json
@@ -160,20 +166,16 @@ if [ ! -d "genes" ]; then
     exit 1
 fi
 
-# Step 1: Mint empty gene as gene ID 0
+# Step 1: Note about Gene ID 0
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
-echo -e "${BLUE}  Step 1: Minting Empty Gene (ID 0)${NC}"
+echo -e "${BLUE}  Step 1: Gene ID 0 (Reserved for Empty Slots)${NC}"
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
 echo ""
-
-EMPTY_GENE_ID=$(mint_gene "$EMPTY_SVG" "Empty trait placeholder")
+echo -e "${CYAN}Note: Gene IDs now start at 1 (0 is reserved for empty slots)${NC}"
 echo ""
 
-if [ "$EMPTY_GENE_ID" != "0" ]; then
-    echo -e "${RED}Error: Empty gene should be ID 0, but got ID $EMPTY_GENE_ID${NC}"
-    echo -e "${YELLOW}This might be okay if genes were already minted. Continuing...${NC}"
-    echo ""
-fi
+# We'll use 0 to represent empty gene slots in Aminal visuals
+EMPTY_GENE_ID=0
 
 # Step 2: Process each aminal folder
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
@@ -210,7 +212,15 @@ for folder in genes/*/; do
             # File exists, read and mint it
             svg=$(cat "$file" | tr -d '\n')
             filename=$(basename "$file")
-            gene_id=$(mint_gene "$svg" "$display_name - $filename")
+            # Extract trait name from filename (remove number prefix and .svg extension)
+            trait_name=$(echo "$filename" | sed 's/^[0-9]*-//' | sed 's/.svg$//')
+
+            # Create descriptive name, description, and category
+            gene_name="$display_name - $trait_name"
+            gene_description="Trait #$i for $display_name"
+            gene_category="trait-$i"
+
+            gene_id=$(mint_gene "$svg" "$gene_name" "$gene_description" "$gene_category")
             GENE_IDS[$i]=$gene_id
         else
             # File doesn't exist, use empty gene (ID 0)
@@ -238,34 +248,45 @@ echo -e "${BLUE}  Step 3: Spawning Initial Aminals${NC}"
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Build the Visuals array - cast expects: "[([genes]),([genes]),...]" with parentheses inside brackets
-VISUALS_ARRAY="["
-for i in "${!ALL_AMINAL_GENES[@]}"; do
-    IFS=',' read -ra GENES <<< "${ALL_AMINAL_GENES[$i]}"
-    VISUALS_ARRAY+="([${GENES[0]},${GENES[1]},${GENES[2]},${GENES[3]},${GENES[4]},${GENES[5]},${GENES[6]},${GENES[7]},${GENES[8]},${GENES[9]}])"
-    if [ $i -lt $((${#ALL_AMINAL_GENES[@]} - 1)) ]; then
-        VISUALS_ARRAY+=","
-    fi
-done
-VISUALS_ARRAY+="]"
+# Check if initial aminals were already spawned
+INITIAL_SPAWNED=$(cast call $AMINAL_FACTORY "initialAminalSpawned()(bool)" --rpc-url $RPC_URL)
 
-echo -e "${CYAN}Spawning ${#ALL_AMINAL_GENES[@]} Aminals with gene mappings...${NC}"
-echo -e "${CYAN}Visuals array: $VISUALS_ARRAY${NC}"
-echo ""
-
-# Call spawnInitialAminals on the factory
-cast send $AMINAL_FACTORY \
-    'spawnInitialAminals((uint256[10])[])' \
-    "$VISUALS_ARRAY" \
-    --private-key $PRIVATE_KEY \
-    --rpc-url $RPC_URL
-
-if [ $? -eq 0 ]; then
+if [ "$INITIAL_SPAWNED" == "true" ]; then
+    echo -e "${YELLOW}⚠ Initial Aminals have already been spawned!${NC}"
+    TOTAL_AMINALS=$(cast call $AMINAL_FACTORY "totalAminals()(uint256)" --rpc-url $RPC_URL)
+    echo -e "${CYAN}Total Aminals already created: ${GREEN}$TOTAL_AMINALS${NC}"
+    echo -e "${YELLOW}Skipping spawn step...${NC}"
     echo ""
-    echo -e "${GREEN}✓ Successfully spawned ${#ALL_AMINAL_GENES[@]} Aminals!${NC}"
 else
-    echo -e "${RED}✗ Failed to spawn Aminals${NC}"
-    exit 1
+    # Build the Visuals array - cast expects: "[([genes]),([genes]),...]" with parentheses inside brackets
+    VISUALS_ARRAY="["
+    for i in "${!ALL_AMINAL_GENES[@]}"; do
+        IFS=',' read -ra GENES <<< "${ALL_AMINAL_GENES[$i]}"
+        VISUALS_ARRAY+="([${GENES[0]},${GENES[1]},${GENES[2]},${GENES[3]},${GENES[4]},${GENES[5]},${GENES[6]},${GENES[7]},${GENES[8]},${GENES[9]}])"
+        if [ $i -lt $((${#ALL_AMINAL_GENES[@]} - 1)) ]; then
+            VISUALS_ARRAY+=","
+        fi
+    done
+    VISUALS_ARRAY+="]"
+
+    echo -e "${CYAN}Spawning ${#ALL_AMINAL_GENES[@]} Aminals with gene mappings...${NC}"
+    echo -e "${CYAN}Visuals array: $VISUALS_ARRAY${NC}"
+    echo ""
+
+    # Call spawnInitialAminals on the factory
+    cast send $AMINAL_FACTORY \
+        'spawnInitialAminals((uint256[10])[])' \
+        "$VISUALS_ARRAY" \
+        --private-key $PRIVATE_KEY \
+        --rpc-url $RPC_URL
+
+    if [ $? -eq 0 ]; then
+        echo ""
+        echo -e "${GREEN}✓ Successfully spawned ${#ALL_AMINAL_GENES[@]} Aminals!${NC}"
+    else
+        echo -e "${RED}✗ Failed to spawn Aminals${NC}"
+        exit 1
+    fi
 fi
 
 # Save gene deployment summary

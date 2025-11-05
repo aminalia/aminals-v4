@@ -216,9 +216,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
 
     /// @notice Restricts function access to the AminalFactory contract and gene auction only
     modifier onlyFactoryOrAuction() {
-        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) {
-            revert UnauthorizedCaller();
-        }
+        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) revert UnauthorizedCaller();
         _;
     }
 
@@ -246,10 +244,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         address _loveVRGDA
     )
         ERC721("Aminal", "AMINAL")
-        GeneRenderer(
-            address(AminalFactory(_factory).genes()),
-            address(0) // TODO GeneRegistry to be added when implemented
-        )
+        GeneRenderer(address(AminalFactory(_factory).genes()), address(AminalFactory(_factory).genes().geneRegistry()))
     {
         factory = AminalFactory(_factory);
         momAddress = _momAddress;
