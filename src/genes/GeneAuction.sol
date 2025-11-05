@@ -865,19 +865,29 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Select a random parent design when no votes are cast
+     * @notice Select random genes from parents when no votes are cast
+     * @dev Each gene slot is randomly inherited from either parent (like genetic inheritance)
      */
     function _selectRandomParentDesign(Auction storage auction) internal view returns (uint256[9] memory, GeneMetadata[9] memory) {
+        uint256[9] memory childGenes;
+
         // Default placement for parent designs (centered, 100% scale, no rotation)
         GeneMetadata[9] memory defaultPlacements;
         for (uint256 i = 0; i < 9; i++) {
             defaultPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
-        // Randomly choose between parent designs
-        uint256 random = _generateRandomness(1, 2);
-        if (random == 0) return (auction.parentOneGenes, defaultPlacements);
-        else return (auction.parentTwoGenes, defaultPlacements);
+        // For each gene slot, randomly choose from parent one or parent two
+        for (uint256 i = 0; i < 9; i++) {
+            uint256 random = _generateRandomness(i, 2); // Use slot index as seed for variety
+            if (random == 0) {
+                childGenes[i] = auction.parentOneGenes[i];
+            } else {
+                childGenes[i] = auction.parentTwoGenes[i];
+            }
+        }
+
+        return (childGenes, defaultPlacements);
     }
 
     /**
