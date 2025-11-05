@@ -187,7 +187,7 @@ export default function BreedingModal({
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
       functionName: 'breedAminals',
-      args: [aminal.contractAddress, partnerAddress as `0x${string}`],
+      args: [aminal.contractAddress, partnerAddress as `0x${string}`, 0n],
     });
   };
 

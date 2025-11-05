@@ -232,15 +232,8 @@ export const useAuctionVoting = (auctionId: string) => {
     },
   });
 
-  // Transform result to match AuctionVoteInfo type
-  const data = result.data
-    ? ({
-        highestVotes: result.data[0],
-        winningDesignId: result.data[1],
-        proposedDesignIds: result.data[2],
-        tiedDesignIds: result.data[3],
-      } as AuctionVoteInfo)
-    : undefined;
+  // result.data is already an AuctionVoteInfo object
+  const data = result.data as AuctionVoteInfo | undefined;
 
   return {
     ...result,

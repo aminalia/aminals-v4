@@ -5,7 +5,7 @@
 
 import { Button } from '@components/ui/Button';
 import { countGenes, placementToContractFormat, validateDesign } from '@hooks';
-import type { GeneMetadata } from '@types/breeding';
+import type { GeneMetadata } from '../../types/breeding';
 import { useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
@@ -207,13 +207,14 @@ export default function ProposeDesignButton({
     }
 
     // Pad geneIds and placements to arrays of 10
-    const paddedGeneIds = [...geneIds];
-    while (paddedGeneIds.length < 10) {
+    // Pad to 9 elements (contract expects 9, not 10)
+    const paddedGeneIds = [...geneIds.slice(0, 9)];
+    while (paddedGeneIds.length < 9) {
       paddedGeneIds.push(0n);
     }
 
-    const paddedPlacements = [...placements];
-    while (paddedPlacements.length < 10) {
+    const paddedPlacements = [...placements.slice(0, 9)];
+    while (paddedPlacements.length < 9) {
       paddedPlacements.push({
         offsetX: 0,
         offsetY: 0,
@@ -251,16 +252,9 @@ export default function ProposeDesignButton({
           bigint,
           bigint,
           bigint,
-          bigint,
           bigint
         ],
         contractPlacements as [
-          {
-            offsetX: number;
-            offsetY: number;
-            scale: number;
-            rotation: number;
-          },
           {
             offsetX: number;
             offsetY: number;

@@ -149,7 +149,23 @@ const AuctionPage: NextPage = () => {
       parentGenesWithSvg.forEach((gene) => {
         if (gene && !seenGeneIds.has(gene.id)) {
           seenGeneIds.add(gene.id);
-          allGenes.push(gene);
+          // Map GraphQL gene structure to Gene type
+          allGenes.push({
+            id: gene.id,
+            tokenId: gene.tokenId.toString(),
+            owner: {
+              id: gene.ownerId,
+              address: gene.ownerId,
+            },
+            creator: {
+              id: gene.creatorId,
+              address: gene.creatorId,
+            },
+            svg: gene.svg || '',
+            name: gene.name || undefined,
+            description: gene.description || undefined,
+            totalEarnings: gene.totalEarnings,
+          });
         }
       });
     }

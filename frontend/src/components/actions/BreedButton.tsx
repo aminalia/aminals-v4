@@ -264,7 +264,7 @@ export default function BreedButton({
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
       functionName: 'breedAminals',
-      args: [contractAddress, partnerAddress as `0x${string}`],
+      args: [contractAddress, partnerAddress as `0x${string}`, 0n],
     });
   }
 

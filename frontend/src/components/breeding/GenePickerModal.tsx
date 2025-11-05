@@ -5,7 +5,7 @@
 
 import { Button } from '@components/ui/Button';
 import { CategoryFilter, useGenes } from '@hooks';
-import type { Gene } from '@types/breeding';
+import type { Gene } from '../../types/breeding';
 import { useMemo, useState } from 'react';
 import CreateGenePage from '../CreateGenePage';
 
@@ -44,12 +44,38 @@ export default function GenePickerModal({
   const shouldFetchAll = view === 'all';
   const { data: allGenes, isLoading: isLoadingAllGenes } = useGenes(
     'all',
-    'newest',
+    'created-at',
     categoryKey
   );
 
-  // Determine which genes to show
-  const genesToShow = view === 'parent' ? availableGenes : allGenes || [];
+  // Determine which genes to show - map allGenes to Gene type if needed
+  const genesToShow: Gene[] = useMemo(() => {
+    if (view === 'parent') {
+      return availableGenes;
+    }
+
+    if (!allGenes) {
+      return [];
+    }
+
+    // Map GeneNFT to Gene type
+    return allGenes.map((gene) => ({
+      id: gene.id,
+      tokenId: gene.tokenId.toString(),
+      owner: {
+        id: gene.ownerId,
+        address: gene.ownerId,
+      },
+      creator: {
+        id: gene.creatorId,
+        address: gene.creatorId,
+      },
+      svg: gene.svg || '',
+      name: gene.name || undefined,
+      description: gene.description || undefined,
+      totalEarnings: gene.totalEarnings,
+    }));
+  }, [view, availableGenes, allGenes]);
 
   const handleSelectGene = (gene: Gene) => {
     onSelectGene(gene);
@@ -187,7 +213,7 @@ export default function GenePickerModal({
                   <svg
                     viewBox="0 0 1000 1000"
                     className="w-full h-full"
-                    dangerouslySetInnerHTML={{ __html: gene.svg }}
+                    dangerouslySetInnerHTML={{ __html: gene.svg || '' }}
                   />
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
                     <div className="text-xs text-white font-medium text-center">

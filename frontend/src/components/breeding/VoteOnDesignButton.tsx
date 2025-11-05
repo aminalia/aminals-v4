@@ -21,7 +21,7 @@ export interface VoteOnDesignButtonProps {
   disabled?: boolean;
   onSuccess?: () => void;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'default' | 'sm' | 'lg' | 'icon' | 'xs' | 'xl';
 }
 
 export default function VoteOnDesignButton({
@@ -32,7 +32,7 @@ export default function VoteOnDesignButton({
   disabled = false,
   onSuccess,
   className,
-  size = 'md',
+  size = 'default',
 }: VoteOnDesignButtonProps) {
   const { isConnected, chain, address } = useAccount();
   const enabled = isConnected && chain;

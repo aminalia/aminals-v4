@@ -4,7 +4,7 @@
  */
 
 import { useAuctionVoting, useDesignProposals } from '@hooks';
-import type { DesignProposal } from '@types/breeding';
+import type { DesignProposal } from '../../types/breeding';
 import { useMemo } from 'react';
 
 interface DesignVoteStatsProps {

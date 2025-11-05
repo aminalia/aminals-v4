@@ -9,7 +9,7 @@
  */
 
 import { countGenes, createEmptyDesign, DEFAULT_PLACEMENT } from '@hooks';
-import type { DesignBuilderState, Gene, GeneMetadata } from '@types/breeding';
+import type { DesignBuilderState, Gene, GeneMetadata } from '../../types/breeding';
 import { useCallback, useEffect, useState } from 'react';
 import GenePickerModal from './GenePickerModal';
 
