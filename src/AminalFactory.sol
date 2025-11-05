@@ -74,6 +74,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error IndexOutOfBounds();
     error NotRegisteredAminal();
     error VRGDANotDeployed();
+    error InsufficientTotalLove();
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                     📊 CONSTANTS
@@ -333,15 +334,21 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * - Both addresses must be valid Aminals
      * - Caller must have sufficient love for at both Aminals
      * - Both Aminals must have sufficient energy to breed
+     * - Total love meets minimum slippage threshold
      *
      * @param aminalOne First parent Aminal address
      * @param aminalTwo Second parent Aminal address
+     * @param minTotalLove Minimum total love required (slippage protection)
      * @return auctionId Gene auction ID
      *
      * "When two Aminals unite in love, their digital essence mingles
      *  through algorithms of affection, creating new life from pure emotion"
      */
-    function breedAminals(address aminalOne, address aminalTwo) external whenInitialized returns (uint256 auctionId) {
+    function breedAminals(address aminalOne, address aminalTwo, uint256 minTotalLove)
+        external
+        whenInitialized
+        returns (uint256 auctionId)
+    {
         if (!isAminal[aminalOne] || !isAminal[aminalTwo]) revert InvalidAminalAddresses();
         if (aminalOne == aminalTwo) revert CannotBreedWithSelf();
 
@@ -363,6 +370,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
         // Calculate total love investment from caller for both Aminals
         uint256 totalLove = love1 + love2;
+
+        // Slippage protection: ensure total love meets minimum threshold
+        if (totalLove < minTotalLove) revert InsufficientTotalLove();
 
         // Consume Love from caller and energy via squeakFrom
         aminal1.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);

@@ -153,7 +153,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
         // Alice breeds aminals which creates an auction
         vm.prank(alice);
-        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = aminalFactory.breedAminals(aminal1, aminal2, 0);
 
         assertTrue(geneAuction.isVotingActive(auctionId));
     }

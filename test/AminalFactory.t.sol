@@ -149,7 +149,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Initiate breeding through factory (creates auction directly)
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1Address, aminal2Address);
+        uint256 auctionId = factory.breedAminals(aminal1Address, aminal2Address, 0);
         assertTrue(auctionId > 0, "Should create auction and return auction ID");
     }
 

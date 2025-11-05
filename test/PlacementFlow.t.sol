@@ -162,7 +162,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Start breeding
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create custom design with specific placements
         uint256[10] memory designGenes;
@@ -329,7 +329,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Start breeding
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with extreme values
         uint256[10] memory designGenes;
@@ -403,7 +403,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Start breeding
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Get parent design (should be designId 1)
         GeneAuction.AminalDesign memory parentDesign = geneAuction.getDesign(auctionId, 1);
@@ -447,7 +447,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Start breeding
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with unique placements
         uint256[10] memory designGenes;
@@ -506,7 +506,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Breed
         vm.prank(alice);
-        uint256 auctionId = factory.breedAminals(aminal1, aminal2);
+        uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design
         uint256[10] memory designGenes;
