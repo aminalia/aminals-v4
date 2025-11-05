@@ -283,6 +283,11 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
         initialAminalSpawned = true;
 
+        // TODO: Update to accept custom placement metadata as parameter instead of using defaults
+        // Current: All genesis Aminals use default centered placement
+        // Desired: Allow specifying custom positioning, scale, and rotation for each gene
+        // This would enable more diverse initial Aminals with unique visual layouts
+
         // Default placement: centered, 100% scale, no rotation
         GeneMetadata[MAX_GENES] memory defaultPlacements;
         for (uint256 j = 0; j < MAX_GENES; j++) {
