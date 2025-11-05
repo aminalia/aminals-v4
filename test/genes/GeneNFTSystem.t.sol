@@ -131,7 +131,7 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = i + 1;
         }
-        // Parent 2 - 8 different genes in first 9 slots
+        // Parent 2 - 9 different genes in first 9 slots
         for (uint256 i = 0; i < 9; i++) {
             initialVisuals[1].genes[i] = i + 9;
         }
