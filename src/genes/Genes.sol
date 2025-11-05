@@ -16,7 +16,7 @@ import {Ownable} from "oz/access/Ownable.sol";
 import {Strings} from "oz/utils/Strings.sol";
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
-import {Base64} from "src/utils/Base64.sol";
+import {Base64} from "oz/utils/Base64.sol";
 import {SSTORE2} from "solady/utils/SSTORE2.sol";
 
 /// @notice Gene NFT contract implementing ERC721 with enumerable extension

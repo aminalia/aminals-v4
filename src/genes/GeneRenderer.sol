@@ -7,7 +7,7 @@
 
 pragma solidity ^0.8.20;
 
-import {Base64} from "src/utils/Base64.sol";
+import {Base64} from "oz/utils/Base64.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
