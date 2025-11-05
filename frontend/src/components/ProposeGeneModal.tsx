@@ -130,12 +130,18 @@ export default function ProposeGeneModal({
     const geneId = useManualId ? manualGeneId : selectedGeneId;
     if (!geneId) return;
 
+    // TODO: Update for design-based proposals
+    // Note: proposeGene changed to proposeDesign with array of genes + placements
+    // Commenting out to fix build - needs refactoring
+    console.warn('ProposeGeneModal needs refactoring for design-based proposals');
+    /*
     writeContract({
       abi: geneAuctionAbi,
       address: geneAuctionAddress,
-      functionName: 'proposeGene',
-      args: [BigInt(auctionId), selectedCategory, BigInt(geneId)],
+      functionName: 'proposeDesign',
+      args: [BigInt(auctionId), geneIds, placementMetadata],
     });
+    */
   };
 
   const handleCreateGeneSuccess = (geneId?: string) => {

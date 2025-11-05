@@ -113,16 +113,9 @@ const ChatSessionPage: NextPage = () => {
     ) {
       const initialMessage = 'Greetings';
 
-      // Prepare gene IDs for personality generation
+      // Prepare gene IDs for personality generation (using flexible gene slots)
       const geneIds = {
-        backId: aminal?.backId?.toString(),
-        armId: aminal?.armId?.toString(),
-        tailId: aminal?.tailId?.toString(),
-        earsId: aminal?.earsId?.toString(),
-        bodyId: aminal?.bodyId?.toString(),
-        faceId: aminal?.faceId?.toString(),
-        mouthId: aminal?.mouthId?.toString(),
-        miscId: aminal?.miscId?.toString(),
+        genes: aminal?.genes.map((id) => id.toString()) || [],
       };
 
       console.log('aminal: ', aminal);
@@ -207,16 +200,9 @@ const ChatSessionPage: NextPage = () => {
     setInputMessage('');
     setIsLoading(true);
 
-    // Prepare gene IDs for personality generation
+    // Prepare gene IDs for personality generation (using flexible gene slots)
     const geneIds = {
-      backId: aminal.backId?.toString(),
-      armId: aminal.armId?.toString(),
-      tailId: aminal.tailId?.toString(),
-      earsId: aminal.earsId?.toString(),
-      bodyId: aminal.bodyId?.toString(),
-      faceId: aminal.faceId?.toString(),
-      mouthId: aminal.mouthId?.toString(),
-      miscId: aminal.miscId?.toString(),
+      genes: aminal.genes.map((id) => id.toString()),
     };
 
     try {

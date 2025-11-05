@@ -2,6 +2,7 @@ import { desc, eq, inArray } from '@ponder/client';
 import { usePonderQuery } from '@ponder/react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import * as schema from '../../ponder.schema';
+import { makeGeneNFTId } from '../lib/geneTransformers';
 import type {
   Aminal,
   AminalWithRelations,
@@ -164,7 +165,8 @@ export const useAuction = (
 };
 
 /**
- * Helper to add trait properties to an aminal
+ * Helper to convert Aminal to AminalWithRelations
+ * Note: Traits removed - genes are now flexible (1-10 per Aminal)
  */
 function addTraitHelpers(
   aminal: Aminal | undefined
@@ -173,20 +175,12 @@ function addTraitHelpers(
 
   return {
     ...aminal,
-    // Extract trait IDs from traits array for backward compatibility
-    backId: aminal.traits[0],
-    armId: aminal.traits[1],
-    tailId: aminal.traits[2],
-    earsId: aminal.traits[3],
-    bodyId: aminal.traits[4],
-    faceId: aminal.traits[5],
-    mouthId: aminal.traits[6],
-    miscId: aminal.traits[7],
-  };
+    // Note: No longer extracting trait IDs - genes are flexible
+  } as AminalWithRelations;
 }
 
 /**
- * Fetch gene proposals for a specific auction
+ * Fetch design proposals for a specific auction
  */
 export const useAuctionProposeGenes = (auctionId: string) => {
   // Convert auction ID to Ponder format: 0xauction-{auctionId}
@@ -196,9 +190,9 @@ export const useAuctionProposeGenes = (auctionId: string) => {
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneProposal)
+        .from(schema.designProposal)
         .where(
-          eq(schema.geneProposal.auctionId, hexAuctionId as `0x${string}`)
+          eq(schema.designProposal.auctionId, hexAuctionId as `0x${string}`)
         );
     },
     enabled: !!auctionId,
@@ -217,8 +211,8 @@ export const useAuctionVotes = (auctionId: string) => {
     queryFn: (db) => {
       return db
         .select()
-        .from(schema.geneVote)
-        .where(eq(schema.geneVote.auctionId, hexAuctionId as `0x${string}`));
+        .from(schema.designVote)
+        .where(eq(schema.designVote.auctionId, hexAuctionId as `0x${string}`));
     },
     enabled: !!auctionId,
   });
@@ -236,14 +230,14 @@ export const useAuctionVotes = (auctionId: string) => {
       if (proposalIds.length === 0) {
         return db
           .select()
-          .from(schema.geneProposal)
-          .where(eq(schema.geneProposal.id, '' as `0x${string}`))
+          .from(schema.designProposal)
+          .where(eq(schema.designProposal.id, '' as `0x${string}`))
           .limit(0);
       }
       return db
         .select()
-        .from(schema.geneProposal)
-        .where(inArray(schema.geneProposal.id, proposalIds as `0x${string}`[]));
+        .from(schema.designProposal)
+        .where(inArray(schema.designProposal.id, proposalIds as `0x${string}`[]));
     },
     enabled: proposalIds.length > 0,
   });
@@ -251,8 +245,12 @@ export const useAuctionVotes = (auctionId: string) => {
   const proposals = proposalsResult.data || [];
 
   // Get unique gene IDs from proposals
+  // Note: Design proposals now have geneIds array (1-10 genes), not a single geneNFTId
+  // Convert bigint token IDs to hex format for querying
   const geneIds = proposals.length
-    ? Array.from(new Set(proposals.map((p) => p.geneNFTId)))
+    ? Array.from(
+        new Set(proposals.flatMap((p) => (p.geneIds || []).map(makeGeneNFTId)))
+      )
     : [];
 
   // Fetch genes
@@ -302,9 +300,8 @@ export const useAuctionVotes = (auctionId: string) => {
 
   // Create lookup maps
   const geneMap = new Map(genes.map((g) => [g.id, g]));
-  const proposalMap = new Map(
-    proposals.map((p) => [p.id, { ...p, geneNFT: geneMap.get(p.geneNFTId) }])
-  );
+  // Note: Design proposals now have multiple genes, not a single geneNFT
+  const proposalMap = new Map(proposals.map((p) => [p.id, p]));
   const voterMap = new Map(voters.map((v) => [v.id, v]));
 
   // Combine votes with proposals, genes, and voters

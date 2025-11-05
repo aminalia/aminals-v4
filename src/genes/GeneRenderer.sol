@@ -26,9 +26,6 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @dev Hexadecimal characters for address conversion
     bytes16 private constant _SYMBOLS = "0123456789abcdef";
 
-    /// @dev Number of visual trait categories
-    uint8 private constant _TRAIT_CATEGORIES = 8;
-
     // ============ STRUCTS ============
 
     /// @notice Parameters for constructing ERC721 token URI
@@ -85,7 +82,7 @@ abstract contract GeneRenderer is IAminalStructs {
     }
 
     /// @notice Generate JSON attributes list for NFT metadata
-    /// @dev Creates attribute objects for each non-zero gene ID with trait type and creator info
+    /// @dev Creates attribute objects for each non-zero gene ID with gene number and creator info
     /// @param aminalId The Aminal ID to generate attributes for
     /// @return JSON string containing array of attribute objects
     function generateAttributesList(uint256 aminalId) public view returns (string memory) {
@@ -93,25 +90,11 @@ abstract contract GeneRenderer is IAminalStructs {
         string memory attributes = "";
         bool firstAttribute = true;
 
-        // Array of gene IDs in trait category order
-        uint256[_TRAIT_CATEGORIES] memory geneIds = [
-            visuals.backId,
-            visuals.armId,
-            visuals.tailId,
-            visuals.earsId,
-            visuals.bodyId,
-            visuals.faceId,
-            visuals.mouthId,
-            visuals.miscId
-        ];
-
-        for (uint256 i = 0; i < _TRAIT_CATEGORIES; i++) {
-            uint256 geneId = geneIds[i];
+        // Iterate through all gene slots (0-9)
+        for (uint256 i = 0; i < 10; i++) {
+            uint256 geneId = visuals.genes[i];
 
             if (geneId != 0) {
-                VisualsCat category = VisualsCat(i);
-                string memory categoryName = _getCategoryName(category);
-
                 if (!firstAttribute) attributes = string(abi.encodePacked(attributes, ","));
                 else firstAttribute = false;
 
@@ -121,13 +104,13 @@ abstract contract GeneRenderer is IAminalStructs {
                 attributes = string(
                     abi.encodePacked(
                         attributes,
-                        '{"trait_type":"',
-                        categoryName,
+                        '{"trait_type":"Gene ',
+                        Strings.toString(i + 1),
                         '","value":"Gene #',
                         Strings.toString(geneId),
                         '"}',
-                        ',{"trait_type":"',
-                        categoryName,
+                        ',{"trait_type":"Gene ',
+                        Strings.toString(i + 1),
                         ' Creator","value":"',
                         _toHexString(uint160(creator), 20),
                         '"}'
@@ -171,37 +154,132 @@ abstract contract GeneRenderer is IAminalStructs {
     // ============ INTERNAL FUNCTIONS ============
 
     /// @notice Generate complete SVG image for an Aminal
-    /// @dev Combines background, shadow, and all trait layers in proper rendering order
+    /// @dev Combines all gene layers in order (1-10 genes) with placement metadata
     /// @param aminalId The Aminal ID to generate image for
     /// @return output Complete SVG string ready for base64 encoding
     function _aminalImage(uint256 aminalId) internal view returns (string memory output) {
         // Get the visual trait configuration for this Aminal
         Visuals memory visuals = getAminalVisualsByID(aminalId);
+        GeneMetadata[10] memory placements = getAminalPlacementsByID(aminalId);
 
         // Start SVG container with proper viewBox
         output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1000 1000">';
 
-        // Layer 1: Background
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.backId)));
-
-        // Layer 2: Shadow (always rendered, provides depth)
-        output = string(
-            abi.encodePacked(
-                output, '<g id="shadow"><ellipse fill="#3c3d55" opacity="0.5" cx="505" cy="971" rx="163" ry="12"/></g>'
-            )
-        );
-
-        // Layers 3-9: Trait layers in proper rendering order (back to front)
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.tailId))); // Behind body
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.armId))); // Behind body
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.earsId))); // Behind body
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.bodyId))); // Main body
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.faceId))); // Face features
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.mouthId))); // Mouth on face
-        output = string(abi.encodePacked(output, _getGeneNFTSVG(visuals.miscId))); // Front accessories
+        // Render all genes in order (0-9)
+        // Genes are rendered back-to-front (first gene is background, last is foreground)
+        for (uint256 i = 0; i < 10;) {
+            if (visuals.genes[i] != 0) {
+                output = string(abi.encodePacked(output, _renderGeneWithPlacement(visuals.genes[i], placements[i])));
+            }
+            unchecked {
+                ++i;
+            }
+        }
 
         // Close SVG container
         output = string(abi.encodePacked(output, "</svg>"));
+    }
+
+    /// @notice Render a gene with placement transformations applied
+    /// @dev Wraps the gene SVG in a group with transform attribute
+    /// @param geneId The Gene NFT ID to render
+    /// @param placement The placement metadata (position, scale, rotation)
+    /// @return Rendered SVG with transformations applied
+    function _renderGeneWithPlacement(uint256 geneId, GeneMetadata memory placement) internal view returns (string memory) {
+        string memory geneSvg = _getGeneNFTSVG(geneId);
+        if (bytes(geneSvg).length == 0) return "";
+
+        // Build transform attribute
+        string memory transform = _buildTransform(placement);
+
+        // Wrap gene SVG in a group with transform
+        return string(abi.encodePacked('<g transform="', transform, '">', geneSvg, '</g>'));
+    }
+
+    /// @notice Build SVG transform attribute from placement metadata
+    /// @dev Creates a transform string with translate, scale, and rotate
+    /// @param placement The placement metadata
+    /// @return Transform attribute value
+    function _buildTransform(GeneMetadata memory placement) internal pure returns (string memory) {
+        // Convert scale from percentage to decimal (100 = 1.0)
+        // offsetX and offsetY are already in pixels
+        // rotation is in degrees
+
+        string memory transform = "";
+
+        // Translate to position (move to center + offset)
+        if (placement.offsetX != 0 || placement.offsetY != 0) {
+            transform = string(
+                abi.encodePacked(
+                    "translate(",
+                    _int16ToString(placement.offsetX),
+                    ",",
+                    _int16ToString(placement.offsetY),
+                    ") "
+                )
+            );
+        }
+
+        // Scale from center of canvas (500, 500)
+        if (placement.scale != 100) {
+            string memory scaleValue = _scaleToString(placement.scale);
+            transform = string(
+                abi.encodePacked(
+                    transform,
+                    "translate(500,500) scale(",
+                    scaleValue,
+                    ") translate(-500,-500) "
+                )
+            );
+        }
+
+        // Rotate around center of canvas (500, 500)
+        if (placement.rotation != 0) {
+            transform = string(
+                abi.encodePacked(
+                    transform,
+                    "rotate(",
+                    Strings.toString(placement.rotation),
+                    ",500,500)"
+                )
+            );
+        }
+
+        return transform;
+    }
+
+    /// @notice Convert int16 to string (handles negative values)
+    /// @param value The int16 value to convert
+    /// @return String representation of the value
+    function _int16ToString(int16 value) internal pure returns (string memory) {
+        if (value < 0) {
+            return string(abi.encodePacked("-", Strings.toString(uint16(-value))));
+        }
+        return Strings.toString(uint16(value));
+    }
+
+    /// @notice Convert scale percentage to decimal string
+    /// @param scale Scale as percentage (100 = 1.0, 200 = 2.0, 50 = 0.5)
+    /// @return Decimal string representation
+    function _scaleToString(uint16 scale) internal pure returns (string memory) {
+        if (scale == 100) return "1";
+
+        uint256 integerPart = scale / 100;
+        uint256 decimalPart = scale % 100;
+
+        if (decimalPart == 0) {
+            return Strings.toString(integerPart);
+        }
+
+        // Format decimal part with leading zeros if needed
+        string memory decimalStr;
+        if (decimalPart < 10) {
+            decimalStr = string(abi.encodePacked("0", Strings.toString(decimalPart)));
+        } else {
+            decimalStr = Strings.toString(decimalPart);
+        }
+
+        return string(abi.encodePacked(Strings.toString(integerPart), ".", decimalStr));
     }
 
     /// @notice Safely retrieve SVG content for a Gene NFT
@@ -209,10 +287,10 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @param geneId The Gene NFT ID to get SVG for
     /// @return SVG string content, empty string if gene doesn't exist
     function _getGeneNFTSVG(uint256 geneId) internal view returns (string memory) {
-        if (geneId == 0) return ""; // No trait set for this category
+        if (geneId == 0) return ""; // No gene set for this slot
 
         // Safely attempt to get gene info
-        try genes.getGeneInfo(geneId) returns (string memory svg, VisualsCat) {
+        try genes.getGeneInfo(geneId) returns (string memory svg) {
             return svg;
         } catch {
             // Gene NFT doesn't exist or was burned, return empty string
@@ -231,22 +309,6 @@ abstract contract GeneRenderer is IAminalStructs {
             // Gene NFT doesn't exist or was burned
             return address(0);
         }
-    }
-
-    /// @notice Convert VisualsCat enum to human-readable string
-    /// @dev Used for generating NFT metadata attributes
-    /// @param category The trait category enum value
-    /// @return Human-readable category name
-    function _getCategoryName(VisualsCat category) internal pure returns (string memory) {
-        if (category == VisualsCat.BACK) return "Background";
-        if (category == VisualsCat.ARM) return "Arms";
-        if (category == VisualsCat.TAIL) return "Tail";
-        if (category == VisualsCat.EARS) return "Ears";
-        if (category == VisualsCat.BODY) return "Body";
-        if (category == VisualsCat.FACE) return "Face";
-        if (category == VisualsCat.MOUTH) return "Mouth";
-        if (category == VisualsCat.MISC) return "Miscellaneous";
-        return "Unknown";
     }
 
     /// @notice Convert a uint160 to its ASCII hexadecimal representation
@@ -273,4 +335,10 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @param aminalID The Aminal token ID
     /// @return visuals Struct containing all gene IDs for visual traits
     function getAminalVisualsByID(uint256 aminalID) public view virtual returns (Visuals memory visuals);
+
+    /// @notice Get placement metadata for an Aminal's genes
+    /// @dev Must be implemented by inheriting contracts to provide Aminal-specific logic
+    /// @param aminalID The Aminal token ID
+    /// @return placements Array of placement metadata for each gene slot
+    function getAminalPlacementsByID(uint256 aminalID) public view virtual returns (GeneMetadata[10] memory placements);
 }

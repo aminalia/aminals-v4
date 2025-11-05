@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000">
+  <g id="body">
+    <path fill="#e01f26" d="M710 398c0 116-94 281-210 281S290 514 290 398s94-218 210-218 210 102 210 218Z"/>
+    <circle cx="500" cy="375" r="188" fill="#e01f26"/>
+    <path fill="#e01f26" d="m312 518 52 185v-44c10 24 28 46 50 63l-15-38c15 16 27 35 37 54-2-15 1-31 8-45 2 10 7 20 14 29l-2-22 29 19c-2-6-3-13-1-20l11 23 12-25v56l35-64 2 34c5-14 13-28 24-40l-1 37 57-83-3 33c31-57 52-118 63-181l-5 4"/>
+    <animateTransform attributeName="transform" type="scale" values="1; 1.02; 1; 0.99; 1" dur="5s" repeatCount="indefinite"/>
+  </g>
+</svg>

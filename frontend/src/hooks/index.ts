@@ -37,6 +37,20 @@ export { useUserEarnings, useUserProfile } from './useUser';
 // Gene proposal hooks
 export { useGeneProposalsByAuctionId } from './useGeneProposals';
 
+// Breeding/Design hooks
+export {
+  useDesignProposals,
+  useDesign,
+  useUserVotingPower,
+  useUserVotedDesign,
+  useAuctionVoting,
+  useParentGenes,
+  useIsVotingActive,
+  useGenesByIds as useGenesByIdsBreeding,
+  useDesignRemovalVotes,
+  useDesignPlacements,
+} from './useBreeding';
+
 // Trait utilities
 export {
   TraitIndex,
@@ -82,9 +96,29 @@ export type {
   Relationship,
   SkillUsedEvent,
   // Helper types
-  TraitArray,
-  TraitType,
+  // Note: TraitArray and TraitType removed - genes are now flexible (no categories)
   User,
   UserSingle,
   UserWithRelations,
 } from '../types/ponder';
+
+// Re-export breeding types
+export type {
+  GeneMetadata,
+  AminalDesign,
+  DesignProposal,
+  Gene,
+  DesignVote,
+  AuctionVoteInfo,
+  DesignBuilderState,
+} from '../types/breeding';
+
+export {
+  DEFAULT_PLACEMENT,
+  createEmptyDesign,
+  createDesignFromGenes,
+  validateDesign,
+  countGenes,
+  placementToContractFormat,
+  contractFormatToPlacement,
+} from '../types/breeding';

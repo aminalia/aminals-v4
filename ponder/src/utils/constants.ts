@@ -1,21 +1,21 @@
 /**
- * Trait Order Constants
+ * Gene Slot Constants
  *
- * ⚠️ CRITICAL: These constants define the canonical trait order
- * This order MUST match the Solidity contract's trait slot enumeration
- * NEVER change these values!
+ * Aminals now use a flexible 1-10 gene system without fixed categories.
+ * Genes can be placed in any slot (0-9) with per-Aminal placement metadata.
  */
 
-export const TRAIT_BACK = 0;
-export const TRAIT_ARM = 1;
-export const TRAIT_TAIL = 2;
-export const TRAIT_EARS = 3;
-export const TRAIT_BODY = 4;
-export const TRAIT_FACE = 5;
-export const TRAIT_MOUTH = 6;
-export const TRAIT_MISC = 7;
+export const MAX_GENES = 10;
+export const MIN_GENES = 1;
 
-// Array for validation and display
+// Slot indices for validation
+export const SLOT_INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] as const;
+
+// Type helper for slot indices
+export type SlotIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+
+// Legacy constants kept for backwards compatibility (deprecated)
+/** @deprecated Categories no longer exist in the new system */
 export const TRAIT_NAMES = [
   "BACK",
   "ARM",
@@ -26,6 +26,3 @@ export const TRAIT_NAMES = [
   "MOUTH",
   "MISC",
 ] as const;
-
-// Type helper for trait indices
-export type TraitType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
