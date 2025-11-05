@@ -33,7 +33,7 @@ export default createConfig({
       address: factory({
         address: aminalFactoryAddress,
         event: parseAbiItem(
-          "event AminalSpawned(address indexed child, address indexed parentOne, address indexed parentTwo, uint256 auctionId, uint256[10] geneIds)"
+          "event AminalSpawned(address indexed child, address indexed parentOne, address indexed parentTwo, uint256 auctionId, uint256[9] geneIds)"
         ),
         parameter: "child",
       }),

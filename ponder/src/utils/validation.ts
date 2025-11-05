@@ -5,37 +5,37 @@
  */
 
 /**
- * Type for slot index (0-9 for 10 gene slots)
+ * Type for slot index (0-8 for 9 gene slots)
  */
-export type SlotIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type SlotIndex = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 /**
- * Validate slot index is within valid range (0-9)
+ * Validate slot index is within valid range (0-8)
  */
 export function isValidSlotIndex(slotIndex: number): slotIndex is SlotIndex {
-  return slotIndex >= 0 && slotIndex <= 9;
+  return slotIndex >= 0 && slotIndex <= 8;
 }
 
 /**
- * Validate gene array has 1-10 elements
+ * Validate gene array has 1-9 elements
  */
 export function isValidGeneArray(genes: readonly bigint[]): boolean {
-  return genes.length >= 1 && genes.length <= 10;
+  return genes.length >= 1 && genes.length <= 9;
 }
 
 /**
- * Validate gene array is exactly 10 elements (contract format)
+ * Validate gene array is exactly 9 elements (contract format)
  */
 export function isValidGeneArrayFixed(genes: readonly bigint[]): boolean {
-  return genes.length === 10;
+  return genes.length === 9;
 }
 
 /**
- * Validate parent gene IDs cache has exactly 20 elements
- * (up to 10 genes from parent1 + up to 10 genes from parent2)
+ * Validate parent gene IDs cache has exactly 18 elements
+ * (up to 9 genes from parent1 + up to 9 genes from parent2)
  */
 export function isValidParentGeneIds(parentGeneIds: bigint[]): boolean {
-  return parentGeneIds.length === 20;
+  return parentGeneIds.length === 18;
 }
 
 /**
@@ -54,14 +54,14 @@ export function assertValidGeneArray(
 ): void {
   if (!isValidGeneArrayFixed(genes)) {
     throw new Error(
-      `${context}: Invalid gene array length. Expected 10, got ${genes.length}`
+      `${context}: Invalid gene array length. Expected 9, got ${genes.length}`
     );
   }
 
   const geneCount = countGenes(genes);
-  if (geneCount < 1 || geneCount > 10) {
+  if (geneCount < 1 || geneCount > 9) {
     throw new Error(
-      `${context}: Invalid gene count. Must have 1-10 non-zero genes, got ${geneCount}`
+      `${context}: Invalid gene count. Must have 1-9 non-zero genes, got ${geneCount}`
     );
   }
 }
@@ -75,7 +75,7 @@ export function assertValidParentGeneIds(
 ): void {
   if (!isValidParentGeneIds(parentGeneIds)) {
     throw new Error(
-      `${context}: Invalid parentGeneIds length. Expected 20, got ${parentGeneIds.length}`
+      `${context}: Invalid parentGeneIds length. Expected 18, got ${parentGeneIds.length}`
     );
   }
 }
