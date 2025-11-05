@@ -49,7 +49,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = 1;
         }
 
@@ -112,7 +112,7 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             additionalVisuals[0].genes[i] = 2;
         }
         factory.spawnInitialAminals(additionalVisuals);

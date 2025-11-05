@@ -83,7 +83,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Get placements
         AminalContract aminal = AminalContract(payable(aminalAddress));
-        GeneMetadata[10] memory placements = aminal.getPlacements();
+        GeneMetadata[9] memory placements = aminal.getPlacements();
 
         // Verify all placements are default (centered, 100% scale, 0° rotation)
         for (uint256 i = 0; i < 10; i++) {
@@ -99,7 +99,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
      */
     function testPlacementStorageInAminal() public {
         // Create custom placements
-        GeneMetadata[10] memory customPlacements;
+        GeneMetadata[9] memory customPlacements;
         customPlacements[0] = GeneMetadata({offsetX: -50, offsetY: 100, scale: 150, rotation: 45});
         customPlacements[1] = GeneMetadata({offsetX: 25, offsetY: -75, scale: 80, rotation: 90});
         customPlacements[2] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 200, rotation: 180});
@@ -110,7 +110,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         }
 
         // Prepare genes for spawning
-        uint256[10] memory geneIds;
+        uint256[9] memory geneIds;
         geneIds[0] = 1;
         geneIds[1] = 2;
         geneIds[2] = 3;
@@ -165,13 +165,13 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create custom design with specific placements
-        uint256[10] memory designGenes;
+        uint256[9] memory designGenes;
         designGenes[0] = backgroundGeneId; // Background
         designGenes[1] = bodyGeneId; // Body - offset and scaled
         designGenes[2] = faceGeneId; // Face - rotated
         // Remaining slots are 0 (empty)
 
-        GeneMetadata[10] memory designPlacements;
+        GeneMetadata[9] memory designPlacements;
         designPlacements[0] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0}); // Background centered
         designPlacements[1] = GeneMetadata({offsetX: -50, offsetY: 100, scale: 150, rotation: 0}); // Body offset and scaled
         designPlacements[2] = GeneMetadata({offsetX: 25, offsetY: -25, scale: 80, rotation: 45}); // Face offset, scaled, rotated
@@ -209,7 +209,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         AminalContract child = AminalContract(payable(childAddress));
 
         // Verify placements were stored correctly
-        GeneMetadata[10] memory childPlacements = child.getPlacements();
+        GeneMetadata[9] memory childPlacements = child.getPlacements();
 
         // Check the three custom placements
         assertEq(childPlacements[0].offsetX, 0, "Background offsetX should be 0");
@@ -243,7 +243,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 aminalIndex = aminal.aminalIndex();
 
         // Get placements via the abstract function
-        GeneMetadata[10] memory placements = aminal.getAminalPlacementsByID(aminalIndex);
+        GeneMetadata[9] memory placements = aminal.getAminalPlacementsByID(aminalIndex);
 
         // Verify we got data back
         assertEq(placements[0].scale, 100, "Should retrieve default scale");
@@ -332,11 +332,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with extreme values
-        uint256[10] memory designGenes;
+        uint256[9] memory designGenes;
         designGenes[0] = geneId;
         // Rest are 0 (empty)
 
-        GeneMetadata[10] memory designPlacements;
+        GeneMetadata[9] memory designPlacements;
         // Test extreme values (within bounds defined in IAminalStructs)
         designPlacements[0] = GeneMetadata({
             offsetX: -500, // Min offset
@@ -370,7 +370,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         // Verify child has extreme placements
         address childAddress = factory.getAminalByIndex(2);
         AminalContract child = AminalContract(payable(childAddress));
-        GeneMetadata[10] memory childPlacements = child.getPlacements();
+        GeneMetadata[9] memory childPlacements = child.getPlacements();
 
         assertEq(childPlacements[0].offsetX, -500, "Extreme offsetX should be stored");
         assertEq(childPlacements[0].offsetY, 500, "Extreme offsetY should be stored");
@@ -450,11 +450,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with unique placements
-        uint256[10] memory designGenes;
+        uint256[9] memory designGenes;
         designGenes[0] = geneId;
         // Rest are 0 (empty)
 
-        GeneMetadata[10] memory designPlacements;
+        GeneMetadata[9] memory designPlacements;
         designPlacements[0] = GeneMetadata({offsetX: 123, offsetY: -456, scale: 175, rotation: 270});
 
         for (uint256 i = 1; i < 10; i++) {
@@ -509,11 +509,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design
-        uint256[10] memory designGenes;
+        uint256[9] memory designGenes;
         designGenes[0] = geneId;
         // Rest are 0 (empty)
 
-        GeneMetadata[10] memory designPlacements;
+        GeneMetadata[9] memory designPlacements;
         designPlacements[0] = GeneMetadata({offsetX: 42, offsetY: -84, scale: 133, rotation: 99});
 
         for (uint256 i = 1; i < 10; i++) {
@@ -527,7 +527,7 @@ contract PlacementFlowTest is Test, IAminalStructs {
         // Get placements via view function
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
-        GeneMetadata[10] memory retrievedPlacements = geneAuction.getDesignPlacements(auctionId, designId);
+        GeneMetadata[9] memory retrievedPlacements = geneAuction.getDesignPlacements(auctionId, designId);
 
         assertEq(retrievedPlacements[0].offsetX, 42, "getDesignPlacements should return correct offsetX");
         assertEq(retrievedPlacements[0].offsetY, -84, "getDesignPlacements should return correct offsetY");

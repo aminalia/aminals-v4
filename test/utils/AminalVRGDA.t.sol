@@ -45,7 +45,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
         // Spawn a test Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = 1;
         }
 

@@ -71,9 +71,8 @@ contract IndividualAminalTest is Test, IAminalStructs {
         for (uint256 i = 0; i < 8; i++) {
             assertEq(visuals.genes[i], 1, "Gene should be set to 1");
         }
-        // Last 2 slots should be 0
+        // Last slot should be 0
         assertEq(visuals.genes[8], 0);
-        assertEq(visuals.genes[9], 0);
 
         // Test parents (should be zero addresses for initial Aminals)
         (address mom, address dad) = aminal.getParents();
@@ -163,7 +162,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             additionalVisuals[0].genes[i] = 2;
         }
         factory.spawnInitialAminals(additionalVisuals);
@@ -186,7 +185,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
         Visuals[] memory additionalVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             additionalVisuals[0].genes[i] = 2;
         }
         factory.spawnInitialAminals(additionalVisuals);

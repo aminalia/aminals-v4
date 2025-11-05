@@ -99,7 +99,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     int256 public constant VRGDA_TIME_SCALE = 20 ether;
 
     /// @notice Maximum number of genes that can be assigned to an Aminal
-    uint256 public constant MAX_GENES = 10;
+    uint256 public constant MAX_GENES = 9;
 
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -294,6 +294,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
                 address(0), // No parents for genesis Aminals
                 address(0),
                 0, // No auction ID for genesis Aminals
+                address(0), // No proposer for genesis Aminals
                 _visuals[i].genes,
                 defaultPlacements
             );
@@ -323,13 +324,14 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
+        address proposer,
         uint256[MAX_GENES] calldata winningGeneIds,
         GeneMetadata[MAX_GENES] calldata placements
     ) external onlyAuction returns (address childAddress) {
         if (!isAminal[parentOne]) revert InvalidParentOne();
         if (!isAminal[parentTwo]) revert InvalidParentTwo();
 
-        return _spawnAminal(parentOne, parentTwo, auctionId, winningGeneIds, placements);
+        return _spawnAminal(parentOne, parentTwo, auctionId, proposer, winningGeneIds, placements);
     }
 
     /**
@@ -439,6 +441,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentOne,
         address parentTwo,
         uint256 auctionId,
+        address proposer,
         uint256[MAX_GENES] memory geneIds,
         GeneMetadata[MAX_GENES] memory placements
     ) internal returns (address childAddress) {
@@ -452,6 +455,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             address(this), // Factory address for callbacks
             parentOne, // First parent (or address(0) for genesis)
             parentTwo, // Second parent (or address(0) for genesis)
+            proposer, // Design proposer (or address(0) for genesis/parent designs)
             visuals, // Complete genetic visual profile
             placements, // Placement metadata for each gene
             totalAminals, // Unique index for this Aminal

@@ -59,7 +59,7 @@ abstract contract AminalTestBase is Test, IAminalStructs {
      */
     function spawnTestAminal() internal returns (address) {
         Visuals[] memory initialVisuals = new Visuals[](1);
-        for (uint256 i = 0; i < 8; i++) {
+        for (uint256 i = 0; i < 9; i++) {
             initialVisuals[0].genes[i] = 1;
         }
 

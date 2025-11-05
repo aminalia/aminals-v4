@@ -49,10 +49,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
         Visuals[] memory initialVisuals = new Visuals[](2);
 
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
 
@@ -73,7 +73,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn an Aminal first
         Visuals[] memory initialVisuals = new Visuals[](1);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -100,7 +100,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn an Aminal
         Visuals[] memory initialVisuals = new Visuals[](1);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -129,9 +129,9 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Spawn two Aminals
         Visuals[] memory initialVisuals = new Visuals[](2);
         initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
         initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
 
         factory.spawnInitialAminals(initialVisuals);
         address aminal1Address = factory.getAminalByIndex(0);
@@ -158,7 +158,7 @@ contract AminalFactoryTest is Test, IAminalStructs {
         Visuals[] memory initialVisuals = new Visuals[](5);
         for (uint256 i = 0; i < 5; i++) {
             initialVisuals[i] =
-                Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0, 0]});
+                Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
         }
 
         factory.spawnInitialAminals(initialVisuals);
