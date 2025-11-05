@@ -20,7 +20,6 @@ contract GetAminalInfo is Script {
         console.log("Factory address:", address(factory));
         console.log("Total Aminals:", factory.totalAminals());
         console.log("Gene Auction:", address(factory.geneAuction()));
-        console.log("Proposals:", address(factory.proposals()));
         console.log("Genes NFT:", address(factory.genes()));
 
         console.log("\n=== INDIVIDUAL AMINALS ===");
