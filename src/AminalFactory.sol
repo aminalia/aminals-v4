@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
-
-import "forge-std/console.sol";
+pragma solidity 0.8.20;
 
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
@@ -191,6 +189,14 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         _;
     }
 
+    /**
+     * @notice Ensures factory is fully initialized before critical operations
+     */
+    modifier whenInitialized() {
+        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
+        _;
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   🏗️ CONSTRUCTOR & SETUP
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -335,16 +341,20 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * "When two Aminals unite in love, their digital essence mingles
      *  through algorithms of affection, creating new life from pure emotion"
      */
-    function breedAminals(address aminalOne, address aminalTwo) external returns (uint256 auctionId) {
+    function breedAminals(address aminalOne, address aminalTwo) external whenInitialized returns (uint256 auctionId) {
         if (!isAminal[aminalOne] || !isAminal[aminalTwo]) revert InvalidAminalAddresses();
         if (aminalOne == aminalTwo) revert CannotBreedWithSelf();
 
         AminalContract aminal1 = AminalContract(payable(aminalOne));
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
+        // Cache love values to avoid redundant external calls
+        uint256 love1 = aminal1.getLoveByUser(msg.sender);
+        uint256 love2 = aminal2.getLoveByUser(msg.sender);
+
         // Check if caller has sufficient love for both Aminals
-        if (aminal1.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
-        if (aminal2.getLoveByUser(msg.sender) < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        if (love1 < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        if (love2 < MIN_LOVE_REQUIRED) revert InsufficientLove();
 
         // Check if both Aminals have sufficient energy to breed
         if (aminal1.getEnergy() < MIN_ENERGY_REQUIRED || aminal2.getEnergy() < MIN_ENERGY_REQUIRED) {
@@ -352,7 +362,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         }
 
         // Calculate total love investment from caller for both Aminals
-        uint256 totalLove = aminal1.getLoveByUser(msg.sender) + aminal2.getLoveByUser(msg.sender);
+        uint256 totalLove = love1 + love2;
 
         // Consume Love from caller and energy via squeakFrom
         aminal1.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);

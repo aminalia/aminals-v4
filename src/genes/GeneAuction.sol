@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
+pragma solidity 0.8.20;
 
-import "forge-std/console.sol";
 import {Initializable} from "oz/proxy/utils/Initializable.sol";
 import {Ownable} from "oz/access/Ownable.sol";
 import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
@@ -91,13 +90,14 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /// @notice Core auction data structure
+    /// @dev Struct optimized for storage packing: uint64s and bool packed in first slot
     struct Auction {
+        uint64 startTime; // Auction start timestamp - packed together
+        uint64 endTime; // Auction end timestamp - packed together
+        bool settled; // Whether auction has been settled - packed together (17/32 bytes used)
         uint256 aminalOne; // Index of first parent Aminal
         uint256 aminalTwo; // Index of second parent Aminal
         uint256 totalLove; // Total love used for voting power calculation
-        uint64 startTime; // Auction start timestamp - packed to save gas
-        uint64 endTime; // Auction end timestamp - packed to save gas
-        bool settled; // Whether auction has been settled - packed with timestamps
         uint256[10] parentOneGenes; // Parent 1 genes
         uint256[10] parentTwoGenes; // Parent 2 genes
         uint256[] proposedDesignIds; // Array of proposed design IDs

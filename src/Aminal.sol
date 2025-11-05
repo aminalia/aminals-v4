@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-pragma solidity ^0.8.20;
-
-import "forge-std/console.sol";
+pragma solidity 0.8.20;
 
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {ISkill} from "src/interfaces/ISkill.sol";
@@ -203,16 +201,21 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Thrown when treasury transfer to recipient fails
     error TreasuryTransferFailed();
 
+    /// @notice Thrown when zero address is provided
+    error ZeroAddress();
+
+    /// @notice Thrown when unauthorized caller attempts restricted operation
+    error UnauthorizedCaller();
+
     /*//////////////////////////////////////////////////////////////
                                MODIFIERS
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Restricts function access to the AminalFactory contract and gene auction only
     modifier onlyFactoryOrAuction() {
-        require(
-            msg.sender == address(factory) || msg.sender == address(factory.geneAuction()),
-            "Only factory or gene auction can call this"
-        );
+        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) {
+            revert UnauthorizedCaller();
+        }
         _;
     }
 
@@ -414,9 +417,9 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
      *
      * @custom:security Only GeneAuction can call this to pay gene creators
      */
-    function payout(uint256 amount, address recipient) external returns (bool success) {
-        require(msg.sender == address(factory.geneAuction()), "Only gene auction can call payout");
-
+    function payout(uint256 amount, address recipient) external nonReentrant returns (bool success) {
+        if (msg.sender != address(factory.geneAuction())) revert UnauthorizedCaller();
+        if (recipient == address(0)) revert ZeroAddress();
         if (address(this).balance < amount) revert InsufficientTreasury();
 
         // Transfer ETH to recipient
