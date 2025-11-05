@@ -48,7 +48,9 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   const { child, parentOne, parentTwo, auctionId, geneIds } = event.args;
   const { db, client } = context;
 
-  // Validate gene array (1-10 genes)
+  console.log(`📦 AminalSpawned event detected: ${child}`);
+
+  // Validate gene array (1-9 genes in array of size 9)
   assertValidGeneArray(geneIds, "AminalSpawned");
 
   const factoryId = normalizeAddress(event.log.address);
@@ -67,7 +69,11 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
 
   // Get current total to use as index
   const factoryRecord = await db.find(factory, { id: factoryId });
-  const aminalIndex = factoryRecord?.totalAminals ?? 0n;
+  if (!factoryRecord) {
+    console.error(`❌ Factory record not found: ${factoryId}`);
+    throw new Error(`Factory record not found: ${factoryId}`);
+  }
+  const aminalIndex = factoryRecord.totalAminals;
 
   // Increment factory total
   await db
@@ -133,12 +139,18 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   }
 
   // Create AminalGene join table entries for each gene slot
-  // genes array: 10 elements (0-9 slot indices)
+  // genes array: 9 elements (0-8 slot indices)
   for (let slotIndex = 0; slotIndex < genesArray.length; slotIndex++) {
     const geneTokenId = genesArray[slotIndex];
 
     // Skip if gene is 0 or undefined (no gene for this slot)
     if (!geneTokenId || geneTokenId === 0n) continue;
+
+    // Check if the gene NFT exists
+    const geneExists = await db.find(geneNFT, { id: makeGeneNFTId(geneTokenId) });
+    if (!geneExists) {
+      console.warn(`⚠️  Gene NFT ${geneTokenId} referenced by Aminal ${aminalId} doesn't exist yet!`);
+    }
 
     await db.insert(aminalGene).values({
       id: makeAminalGeneId(child, geneTokenId, slotIndex),
@@ -423,10 +435,10 @@ ponder.on("GeneAuction:VotingCreated", async ({ event, context }) => {
   }
 
   // Cache parent gene IDs for optimization
-  // Array of 20: [parent1: up to 10 genes, parent2: up to 10 genes]
+  // Array of 18: [parent1: 9 genes (indices 0-8), parent2: 9 genes (indices 9-17)]
   const parentGeneIds = [
-    ...aminal1.genes, // Parent 1: indices 0-9
-    ...aminal2.genes, // Parent 2: indices 10-19
+    ...aminal1.genes, // Parent 1: 9 genes at indices 0-8
+    ...aminal2.genes, // Parent 2: 9 genes at indices 9-17
   ];
 
   assertValidParentGeneIds(parentGeneIds, "VotingCreated");

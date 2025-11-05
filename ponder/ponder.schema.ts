@@ -32,7 +32,7 @@ export const factory = onchainTable("factory", (t) => ({
  * Aminal - Individual Aminal contracts (each Aminal is its own ERC-721)
  *
  * Breaking change: traits now support 1-9 flexible genes (no categories)
- * Genes array can contain 1-9 gene IDs, with 0 indicating an empty slot
+ * Genes array is always size 9 (indices 0-8), with 0 indicating an empty slot
  */
 export const aminal = onchainTable("aminal", (t) => ({
   id: t.hex().primaryKey(), // Aminal contract address
@@ -175,7 +175,7 @@ export const geneAuction = onchainTable("geneAuction", (t) => ({
   totalLove: t.bigint().notNull(),
 
   // Cached parent genes for optimization
-  // Array of up to 18 gene IDs: [parent1: up to 9 genes, parent2: up to 9 genes]
+  // Array of exactly 18 gene IDs: [parent1: 9 genes (0-8), parent2: 9 genes (9-17)]
   parentGeneIds: t.bigint().array().notNull(),
 
   // Status
