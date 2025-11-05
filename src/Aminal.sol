@@ -145,17 +145,12 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param energy Remaining energy
     event Squeak(address indexed sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
 
-    /// @notice Emitted when energy is consumed for skill usage
+    /// @notice Emitted when resources (energy and love) are consumed for skill usage
     /// @param user Address of the skill user
-    /// @param amount Amount of energy consumed
+    /// @param amount Amount of energy and love consumed (same for both)
     /// @param remainingEnergy Energy remaining after consumption
-    event EnergyLost(address indexed user, uint256 amount, uint256 remainingEnergy);
-
-    /// @notice Emitted when love is consumed for skill usage
-    /// @param user Address of the skill user
-    /// @param amount Amount of love consumed
     /// @param remainingLove Love remaining for user after consumption
-    event LoveConsumed(address indexed user, uint256 amount, uint256 remainingLove);
+    event ResourcesConsumed(address indexed user, uint256 amount, uint256 remainingEnergy, uint256 remainingLove);
 
     /// @notice Emitted when a skill is successfully used
     /// @param user Address of the skill user
@@ -305,7 +300,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
                            EXPRESSION MECHANICS
     //////////////////////////////////////////////////////////////*/
 
-    // TODO maybe kill and just make it a skill. : /
     /**
      * @notice Express yourself through this Aminal's voice 🗣️
      * @dev Consumes love and energy to create a squeak - a digital cry of expression
@@ -325,7 +319,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
     }
 
-    // TODO consider renaming, do we need a separate Squeak event? Maybe just use EnergyLost / LoveConsumed?
     /**
      * @notice Factory-only function to consume love and energy on behalf of a user for breeding
      * @dev Only callable by the factory contract for breeding mechanics
@@ -394,14 +387,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         if (!success) revert SkillCallFailed();
 
         // Consume resources only after successful execution
-        // squeakFrom(msg.sender, energyCost);
         energy -= energyCost;
         lovePerUser[msg.sender] -= energyCost;
         totalLove -= energyCost;
 
-        // TODO are these events needed if we use squeakFrom?
-        emit EnergyLost(msg.sender, energyCost, energy);
-        emit LoveConsumed(msg.sender, energyCost, lovePerUser[msg.sender]);
+        emit ResourcesConsumed(msg.sender, energyCost, energy, lovePerUser[msg.sender]);
         emit SkillUsed(msg.sender, energyCost, target, selector);
     }
 
