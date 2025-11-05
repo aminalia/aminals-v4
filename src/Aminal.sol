@@ -137,14 +137,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         uint256 energy
     );
 
-    /// @notice Emitted when an Aminal squeaks (expression mechanic)
-    /// @param sender Address of the squeaker
-    /// @param amount Amount of love/energy consumed
-    /// @param love Remaining love for sender
-    /// @param totalLove Total love remaining
-    /// @param energy Remaining energy
-    event Squeak(address indexed sender, uint256 amount, uint256 love, uint256 totalLove, uint256 energy);
-
     /// @notice Emitted when resources (energy and love) are consumed for skill usage
     /// @param user Address of the skill user
     /// @param amount Amount of energy and love consumed (same for both)
@@ -301,25 +293,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Express yourself through this Aminal's voice 🗣️
-     * @dev Consumes love and energy to create a squeak - a digital cry of expression
-     * @param amount The intensity of the squeak (love and energy consumed)
-     *
-     * "When an Aminal squeaks, it speaks with the voice of its community,
-     *  channeling love into sound, energy into expression"
-     */
-    function squeak(uint256 amount) external payable {
-        if (lovePerUser[msg.sender] < amount) revert NotEnoughLove();
-        if (energy < amount) revert NotEnoughEnergy();
-
-        energy -= amount;
-        lovePerUser[msg.sender] -= amount;
-        totalLove -= amount;
-
-        emit Squeak(msg.sender, amount, lovePerUser[msg.sender], totalLove, energy);
-    }
-
-    /**
      * @notice Factory-only function to consume love and energy on behalf of a user for breeding
      * @dev Only callable by the factory contract for breeding mechanics
      * @param user The user whose love should be consumed
@@ -336,7 +309,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         lovePerUser[user] -= amount;
         totalLove -= amount;
 
-        emit Squeak(user, amount, lovePerUser[user], totalLove, energy);
+        emit ResourcesConsumed(user, amount, energy, lovePerUser[user]);
     }
 
     /*//////////////////////////////////////////////////////////////
