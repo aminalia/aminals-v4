@@ -381,7 +381,6 @@ const ProfilePage: NextPage = () => {
                         trait={{
                           id: gene.id,
                           tokenId: gene.tokenId.toString(),
-                          traitType: 0, // Note: traitType removed - genes are flexible now
                           svg: gene.svg,
                           name: gene.name,
                           creator: {

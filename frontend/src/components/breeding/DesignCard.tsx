@@ -4,8 +4,8 @@
  */
 
 import { Button } from '@components/ui/Button';
-import type { DesignProposal } from '../../types/breeding';
 import { useMemo } from 'react';
+import type { DesignProposal } from '../../types/breeding';
 import VoteOnDesignButton from './VoteOnDesignButton';
 
 export interface DesignCardProps {

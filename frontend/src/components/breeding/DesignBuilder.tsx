@@ -9,13 +9,13 @@
  */
 
 import { countGenes, createEmptyDesign, DEFAULT_PLACEMENT } from '@hooks';
+import { useCallback, useEffect, useState } from 'react';
 import type {
   DesignBuilderState,
   Gene,
   GeneMetadata,
   HistoryState,
 } from '../../types/breeding';
-import { useCallback, useEffect, useState } from 'react';
 import GenePickerModal from './GenePickerModal';
 import InteractiveCanvas from './InteractiveCanvas';
 

@@ -9,8 +9,8 @@
  * - Transform handles for resize/rotate
  */
 
-import type { Gene, GeneMetadata } from '../../types/breeding';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Gene, GeneMetadata } from '../../types/breeding';
 import TransformHandles from './TransformHandles';
 
 export interface InteractiveCanvasProps {
@@ -129,7 +129,9 @@ export default function InteractiveCanvas({
       return (
         <g
           key={`gene-${index}`}
-          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${scale / 100})`}
+          transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
+            scale / 100
+          })`}
           onMouseDown={(e) => handleGeneMouseDown(e, index)}
           style={{
             cursor: disabled ? 'default' : 'move',
@@ -162,13 +164,7 @@ export default function InteractiveCanvas({
         disabled={disabled}
       />
     );
-  }, [
-    selectedIndex,
-    geneIds,
-    placements,
-    onUpdatePlacement,
-    disabled,
-  ]);
+  }, [selectedIndex, geneIds, placements, onUpdatePlacement, disabled]);
 
   const geneCount = geneIds.filter((id) => id !== 0n).length;
 

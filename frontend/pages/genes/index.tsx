@@ -43,7 +43,10 @@ const TraitsPage: NextPage = () => {
   console.log('Genes loading:', isLoadingGenes);
   console.log('Genes error:', genesError);
   console.log('Is genes error:', isGenesError);
-  console.log('Ponder URL:', process.env.NEXT_PUBLIC_PONDER_URL || 'http://localhost:42069/sql');
+  console.log(
+    'Ponder URL:',
+    process.env.NEXT_PUBLIC_PONDER_URL || 'http://localhost:42069/sql'
+  );
 
   return (
     <Layout>

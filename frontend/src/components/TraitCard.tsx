@@ -34,9 +34,17 @@ const TraitCard = ({ trait, aminalCount = 0 }: TraitCardProps) => {
   // Category is now a string, not a number
   // Display the category name or gene name if available
   const categoryName = trait.category || 'Gene';
-  const displayName = trait.name || `${categoryName} #${trait.tokenId.toString()}`;
+  const displayName =
+    trait.name || `${categoryName} #${trait.tokenId.toString()}`;
 
-  console.log('TraitCard - trait.id:', trait.id, 'tokenId:', trait.tokenId, 'category:', trait.category);
+  console.log(
+    'TraitCard - trait.id:',
+    trait.id,
+    'tokenId:',
+    trait.tokenId,
+    'category:',
+    trait.category
+  );
 
   return (
     <Link href={`/genes/${trait.id}`} className="block">
