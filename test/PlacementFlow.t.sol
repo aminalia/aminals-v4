@@ -94,34 +94,27 @@ contract PlacementFlowTest is Test, IAminalStructs {
      * @notice Test that placement metadata is stored correctly in Aminal after spawn
      */
     function testPlacementStorageInAminal() public {
-        // Create custom placements
-        GeneMetadata[9] memory customPlacements;
-        customPlacements[0] = GeneMetadata({offsetX: -50, offsetY: 100, scale: 150, rotation: 45});
-        customPlacements[1] = GeneMetadata({offsetX: 25, offsetY: -75, scale: 80, rotation: 90});
-        customPlacements[2] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 200, rotation: 180});
+        // Create gene instances with custom placements
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        genesisGenes[0][0] = GeneInstance({geneId: 1, offsetX: -50, offsetY: 100, scale: 150, rotation: 45});
+        genesisGenes[0][1] = GeneInstance({geneId: 2, offsetX: 25, offsetY: -75, scale: 80, rotation: 90});
+        genesisGenes[0][2] = GeneInstance({geneId: 3, offsetX: 0, offsetY: 0, scale: 200, rotation: 180});
+        // Remaining slots default to geneId: 0 with default placements
 
-        // Set remaining to default
-        for (uint256 i = 3; i < 9; i++) {
-            customPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
-        }
-
-        // Prepare genes for spawning
-        uint256[9] memory geneIds;
-        geneIds[0] = 1;
-        geneIds[1] = 2;
-        geneIds[2] = 3;
-
-        // Spawn via internal function
-        Visuals memory visuals = Visuals({genes: geneIds});
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] = visuals;
-
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
 
-        // Now we need to manually update placements for this test
-        // Since we can't directly set placements on existing Aminals,
-        // we'll test via breeding flow instead
+        // Verify placements were stored correctly
+        AminalContract aminal = AminalContract(payable(aminalAddress));
+        GeneInstance[9] memory storedGenes = aminal.getGenes();
+
+        assertEq(storedGenes[0].offsetX, -50, "First gene offsetX should match");
+        assertEq(storedGenes[0].offsetY, 100, "First gene offsetY should match");
+        assertEq(storedGenes[0].scale, 150, "First gene scale should match");
+        assertEq(storedGenes[0].rotation, 45, "First gene rotation should match");
+
+        assertEq(storedGenes[1].offsetX, 25, "Second gene offsetX should match");
+        assertEq(storedGenes[1].scale, 80, "Second gene scale should match");
     }
 
     /**
@@ -137,11 +130,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         vm.stopPrank();
 
         // Spawn parent Aminals with some genes
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0].genes[0] = backgroundGeneId;
-        initialVisuals[1].genes[0] = backgroundGeneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        genesisGenes[0][0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
 
@@ -229,37 +222,37 @@ contract PlacementFlowTest is Test, IAminalStructs {
      */
     function testPlacementRetrievalByID() public {
         // Spawn a genesis Aminal
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0].genes[0] = 1;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        genesisGenes[0][0] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
         uint256 aminalIndex = aminal.aminalIndex();
 
-        // Get placements via the abstract function
-        GeneMetadata[9] memory placements = aminal.getAminalPlacementsByID(aminalIndex);
+        // Get gene instances via the abstract function
+        GeneInstance[9] memory geneInstances = aminal.getAminalGenesByID(aminalIndex);
 
         // Verify we got data back
-        assertEq(placements[0].scale, 100, "Should retrieve default scale");
+        assertEq(geneInstances[0].scale, 100, "Should retrieve default scale");
     }
 
     /**
-     * @notice Test that invalid aminal ID reverts when getting placements
+     * @notice Test that invalid aminal ID reverts when getting gene instances
      */
     function testPlacementRetrievalInvalidID() public {
         // Spawn a genesis Aminal
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0].genes[0] = 1;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        genesisGenes[0][0] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
-        // Try to get placements with wrong ID
+        // Try to get gene instances with wrong ID
         vm.expectRevert("Invalid aminal ID");
-        aminal.getAminalPlacementsByID(999);
+        aminal.getAminalGenesByID(999);
     }
 
     /**
@@ -271,10 +264,10 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn Aminal with this gene
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0].genes[0] = geneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
@@ -304,11 +297,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parent Aminals
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0].genes[0] = geneId;
-        initialVisuals[1].genes[0] = geneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
 
@@ -383,11 +376,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parent Aminals
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0].genes[0] = geneId;
-        initialVisuals[1].genes[0] = geneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
 
