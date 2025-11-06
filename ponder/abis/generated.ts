@@ -1027,7 +1027,7 @@ export const aminalFactoryAbi = [
 ] as const
 
 export const aminalFactoryAddress =
-  '0xcC13d6872c343007B34A1C0a6e5EaAF0D2dACd0C' as const
+  '0xf71044CEa74b6c6C9FB5134199BFAaBedC42ffBB' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -1804,7 +1804,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0x4c99c3bf6732c66D31c9bEEe7Aabc5d83b398E09' as const
+  '0x7Bb49627Fc04B372A800E6cA5fA18C317778dA1d' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -2005,7 +2005,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0x3866Ee60CF6F3A98793ecE4Bb03aEB82BB81406D' as const
+  '0xdab09A04E8C02E5cC014BfaA513CA1a6100A3083' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2389,7 +2389,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0x2B5c0FDD243D14708507f5754EEA9308F1B6229E' as const
+  '0x51677a84DAcCe610eC055522d613C2543AA93ad1' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2473,6 +2473,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0x4D006B8d0c84A2C1D82ECD7F9a1a7D6F4d6604B2' as const
+  '0xca29A1948f0b12306c6709dD79542E108c068669' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const
