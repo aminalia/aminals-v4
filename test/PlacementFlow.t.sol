@@ -154,25 +154,18 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create custom design with specific placements
-        uint256[9] memory designGenes;
-        designGenes[0] = backgroundGeneId; // Background
-        designGenes[1] = bodyGeneId; // Body - offset and scaled
-        designGenes[2] = faceGeneId; // Face - rotated
-        // Remaining slots are 0 (empty)
-
-        GeneMetadata[9] memory designPlacements;
-        designPlacements[0] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0}); // Background centered
-        designPlacements[1] = GeneMetadata({offsetX: -50, offsetY: 100, scale: 150, rotation: 0}); // Body offset and scaled
-        designPlacements[2] = GeneMetadata({offsetX: 25, offsetY: -25, scale: 80, rotation: 45}); // Face offset, scaled, rotated
-
-        // Fill remaining slots with default placement
+        GeneInstance[9] memory designGenes;
+        designGenes[0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0}); // Background centered
+        designGenes[1] = GeneInstance({geneId: bodyGeneId, offsetX: -50, offsetY: 100, scale: 150, rotation: 0}); // Body offset and scaled
+        designGenes[2] = GeneInstance({geneId: faceGeneId, offsetX: 25, offsetY: -25, scale: 80, rotation: 45}); // Face offset, scaled, rotated
+        // Remaining slots are 0 (empty) with default placement
         for (uint256 i = 3; i < 9; i++) {
-            designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            designGenes[i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Propose the design (need enough love)
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, designGenes, designPlacements);
+        geneAuction.proposeDesign(auctionId, designGenes);
 
         // Parent designs are auto-added, our design is the 3rd one
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
@@ -321,26 +314,24 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with extreme values
-        uint256[9] memory designGenes;
-        designGenes[0] = geneId;
-        // Rest are 0 (empty)
-
-        GeneMetadata[9] memory designPlacements;
+        GeneInstance[9] memory designGenes;
         // Test extreme values (within bounds defined in IAminalStructs)
-        designPlacements[0] = GeneMetadata({
+        designGenes[0] = GeneInstance({
+            geneId: geneId,
             offsetX: -500, // Min offset
             offsetY: 500, // Max offset
             scale: 500, // Max scale (500%)
             rotation: 359 // Max rotation
         });
 
+        // Rest are 0 (empty) with default placement
         for (uint256 i = 1; i < 9; i++) {
-            designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            designGenes[i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Propose design
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, designGenes, designPlacements);
+        geneAuction.proposeDesign(auctionId, designGenes);
 
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
@@ -399,10 +390,10 @@ contract PlacementFlowTest is Test, IAminalStructs {
 
         // Verify parent design has default placements
         for (uint256 i = 0; i < 9; i++) {
-            assertEq(parentDesign.placements[i].offsetX, 0, "Parent design offsetX should be default");
-            assertEq(parentDesign.placements[i].offsetY, 0, "Parent design offsetY should be default");
-            assertEq(parentDesign.placements[i].scale, 100, "Parent design scale should be default");
-            assertEq(parentDesign.placements[i].rotation, 0, "Parent design rotation should be default");
+            assertEq(parentDesign.genes[i].offsetX, 0, "Parent design offsetX should be default");
+            assertEq(parentDesign.genes[i].offsetY, 0, "Parent design offsetY should be default");
+            assertEq(parentDesign.genes[i].scale, 100, "Parent design scale should be default");
+            assertEq(parentDesign.genes[i].rotation, 0, "Parent design rotation should be default");
         }
     }
 
@@ -439,30 +430,27 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design with unique placements
-        uint256[9] memory designGenes;
-        designGenes[0] = geneId;
-        // Rest are 0 (empty)
+        GeneInstance[9] memory designGenes;
+        designGenes[0] = GeneInstance({geneId: geneId, offsetX: 123, offsetY: -456, scale: 175, rotation: 270});
 
-        GeneMetadata[9] memory designPlacements;
-        designPlacements[0] = GeneMetadata({offsetX: 123, offsetY: -456, scale: 175, rotation: 270});
-
+        // Rest are 0 (empty) with default placement
         for (uint256 i = 1; i < 9; i++) {
-            designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            designGenes[i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Propose design
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, designGenes, designPlacements);
+        geneAuction.proposeDesign(auctionId, designGenes);
 
         // Retrieve and verify
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
         GeneAuction.AminalDesign memory retrievedDesign = geneAuction.getDesign(auctionId, designId);
 
-        assertEq(retrievedDesign.placements[0].offsetX, 123, "Retrieved offsetX should match");
-        assertEq(retrievedDesign.placements[0].offsetY, -456, "Retrieved offsetY should match");
-        assertEq(retrievedDesign.placements[0].scale, 175, "Retrieved scale should match");
-        assertEq(retrievedDesign.placements[0].rotation, 270, "Retrieved rotation should match");
+        assertEq(retrievedDesign.genes[0].offsetX, 123, "Retrieved offsetX should match");
+        assertEq(retrievedDesign.genes[0].offsetY, -456, "Retrieved offsetY should match");
+        assertEq(retrievedDesign.genes[0].scale, 175, "Retrieved scale should match");
+        assertEq(retrievedDesign.genes[0].rotation, 270, "Retrieved rotation should match");
     }
 
     /**
@@ -498,29 +486,26 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 auctionId = factory.breedAminals(aminal1, aminal2, 0);
 
         // Create design
-        uint256[9] memory designGenes;
-        designGenes[0] = geneId;
-        // Rest are 0 (empty)
+        GeneInstance[9] memory designGenes;
+        designGenes[0] = GeneInstance({geneId: geneId, offsetX: 42, offsetY: -84, scale: 133, rotation: 99});
 
-        GeneMetadata[9] memory designPlacements;
-        designPlacements[0] = GeneMetadata({offsetX: 42, offsetY: -84, scale: 133, rotation: 99});
-
+        // Rest are 0 (empty) with default placement
         for (uint256 i = 1; i < 9; i++) {
-            designPlacements[i] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            designGenes[i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Propose
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, designGenes, designPlacements);
+        geneAuction.proposeDesign(auctionId, designGenes);
 
-        // Get placements via view function
+        // Get genes via view function
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
-        GeneMetadata[9] memory retrievedPlacements = geneAuction.getDesignPlacements(auctionId, designId);
+        GeneInstance[9] memory retrievedGenes = geneAuction.getDesignGenes(auctionId, designId);
 
-        assertEq(retrievedPlacements[0].offsetX, 42, "getDesignPlacements should return correct offsetX");
-        assertEq(retrievedPlacements[0].offsetY, -84, "getDesignPlacements should return correct offsetY");
-        assertEq(retrievedPlacements[0].scale, 133, "getDesignPlacements should return correct scale");
-        assertEq(retrievedPlacements[0].rotation, 99, "getDesignPlacements should return correct rotation");
+        assertEq(retrievedGenes[0].offsetX, 42, "getDesignGenes should return correct offsetX");
+        assertEq(retrievedGenes[0].offsetY, -84, "getDesignGenes should return correct offsetY");
+        assertEq(retrievedGenes[0].scale, 133, "getDesignGenes should return correct scale");
+        assertEq(retrievedGenes[0].rotation, 99, "getDesignGenes should return correct rotation");
     }
 }

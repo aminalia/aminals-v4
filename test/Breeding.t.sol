@@ -335,24 +335,28 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Proposing complete Aminal designs (9 genes in 9 slots)...");
 
         // First design: Cohesive pastel theme - 9 genes in all 9 slots
-        uint256[9] memory design1 =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0];
+        GeneInstance[9] memory design1;
+        design1[0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[1] = GeneInstance({geneId: armsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[2] = GeneInstance({geneId: tailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[3] = GeneInstance({geneId: earsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[4] = GeneInstance({geneId: bodyGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[5] = GeneInstance({geneId: faceGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[6] = GeneInstance({geneId: mouthGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[7] = GeneInstance({geneId: miscGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design1[8] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
         // Second design: Alternative vibrant theme - 9 genes in all 9 slots
-        uint256[9] memory design2 = [
-            altBackgroundGeneId,
-            altArmsGeneId,
-            altTailGeneId,
-            altEarsGeneId,
-            altBodyGeneId,
-            altFaceGeneId,
-            altMouthGeneId,
-            altMiscGeneId,
-            0
-        ];
-
-        // Default placement metadata for all gene slots
-        GeneMetadata[9] memory defaultPlacements = _getDefaultPlacements();
+        GeneInstance[9] memory design2;
+        design2[0] = GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[1] = GeneInstance({geneId: altArmsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[2] = GeneInstance({geneId: altTailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[3] = GeneInstance({geneId: altEarsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[4] = GeneInstance({geneId: altBodyGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[5] = GeneInstance({geneId: altFaceGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[6] = GeneInstance({geneId: altMouthGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[7] = GeneInstance({geneId: altMiscGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design2[8] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
         // Get initial design count (includes parent designs)
         GeneAuction.AuctionVoteInfo memory initialVoteInfo = geneAuction.getAuctionVoting(auctionId);
@@ -360,12 +364,12 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         // Alice proposes first complete design
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design1, defaultPlacements);
+        geneAuction.proposeDesign(auctionId, design1);
         console.log("Alice proposed first complete Aminal design");
 
         // Bob proposes second complete design
         vm.prank(bob);
-        geneAuction.proposeDesign(auctionId, design2, defaultPlacements);
+        geneAuction.proposeDesign(auctionId, design2);
         console.log("Bob proposed second complete Aminal design");
 
         // Verify designs were proposed
@@ -541,12 +545,19 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         uint256 auctionId = _initiateBreeding();
 
         // Propose a design - 9 genes in 9 slots
-        uint256[9] memory design =
-            [backgroundGeneId, armsGeneId, tailGeneId, earsGeneId, bodyGeneId, faceGeneId, mouthGeneId, miscGeneId, 0];
-        GeneMetadata[9] memory defaultPlacements = _getDefaultPlacements();
+        GeneInstance[9] memory design;
+        design[0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[1] = GeneInstance({geneId: armsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[2] = GeneInstance({geneId: tailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[3] = GeneInstance({geneId: earsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[4] = GeneInstance({geneId: bodyGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[5] = GeneInstance({geneId: faceGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[6] = GeneInstance({geneId: mouthGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[7] = GeneInstance({geneId: miscGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        design[8] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
         vm.prank(alice);
-        geneAuction.proposeDesign(auctionId, design, defaultPlacements);
+        geneAuction.proposeDesign(auctionId, design);
 
         GeneAuction.AuctionVoteInfo memory voteInfo = geneAuction.getAuctionVoting(auctionId);
         uint256 designId = voteInfo.proposedDesignIds[voteInfo.proposedDesignIds.length - 1];
