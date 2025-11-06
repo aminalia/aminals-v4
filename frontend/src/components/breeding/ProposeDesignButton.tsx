@@ -5,7 +5,6 @@
 
 import { Button } from '@components/ui/Button';
 import { countGenes, placementToContractFormat, validateDesign } from '@hooks';
-import type { GeneMetadata } from '../../types/breeding';
 import { useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
@@ -14,6 +13,7 @@ import {
   useWriteContract,
 } from 'wagmi';
 import { geneAuctionAbi, geneAuctionAddress } from '../../contracts/generated';
+import type { GeneMetadata } from '../../types/breeding';
 
 export interface ProposeDesignButtonProps {
   auctionId: string;

@@ -5,8 +5,8 @@
 
 import { Button } from '@components/ui/Button';
 import { CategoryFilter, useGenes } from '@hooks';
-import type { Gene } from '../../types/breeding';
 import { useMemo, useState } from 'react';
+import type { Gene } from '../../types/breeding';
 import CreateGenePage from '../CreateGenePage';
 
 const CATEGORIES = [

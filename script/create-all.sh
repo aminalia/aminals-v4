@@ -195,6 +195,19 @@ for folder in genes/*/; do
     # Convert folder name to title case for display (replace - with space and capitalize)
     display_name=$(echo "$aminal_name" | sed 's/-/ /g' | awk '{for(i=1;i<=NF;i++)sub(/./,toupper(substr($i,1,1)),$i)}1')
 
+    # Check if this aminal already has genes deployed
+    EXISTING_AMINAL=$(echo "$GENE_DEPLOYMENT_JSON" | jq -r --arg name "$aminal_name" '.aminals[$name]')
+
+    if [ "$EXISTING_AMINAL" != "null" ] && [ -n "$EXISTING_AMINAL" ]; then
+        echo -e "${CYAN}↻ Aminal '$display_name' already has genes deployed, skipping...${NC}"
+
+        # Extract existing gene IDs
+        EXISTING_GENE_IDS=$(echo "$EXISTING_AMINAL" | jq -r '.geneIds | @csv' | tr -d '"')
+        ALL_AMINAL_GENES+=("$EXISTING_GENE_IDS")
+        echo ""
+        continue
+    fi
+
     echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"
     echo -e "${MAGENTA}  🧬 Processing: $display_name${NC}"
     echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"

@@ -111,6 +111,7 @@ export type {
   DesignVote,
   Gene,
   GeneMetadata,
+  HistoryState,
 } from '../types/breeding';
 
 export {

@@ -3,8 +3,8 @@
  * Browse and vote on submitted design proposals
  */
 
-import type { DesignProposal } from '../../types/breeding';
 import { useMemo, useState } from 'react';
+import type { DesignProposal } from '../../types/breeding';
 import DesignCard from './DesignCard';
 
 export interface DesignGalleryProps {

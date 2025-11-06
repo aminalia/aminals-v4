@@ -359,9 +359,16 @@ ponder.on("Genes:Transfer", async ({ event, context }) => {
     .onConflictDoNothing();
 
   // Update GeneNFT owner
-  await db.update(geneNFT, { id: makeGeneNFTId(tokenId) }).set({
-    ownerId: newOwnerId,
-  });
+  const geneNFTId = makeGeneNFTId(tokenId);
+  const geneExists = await db.find(geneNFT, { id: geneNFTId });
+
+  if (!geneExists) {
+    console.warn(`⚠️  Gene NFT ${tokenId} doesn't exist yet when processing transfer. Skipping owner update.`);
+  } else {
+    await db.update(geneNFT, { id: geneNFTId }).set({
+      ownerId: newOwnerId,
+    });
+  }
 });
 
 // ============================================================================
@@ -658,7 +665,14 @@ ponder.on("GeneAuction:GeneCreatorPayout", async ({ event, context }) => {
   });
 
   // Update gene NFT total earnings
-  await db.update(geneNFT, { id: makeGeneNFTId(geneId) }).set((row) => ({
-    totalEarnings: row.totalEarnings + amount,
-  }));
+  const geneNFTId = makeGeneNFTId(geneId);
+  const geneExists = await db.find(geneNFT, { id: geneNFTId });
+
+  if (!geneExists) {
+    console.warn(`⚠️  Gene NFT ${geneId} doesn't exist yet when processing payout. Skipping earnings update.`);
+  } else {
+    await db.update(geneNFT, { id: geneNFTId }).set((row) => ({
+      totalEarnings: row.totalEarnings + amount,
+    }));
+  }
 });
