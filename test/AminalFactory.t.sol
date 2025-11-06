@@ -42,15 +42,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
     }
 
     function testSpawnInitialAminals() public {
-        Visuals[] memory initialVisuals = new Visuals[](2);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        // Both arrays initialized to empty genes (geneId = 0) by default
 
-        initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
-
-        initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
-
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
 
         assertEq(factory.totalAminals(), 2);
 
@@ -67,11 +62,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
     function testAminalBasicFunctionality() public {
         // Spawn an Aminal first
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        // Array initialized to empty genes (geneId = 0) by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
@@ -94,11 +88,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
         // Skills are globally accessible - no registration needed
 
         // Spawn an Aminal
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        // Array initialized to empty genes (geneId = 0) by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
@@ -123,13 +116,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
     function testBreedingSetup() public {
         // Spawn two Aminals
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
-        initialVisuals[1] =
-            Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        // Both arrays initialized to empty genes (geneId = 0) by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1Address = factory.getAminalByIndex(0);
         address aminal2Address = factory.getAminalByIndex(1);
 
@@ -151,13 +141,10 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
     function testAminalUniqueness() public {
         // Spawn multiple Aminals and verify they all have unique addresses
-        Visuals[] memory initialVisuals = new Visuals[](5);
-        for (uint256 i = 0; i < 5; i++) {
-            initialVisuals[i] =
-                Visuals({genes: [uint256(0), 0, 0, 0, 0, 0, 0, 0, 0]});
-        }
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](5);
+        // All arrays initialized to empty genes (geneId = 0) by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
 
         address[] memory aminalAddresses = new address[](5);
         for (uint256 i = 0; i < 5; i++) {

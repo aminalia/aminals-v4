@@ -49,12 +49,18 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Skills are globally accessible - no registration needed
 
         // Spawn a test Aminal - use 8 genes in first 8 slots
-        Visuals[] memory initialVisuals = new Visuals[](1);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 8; i++) {
-            initialVisuals[0].genes[i] = 1;
+            genesisGenes[0][i] = GeneInstance({
+                geneId: 1,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         aminal = AminalContract(payable(aminalAddress));
     }
@@ -65,13 +71,13 @@ contract IndividualAminalTest is Test, IAminalStructs {
         assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
-        // Test visuals - check first 8 genes are set to 1
-        Visuals memory visuals = aminal.getVisuals();
+        // Test genes - check first 8 genes are set to 1
+        GeneInstance[9] memory geneInstances = aminal.getGenes();
         for (uint256 i = 0; i < 8; i++) {
-            assertEq(visuals.genes[i], 1, "Gene should be set to 1");
+            assertEq(geneInstances[i].geneId, 1, "Gene should be set to 1");
         }
         // Last slot should be 0
-        assertEq(visuals.genes[8], 0);
+        assertEq(geneInstances[8].geneId, 0);
 
         // Test parents (should be zero addresses for initial Aminals)
         (address mom, address dad) = aminal.getParents();
@@ -162,11 +168,17 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Reset the initial spawn flag to allow spawning another Aminal
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
-        Visuals[] memory additionalVisuals = new Visuals[](1);
+        GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalVisuals[0].genes[i] = 2;
+            additionalGenes[0][i] = GeneInstance({
+                geneId: 2,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
-        factory.spawnInitialAminals(additionalVisuals);
+        factory.spawnInitialAminals(additionalGenes);
         address aminal2Address = factory.getAminalByIndex(1);
         AminalContract aminal2 = AminalContract(payable(aminal2Address));
 
@@ -185,11 +197,17 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Reset the initial spawn flag to allow spawning another Aminal
         vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset initialAminalSpawned flag
 
-        Visuals[] memory additionalVisuals = new Visuals[](1);
+        GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalVisuals[0].genes[i] = 2;
+            additionalGenes[0][i] = GeneInstance({
+                geneId: 2,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
-        factory.spawnInitialAminals(additionalVisuals);
+        factory.spawnInitialAminals(additionalGenes);
         // address aminal2Address = factory.getAminalByIndex(1); // Not needed for this test
 
         // Try to set breeding preference without love

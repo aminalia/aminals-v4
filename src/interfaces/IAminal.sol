@@ -50,9 +50,9 @@ interface IAminal is IAminalStructs {
                              VIEW FUNCTIONS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Get the visual traits of this Aminal
-    /// @return visuals The Visuals struct containing all trait IDs
-    function getVisuals() external view returns (Visuals memory);
+    /// @notice Get the gene instances for this Aminal
+    /// @return genes Array of gene instances with placements
+    function getGenes() external view returns (GeneInstance[9] memory);
 
     /// @notice Get a user's love balance for this Aminal
     /// @param user Address to check love balance for

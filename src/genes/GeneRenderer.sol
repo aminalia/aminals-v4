@@ -86,13 +86,13 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @param aminalId The Aminal ID to generate attributes for
     /// @return JSON string containing array of attribute objects
     function generateAttributesList(uint256 aminalId) public view returns (string memory) {
-        Visuals memory visuals = getAminalVisualsByID(aminalId);
+        GeneInstance[9] memory geneInstances = getAminalGenesByID(aminalId);
         string memory attributes = "";
         bool firstAttribute = true;
 
         // Iterate through all gene slots (0-8)
         for (uint256 i = 0; i < 9; i++) {
-            uint256 geneId = visuals.genes[i];
+            uint256 geneId = geneInstances[i].geneId;
 
             if (geneId != 0) {
                 if (!firstAttribute) attributes = string(abi.encodePacked(attributes, ","));
@@ -154,13 +154,12 @@ abstract contract GeneRenderer is IAminalStructs {
     // ============ INTERNAL FUNCTIONS ============
 
     /// @notice Generate complete SVG image for an Aminal
-    /// @dev Combines all gene layers in order (1-10 genes) with placement metadata
+    /// @dev Combines all gene layers in order (1-9 genes) with placement metadata
     /// @param aminalId The Aminal ID to generate image for
     /// @return output Complete SVG string ready for base64 encoding
     function _aminalImage(uint256 aminalId) internal view returns (string memory output) {
-        // Get the visual trait configuration for this Aminal
-        Visuals memory visuals = getAminalVisualsByID(aminalId);
-        GeneMetadata[9] memory placements = getAminalPlacementsByID(aminalId);
+        // Get the gene instances for this Aminal
+        GeneInstance[9] memory geneInstances = getAminalGenesByID(aminalId);
 
         // Start SVG container with proper viewBox
         output = '<svg xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" viewBox="0 0 1000 1000">';
@@ -168,8 +167,8 @@ abstract contract GeneRenderer is IAminalStructs {
         // Render all genes in order (0-8)
         // Genes are rendered back-to-front (first gene is background, last is foreground)
         for (uint256 i = 0; i < 9;) {
-            if (visuals.genes[i] != 0) {
-                output = string(abi.encodePacked(output, _renderGeneWithPlacement(visuals.genes[i], placements[i])));
+            if (geneInstances[i].geneId != 0) {
+                output = string(abi.encodePacked(output, _renderGeneWithPlacement(geneInstances[i])));
             }
             unchecked {
                 ++i;
@@ -182,25 +181,24 @@ abstract contract GeneRenderer is IAminalStructs {
 
     /// @notice Render a gene with placement transformations applied
     /// @dev Wraps the gene SVG in a group with transform attribute
-    /// @param geneId The Gene NFT ID to render
-    /// @param placement The placement metadata (position, scale, rotation)
+    /// @param geneInstance The gene instance containing gene ID and placement data
     /// @return Rendered SVG with transformations applied
-    function _renderGeneWithPlacement(uint256 geneId, GeneMetadata memory placement) internal view returns (string memory) {
-        string memory geneSvg = _getGeneNFTSVG(geneId);
+    function _renderGeneWithPlacement(GeneInstance memory geneInstance) internal view returns (string memory) {
+        string memory geneSvg = _getGeneNFTSVG(geneInstance.geneId);
         if (bytes(geneSvg).length == 0) return "";
 
         // Build transform attribute
-        string memory transform = _buildTransform(placement);
+        string memory transform = _buildTransform(geneInstance);
 
         // Wrap gene SVG in a group with transform
         return string(abi.encodePacked('<g transform="', transform, '">', geneSvg, '</g>'));
     }
 
-    /// @notice Build SVG transform attribute from placement metadata
+    /// @notice Build SVG transform attribute from gene instance placement
     /// @dev Creates a transform string with translate, scale, and rotate
-    /// @param placement The placement metadata
+    /// @param geneInstance The gene instance containing placement metadata
     /// @return Transform attribute value
-    function _buildTransform(GeneMetadata memory placement) internal pure returns (string memory) {
+    function _buildTransform(GeneInstance memory geneInstance) internal pure returns (string memory) {
         // Convert scale from percentage to decimal (100 = 1.0)
         // offsetX and offsetY are already in pixels
         // rotation is in degrees
@@ -208,21 +206,21 @@ abstract contract GeneRenderer is IAminalStructs {
         string memory transform = "";
 
         // Translate to position (move to center + offset)
-        if (placement.offsetX != 0 || placement.offsetY != 0) {
+        if (geneInstance.offsetX != 0 || geneInstance.offsetY != 0) {
             transform = string(
                 abi.encodePacked(
                     "translate(",
-                    _int16ToString(placement.offsetX),
+                    _int16ToString(geneInstance.offsetX),
                     ",",
-                    _int16ToString(placement.offsetY),
+                    _int16ToString(geneInstance.offsetY),
                     ") "
                 )
             );
         }
 
         // Scale from center of canvas (500, 500)
-        if (placement.scale != 100) {
-            string memory scaleValue = _scaleToString(placement.scale);
+        if (geneInstance.scale != 100) {
+            string memory scaleValue = _scaleToString(geneInstance.scale);
             transform = string(
                 abi.encodePacked(
                     transform,
@@ -234,12 +232,12 @@ abstract contract GeneRenderer is IAminalStructs {
         }
 
         // Rotate around center of canvas (500, 500)
-        if (placement.rotation != 0) {
+        if (geneInstance.rotation != 0) {
             transform = string(
                 abi.encodePacked(
                     transform,
                     "rotate(",
-                    Strings.toString(placement.rotation),
+                    Strings.toString(geneInstance.rotation),
                     ",500,500)"
                 )
             );
@@ -330,15 +328,9 @@ abstract contract GeneRenderer is IAminalStructs {
 
     // ============ ABSTRACT FUNCTIONS ============
 
-    /// @notice Get visual trait configuration for an Aminal
+    /// @notice Get gene instances for an Aminal
     /// @dev Must be implemented by inheriting contracts to provide Aminal-specific logic
     /// @param aminalID The Aminal token ID
-    /// @return visuals Struct containing all gene IDs for visual traits
-    function getAminalVisualsByID(uint256 aminalID) public view virtual returns (Visuals memory visuals);
-
-    /// @notice Get placement metadata for an Aminal's genes
-    /// @dev Must be implemented by inheriting contracts to provide Aminal-specific logic
-    /// @param aminalID The Aminal token ID
-    /// @return placements Array of placement metadata for each gene slot
-    function getAminalPlacementsByID(uint256 aminalID) public view virtual returns (GeneMetadata[9] memory placements);
+    /// @return Gene instances array containing gene IDs and placement metadata
+    function getAminalGenesByID(uint256 aminalID) public view virtual returns (GeneInstance[9] memory);
 }
