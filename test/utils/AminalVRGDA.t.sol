@@ -40,12 +40,18 @@ contract AminalVRGDATest is Test, IAminalStructs {
         vrgda = factory.loveVRGDA();
 
         // Spawn a test Aminal
-        Visuals[] memory initialVisuals = new Visuals[](1);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            initialVisuals[0].genes[i] = 1;
+            genesisGenes[0][i] = GeneInstance({
+                geneId: 1,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
         aminal = AminalContract(payable(aminalAddress));
 

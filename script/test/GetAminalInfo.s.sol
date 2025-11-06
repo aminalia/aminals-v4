@@ -41,9 +41,10 @@ contract GetAminalInfo is Script {
             console.log("Genes (1-9 flexible system):");
             for (uint256 j = 0; j < 9; j++) {
                 if (geneInstances[j].geneId != 0) {
-                    console.log("  Gene slot", j, ":", geneInstances[j].geneId);
-                    console.log("    Position: (", int256(geneInstances[j].offsetX), ",", int256(geneInstances[j].offsetY), ")");
-                    console.log("    Scale:", geneInstances[j].scale, "Rotation:", geneInstances[j].rotation);
+                    console.log("  Gene slot", j);
+                    console.log("    geneId:", geneInstances[j].geneId);
+                    console.log("    offsetX:", uint256(int256(geneInstances[j].offsetX)));
+                    console.log("    scale:", geneInstances[j].scale);
                 }
             }
 

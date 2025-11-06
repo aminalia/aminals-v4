@@ -415,11 +415,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parents
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0].genes[0] = geneId;
-        initialVisuals[1].genes[0] = geneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
 
@@ -474,11 +474,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         uint256 geneId = geneRegistry.createGene(SAMPLE_BACKGROUND, "Test Gene", "", "Background");
 
         // Spawn parents
-        Visuals[] memory initialVisuals = new Visuals[](2);
-        initialVisuals[0].genes[0] = geneId;
-        initialVisuals[1].genes[0] = geneId;
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
+        genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
 

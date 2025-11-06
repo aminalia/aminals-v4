@@ -677,13 +677,13 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     }
 
     /**
-     * @notice Get parent genes for an auction
+     * @notice Get parent gene instances for an auction
      */
     function getParentGenes(uint256 auctionId)
         external
         view
         validVoting(auctionId)
-        returns (uint256[9] memory parentOneGenes, uint256[9] memory parentTwoGenes)
+        returns (GeneInstance[9] memory parentOneGenes, GeneInstance[9] memory parentTwoGenes)
     {
         Auction storage auction = auctions[auctionId];
         return (auction.parentOneGenes, auction.parentTwoGenes);
