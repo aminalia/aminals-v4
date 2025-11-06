@@ -116,31 +116,31 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function _createParentAminals() internal {
         // Create parent Aminals using the first set of gene NFTs (pastel theme)
         // This ensures parent Aminals have valid gene NFT IDs that actually exist
-        Visuals[] memory initialVisuals = new Visuals[](2);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
 
-        // Parent 1: Uses first set of genes (pastel theme) - 9 genes in first 9 slots
-        initialVisuals[0].genes[0] = backgroundGeneId;
-        initialVisuals[0].genes[1] = armsGeneId;
-        initialVisuals[0].genes[2] = tailGeneId;
-        initialVisuals[0].genes[3] = earsGeneId;
-        initialVisuals[0].genes[4] = bodyGeneId;
-        initialVisuals[0].genes[5] = faceGeneId;
-        initialVisuals[0].genes[6] = mouthGeneId;
-        initialVisuals[0].genes[7] = miscGeneId;
-        // genes[8] and genes[8] are 0 (unused)
+        // Parent 1: Uses first set of genes (pastel theme) - 8 genes with default placement
+        genesisGenes[0][0] = GeneInstance({geneId: backgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][1] = GeneInstance({geneId: armsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][2] = GeneInstance({geneId: tailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][3] = GeneInstance({geneId: earsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][4] = GeneInstance({geneId: bodyGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][5] = GeneInstance({geneId: faceGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][6] = GeneInstance({geneId: mouthGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[0][7] = GeneInstance({geneId: miscGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        // genes[8] is 0 (unused) by default
 
         // Parent 2: Uses alternative set of genes (vibrant theme) for variety
-        initialVisuals[1].genes[0] = altBackgroundGeneId;
-        initialVisuals[1].genes[1] = altArmsGeneId;
-        initialVisuals[1].genes[2] = altTailGeneId;
-        initialVisuals[1].genes[3] = altEarsGeneId;
-        initialVisuals[1].genes[4] = altBodyGeneId;
-        initialVisuals[1].genes[5] = altFaceGeneId;
-        initialVisuals[1].genes[6] = altMouthGeneId;
-        initialVisuals[1].genes[7] = altMiscGeneId;
-        // genes[8] and genes[8] are 0 (unused)
+        genesisGenes[1][0] = GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][1] = GeneInstance({geneId: altArmsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][2] = GeneInstance({geneId: altTailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][3] = GeneInstance({geneId: altEarsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][4] = GeneInstance({geneId: altBodyGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][5] = GeneInstance({geneId: altFaceGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][6] = GeneInstance({geneId: altMouthGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][7] = GeneInstance({geneId: altMiscGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        // genes[8] is 0 (unused) by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         aminal1Address = factory.getAminalByIndex(0);
         aminal2Address = factory.getAminalByIndex(1);
         aminal1 = AminalContract(payable(aminal1Address));
@@ -481,19 +481,19 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         assertEq(child.ownerOf(1), address(factory), "Factory should own child NFT");
 
         // Verify child has traits from the winning design
-        Visuals memory childVisuals = child.getVisuals();
+        GeneInstance[9] memory childGenes = child.getGenes();
 
         console.log("Child Aminal created with complete design:");
         for (uint256 i = 0; i < 9; i++) {
-            if (childVisuals.genes[i] != 0) {
-                console.log("- Gene slot", i, ":", childVisuals.genes[i]);
+            if (childGenes[i].geneId != 0) {
+                console.log("- Gene slot", i, ":", childGenes[i].geneId);
             }
         }
 
         // Verify at least one trait is set (not all zero)
         bool hasNonZeroTraits = false;
         for (uint256 i = 0; i < 9; i++) {
-            if (childVisuals.genes[i] != 0) {
+            if (childGenes[i].geneId != 0) {
                 hasNonZeroTraits = true;
                 break;
             }

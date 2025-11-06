@@ -71,22 +71,22 @@ contract PlacementFlowTest is Test, IAminalStructs {
      */
     function testGenesisAminalDefaultPlacement() public {
         // Spawn a genesis Aminal
-        Visuals[] memory initialVisuals = new Visuals[](1);
-        initialVisuals[0].genes[0] = 1; // Set first gene
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
+        genesisGenes[0][0] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
 
-        // Get placements
+        // Get gene instances
         AminalContract aminal = AminalContract(payable(aminalAddress));
-        GeneMetadata[9] memory placements = aminal.getPlacements();
+        GeneInstance[9] memory geneInstances = aminal.getGenes();
 
         // Verify all placements are default (centered, 100% scale, 0° rotation)
         for (uint256 i = 0; i < 9; i++) {
-            assertEq(placements[i].offsetX, 0, "Default offsetX should be 0");
-            assertEq(placements[i].offsetY, 0, "Default offsetY should be 0");
-            assertEq(placements[i].scale, 100, "Default scale should be 100");
-            assertEq(placements[i].rotation, 0, "Default rotation should be 0");
+            assertEq(geneInstances[i].offsetX, 0, "Default offsetX should be 0");
+            assertEq(geneInstances[i].offsetY, 0, "Default offsetY should be 0");
+            assertEq(geneInstances[i].scale, 100, "Default scale should be 100");
+            assertEq(geneInstances[i].rotation, 0, "Default rotation should be 0");
         }
     }
 
