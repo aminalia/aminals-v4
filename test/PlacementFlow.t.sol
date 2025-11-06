@@ -198,23 +198,23 @@ contract PlacementFlowTest is Test, IAminalStructs {
         AminalContract child = AminalContract(payable(childAddress));
 
         // Verify placements were stored correctly
-        GeneMetadata[9] memory childPlacements = child.getPlacements();
+        GeneInstance[9] memory childGenes = child.getGenes();
 
         // Check the three custom placements
-        assertEq(childPlacements[0].offsetX, 0, "Background offsetX should be 0");
-        assertEq(childPlacements[0].offsetY, 0, "Background offsetY should be 0");
-        assertEq(childPlacements[0].scale, 100, "Background scale should be 100");
-        assertEq(childPlacements[0].rotation, 0, "Background rotation should be 0");
+        assertEq(childGenes[0].offsetX, 0, "Background offsetX should be 0");
+        assertEq(childGenes[0].offsetY, 0, "Background offsetY should be 0");
+        assertEq(childGenes[0].scale, 100, "Background scale should be 100");
+        assertEq(childGenes[0].rotation, 0, "Background rotation should be 0");
 
-        assertEq(childPlacements[1].offsetX, -50, "Body offsetX should be -50");
-        assertEq(childPlacements[1].offsetY, 100, "Body offsetY should be 100");
-        assertEq(childPlacements[1].scale, 150, "Body scale should be 150");
-        assertEq(childPlacements[1].rotation, 0, "Body rotation should be 0");
+        assertEq(childGenes[1].offsetX, -50, "Body offsetX should be -50");
+        assertEq(childGenes[1].offsetY, 100, "Body offsetY should be 100");
+        assertEq(childGenes[1].scale, 150, "Body scale should be 150");
+        assertEq(childGenes[1].rotation, 0, "Body rotation should be 0");
 
-        assertEq(childPlacements[2].offsetX, 25, "Face offsetX should be 25");
-        assertEq(childPlacements[2].offsetY, -25, "Face offsetY should be -25");
-        assertEq(childPlacements[2].scale, 80, "Face scale should be 80");
-        assertEq(childPlacements[2].rotation, 45, "Face rotation should be 45");
+        assertEq(childGenes[2].offsetX, 25, "Face offsetX should be 25");
+        assertEq(childGenes[2].offsetY, -25, "Face offsetY should be -25");
+        assertEq(childGenes[2].scale, 80, "Face scale should be 80");
+        assertEq(childGenes[2].rotation, 45, "Face rotation should be 45");
     }
 
     /**
@@ -359,12 +359,12 @@ contract PlacementFlowTest is Test, IAminalStructs {
         // Verify child has extreme placements
         address childAddress = factory.getAminalByIndex(2);
         AminalContract child = AminalContract(payable(childAddress));
-        GeneMetadata[9] memory childPlacements = child.getPlacements();
+        GeneInstance[9] memory childGenes = child.getGenes();
 
-        assertEq(childPlacements[0].offsetX, -500, "Extreme offsetX should be stored");
-        assertEq(childPlacements[0].offsetY, 500, "Extreme offsetY should be stored");
-        assertEq(childPlacements[0].scale, 500, "Extreme scale should be stored");
-        assertEq(childPlacements[0].rotation, 359, "Extreme rotation should be stored");
+        assertEq(childGenes[0].offsetX, -500, "Extreme offsetX should be stored");
+        assertEq(childGenes[0].offsetY, 500, "Extreme offsetY should be stored");
+        assertEq(childGenes[0].scale, 500, "Extreme scale should be stored");
+        assertEq(childGenes[0].rotation, 359, "Extreme rotation should be stored");
     }
 
     /**
