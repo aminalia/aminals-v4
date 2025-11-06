@@ -22,7 +22,6 @@ import CountdownTimer from '@components/CountdownTimer';
 import EndAuctionButton from '@components/actions/EndAuctionButton';
 import DesignBuilder from '@components/breeding/DesignBuilder';
 import DesignGallery from '@components/breeding/DesignGallery';
-import DesignVoteStats from '@components/breeding/DesignVoteStats';
 import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
 import { Button } from '@components/ui/Button';
 
@@ -523,6 +522,7 @@ const AuctionPage: NextPage = () => {
                             availableGenes={availableGenes}
                             onDesignChange={handleDesignChange}
                             disabled={isAuctionEnded}
+                            maxGenes={9}
                           />
 
                           {/* Propose Button */}
@@ -542,12 +542,12 @@ const AuctionPage: NextPage = () => {
               </div>
 
               {/* Vote Statistics */}
-              <div className="bg-card rounded-lg border border-border p-4">
+              {/*<div className="bg-card rounded-lg border border-border p-4">
                 <DesignVoteStats
                   auctionId={auctionId}
                   totalLove={auction?.totalLove || 0n}
                 />
-              </div>
+              </div>*/}
             </>
           )}
         </div>

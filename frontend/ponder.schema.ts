@@ -122,7 +122,6 @@ export const geneNFT = onchainTable('geneNFT', (t) => ({
   svg: t.text(),
   name: t.text(),
   description: t.text(),
-  category: t.text(), // Category/tag for filtering (e.g., "eyes", "hat", "background")
 
   // Earnings tracking
   totalEarnings: t.bigint().notNull(),

@@ -37,12 +37,13 @@ const TraitsPage: NextPage = () => {
     isLoading: isLoadingGenes,
     error: genesError,
     isError: isGenesError,
-  } = useGenes(filter, sort, category);
+  } = useGenes(filter, sort, category, address);
 
   console.log('Genes data:', genes);
   console.log('Genes loading:', isLoadingGenes);
   console.log('Genes error:', genesError);
   console.log('Is genes error:', isGenesError);
+  console.log('Ponder URL:', process.env.NEXT_PUBLIC_PONDER_URL || 'http://localhost:42069/sql');
 
   return (
     <Layout>

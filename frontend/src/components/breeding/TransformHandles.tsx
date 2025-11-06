@@ -8,8 +8,8 @@
  * - Visual feedback during transform
  */
 
-import type { GeneMetadata } from '../../types/breeding';
 import { useCallback, useEffect, useState } from 'react';
+import type { GeneMetadata } from '../../types/breeding';
 
 export interface TransformHandlesProps {
   placement: GeneMetadata;
@@ -38,9 +38,11 @@ export default function TransformHandles({
   const { offsetX, offsetY, scale, rotation } = placement;
 
   // Calculate handle positions
+  // Base size is ~200 (typical gene SVG size) scaled by the placement scale
   const centerX = 500 + offsetX;
   const centerY = 500 + offsetY;
-  const size = 1000 * (scale / 100);
+  const baseSize = 400; // Approximate typical gene SVG size
+  const size = baseSize * (scale / 100);
   const halfSize = size / 2;
 
   // Bounding box corners

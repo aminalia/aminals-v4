@@ -1,6 +1,6 @@
 /**
  * DesignBuilder Component
- * Visual editor for creating/modifying Aminal designs with 1-10 genes
+ * Visual editor for creating/modifying Aminal designs with 1-9 genes
  *
  * Features:
  * - Gene slots panel (add/remove/reorder genes)
@@ -9,9 +9,15 @@
  */
 
 import { countGenes, createEmptyDesign, DEFAULT_PLACEMENT } from '@hooks';
-import type { DesignBuilderState, Gene, GeneMetadata } from '../../types/breeding';
+import type {
+  DesignBuilderState,
+  Gene,
+  GeneMetadata,
+  HistoryState,
+} from '../../types/breeding';
 import { useCallback, useEffect, useState } from 'react';
 import GenePickerModal from './GenePickerModal';
+import InteractiveCanvas from './InteractiveCanvas';
 
 export interface DesignBuilderProps {
   initialGeneIds?: bigint[];
@@ -19,7 +25,7 @@ export interface DesignBuilderProps {
   availableGenes?: Gene[]; // Parent genes by default
   onDesignChange?: (geneIds: bigint[], placements: GeneMetadata[]) => void;
   disabled?: boolean;
-  maxGenes?: number; // Default 10
+  maxGenes?: number; // Default 9
 }
 
 export default function DesignBuilder({
@@ -28,27 +34,29 @@ export default function DesignBuilder({
   availableGenes = [],
   onDesignChange,
   disabled = false,
-  maxGenes = 10,
+  maxGenes = 9,
 }: DesignBuilderProps) {
   // Initialize state
   const [design, setDesign] = useState<DesignBuilderState>(() => {
     if (initialGeneIds.length > 0) {
-      // Pad to 10 slots
+      // Pad to 9 slots
       const paddedGeneIds = [...initialGeneIds];
-      while (paddedGeneIds.length < 10) {
+      while (paddedGeneIds.length < 9) {
         paddedGeneIds.push(0n);
       }
 
       const paddedPlacements = [...initialPlacements];
-      while (paddedPlacements.length < 10) {
+      while (paddedPlacements.length < 9) {
         paddedPlacements.push(DEFAULT_PLACEMENT);
       }
 
       return {
-        geneIds: paddedGeneIds.slice(0, 10),
-        placements: paddedPlacements.slice(0, 10),
+        geneIds: paddedGeneIds.slice(0, 9),
+        placements: paddedPlacements.slice(0, 9),
         selectedGeneIndex: null,
         isDirty: false,
+        history: [],
+        historyIndex: -1,
       };
     }
     return createEmptyDesign();
@@ -57,6 +65,8 @@ export default function DesignBuilder({
   const [showGenePickerIndex, setShowGenePickerIndex] = useState<number | null>(
     null
   );
+
+  const MAX_HISTORY = 50; // Maximum number of history states
 
   // Cache for genes that have been added to the design (including custom genes)
   const [geneCache, setGeneCache] = useState<Map<string, Gene>>(new Map());
@@ -74,6 +84,112 @@ export default function DesignBuilder({
     }
   }, [availableGenes]);
 
+  // Save current state to history
+  const saveToHistory = useCallback(() => {
+    setDesign((prev) => {
+      // Create history snapshot
+      const snapshot: HistoryState = {
+        geneIds: [...prev.geneIds],
+        placements: [...prev.placements],
+        timestamp: Date.now(),
+      };
+
+      // Remove any history after current index (if we're not at the end)
+      const newHistory = prev.history.slice(0, prev.historyIndex + 1);
+
+      // Add new snapshot
+      newHistory.push(snapshot);
+
+      // Limit history size
+      if (newHistory.length > MAX_HISTORY) {
+        newHistory.shift();
+      }
+
+      return {
+        ...prev,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+      };
+    });
+  }, [MAX_HISTORY]);
+
+  // Undo
+  const handleUndo = useCallback(() => {
+    if (disabled) return;
+
+    setDesign((prev) => {
+      if (prev.historyIndex <= 0) return prev;
+
+      const newIndex = prev.historyIndex - 1;
+      const state = prev.history[newIndex];
+
+      return {
+        ...prev,
+        geneIds: [...state.geneIds],
+        placements: [...state.placements],
+        historyIndex: newIndex,
+        isDirty: true,
+      };
+    });
+  }, [disabled]);
+
+  // Redo
+  const handleRedo = useCallback(() => {
+    if (disabled) return;
+
+    setDesign((prev) => {
+      if (prev.historyIndex >= prev.history.length - 1) return prev;
+
+      const newIndex = prev.historyIndex + 1;
+      const state = prev.history[newIndex];
+
+      return {
+        ...prev,
+        geneIds: [...state.geneIds],
+        placements: [...state.placements],
+        historyIndex: newIndex,
+        isDirty: true,
+      };
+    });
+  }, [disabled]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return;
+
+      // Check if Ctrl/Cmd is pressed
+      const isMod = e.ctrlKey || e.metaKey;
+
+      // Undo: Ctrl/Cmd+Z
+      if (isMod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+
+      // Redo: Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y
+      if ((isMod && e.key === 'z' && e.shiftKey) || (isMod && e.key === 'y')) {
+        e.preventDefault();
+        handleRedo();
+      }
+
+      // Delete: Delete or Backspace (when gene is selected)
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        design.selectedGeneIndex !== null
+      ) {
+        e.preventDefault();
+        handleRemoveGene(design.selectedGeneIndex);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [disabled, design.selectedGeneIndex, handleUndo, handleRedo]);
+
+  const canUndo = design.historyIndex > 0;
+  const canRedo = design.historyIndex < design.history.length - 1;
+
   // Notify parent of changes
   useEffect(() => {
     if (design.isDirty && onDesignChange) {
@@ -82,39 +198,48 @@ export default function DesignBuilder({
   }, [design.geneIds, design.placements, design.isDirty, onDesignChange]);
 
   // Add gene to first empty slot
-  const handleAddGene = useCallback((gene: Gene) => {
-    // Add gene to cache
-    setGeneCache((prev) => {
-      const newCache = new Map(prev);
-      newCache.set(gene.tokenId.toString(), gene);
-      return newCache;
-    });
+  const handleAddGene = useCallback(
+    (gene: Gene) => {
+      // Save current state before making changes
+      saveToHistory();
 
-    setDesign((prev) => {
-      const firstEmptyIndex = prev.geneIds.findIndex((id) => id === 0n);
-      if (firstEmptyIndex === -1) return prev; // No empty slots
+      // Add gene to cache
+      setGeneCache((prev) => {
+        const newCache = new Map(prev);
+        newCache.set(gene.tokenId.toString(), gene);
+        return newCache;
+      });
 
-      const newGeneIds = [...prev.geneIds];
-      const newPlacements = [...prev.placements];
+      setDesign((prev) => {
+        const firstEmptyIndex = prev.geneIds.findIndex((id) => id === 0n);
+        if (firstEmptyIndex === -1) return prev; // No empty slots
 
-      newGeneIds[firstEmptyIndex] = BigInt(gene.tokenId);
-      newPlacements[firstEmptyIndex] = { ...DEFAULT_PLACEMENT };
+        const newGeneIds = [...prev.geneIds];
+        const newPlacements = [...prev.placements];
 
-      return {
-        ...prev,
-        geneIds: newGeneIds,
-        placements: newPlacements,
-        selectedGeneIndex: firstEmptyIndex,
-        isDirty: true,
-      };
-    });
-    setShowGenePickerIndex(null);
-  }, []);
+        newGeneIds[firstEmptyIndex] = BigInt(gene.tokenId);
+        newPlacements[firstEmptyIndex] = { ...DEFAULT_PLACEMENT };
+
+        return {
+          ...prev,
+          geneIds: newGeneIds,
+          placements: newPlacements,
+          selectedGeneIndex: firstEmptyIndex,
+          isDirty: true,
+        };
+      });
+      setShowGenePickerIndex(null);
+    },
+    [saveToHistory]
+  );
 
   // Remove gene from specific slot
   const handleRemoveGene = useCallback(
     (index: number) => {
       if (disabled) return;
+
+      // Save current state before making changes
+      saveToHistory();
 
       setDesign((prev) => {
         const newGeneIds = [...prev.geneIds];
@@ -129,7 +254,7 @@ export default function DesignBuilder({
         };
       });
     },
-    [disabled]
+    [disabled, saveToHistory]
   );
 
   // Select gene for editing placement
@@ -168,6 +293,9 @@ export default function DesignBuilder({
     (fromIndex: number, toIndex: number) => {
       if (disabled || fromIndex === toIndex) return;
 
+      // Save current state before making changes
+      saveToHistory();
+
       setDesign((prev) => {
         const newGeneIds = [...prev.geneIds];
         const newPlacements = [...prev.placements];
@@ -190,7 +318,7 @@ export default function DesignBuilder({
         };
       });
     },
-    [disabled]
+    [disabled, saveToHistory]
   );
 
   // Reset placement to default for selected gene
@@ -212,25 +340,6 @@ export default function DesignBuilder({
     [availableGenes, geneCache]
   );
 
-  // Render gene SVG with placement transforms
-  const renderGeneWithPlacement = useCallback(
-    (geneId: bigint, placement: GeneMetadata) => {
-      const gene = getGeneById(geneId);
-      if (!gene || !gene.svg) return '';
-
-      const { offsetX, offsetY, scale, rotation } = placement;
-
-      return `
-        <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
-        scale / 100
-      })">
-          ${gene.svg}
-        </g>
-      `;
-    },
-    [getGeneById]
-  );
-
   const geneCount = countGenes(design.geneIds);
   const selectedGene =
     design.selectedGeneIndex !== null
@@ -240,6 +349,12 @@ export default function DesignBuilder({
     design.selectedGeneIndex !== null
       ? design.placements[design.selectedGeneIndex]
       : null;
+
+  // Get all genes that are currently in the design (for canvas rendering)
+  const genesInDesign = design.geneIds
+    .filter((id) => id !== 0n)
+    .map((id) => getGeneById(id))
+    .filter((gene): gene is Gene => gene !== undefined);
 
   return (
     <div
@@ -251,9 +366,28 @@ export default function DesignBuilder({
       <div className="w-full lg:w-64 bg-card rounded-lg border border-border p-4">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold">Gene Slots</h3>
-          <span className="text-xs text-muted-foreground">
-            {geneCount}/10 genes
-          </span>
+          <div className="flex items-center gap-2">
+            {/* Undo/Redo buttons */}
+            <button
+              onClick={handleUndo}
+              disabled={!canUndo || disabled}
+              className="p-1 text-xs hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Undo (Ctrl/Cmd+Z)"
+            >
+              ↶
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={!canRedo || disabled}
+              className="p-1 text-xs hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Redo (Ctrl/Cmd+Shift+Z)"
+            >
+              ↷
+            </button>
+            <span className="text-xs text-muted-foreground">
+              {geneCount}/9 genes
+            </span>
+          </div>
         </div>
 
         {/* Gene Slots List */}
@@ -316,7 +450,7 @@ export default function DesignBuilder({
                         </button>
                       )}
                       {/* Move down */}
-                      {index < 9 && (
+                      {index < 8 && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -375,34 +509,16 @@ export default function DesignBuilder({
         )}
       </div>
 
-      {/* Canvas Preview (Center) */}
-      <div className="flex-1 bg-card rounded-lg border border-border p-4">
-        <h3 className="text-sm font-semibold mb-3">Preview</h3>
-        <div className="aspect-square bg-muted rounded-lg overflow-hidden border border-border flex items-center justify-center">
-          {geneCount === 0 ? (
-            <div className="text-center text-muted-foreground">
-              <div className="text-4xl mb-2">🎨</div>
-              <div className="text-sm">Add genes to start designing</div>
-            </div>
-          ) : (
-            <svg
-              viewBox="0 0 1000 1000"
-              className="w-full h-full"
-              dangerouslySetInnerHTML={{
-                __html: design.geneIds
-                  .map((geneId, index) => {
-                    if (geneId === 0n) return '';
-                    return renderGeneWithPlacement(
-                      geneId,
-                      design.placements[index]
-                    );
-                  })
-                  .join(''),
-              }}
-            />
-          )}
-        </div>
-      </div>
+      {/* Canvas Preview (Center) - Now Interactive */}
+      <InteractiveCanvas
+        geneIds={design.geneIds}
+        placements={design.placements}
+        selectedIndex={design.selectedGeneIndex}
+        genes={genesInDesign}
+        onSelect={handleSelectGene}
+        onUpdatePlacement={handleUpdatePlacement}
+        disabled={disabled}
+      />
 
       {/* Placement Controls (Right) */}
       <div className="w-full lg:w-64 bg-card rounded-lg border border-border p-4">
@@ -510,7 +626,7 @@ export default function DesignBuilder({
             {/* Info */}
             <div className="text-[10px] text-muted-foreground mt-4 space-y-1">
               <div>• Use sliders to adjust position and appearance</div>
-              <div>• Layer order: Slot 1 (back) → Slot 10 (front)</div>
+              <div>• Layer order: Slot 1 (back) → Slot 9 (front)</div>
               <div>• Use ↑↓ in gene slots to reorder layers</div>
             </div>
           </div>

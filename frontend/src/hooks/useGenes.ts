@@ -29,16 +29,32 @@ export const useGenes = (
     queryFn: (db) => {
       // Note: Category filter removed - genes are now flexible (no fixed categories)
       // The category parameter is kept for API compatibility but ignored
+      console.log('[useGenes] Running query for all genes...');
       return db.select().from(schema.geneNFT);
     },
+  });
+
+  console.log('[useGenes] genesResult:', {
+    data: genesResult.data,
+    isLoading: genesResult.isLoading,
+    error: genesResult.error,
+    dataLength: genesResult.data?.length,
   });
 
   // Fetch all aminalGene records to count aminals per gene
   const aminalGenesResult = usePonderQuery({
     queryFn: (db) => {
+      console.log('[useGenes] Running query for aminalGene join table...');
       return db.select().from(schema.aminalGene);
     },
     enabled: !!genesResult.data,
+  });
+
+  console.log('[useGenes] aminalGenesResult:', {
+    data: aminalGenesResult.data,
+    isLoading: aminalGenesResult.isLoading,
+    error: aminalGenesResult.error,
+    dataLength: aminalGenesResult.data?.length,
   });
 
   // Process data after query execution
@@ -60,6 +76,8 @@ export const useGenes = (
           userAddress
         )
       : undefined;
+
+  console.log('[useGenes] processedData:', processedData);
 
   return {
     ...genesResult,

@@ -29,11 +29,11 @@ export const DEFAULT_PLACEMENT: GeneMetadata = {
  * Matches AminalDesign struct from GeneAuction.sol
  */
 export interface AminalDesign {
-  geneIds: bigint[]; // Array of 10, 0n = empty slot
+  geneIds: bigint[]; // Array of 9, 0n = empty slot
   proposer: string; // Address (0x0 = parent design)
   votes: bigint; // Total voting power for this design
   removed: boolean; // Whether removed by community
-  placements: GeneMetadata[]; // Array of 10 placement metadata
+  placements: GeneMetadata[]; // Array of 9 placement metadata
 }
 
 /**
@@ -119,6 +119,15 @@ export interface AuctionVoteInfo {
 }
 
 /**
+ * HistoryState - Single state in history for undo/redo
+ */
+export interface HistoryState {
+  geneIds: bigint[];
+  placements: GeneMetadata[];
+  timestamp: number;
+}
+
+/**
  * DesignBuilderState - State for the design builder component
  */
 export interface DesignBuilderState {
@@ -126,6 +135,8 @@ export interface DesignBuilderState {
   placements: GeneMetadata[];
   selectedGeneIndex: number | null; // Which gene is selected for editing
   isDirty: boolean; // Has the design been modified
+  history: HistoryState[]; // History stack for undo/redo
+  historyIndex: number; // Current position in history (-1 = no history)
 }
 
 /**
@@ -133,10 +144,12 @@ export interface DesignBuilderState {
  */
 export function createEmptyDesign(): DesignBuilderState {
   return {
-    geneIds: Array(10).fill(0n),
-    placements: Array(10).fill(DEFAULT_PLACEMENT),
+    geneIds: Array(9).fill(0n),
+    placements: Array(9).fill(DEFAULT_PLACEMENT),
     selectedGeneIndex: null,
     isDirty: false,
+    history: [],
+    historyIndex: -1,
   };
 }
 
@@ -147,24 +160,26 @@ export function createDesignFromGenes(
   geneIds: bigint[],
   placements?: GeneMetadata[]
 ): DesignBuilderState {
-  // Pad to 10 slots
+  // Pad to 9 slots
   const paddedGeneIds = [...geneIds];
-  while (paddedGeneIds.length < 10) {
+  while (paddedGeneIds.length < 9) {
     paddedGeneIds.push(0n);
   }
 
   const paddedPlacements = placements
     ? [...placements]
-    : Array(10).fill(DEFAULT_PLACEMENT);
-  while (paddedPlacements.length < 10) {
+    : Array(9).fill(DEFAULT_PLACEMENT);
+  while (paddedPlacements.length < 9) {
     paddedPlacements.push(DEFAULT_PLACEMENT);
   }
 
   return {
-    geneIds: paddedGeneIds.slice(0, 10),
-    placements: paddedPlacements.slice(0, 10),
+    geneIds: paddedGeneIds.slice(0, 9),
+    placements: paddedPlacements.slice(0, 9),
     selectedGeneIndex: null,
     isDirty: false,
+    history: [],
+    historyIndex: -1,
   };
 }
 
@@ -181,8 +196,8 @@ export function validateDesign(geneIds: bigint[]): {
     return { isValid: false, error: 'Design must have at least 1 gene' };
   }
 
-  if (nonEmptyGenes.length > 10) {
-    return { isValid: false, error: 'Design cannot have more than 10 genes' };
+  if (nonEmptyGenes.length > 9) {
+    return { isValid: false, error: 'Design cannot have more than 9 genes' };
   }
 
   return { isValid: true };
