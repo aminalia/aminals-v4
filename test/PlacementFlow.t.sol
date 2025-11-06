@@ -73,6 +73,10 @@ contract PlacementFlowTest is Test, IAminalStructs {
         // Spawn a genesis Aminal
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         genesisGenes[0][0] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        // Initialize remaining empty slots with default placement
+        for (uint256 i = 1; i < 9; i++) {
+            genesisGenes[0][i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        }
 
         factory.spawnInitialAminals(genesisGenes);
         address aminalAddress = factory.getAminalByIndex(0);
@@ -293,6 +297,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
         genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        // Initialize remaining empty slots with default placement
+        for (uint256 i = 1; i < 9; i++) {
+            genesisGenes[0][i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            genesisGenes[1][i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        }
 
         factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
@@ -370,6 +379,11 @@ contract PlacementFlowTest is Test, IAminalStructs {
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
         genesisGenes[0][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][0] = GeneInstance({geneId: geneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        // Initialize remaining empty slots with default placement
+        for (uint256 i = 1; i < 9; i++) {
+            genesisGenes[0][i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+            genesisGenes[1][i] = GeneInstance({geneId: 0, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        }
 
         factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
