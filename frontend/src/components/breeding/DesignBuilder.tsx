@@ -153,40 +153,6 @@ export default function DesignBuilder({
     });
   }, [disabled]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (disabled) return;
-
-      // Check if Ctrl/Cmd is pressed
-      const isMod = e.ctrlKey || e.metaKey;
-
-      // Undo: Ctrl/Cmd+Z
-      if (isMod && e.key === 'z' && !e.shiftKey) {
-        e.preventDefault();
-        handleUndo();
-      }
-
-      // Redo: Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y
-      if ((isMod && e.key === 'z' && e.shiftKey) || (isMod && e.key === 'y')) {
-        e.preventDefault();
-        handleRedo();
-      }
-
-      // Delete: Delete or Backspace (when gene is selected)
-      if (
-        (e.key === 'Delete' || e.key === 'Backspace') &&
-        design.selectedGeneIndex !== null
-      ) {
-        e.preventDefault();
-        handleRemoveGene(design.selectedGeneIndex);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [disabled, design.selectedGeneIndex, handleUndo, handleRedo]);
-
   const canUndo = design.historyIndex > 0;
   const canRedo = design.historyIndex < design.history.length - 1;
 
@@ -339,6 +305,46 @@ export default function DesignBuilder({
     },
     [availableGenes, geneCache]
   );
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (disabled) return;
+
+      // Check if Ctrl/Cmd is pressed
+      const isMod = e.ctrlKey || e.metaKey;
+
+      // Undo: Ctrl/Cmd+Z
+      if (isMod && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+
+      // Redo: Ctrl/Cmd+Shift+Z or Ctrl/Cmd+Y
+      if ((isMod && e.key === 'z' && e.shiftKey) || (isMod && e.key === 'y')) {
+        e.preventDefault();
+        handleRedo();
+      }
+
+      // Delete: Delete or Backspace (when gene is selected)
+      if (
+        (e.key === 'Delete' || e.key === 'Backspace') &&
+        design.selectedGeneIndex !== null
+      ) {
+        e.preventDefault();
+        handleRemoveGene(design.selectedGeneIndex);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [
+    disabled,
+    design.selectedGeneIndex,
+    handleUndo,
+    handleRedo,
+    handleRemoveGene,
+  ]);
 
   const geneCount = countGenes(design.geneIds);
   const selectedGene =

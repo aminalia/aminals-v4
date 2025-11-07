@@ -96,7 +96,7 @@ const ChatSessionPage: NextPage = () => {
     });
 
     return filteredMessages;
-  }, [session?.messages, localMessages]);
+  }, [session, localMessages]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {

@@ -41,7 +41,7 @@ export { useGeneProposalsByAuctionId } from './useGeneProposals';
 export {
   useAuctionVoting,
   useDesign,
-  useDesignPlacements,
+  // useDesignPlacements, // Removed - no longer available in contract
   useDesignProposals,
   useDesignRemovalVotes,
   useGenesByIds as useGenesByIdsBreeding,

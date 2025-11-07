@@ -22,6 +22,7 @@ import CountdownTimer from '@components/CountdownTimer';
 import EndAuctionButton from '@components/actions/EndAuctionButton';
 import DesignBuilder from '@components/breeding/DesignBuilder';
 import DesignGallery from '@components/breeding/DesignGallery';
+import DesignVoteStats from '@components/breeding/DesignVoteStats';
 import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
 import { Button } from '@components/ui/Button';
 

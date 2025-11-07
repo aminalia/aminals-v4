@@ -328,7 +328,10 @@ export const useDesignRemovalVotes = (auctionId: string, designId: bigint) => {
 
 /**
  * Get design placements from contract
+ * NOTE: This function has been replaced by getDesign which includes placements in the genes array
+ * Keeping this commented for reference in case it's needed
  */
+/*
 export const useDesignPlacements = (auctionId: string, designId: bigint) => {
   return useReadContract({
     address: geneAuctionAddress,
@@ -340,3 +343,4 @@ export const useDesignPlacements = (auctionId: string, designId: bigint) => {
     },
   });
 };
+*/

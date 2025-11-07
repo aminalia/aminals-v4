@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -29,16 +29,10 @@ export default function BulkVoteButton({
   mouthId: any;
   miscId: any;
 }) {
-  const traitIds = [
-    backId,
-    armId,
-    tailId,
-    earsId,
-    bodyId,
-    faceId,
-    mouthId,
-    miscId,
-  ];
+  const traitIds = useMemo(
+    () => [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId],
+    [backId, armId, tailId, earsId, bodyId, faceId, mouthId, miscId]
+  );
 
   const { isConnected, chain, address } = useAccount();
   const enabled = isConnected && chain;

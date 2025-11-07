@@ -206,8 +206,7 @@ export default function ProposeDesignButton({
       return;
     }
 
-    // Pad geneIds and placements to arrays of 10
-    // Pad to 9 elements (contract expects 9, not 10)
+    // Pad geneIds and placements to arrays of 9 (contract expects 9)
     const paddedGeneIds = [...geneIds.slice(0, 9)];
     while (paddedGeneIds.length < 9) {
       paddedGeneIds.push(0n);
@@ -223,8 +222,20 @@ export default function ProposeDesignButton({
       });
     }
 
-    // Convert to contract format
-    const contractPlacements = paddedPlacements.map(placementToContractFormat);
+    // Combine geneIds and placements into GeneInstance array
+    // Contract expects: struct GeneInstance { geneId, offsetX, offsetY, scale, rotation }[9]
+    const geneInstances = paddedGeneIds.map((geneId, index) => {
+      const placement = placementToContractFormat(paddedPlacements[index]);
+      return {
+        geneId,
+        ...placement,
+      };
+    });
+
+    // Ensure exactly 9 elements for type safety
+    if (geneInstances.length !== 9) {
+      throw new Error('Invalid gene instances array length');
+    }
 
     // Log the contract call parameters
     console.log('🚀 Initiating propose design transaction:', {
@@ -232,6 +243,7 @@ export default function ProposeDesignButton({
       functionName: 'proposeDesign',
       auctionId: BigInt(auctionId).toString(),
       geneCount,
+      geneInstances,
       userAddress: address,
       chainId: chain?.id,
       timestamp: new Date().toISOString(),
@@ -243,67 +255,65 @@ export default function ProposeDesignButton({
       functionName: 'proposeDesign',
       args: [
         BigInt(auctionId),
-        paddedGeneIds as [
-          bigint,
-          bigint,
-          bigint,
-          bigint,
-          bigint,
-          bigint,
-          bigint,
-          bigint,
-          bigint
-        ],
-        contractPlacements as [
+        geneInstances as unknown as readonly [
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
             rotation: number;
           },
           {
+            geneId: bigint;
             offsetX: number;
             offsetY: number;
             scale: number;
