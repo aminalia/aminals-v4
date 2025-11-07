@@ -190,12 +190,36 @@ const AuctionPage: NextPage = () => {
     if (!auction?.aminalOne?.genes) return;
 
     const genes = auction.aminalOne.genes.filter((g) => g !== 0n);
-    const placements = genes.map(() => ({
-      offsetX: 0,
-      offsetY: 0,
-      scale: 100,
-      rotation: 0,
-    }));
+
+    // Use actual placements from indexed data
+    let placements: GeneMetadata[] = [];
+
+    if (auction.aminalOne.genePlacements) {
+      try {
+        const allPlacements = JSON.parse(auction.aminalOne.genePlacements);
+        // Filter to match filtered genes (skip empty slots)
+        placements = auction.aminalOne.genes
+          .map((geneId, idx) => (geneId !== 0n ? allPlacements[idx] : null))
+          .filter((p): p is GeneMetadata => p !== null);
+      } catch (e) {
+        console.error('Failed to parse parent 1 placements:', e);
+        // Fallback to default
+        placements = genes.map(() => ({
+          offsetX: 0,
+          offsetY: 0,
+          scale: 100,
+          rotation: 0,
+        }));
+      }
+    } else {
+      // Legacy Aminal without indexed placements
+      placements = genes.map(() => ({
+        offsetX: 0,
+        offsetY: 0,
+        scale: 100,
+        rotation: 0,
+      }));
+    }
 
     setCurrentGeneIds(genes);
     setCurrentPlacements(placements);
@@ -207,16 +231,101 @@ const AuctionPage: NextPage = () => {
     if (!auction?.aminalTwo?.genes) return;
 
     const genes = auction.aminalTwo.genes.filter((g) => g !== 0n);
-    const placements = genes.map(() => ({
-      offsetX: 0,
-      offsetY: 0,
-      scale: 100,
-      rotation: 0,
-    }));
+
+    // Use actual placements from indexed data
+    let placements: GeneMetadata[] = [];
+
+    if (auction.aminalTwo.genePlacements) {
+      try {
+        const allPlacements = JSON.parse(auction.aminalTwo.genePlacements);
+        // Filter to match filtered genes (skip empty slots)
+        placements = auction.aminalTwo.genes
+          .map((geneId, idx) => (geneId !== 0n ? allPlacements[idx] : null))
+          .filter((p): p is GeneMetadata => p !== null);
+      } catch (e) {
+        console.error('Failed to parse parent 2 placements:', e);
+        // Fallback to default
+        placements = genes.map(() => ({
+          offsetX: 0,
+          offsetY: 0,
+          scale: 100,
+          rotation: 0,
+        }));
+      }
+    } else {
+      // Legacy Aminal without indexed placements
+      placements = genes.map(() => ({
+        offsetX: 0,
+        offsetY: 0,
+        scale: 100,
+        rotation: 0,
+      }));
+    }
 
     setCurrentGeneIds(genes);
     setCurrentPlacements(placements);
     setBuilderKey((k) => k + 1); // Force remount
+  }, [auction]);
+
+  // Randomize between parent genes with placement variation
+  const handleRandomize = useCallback(() => {
+    if (!auction?.aminalOne?.genes || !auction?.aminalTwo?.genes) return;
+
+    // Combine both parent gene pools (no duplicates, no empty slots)
+    const parent1Genes = auction.aminalOne.genes.filter((g) => g !== 0n);
+    const parent2Genes = auction.aminalTwo.genes.filter((g) => g !== 0n);
+    const allGenes = Array.from(new Set([...parent1Genes, ...parent2Genes]));
+
+    // Randomly select 4-7 genes
+    const numGenes = Math.floor(Math.random() * 4) + 4; // 4 to 7
+    const shuffled = [...allGenes].sort(() => Math.random() - 0.5);
+    const selectedGenes = shuffled.slice(0, Math.min(numGenes, allGenes.length));
+
+    // For each gene, try to use parent placement with variation
+    const placements: GeneMetadata[] = selectedGenes.map((geneId) => {
+      let basePlacement: GeneMetadata = {
+        offsetX: 0,
+        offsetY: 0,
+        scale: 100,
+        rotation: 0,
+      };
+
+      // Try to find this gene in parent 1
+      const idx1 = auction.aminalOne.genes.findIndex((g) => g === geneId);
+      if (idx1 !== -1 && auction.aminalOne.genePlacements) {
+        try {
+          const parent1Placements = JSON.parse(auction.aminalOne.genePlacements);
+          basePlacement = parent1Placements[idx1];
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      } else {
+        // Try parent 2
+        const idx2 = auction.aminalTwo.genes.findIndex((g) => g === geneId);
+        if (idx2 !== -1 && auction.aminalTwo.genePlacements) {
+          try {
+            const parent2Placements = JSON.parse(
+              auction.aminalTwo.genePlacements
+            );
+            basePlacement = parent2Placements[idx2];
+          } catch (e) {
+            // Ignore parsing errors
+          }
+        }
+      }
+
+      // Add random variation (±30px, ±10% scale, ±15°)
+      return {
+        offsetX: basePlacement.offsetX + (Math.random() * 60 - 30),
+        offsetY: basePlacement.offsetY + (Math.random() * 60 - 30),
+        scale: basePlacement.scale * (0.9 + Math.random() * 0.2), // 90-110%
+        rotation: basePlacement.rotation + (Math.random() * 30 - 15),
+      };
+    });
+
+    setCurrentGeneIds(selectedGenes);
+    setCurrentPlacements(placements);
+    setBuilderKey((k) => k + 1);
   }, [auction]);
 
   // Handle design change from DesignBuilder
@@ -509,6 +618,15 @@ const AuctionPage: NextPage = () => {
                               <Button
                                 variant="outline"
                                 size="sm"
+                                onClick={handleRandomize}
+                                disabled={isAuctionEnded}
+                                className="text-energy border-energy/30 hover:bg-energy/10"
+                              >
+                                🎲 Randomize
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
                                 onClick={() => {
                                   setCurrentGeneIds([]);
                                   setCurrentPlacements([]);
@@ -519,6 +637,10 @@ const AuctionPage: NextPage = () => {
                                 Start Fresh
                               </Button>
                             </div>
+                            <p className="text-xs text-muted-foreground mt-2">
+                              Try randomize for creative gene combinations with
+                              placement variations!
+                            </p>
                           </div>
 
                           {/* Design Builder */}

@@ -52,6 +52,10 @@ export const aminal = onchainTable("aminal", (t) => ({
   // Genes are rendered in order (gene[0] is background, gene[8] is foreground)
   genes: t.bigint().array().notNull(),
 
+  // Placement metadata for each gene slot (serialized as JSON)
+  // Array of 9 placement objects: {offsetX, offsetY, scale, rotation}
+  genePlacements: t.text().notNull(),
+
   // State
   energy: t.bigint().notNull(),
   totalLove: t.bigint().notNull(),

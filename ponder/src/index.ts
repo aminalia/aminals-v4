@@ -112,6 +112,54 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
   const aminalId = normalizeAddress(child);
   const genesArray = normalizeGeneArray(geneIds);
 
+  // Fetch placement metadata from Aminal contract
+  let genePlacements: string = "[]";
+  try {
+    const geneInstances = await client.readContract({
+      address: child,
+      abi: [
+        {
+          type: "function",
+          name: "getGenes",
+          inputs: [],
+          outputs: [{
+            name: "",
+            type: "tuple[9]",
+            components: [
+              { name: "geneId", type: "uint256" },
+              { name: "metadata", type: "tuple", components: [
+                { name: "offsetX", type: "int16" },
+                { name: "offsetY", type: "int16" },
+                { name: "scale", type: "uint16" },
+                { name: "rotation", type: "int16" }
+              ]}
+            ]
+          }],
+          stateMutability: "view",
+        },
+      ],
+      functionName: "getGenes",
+    }) as any[];
+
+    // Extract placement metadata from GeneInstance structs
+    const placements = geneInstances.map((gi: any) => ({
+      offsetX: Number(gi.metadata.offsetX),
+      offsetY: Number(gi.metadata.offsetY),
+      scale: Number(gi.metadata.scale),
+      rotation: Number(gi.metadata.rotation),
+    }));
+
+    genePlacements = JSON.stringify(placements);
+    console.log(`✅ Fetched placements for Aminal ${child}`);
+  } catch (error) {
+    console.warn(`⚠️  Could not fetch gene placements for ${child}:`, error);
+    // Fallback to default placements
+    const defaultPlacements = Array(9).fill({
+      offsetX: 0, offsetY: 0, scale: 100, rotation: 0
+    });
+    genePlacements = JSON.stringify(defaultPlacements);
+  }
+
   // Create Aminal entity
   await db.insert(aminal).values({
     id: aminalId,
@@ -122,6 +170,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     parentTwoId: hasParentTwo ? normalizeAddress(parentTwo) : null,
     auctionId: auctionId > 0n ? auctionId : null,
     genes: genesArray,
+    genePlacements,
     energy: 0n,
     totalLove: 0n,
     ethBalance: 0n,

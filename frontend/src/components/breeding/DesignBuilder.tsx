@@ -306,6 +306,16 @@ export default function DesignBuilder({
     [availableGenes, geneCache]
   );
 
+  const geneCount = countGenes(design.geneIds);
+  const selectedGene =
+    design.selectedGeneIndex !== null
+      ? design.geneIds[design.selectedGeneIndex]
+      : null;
+  const selectedPlacement =
+    design.selectedGeneIndex !== null
+      ? design.placements[design.selectedGeneIndex]
+      : null;
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -334,6 +344,54 @@ export default function DesignBuilder({
         e.preventDefault();
         handleRemoveGene(design.selectedGeneIndex);
       }
+
+      // Arrow key nudging (when gene is selected)
+      if (!isMod && design.selectedGeneIndex !== null) {
+        const nudgeAmount = e.shiftKey ? 1 : 10; // Fine control with Shift
+
+        if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          handleUpdatePlacement(design.selectedGeneIndex, {
+            offsetY: (selectedPlacement?.offsetY || 0) - nudgeAmount,
+          });
+        }
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          handleUpdatePlacement(design.selectedGeneIndex, {
+            offsetY: (selectedPlacement?.offsetY || 0) + nudgeAmount,
+          });
+        }
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          handleUpdatePlacement(design.selectedGeneIndex, {
+            offsetX: (selectedPlacement?.offsetX || 0) - nudgeAmount,
+          });
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          handleUpdatePlacement(design.selectedGeneIndex, {
+            offsetX: (selectedPlacement?.offsetX || 0) + nudgeAmount,
+          });
+        }
+      }
+
+      // Scale shortcuts: [ to decrease, ] to increase
+      if (e.key === '[' && design.selectedGeneIndex !== null) {
+        e.preventDefault();
+        const newScale = Math.max(10, (selectedPlacement?.scale || 100) - 5);
+        handleUpdatePlacement(design.selectedGeneIndex, { scale: newScale });
+      }
+      if (e.key === ']' && design.selectedGeneIndex !== null) {
+        e.preventDefault();
+        const newScale = Math.min(400, (selectedPlacement?.scale || 100) + 5);
+        handleUpdatePlacement(design.selectedGeneIndex, { scale: newScale });
+      }
+
+      // Reset shortcut: R key
+      if (e.key === 'r' && !isMod && design.selectedGeneIndex !== null) {
+        e.preventDefault();
+        handleResetPlacement();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -341,20 +399,13 @@ export default function DesignBuilder({
   }, [
     disabled,
     design.selectedGeneIndex,
+    selectedPlacement,
     handleUndo,
     handleRedo,
     handleRemoveGene,
+    handleUpdatePlacement,
+    handleResetPlacement,
   ]);
-
-  const geneCount = countGenes(design.geneIds);
-  const selectedGene =
-    design.selectedGeneIndex !== null
-      ? design.geneIds[design.selectedGeneIndex]
-      : null;
-  const selectedPlacement =
-    design.selectedGeneIndex !== null
-      ? design.placements[design.selectedGeneIndex]
-      : null;
 
   // Get all genes that are currently in the design (for canvas rendering)
   const genesInDesign = design.geneIds
@@ -631,9 +682,14 @@ export default function DesignBuilder({
 
             {/* Info */}
             <div className="text-[10px] text-muted-foreground mt-4 space-y-1">
-              <div>• Use sliders to adjust position and appearance</div>
+              <div className="font-semibold mb-1">💡 Tips & Shortcuts:</div>
+              <div>• Click gene to select, drag to move</div>
+              <div>• Arrow keys: nudge ±10px (Shift for ±1px)</div>
+              <div>• [ / ] keys: scale ±5%</div>
+              <div>• R key: reset placement</div>
+              <div>• Use sliders for precise adjustments</div>
               <div>• Layer order: Slot 1 (back) → Slot 9 (front)</div>
-              <div>• Use ↑↓ in gene slots to reorder layers</div>
+              <div>• Delete/Backspace: remove selected gene</div>
             </div>
           </div>
         )}

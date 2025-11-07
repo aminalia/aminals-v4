@@ -37,24 +37,37 @@ export default function TransformHandles({
 
   const { offsetX, offsetY, scale, rotation } = placement;
 
-  // Calculate handle positions
-  // Base size is ~200 (typical gene SVG size) scaled by the placement scale
+  // Calculate handle positions with adaptive sizing
   const centerX = 500 + offsetX;
   const centerY = 500 + offsetY;
-  const baseSize = 400; // Approximate typical gene SVG size
-  const size = baseSize * (scale / 100);
-  const halfSize = size / 2;
 
-  // Bounding box corners
-  const topLeft = { x: centerX - halfSize, y: centerY - halfSize };
-  const topRight = { x: centerX + halfSize, y: centerY - halfSize };
-  const bottomLeft = { x: centerX - halfSize, y: centerY + halfSize };
-  const bottomRight = { x: centerX + halfSize, y: centerY + halfSize };
+  // Adaptive base size (handles more gene sizes better)
+  const baseSize = 500; // Increased from 400 to better accommodate genes
+  const scaledSize = baseSize * (scale / 100);
 
-  // Rotation handle (above center)
+  // Apply rotation to bounding box (approximate)
+  const rotationRadians = (rotation * Math.PI) / 180;
+  const rotatedWidth =
+    Math.abs(scaledSize * Math.cos(rotationRadians)) +
+    Math.abs(scaledSize * Math.sin(rotationRadians));
+  const rotatedHeight =
+    Math.abs(scaledSize * Math.sin(rotationRadians)) +
+    Math.abs(scaledSize * Math.cos(rotationRadians));
+
+  const halfWidth = rotatedWidth / 2;
+  const halfHeight = rotatedHeight / 2;
+
+  // Bounding box corners (accounting for rotation)
+  const topLeft = { x: centerX - halfWidth, y: centerY - halfHeight };
+  const topRight = { x: centerX + halfWidth, y: centerY - halfHeight };
+  const bottomLeft = { x: centerX - halfWidth, y: centerY + halfHeight };
+  const bottomRight = { x: centerX + halfWidth, y: centerY + halfHeight };
+
+  // Rotation handle (adaptive distance based on size)
+  const rotationHandleDistance = Math.max(30, halfHeight + 30);
   const rotationHandle = {
     x: centerX,
-    y: centerY - halfSize - 30,
+    y: centerY - halfHeight - rotationHandleDistance,
   };
 
   // Handle mouse down on scale handle
@@ -139,8 +152,8 @@ export default function TransformHandles({
       <rect
         x={topLeft.x}
         y={topLeft.y}
-        width={size}
-        height={size}
+        width={rotatedWidth}
+        height={rotatedHeight}
         fill="none"
         stroke="rgb(var(--energy))"
         strokeWidth="2"
@@ -149,54 +162,74 @@ export default function TransformHandles({
         pointerEvents="none"
       />
 
-      {/* Corner handles (for scale) */}
+      {/* Corner handles (for scale) - IMPROVED */}
       {[topLeft, topRight, bottomLeft, bottomRight].map((corner, i) => (
         <g key={`corner-${i}`}>
+          {/* Larger hit area */}
+          <circle
+            cx={corner.x}
+            cy={corner.y}
+            r="12"
+            fill="transparent"
+            style={{ cursor: 'nwse-resize' }}
+            onMouseDown={handleScaleMouseDown}
+          />
+          {/* Visible handle with shadow */}
           <circle
             cx={corner.x}
             cy={corner.y}
             r="8"
             fill="white"
             stroke="rgb(var(--energy))"
-            strokeWidth="2"
-            style={{ cursor: 'nwse-resize' }}
-            onMouseDown={handleScaleMouseDown}
+            strokeWidth="3"
+            filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+            style={{ cursor: 'nwse-resize', pointerEvents: 'none' }}
           />
         </g>
       ))}
 
-      {/* Rotation handle */}
+      {/* Rotation handle - IMPROVED */}
       <g>
         {/* Line from center to rotation handle */}
         <line
           x1={centerX}
-          y1={centerY - halfSize}
+          y1={centerY - halfHeight}
           x2={rotationHandle.x}
           y2={rotationHandle.y}
           stroke="rgb(var(--energy))"
           strokeWidth="2"
           strokeDasharray="4,4"
-          opacity="0.5"
+          opacity="0.6"
           pointerEvents="none"
         />
-        {/* Rotation handle circle */}
+        {/* Larger hit area */}
         <circle
           cx={rotationHandle.x}
           cy={rotationHandle.y}
-          r="10"
-          fill="white"
-          stroke="rgb(var(--energy))"
-          strokeWidth="2"
+          r="16"
+          fill="transparent"
           style={{ cursor: 'grab' }}
           onMouseDown={handleRotateMouseDown}
         />
-        {/* Rotation icon */}
+        {/* Visible handle with shadow */}
+        <circle
+          cx={rotationHandle.x}
+          cy={rotationHandle.y}
+          r="12"
+          fill="white"
+          stroke="rgb(var(--energy))"
+          strokeWidth="3"
+          filter="drop-shadow(0 2px 4px rgba(0,0,0,0.3))"
+          style={{ cursor: 'grab', pointerEvents: 'none' }}
+        />
+        {/* Rotation icon - larger */}
         <text
           x={rotationHandle.x}
-          y={rotationHandle.y + 4}
+          y={rotationHandle.y + 5}
           textAnchor="middle"
-          fontSize="12"
+          fontSize="16"
           fill="rgb(var(--energy))"
+          fontWeight="bold"
           pointerEvents="none"
           style={{ userSelect: 'none' }}
         >
@@ -204,23 +237,38 @@ export default function TransformHandles({
         </text>
       </g>
 
-      {/* Transform info overlay */}
+      {/* Transform info overlay - IMPROVED */}
       {transformState && (
         <g>
+          {/* Larger, more visible background */}
           <rect
-            x={centerX - 60}
-            y={centerY - 20}
-            width="120"
-            height="40"
-            fill="rgba(0, 0, 0, 0.8)"
-            rx="4"
+            x={centerX - 80}
+            y={centerY - 30}
+            width="160"
+            height="60"
+            fill="rgba(0, 0, 0, 0.9)"
+            rx="8"
+            stroke="rgb(var(--energy))"
+            strokeWidth="2"
             pointerEvents="none"
           />
+          {/* Value with label */}
           <text
             x={centerX}
-            y={centerY}
+            y={centerY - 5}
             textAnchor="middle"
-            fontSize="14"
+            fontSize="11"
+            fill="rgba(255,255,255,0.7)"
+            fontWeight="normal"
+            pointerEvents="none"
+          >
+            {transformState.type === 'scale' ? 'Scale' : 'Rotation'}
+          </text>
+          <text
+            x={centerX}
+            y={centerY + 15}
+            textAnchor="middle"
+            fontSize="20"
             fill="white"
             fontWeight="bold"
             pointerEvents="none"

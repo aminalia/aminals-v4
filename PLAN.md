@@ -6,7 +6,6 @@
 ## UI
 
 - Show on Aminal detail page that "Aminals cannot be owned"
-- Add Vote Stats component when auction is complete
 - Randomize Aminal Option on Aminal designer
 - Show love costs and energy costs
 - Show how much money genes have made on the card
