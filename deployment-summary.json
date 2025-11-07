@@ -1,0 +1,13 @@
+{
+  "chainId": 11155111,
+  "timestamp": 1762519524,
+  "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
+  "contracts": {
+    "Genes": "0x8BA3B8C08c7D672138284d1765122394203D6aA5",
+    "GeneRegistry": "0x2D34bD575d793dDb5Dc278BDCd56D9247E3F3Ec6",
+    "GeneAuction": "0x361A3df057d7aE9F9a9Bcb81571BfFb305e892E1",
+    "AminalFactory": "0xD84e6Cee6c7E4894eE8ef2a3b2E34db152360932",
+    "Move2D": "0x9C410254531A4b7604A1E5FB7eae2648ED8C6189",
+    "FightSkill": "0x0c168Bb5EeaeFa9f98FC3C1dff80572452ae2a72"
+  }
+}
