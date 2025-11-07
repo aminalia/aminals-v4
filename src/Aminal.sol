@@ -84,22 +84,13 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Address of the design proposer (0x0 for genesis or parent designs)
     address public immutable proposerAddress;
 
-    /// @notice The visual DNA that defines this Aminal's appearance
-    Visuals internal _visuals;
+    /// @notice The complete genetic profile with gene IDs and their placements
+    GeneInstance[9] internal _genes;
 
-    /// @notice Placement metadata for each gene (positioning, scale, rotation)
-    GeneMetadata[9] internal _placements;
-
-    /// @notice Get the visuals for this Aminal
-    /// @return The visuals struct containing all gene IDs
-    function getVisuals() external view returns (Visuals memory) {
-        return _visuals;
-    }
-
-    /// @notice Get the placement metadata for this Aminal's genes
-    /// @return The array of placement metadata for each gene slot
-    function getPlacements() external view returns (GeneMetadata[9] memory) {
-        return _placements;
+    /// @notice Get the gene instances for this Aminal
+    /// @return The array of gene instances containing gene IDs and placement metadata
+    function getGenes() external view returns (GeneInstance[9] memory) {
+        return _genes;
     }
 
     /// @notice Unique identifier within the Aminal ecosystem
@@ -216,8 +207,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param _momAddress Address of the mother Aminal (0x0 for genesis)
     /// @param _dadAddress Address of the father Aminal (0x0 for genesis)
     /// @param _proposerAddress Address of the design proposer (0x0 for genesis or parent designs)
-    /// @param visualTraits Visual traits that define this Aminal's appearance
-    /// @param placements Placement metadata for each gene (position, scale, rotation)
+    /// @param genes Gene instances that define this Aminal's appearance
     /// @param _aminalIndex Unique identifier within the Aminal ecosystem
     /// @param _loveVRGDA Address of the VRGDA contract for love calculations
     constructor(
@@ -225,8 +215,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         address _momAddress,
         address _dadAddress,
         address _proposerAddress,
-        Visuals memory visualTraits,
-        GeneMetadata[9] memory placements,
+        GeneInstance[9] memory genes,
         uint256 _aminalIndex,
         address _loveVRGDA
     )
@@ -237,8 +226,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         momAddress = _momAddress;
         dadAddress = _dadAddress;
         proposerAddress = _proposerAddress;
-        _visuals = visualTraits;
-        _placements = placements;
+        _genes = genes;
         aminalIndex = _aminalIndex;
         loveVRGDA = AminalVRGDA(_loveVRGDA);
 
@@ -443,19 +431,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     //////////////////////////////////////////////////////////////*/
 
     /// @notice Implementation of abstract function from GeneRenderer
-    /// @param aminalID The Aminal ID to get visuals for (must match this Aminal)
-    /// @return visuals The visual traits of this Aminal
-    function getAminalVisualsByID(uint256 aminalID) public view virtual override returns (Visuals memory) {
+    /// @param aminalID The Aminal ID to get gene instances for (must match this Aminal)
+    /// @return The gene instances for this Aminal
+    function getAminalGenesByID(uint256 aminalID) public view virtual override returns (GeneInstance[9] memory) {
         require(aminalID == aminalIndex, "Invalid aminal ID");
-        return _visuals;
-    }
-
-    /// @notice Implementation of abstract function from GeneRenderer
-    /// @param aminalID The Aminal ID to get placements for (must match this Aminal)
-    /// @return placements The placement metadata for this Aminal's genes
-    function getAminalPlacementsByID(uint256 aminalID) public view virtual override returns (GeneMetadata[9] memory) {
-        require(aminalID == aminalIndex, "Invalid aminal ID");
-        return _placements;
+        return _genes;
     }
 
     /// @notice Generate token URI using GeneRenderer

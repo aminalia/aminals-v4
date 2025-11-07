@@ -36,12 +36,15 @@ contract GetAminalInfo is Script {
             console.log("Total Love:", aminal.getTotalLove());
             console.log("Energy:", aminal.getEnergy());
 
-            // Get visuals (flexible 1-10 gene system)
-            IAminalStructs.Visuals memory visuals = aminal.getVisuals();
-            console.log("Genes (1-10 flexible system):");
-            for (uint256 j = 0; j < 10; j++) {
-                if (visuals.genes[j] != 0) {
-                    console.log("  Gene slot", j, ":", visuals.genes[j]);
+            // Get gene instances (flexible 1-9 gene system)
+            IAminalStructs.GeneInstance[9] memory geneInstances = aminal.getGenes();
+            console.log("Genes (1-9 flexible system):");
+            for (uint256 j = 0; j < 9; j++) {
+                if (geneInstances[j].geneId != 0) {
+                    console.log("  Gene slot", j);
+                    console.log("    geneId:", geneInstances[j].geneId);
+                    console.log("    offsetX:", uint256(int256(geneInstances[j].offsetX)));
+                    console.log("    scale:", geneInstances[j].scale);
                 }
             }
 

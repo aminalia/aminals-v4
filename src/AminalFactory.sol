@@ -58,7 +58,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error InvalidAuctionAddress();
     error InvalidGenesAddress();
     error VRGDAAlreadyDeployed();
-    error GenesisAlreadyCompleted();
+    error GenesisLimitExceeded();
     error MustSpawnAtLeastOne();
     error InvalidParentOne();
     error InvalidParentTwo();
@@ -96,6 +96,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Maximum number of genes that can be assigned to an Aminal
     uint256 public constant MAX_GENES = 9;
 
+    /// @notice Maximum number of genesis Aminals that can be spawned
+    uint256 public constant MAX_GENESIS_AMINALS = 10;
+
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
@@ -104,8 +107,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Total number of Aminals ever spawned 📊
     uint256 public totalAminals;
 
-    /// @notice Flag to ensure genesis Aminals are only spawned once 🌱
-    bool public initialAminalSpawned;
+    /// @notice Number of genesis Aminals spawned so far 🌱
+    uint256 public genesisAminalsSpawned;
 
     /// @notice Registry of all valid Aminal contract addresses 📋
     mapping(address => bool) public isAminal;
@@ -250,39 +253,29 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @dev Creates the initial population of Aminals with predefined genetics
      *
      * Requirements:
-     * - Can only be called once by the owner
-     * - Each visual configuration must have valid gene IDs
+     * - Can only be called by the owner
+     * - Can be called multiple times in batches until MAX_GENESIS_AMINALS (10) is reached
+     * - Each batch size + already spawned must not exceed MAX_GENESIS_AMINALS
+     * - Each gene instance array must have valid gene IDs and placements
      *
-     * @param _visuals Array of visual DNA configurations for genesis Aminals
+     * @param genesisGenes Array of gene instance arrays for genesis Aminals in this batch
      *
      * "In the beginning, there was code. From code came the first Aminals,
      *  the digital Adam and Eve of the blockchain paradise."
      */
-    function spawnInitialAminals(Visuals[] calldata _visuals) external onlyOwner {
-        if (initialAminalSpawned) revert GenesisAlreadyCompleted();
-        if (_visuals.length == 0) revert MustSpawnAtLeastOne();
+    function spawnInitialAminals(GeneInstance[MAX_GENES][] calldata genesisGenes) external onlyOwner {
+        if (genesisGenes.length == 0) revert MustSpawnAtLeastOne();
+        if (genesisAminalsSpawned + genesisGenes.length > MAX_GENESIS_AMINALS) revert GenesisLimitExceeded();
 
-        initialAminalSpawned = true;
+        genesisAminalsSpawned += genesisGenes.length;
 
-        // TODO: Update to accept custom placement metadata as parameter instead of using defaults
-        // Current: All genesis Aminals use default centered placement
-        // Desired: Allow specifying custom positioning, scale, and rotation for each gene
-        // This would enable more diverse initial Aminals with unique visual layouts
-
-        // Default placement: centered, 100% scale, no rotation
-        GeneMetadata[MAX_GENES] memory defaultPlacements;
-        for (uint256 j = 0; j < MAX_GENES; j++) {
-            defaultPlacements[j] = GeneMetadata({offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
-        }
-
-        for (uint256 i = 0; i < _visuals.length; i++) {
+        for (uint256 i = 0; i < genesisGenes.length; i++) {
             _spawnAminal(
                 address(0), // No parents for genesis Aminals
                 address(0),
                 0, // No auction ID for genesis Aminals
                 address(0), // No proposer for genesis Aminals
-                _visuals[i].genes,
-                defaultPlacements
+                genesisGenes[i]
             );
         }
     }
@@ -303,7 +296,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param parentOne Address of the first parent Aminal
      * @param parentTwo Address of the second parent Aminal
      * @param auctionId Gene auction ID that created this child
-     * @param winningGeneIds Array of up to 10 gene IDs selected by auction
+     * @param proposer Address of the design proposer
+     * @param genes Array of gene instances (gene IDs with placements)
      * @return childAddress Address of the newly spawned Aminal
      */
     function spawnAminal(
@@ -311,13 +305,12 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentTwo,
         uint256 auctionId,
         address proposer,
-        uint256[MAX_GENES] calldata winningGeneIds,
-        GeneMetadata[MAX_GENES] calldata placements
+        GeneInstance[MAX_GENES] calldata genes
     ) external onlyAuction returns (address childAddress) {
         if (!isAminal[parentOne]) revert InvalidParentOne();
         if (!isAminal[parentTwo]) revert InvalidParentTwo();
 
-        return _spawnAminal(parentOne, parentTwo, auctionId, proposer, winningGeneIds, placements);
+        return _spawnAminal(parentOne, parentTwo, auctionId, proposer, genes);
     }
 
     /**
@@ -398,15 +391,15 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     }
 
     /**
-     * @notice Get complete visual trait configuration for an Aminal
-     * @dev Retrieves genetic profile for rendering and display purposes
+     * @notice Get complete genetic profile for an Aminal
+     * @dev Retrieves gene instances with placements for rendering and display purposes
      *
      * @param aminalAddress Address of the Aminal to query
-     * @return visuals Complete Visuals struct with all trait gene IDs
+     * @return genes Complete array of gene instances with placements
      */
-    function getAminalVisualsByAddress(address aminalAddress) external view returns (Visuals memory visuals) {
+    function getAminalGenesByAddress(address aminalAddress) external view returns (GeneInstance[MAX_GENES] memory genes) {
         if (!isAminal[aminalAddress]) revert NotRegisteredAminal();
-        return AminalContract(payable(aminalAddress)).getVisuals();
+        return AminalContract(payable(aminalAddress)).getGenes();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -420,7 +413,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param parentOne First parent address (address(0) for genesis)
      * @param parentTwo Second parent address (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child (0 for genesis)
-     * @param geneIds Array of up to 10 gene IDs
+     * @param proposer Address of the design proposer (address(0) for genesis/parent designs)
+     * @param genes Array of gene instances with placements
      * @return childAddress Address of the newly created Aminal
      */
     function _spawnAminal(
@@ -428,13 +422,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address parentTwo,
         uint256 auctionId,
         address proposer,
-        uint256[MAX_GENES] memory geneIds,
-        GeneMetadata[MAX_GENES] memory placements
+        GeneInstance[MAX_GENES] memory genes
     ) internal returns (address childAddress) {
         if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
-
-        // Construct visual genetics for the new Aminal
-        Visuals memory visuals = Visuals({genes: geneIds});
 
         // Deploy new Aminal contract with full genetic and factory context
         AminalContract newAminal = new AminalContract(
@@ -442,8 +432,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             parentOne, // First parent (or address(0) for genesis)
             parentTwo, // Second parent (or address(0) for genesis)
             proposer, // Design proposer (or address(0) for genesis/parent designs)
-            visuals, // Complete genetic visual profile
-            placements, // Placement metadata for each gene
+            genes, // Complete genetic profile with placements
             totalAminals, // Unique index for this Aminal
             address(loveVRGDA) // VRGDA system for love calculations
         );
@@ -454,6 +443,12 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         isAminal[childAddress] = true;
         aminalsByIndex[totalAminals] = childAddress;
         totalAminals++;
+
+        // Extract gene IDs for event
+        uint256[MAX_GENES] memory geneIds;
+        for (uint256 i = 0; i < MAX_GENES; i++) {
+            geneIds[i] = genes[i].geneId;
+        }
 
         emit AminalSpawned(childAddress, parentOne, parentTwo, auctionId, geneIds);
 

@@ -126,16 +126,28 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
 
     function testBreedingCreatesAuction() public {
         // First spawn some initial Aminals to test with
-        Visuals[] memory initialVisuals = new Visuals[](2);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
         // Parent 1 - 9 genes in first 9 slots
         for (uint256 i = 0; i < 9; i++) {
-            initialVisuals[0].genes[i] = i + 1;
+            genesisGenes[0][i] = GeneInstance({
+                geneId: i + 1,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
         // Parent 2 - 9 different genes in first 9 slots
         for (uint256 i = 0; i < 9; i++) {
-            initialVisuals[1].genes[i] = i + 9;
+            genesisGenes[1][i] = GeneInstance({
+                geneId: i + 9,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
-        aminalFactory.spawnInitialAminals(initialVisuals);
+        aminalFactory.spawnInitialAminals(genesisGenes);
 
         // Get aminal addresses and feed them so Alice has love to propose genes
         address aminal1 = aminalFactory.getAminalByIndex(0);

@@ -1,21 +1,22 @@
 # Plan
 
 # Bugs
-- TEST: Empty traits are not working, voting no trait means a random one get's selected.
-
-## Refactor
-- When creating gene, store extra metadata (name, description, category, etc.)
+- Fix mobile responsive issues
 
 ## UI
 
+- Show on Aminal detail page that "Aminals cannot be owned"
+- Add Vote Stats component when auction is complete
+- Randomize Aminal Option on Aminal designer
 - Show love costs and energy costs
-- TOOL TIPS and more info EVERYWHERE
 - Show how much money genes have made on the card
 
 ### Chat Feature Improvements
 
 - Better prompts for more creative outputs
+- Switch to qwen
 - API rate limiting
+- Chat skill?
 
 ### User Testing feedback
 
@@ -23,7 +24,6 @@ General:
 
 - [ ] Tooltips and more info
 - [ ] Love should be a percentage?
-- [ ] Make clear costs in love and energy everywhere
 
 Profile:
 
@@ -34,18 +34,15 @@ Genes:
 
 - [ ] Zoom on traits (for tiny things like mouth)
 - [ ] Traits / genes should have UI to transfer?
+- [ ] View on Rarible
 
 Breeding:
 
 - [x] SVG creator should just be text / preview
-- [ ] "Gene Selection" -> "Gene Pool"
-- [ ] "p1" - "Parent 1", etc
 - [ ] "Time Left" -> "Incubation Period"
 - [x] Propose gene button placement is bad, should be next to gene pool header
-- [ ] Button to breed aminals on Breeding page
+- [ ] Button to breed aminals on Breeding page?
 - [x] Voting none seems to not work? (investigated: fixed in indexer)
-- [ ] Toast for propose is wrong
-- [ ] Be clearer what propose genes costs PROPOSE_GENE_COST
 - [ ] Communicate the amount of energy / love to breed (MIN_LOVE_REQUIRED / MIN_ENERGY_REQUIRED)
 
 Desgin challenges:
@@ -55,17 +52,10 @@ Desgin challenges:
 
 Contract Changes:
 
-- [ ] Default Aminal Designer to winning combo
-- [ ] Randomize on StartAuction so that the preview shows what the Aminal will be if no one votes
-- [ ] bulkVoteOnGenes could be optimized to only vote on traits different than random
+- [ ] Randomize on StartAuction so that the preview shows what the Aminal will be if no one votes?
 - [x] Propose gene is expensive (investigate)
 - [x] More GeneAuction gas optimizations.
-- [ ] Clean up remove proposals logic?
 - [ ] Remember aminal state in aminal builder
-
-##### General Questions from User Interview
-
-- "Why aren't all genes listed?"
 
 # Contracts
 
@@ -89,14 +79,5 @@ Contract Changes:
 
 # Open Design Questions
 
-- Do we need remove gene?
 - What should proposing a gene cost in terms of love? Should it scale somehow in relation to the number of proposals?
-- Should there be a way of creating an entirely new Aminal?
-
-In general we need a review of what things cost (even if the cost is in terms of love or energy).
-
-# Do last
-
-- Rename "Visuals" to "GeneIds", maybe explore using an array that could be variable length? Do we need backId, armsId, etc. if we are just rendering a stack?
-- More docs
-- Landing page about the Aminals project
+- If your Aminal design proposal is chosen, do you get incentives?

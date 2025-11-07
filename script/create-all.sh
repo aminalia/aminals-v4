@@ -213,8 +213,9 @@ for folder in genes/*/; do
     echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"
     echo ""
 
-    # Array to store gene IDs for this Aminal (indices 0-8, MAX_GENES=9)
-    declare -a GENE_IDS=()
+    # Array to store gene instances for this Aminal (indices 0-8, MAX_GENES=9)
+    # Each element is a tuple: "geneId,offsetX,offsetY,scale,rotation"
+    declare -a GENE_INSTANCES=()
 
     # Loop through traits 0-8
     for i in {0..8}; do
@@ -225,34 +226,88 @@ for folder in genes/*/; do
             # File exists, read and mint it
             svg=$(cat "$file" | tr -d '\n')
             filename=$(basename "$file")
-            # Extract trait name from filename (remove number prefix and .svg extension)
-            trait_name=$(echo "$filename" | sed 's/^[0-9]*-//' | sed 's/.svg$//')
+
+            # Extract trait name and positioning from filename
+            # Format: N-category_X_Y_SCALE_ROTATION.svg or N-category_X-Y-SCALE-ROTATION.svg or N-category.svg
+            # Remove slot prefix (N-) and .svg extension
+            trait_info=$(echo "$filename" | sed 's/^[0-9]*-//' | sed 's/.svg$//')
+
+            # Parse positioning data
+            offsetX=0
+            offsetY=0
+            scale=100
+            rotation=0
+
+            # Check if filename contains positioning data (has underscore or additional hyphens)
+            if [[ "$trait_info" == *"_"* ]]; then
+                # Split on underscore: category_X_Y_SCALE_ROTATION or category_X-Y-SCALE-ROTATION
+                IFS='_' read -ra PARTS <<< "$trait_info"
+                trait_name="${PARTS[0]}"
+
+                # Parse positioning components
+                if [ ${#PARTS[@]} -gt 1 ]; then
+                    # Check if second part contains hyphens (alternate format)
+                    if [[ "${PARTS[1]}" == *"-"* ]]; then
+                        # Hyphen-separated format: X-Y-SCALE-ROTATION
+                        IFS='-' read -ra POS <<< "${PARTS[1]}"
+                        [ ${#POS[@]} -gt 0 ] && offsetX=${POS[0]}
+                        [ ${#POS[@]} -gt 1 ] && offsetY=${POS[1]}
+                        [ ${#POS[@]} -gt 2 ] && scale=${POS[2]}
+                        [ ${#POS[@]} -gt 3 ] && rotation=${POS[3]}
+                    else
+                        # Underscore-separated format: X_Y_SCALE_ROTATION
+                        [ ${#PARTS[@]} -gt 1 ] && offsetX=${PARTS[1]}
+                        [ ${#PARTS[@]} -gt 2 ] && offsetY=${PARTS[2]}
+                        [ ${#PARTS[@]} -gt 3 ] && scale=${PARTS[3]}
+                        [ ${#PARTS[@]} -gt 4 ] && rotation=${PARTS[4]}
+                    fi
+                fi
+            else
+                # No positioning data, just category name
+                trait_name="$trait_info"
+            fi
 
             # Create descriptive name, description, and category
             gene_name="$display_name - $trait_name"
             gene_description="Trait #$i for $display_name"
-            gene_category="trait-$i"
+            gene_category="$trait_name"
 
             gene_id=$(mint_gene "$svg" "$gene_name" "$gene_description" "$gene_category")
-            GENE_IDS[$i]=$gene_id
+
+            # Store as GeneInstance tuple: (geneId, offsetX, offsetY, scale, rotation)
+            GENE_INSTANCES[$i]="$gene_id,$offsetX,$offsetY,$scale,$rotation"
+
+            echo -e "${CYAN}    Position: x=$offsetX, y=$offsetY, scale=$scale, rotation=$rotation${NC}" >&2
         else
-            # File doesn't exist, use empty gene (ID 0)
+            # File doesn't exist, use empty gene (ID 0) with default positioning
             echo -e "${YELLOW}  → No file for trait $i, using empty gene (ID $EMPTY_GENE_ID)${NC}" >&2
-            GENE_IDS[$i]=$EMPTY_GENE_ID
+            GENE_INSTANCES[$i]="$EMPTY_GENE_ID,0,0,100,0"
         fi
     done
 
     echo ""
-    echo -e "${CYAN}  Gene mapping for $display_name:${NC}"
-    echo -e "${CYAN}    [${GENE_IDS[0]}, ${GENE_IDS[1]}, ${GENE_IDS[2]}, ${GENE_IDS[3]}, ${GENE_IDS[4]}, ${GENE_IDS[5]}, ${GENE_IDS[6]}, ${GENE_IDS[7]}, ${GENE_IDS[8]}]${NC}"
+    echo -e "${CYAN}  Gene instances for $display_name:${NC}"
+    for idx in {0..8}; do
+        IFS=',' read -ra INST <<< "${GENE_INSTANCES[$idx]}"
+        echo -e "${CYAN}    [$idx]: (id=${INST[0]}, x=${INST[1]}, y=${INST[2]}, scale=${INST[3]}, rot=${INST[4]})${NC}"
+    done
     echo ""
 
-    # Store this gene array for spawning later
-    ALL_AMINAL_GENES+=("${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]}")
+    # Store this gene instance array for spawning later
+    ALL_AMINAL_GENES+=("${GENE_INSTANCES[0]};${GENE_INSTANCES[1]};${GENE_INSTANCES[2]};${GENE_INSTANCES[3]};${GENE_INSTANCES[4]};${GENE_INSTANCES[5]};${GENE_INSTANCES[6]};${GENE_INSTANCES[7]};${GENE_INSTANCES[8]}")
 
-    # Add aminal gene mapping to deployment summary
-    GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg name "$aminal_name" --arg display "$display_name" --argjson genes "[${GENE_IDS[0]},${GENE_IDS[1]},${GENE_IDS[2]},${GENE_IDS[3]},${GENE_IDS[4]},${GENE_IDS[5]},${GENE_IDS[6]},${GENE_IDS[7]},${GENE_IDS[8]}]" \
-        '.aminals[$name] = {"displayName": $display, "geneIds": $genes}')
+    # Add aminal gene mapping to deployment summary with full GeneInstance data
+    # Build JSON array of gene instances
+    GENE_INSTANCES_JSON="["
+    for idx in {0..8}; do
+        IFS=',' read -ra INST <<< "${GENE_INSTANCES[$idx]}"
+        GENE_INSTANCES_JSON+="{\"geneId\":${INST[0]},\"offsetX\":${INST[1]},\"offsetY\":${INST[2]},\"scale\":${INST[3]},\"rotation\":${INST[4]}}"
+        [ $idx -lt 8 ] && GENE_INSTANCES_JSON+=","
+    done
+    GENE_INSTANCES_JSON+="]"
+
+    GENE_DEPLOYMENT_JSON=$(echo "$GENE_DEPLOYMENT_JSON" | jq --arg name "$aminal_name" --arg display "$display_name" --argjson instances "$GENE_INSTANCES_JSON" \
+        '.aminals[$name] = {"displayName": $display, "geneInstances": $instances}')
 done
 
 # Step 3: Spawn all Aminals using forge script
@@ -261,47 +316,109 @@ echo -e "${BLUE}  Step 3: Spawning Initial Aminals${NC}"
 echo -e "${BLUE}════════════════════════════════════════════════════════════${NC}"
 echo ""
 
-# Check if initial aminals were already spawned
-INITIAL_SPAWNED=$(cast call $AMINAL_FACTORY "initialAminalSpawned()(bool)" --rpc-url $RPC_URL)
+# Check how many genesis aminals have been spawned already
+GENESIS_SPAWNED=$(cast call $AMINAL_FACTORY "genesisAminalsSpawned()(uint256)" --rpc-url $RPC_URL)
+MAX_GENESIS=$(cast call $AMINAL_FACTORY "MAX_GENESIS_AMINALS()(uint256)" --rpc-url $RPC_URL)
+TOTAL_TO_SPAWN=${#ALL_AMINAL_GENES[@]}
 
-if [ "$INITIAL_SPAWNED" == "true" ]; then
-    echo -e "${YELLOW}⚠ Initial Aminals have already been spawned!${NC}"
+echo -e "${CYAN}Genesis Aminals already spawned: ${GREEN}$GENESIS_SPAWNED${NC} / ${GREEN}$MAX_GENESIS${NC}"
+echo -e "${CYAN}Total Aminals to spawn this run: ${GREEN}$TOTAL_TO_SPAWN${NC}"
+echo ""
+
+if [ "$GENESIS_SPAWNED" -ge "$MAX_GENESIS" ]; then
+    echo -e "${YELLOW}⚠ All genesis Aminals have already been spawned!${NC}"
     TOTAL_AMINALS=$(cast call $AMINAL_FACTORY "totalAminals()(uint256)" --rpc-url $RPC_URL)
-    echo -e "${CYAN}Total Aminals already created: ${GREEN}$TOTAL_AMINALS${NC}"
+    echo -e "${CYAN}Total Aminals created: ${GREEN}$TOTAL_AMINALS${NC}"
     echo -e "${YELLOW}Skipping spawn step...${NC}"
     echo ""
+elif [ "$TOTAL_TO_SPAWN" -gt "$((MAX_GENESIS - GENESIS_SPAWNED))" ]; then
+    echo -e "${RED}Error: Trying to spawn $TOTAL_TO_SPAWN Aminals but only $((MAX_GENESIS - GENESIS_SPAWNED)) slots remaining${NC}"
+    echo -e "${YELLOW}Reduce the number of folders in genes/ directory${NC}"
+    exit 1
 else
-    # Build the Visuals array - cast expects: "[([genes]),([genes]),...]" with parentheses inside brackets
-    VISUALS_ARRAY="["
-    for i in "${!ALL_AMINAL_GENES[@]}"; do
-        IFS=',' read -ra GENES <<< "${ALL_AMINAL_GENES[$i]}"
-        VISUALS_ARRAY+="([${GENES[0]},${GENES[1]},${GENES[2]},${GENES[3]},${GENES[4]},${GENES[5]},${GENES[6]},${GENES[7]},${GENES[8]}])"
-        if [ $i -lt $((${#ALL_AMINAL_GENES[@]} - 1)) ]; then
-            VISUALS_ARRAY+=","
-        fi
-    done
-    VISUALS_ARRAY+="]"
+    # Spawn Aminals in batches of 2
+    BATCH_SIZE=2
+    TOTAL_AMINALS=${#ALL_AMINAL_GENES[@]}
+    SPAWNED_COUNT=0
 
-    echo -e "${CYAN}Spawning ${#ALL_AMINAL_GENES[@]} Aminals with gene mappings...${NC}"
-    echo -e "${CYAN}Visuals array: $VISUALS_ARRAY${NC}"
+    echo -e "${CYAN}Spawning $TOTAL_AMINALS Aminals in batches of $BATCH_SIZE...${NC}"
     echo ""
 
-    # Call spawnInitialAminals on the factory with explicit gas limit
-    # Gas limit set high enough for spawning multiple aminals (each aminal deployment costs ~2-3M gas)
-    cast send $AMINAL_FACTORY \
-        'spawnInitialAminals((uint256[9])[])' \
-        "$VISUALS_ARRAY" \
-        --private-key $PRIVATE_KEY \
-        --rpc-url $RPC_URL \
-        --gas-limit 30000000
+    # Loop through batches
+    for ((batch_start=0; batch_start<TOTAL_AMINALS; batch_start+=BATCH_SIZE)); do
+        # Calculate batch end (don't exceed total)
+        batch_end=$((batch_start + BATCH_SIZE))
+        if [ $batch_end -gt $TOTAL_AMINALS ]; then
+            batch_end=$TOTAL_AMINALS
+        fi
 
-    if [ $? -eq 0 ]; then
+        batch_size=$((batch_end - batch_start))
+
+        echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"
+        echo -e "${MAGENTA}  Batch: Spawning Aminals $((batch_start + 1))-$batch_end${NC}"
+        echo -e "${MAGENTA}────────────────────────────────────────────────────────────${NC}"
+
+        # Build the Visuals array for this batch
+        # cast expects: "[[(id,x,y,s,r),...],...]"
+        VISUALS_ARRAY="["
+
+        for ((i=batch_start; i<batch_end; i++)); do
+            # Split the aminal's gene instances (semicolon-separated)
+            IFS=';' read -ra INSTANCES <<< "${ALL_AMINAL_GENES[$i]}"
+
+            VISUALS_ARRAY+="["
+            for j in {0..8}; do
+                # Split each GeneInstance tuple (comma-separated: geneId,x,y,scale,rotation)
+                IFS=',' read -ra INST <<< "${INSTANCES[$j]}"
+                VISUALS_ARRAY+="(${INST[0]},${INST[1]},${INST[2]},${INST[3]},${INST[4]})"
+                if [ $j -lt 8 ]; then
+                    VISUALS_ARRAY+=","
+                fi
+            done
+            VISUALS_ARRAY+="]"
+
+            if [ $i -lt $((batch_end - 1)) ]; then
+                VISUALS_ARRAY+=","
+            fi
+        done
+        VISUALS_ARRAY+="]"
+
+        echo -e "${CYAN}Spawning $batch_size Aminals...${NC}"
         echo ""
-        echo -e "${GREEN}✓ Successfully spawned ${#ALL_AMINAL_GENES[@]} Aminals!${NC}"
-    else
-        echo -e "${RED}✗ Failed to spawn Aminals${NC}"
-        exit 1
-    fi
+
+        # Call spawnInitialAminals with this batch
+        # Gas limit: ~3M per Aminal + overhead
+        TX_RESULT=$(cast send $AMINAL_FACTORY \
+            'spawnInitialAminals((uint256,int16,int16,uint16,uint16)[9][])' \
+            "$VISUALS_ARRAY" \
+            --private-key $PRIVATE_KEY \
+            --rpc-url $RPC_URL \
+            --gas-limit $((3000000 * batch_size + 1000000)) \
+            --json 2>&1)
+
+        # Check if transaction succeeded
+        if echo "$TX_RESULT" | jq empty 2>/dev/null; then
+            TX_HASH=$(echo "$TX_RESULT" | jq -r '.transactionHash')
+            if [ -n "$TX_HASH" ] && [ "$TX_HASH" != "null" ]; then
+                echo -e "${GREEN}✓ Batch spawned successfully!${NC}"
+                echo -e "${GREEN}  TX: $TX_HASH${NC}"
+                SPAWNED_COUNT=$((SPAWNED_COUNT + batch_size))
+            else
+                echo -e "${RED}✗ Failed to spawn batch${NC}"
+                echo -e "${RED}  Result: $TX_RESULT${NC}"
+                exit 1
+            fi
+        else
+            echo -e "${RED}✗ Failed to spawn batch${NC}"
+            echo -e "${RED}  Error: $TX_RESULT${NC}"
+            exit 1
+        fi
+
+        echo ""
+    done
+
+    echo -e "${GREEN}✓ Successfully spawned $SPAWNED_COUNT Aminals in $((TOTAL_AMINALS / BATCH_SIZE + (TOTAL_AMINALS % BATCH_SIZE > 0))) batches!${NC}"
+    echo ""
 fi
 
 # Save gene deployment summary

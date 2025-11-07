@@ -429,6 +429,12 @@ const AuctionPage: NextPage = () => {
                         </div>
                       </div>
                     </div>
+                    <div className="bg-card rounded-lg border border-border p-4">
+                      <DesignVoteStats
+                        auctionId={auctionId}
+                        totalLove={auction?.totalLove || 0n}
+                      />
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -540,14 +546,6 @@ const AuctionPage: NextPage = () => {
                   </>
                 )}
               </div>
-
-              {/* Vote Statistics */}
-              {/*<div className="bg-card rounded-lg border border-border p-4">
-                <DesignVoteStats
-                  auctionId={auctionId}
-                  totalLove={auction?.totalLove || 0n}
-                />
-              </div>*/}
             </>
           )}
         </div>

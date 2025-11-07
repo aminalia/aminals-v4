@@ -30,30 +30,55 @@ contract SpawnInitialAminals is Script {
 
         console.log("Using AminalFactory at:", address(factory));
 
-        IAminalStructs.Visuals[] memory initialVisuals = new IAminalStructs.Visuals[](4);
+        IAminalStructs.GeneInstance[9][] memory genesisGenes = new IAminalStructs.GeneInstance[9][](4);
 
         // First Aminal with cute orangey theme (genes 0-7 in first 8 slots)
+        // Default placement: centered, 100% scale, no rotation
         for (uint256 i = 0; i < 8; i++) {
-            initialVisuals[0].genes[i] = i;
+            genesisGenes[0][i] = IAminalStructs.GeneInstance({
+                geneId: i,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
         // Second Aminal with 3 eyed monster theme (genes 8-15 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            initialVisuals[1].genes[i] = 8 + i;
+            genesisGenes[1][i] = IAminalStructs.GeneInstance({
+                geneId: 8 + i,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
         // Third Aminal with blue/moon theme (genes 16-23 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            initialVisuals[2].genes[i] = 16 + i;
+            genesisGenes[2][i] = IAminalStructs.GeneInstance({
+                geneId: 16 + i,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
         // Fourth Aminal (genes 24-31 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            initialVisuals[3].genes[i] = 24 + i;
+            genesisGenes[3][i] = IAminalStructs.GeneInstance({
+                geneId: 24 + i,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
-        factory.spawnInitialAminals(initialVisuals);
-        console.log("Spawned", initialVisuals.length, "initial Aminals");
+        factory.spawnInitialAminals(genesisGenes);
+        console.log("Spawned", genesisGenes.length, "initial Aminals");
     }
 
     function run() external {

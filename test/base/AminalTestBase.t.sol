@@ -54,12 +54,18 @@ abstract contract AminalTestBase is Test, IAminalStructs {
      * @dev Helper function to spawn test Aminals
      */
     function spawnTestAminal() internal returns (address) {
-        Visuals[] memory initialVisuals = new Visuals[](1);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            initialVisuals[0].genes[i] = 1;
+            genesisGenes[0][i] = GeneInstance({
+                geneId: 1,
+                offsetX: 0,
+                offsetY: 0,
+                scale: 100,
+                rotation: 0
+            });
         }
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         return factory.getAminalByIndex(factory.totalAminals() - 1);
     }
 
@@ -67,11 +73,11 @@ abstract contract AminalTestBase is Test, IAminalStructs {
      * @dev Helper function to create initial Aminals for testing
      */
     function createParentAminals() internal returns (address, address) {
-        Visuals[] memory initialVisuals = new Visuals[](2);
+        GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
         // Both aminals have all genes set to 0 (empty/default)
         // The gene arrays are already initialized to 0 by default
 
-        factory.spawnInitialAminals(initialVisuals);
+        factory.spawnInitialAminals(genesisGenes);
         address aminal1 = factory.getAminalByIndex(0);
         address aminal2 = factory.getAminalByIndex(1);
         return (aminal1, aminal2);

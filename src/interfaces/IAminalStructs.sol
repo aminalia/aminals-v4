@@ -11,18 +11,26 @@ pragma solidity ^0.8.20;
  */
 interface IAminalStructs {
     /**
-     * @notice Visual trait configuration for an Aminal
-     * @dev Contains the complete genetic visual profile of an Aminal
-     * @dev Supports 1-9 genes with flexible ordering determined by placement metadata
-     * @dev A value of 0 for a geneId indicates an unused slot
-     * @param genes Array of up to 9 gene NFT IDs (0 = unused slot)
+     * @notice Complete gene instance data for an Aminal
+     * @dev Combines gene ID with its placement metadata for cleaner state management
+     * @dev Each Aminal has up to 9 gene instances that define its visual appearance
+     * @dev A value of 0 for geneId indicates an unused slot
+     * @param geneId Gene NFT ID (0 = unused slot)
+     * @param offsetX Horizontal offset from canvas center in pixels (-500 to 500)
+     * @param offsetY Vertical offset from canvas center in pixels (-500 to 500)
+     * @param scale Scale factor as percentage (100 = 100%, range 0-500)
+     * @param rotation Rotation angle in degrees (0-359)
      */
-    struct Visuals {
-        uint256[9] genes;
+    struct GeneInstance {
+        uint256 geneId;
+        int16 offsetX;
+        int16 offsetY;
+        uint16 scale;
+        uint16 rotation;
     }
 
     /**
-     * @notice Placement metadata for visual gene positioning per Aminal
+     * @notice Placement metadata for gene positioning (used in events for backward compatibility)
      * @dev Controls how a gene trait is positioned, scaled, and rotated during rendering
      * @param offsetX Horizontal offset from canvas center in pixels (-500 to 500)
      * @param offsetY Vertical offset from canvas center in pixels (-500 to 500)

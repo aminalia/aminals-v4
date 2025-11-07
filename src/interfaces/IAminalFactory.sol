@@ -35,8 +35,7 @@ interface IAminalFactory is IAminalStructs {
      * @param dadAddress Address of the father Aminal (address(0) for genesis)
      * @param auctionId Gene auction ID that created this child
      * @param proposer Address of the design proposer (address(0) for genesis/parent designs)
-     * @param winningGeneIds Array of 1-9 gene IDs (0 means no gene in that slot)
-     * @param placements Array of placement metadata for each gene (position, scale, rotation)
+     * @param genes Array of gene instances (gene IDs with placements)
      *
      * @return newAminalAddress Address of the newly spawned Aminal contract
      *
@@ -47,8 +46,7 @@ interface IAminalFactory is IAminalStructs {
         address dadAddress,
         uint256 auctionId,
         address proposer,
-        uint256[9] calldata winningGeneIds,
-        GeneMetadata[9] calldata placements
+        GeneInstance[9] calldata genes
     ) external returns (address newAminalAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -79,18 +77,18 @@ interface IAminalFactory is IAminalStructs {
     function getAminalByIndex(uint256 index) external view returns (address aminalAddress);
 
     /**
-     * @notice Get visual trait configuration of an Aminal
-     * @dev Retrieves the complete genetic visual profile for display/rendering
+     * @notice Get complete genetic profile of an Aminal
+     * @dev Retrieves gene instances with placements for display/rendering
      *
      * Requirements:
      * - aminalAddress must be a valid Aminal contract (verified via isAminal)
      *
      * @param aminalAddress Address of the Aminal to query
-     * @return visuals Complete Visuals struct containing 1-10 gene IDs
+     * @return genes Complete array of gene instances with placements
      *
      * @custom:throws Invalid address if not a registered Aminal contract
      */
-    function getAminalVisualsByAddress(address aminalAddress) external view returns (Visuals memory visuals);
+    function getAminalGenesByAddress(address aminalAddress) external view returns (GeneInstance[9] memory genes);
 
     /**
      * @notice Get total number of Aminals ever created

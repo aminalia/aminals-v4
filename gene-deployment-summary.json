@@ -1,119 +1,688 @@
 {
-  "timestamp": "2025-11-05T22:52:26Z",
+  "timestamp": "2025-11-07T12:48:03Z",
   "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
-  "geneRegistry": "0xdab09A04E8C02E5cC014BfaA513CA1a6100A3083",
-  "aminalFactory": "0xf71044CEa74b6c6C9FB5134199BFAaBedC42ffBB",
-  "genes": {
-    "35": {
-      "name": "Blue Animated - back",
-      "description": "Trait #0 for Blue Animated",
-      "category": "trait-0",
-      "transactionHash": "0xe9ea3acc74bc2ce3961f7d4f52d4af354ac5d727ec8dcd7c7ac88e2de3d1f666"
-    },
-    "57": {
-      "name": "Three Eyed - misc",
-      "description": "Trait #7 for Three Eyed",
-      "category": "trait-7",
-      "transactionHash": "0x981c3fdc4ed4c00ffa6e49d1702ba522d27730dc5e06f0ef9928498f4d420da2"
-    }
-  },
+  "geneRegistry": "0x2D34bD575d793dDb5Dc278BDCd56D9247E3F3Ec6",
+  "aminalFactory": "0xD84e6Cee6c7E4894eE8ef2a3b2E34db152360932",
+  "genes": {},
   "aminals": {
     "blue-animated": {
       "displayName": "Blue Animated",
-      "geneIds": [
-        5,
-        6,
-        7,
-        8,
-        9,
-        10,
-        11,
-        12,
-        0
+      "geneInstances": [
+        {
+          "geneId": 1,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 2,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 3,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 4,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 5,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 6,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 7,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 8,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "cute-orangey": {
       "displayName": "Cute Orangey",
-      "geneIds": [
-        13,
-        14,
-        15,
-        16,
-        17,
-        18,
-        19,
-        20,
-        0
+      "geneInstances": [
+        {
+          "geneId": 9,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 10,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 11,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 12,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 13,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 14,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 15,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 16,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "firefly-blob": {
       "displayName": "Firefly Blob",
-      "geneIds": [
-        0,
-        0,
-        0,
-        0,
-        21,
-        0,
-        22,
-        23,
-        24
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 17,
+          "offsetX": 220,
+          "offsetY": 120,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 18,
+          "offsetX": 170,
+          "offsetY": 150,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 19,
+          "offsetX": 230,
+          "offsetY": 190,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 20,
+          "offsetX": 330,
+          "offsetY": 240,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "firefly-monster": {
       "displayName": "Firefly Monster",
-      "geneIds": [
-        0,
-        25,
-        26,
-        27,
-        28,
-        0,
-        0,
-        29,
-        30
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 21,
+          "offsetX": 20,
+          "offsetY": 370,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 22,
+          "offsetX": 400,
+          "offsetY": 50,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 23,
+          "offsetX": 230,
+          "offsetY": 600,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 24,
+          "offsetX": 290,
+          "offsetY": 70,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 25,
+          "offsetX": 270,
+          "offsetY": 100,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 26,
+          "offsetX": 320,
+          "offsetY": 200,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "firefly-three": {
       "displayName": "Firefly Three",
-      "geneIds": [
-        0,
-        0,
-        0,
-        0,
-        31,
-        0,
-        32,
-        33,
-        0
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 27,
+          "offsetX": 200,
+          "offsetY": 20,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 28,
+          "offsetX": 450,
+          "offsetY": 400,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 29,
+          "offsetX": 350,
+          "offsetY": 250,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "firefly-totoro": {
       "displayName": "Firefly Totoro",
-      "geneIds": [
-        0,
-        36,
-        37,
-        38,
-        39,
-        0,
-        40,
-        41,
-        0
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 30,
+          "offsetX": 100,
+          "offsetY": 420,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 31,
+          "offsetX": 340,
+          "offsetY": 790,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 32,
+          "offsetX": 350,
+          "offsetY": 30,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 33,
+          "offsetX": 200,
+          "offsetY": 50,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 34,
+          "offsetX": 380,
+          "offsetY": 330,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 35,
+          "offsetX": 350,
+          "offsetY": 200,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
+      ]
+    },
+    "pi-grayfrog": {
+      "displayName": "Pi Grayfrog",
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 36,
+          "offsetX": 200,
+          "offsetY": 550,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 37,
+          "offsetX": 100,
+          "offsetY": 40,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 38,
+          "offsetX": 380,
+          "offsetY": 150,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 39,
+          "offsetX": 390,
+          "offsetY": 200,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 40,
+          "offsetX": 460,
+          "offsetY": 220,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 41,
+          "offsetX": 200,
+          "offsetY": 150,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
+      ]
+    },
+    "pictoplasm-black": {
+      "displayName": "Pictoplasm Black",
+      "geneInstances": [
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 42,
+          "offsetX": 250,
+          "offsetY": 500,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 43,
+          "offsetX": 250,
+          "offsetY": 50,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 44,
+          "offsetX": 200,
+          "offsetY": 200,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 45,
+          "offsetX": 650,
+          "offsetY": 650,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 46,
+          "offsetX": 380,
+          "offsetY": 350,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     },
     "red-animated": {
       "displayName": "Red Animated",
-      "geneIds": [
-        42,
-        43,
-        44,
-        45,
-        46,
-        47,
-        48,
-        49,
-        0
+      "geneInstances": [
+        {
+          "geneId": 47,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 48,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 49,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 50,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 51,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 52,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 53,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 54,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
+      ]
+    },
+    "three-eyed": {
+      "displayName": "Three Eyed",
+      "geneInstances": [
+        {
+          "geneId": 55,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 56,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 57,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 58,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 59,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 60,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 61,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 62,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        },
+        {
+          "geneId": 0,
+          "offsetX": 0,
+          "offsetY": 0,
+          "scale": 100,
+          "rotation": 0
+        }
       ]
     }
   }
