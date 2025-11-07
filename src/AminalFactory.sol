@@ -58,7 +58,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error InvalidAuctionAddress();
     error InvalidGenesAddress();
     error VRGDAAlreadyDeployed();
-    error GenesisAlreadyCompleted();
+    error GenesisLimitExceeded();
     error MustSpawnAtLeastOne();
     error InvalidParentOne();
     error InvalidParentTwo();
@@ -96,6 +96,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Maximum number of genes that can be assigned to an Aminal
     uint256 public constant MAX_GENES = 9;
 
+    /// @notice Maximum number of genesis Aminals that can be spawned
+    uint256 public constant MAX_GENESIS_AMINALS = 10;
+
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
@@ -104,8 +107,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Total number of Aminals ever spawned 📊
     uint256 public totalAminals;
 
-    /// @notice Flag to ensure genesis Aminals are only spawned once 🌱
-    bool public initialAminalSpawned;
+    /// @notice Number of genesis Aminals spawned so far 🌱
+    uint256 public genesisAminalsSpawned;
 
     /// @notice Registry of all valid Aminal contract addresses 📋
     mapping(address => bool) public isAminal;
@@ -250,19 +253,21 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @dev Creates the initial population of Aminals with predefined genetics
      *
      * Requirements:
-     * - Can only be called once by the owner
+     * - Can only be called by the owner
+     * - Can be called multiple times in batches until MAX_GENESIS_AMINALS (10) is reached
+     * - Each batch size + already spawned must not exceed MAX_GENESIS_AMINALS
      * - Each gene instance array must have valid gene IDs and placements
      *
-     * @param genesisGenes Array of gene instance arrays for genesis Aminals
+     * @param genesisGenes Array of gene instance arrays for genesis Aminals in this batch
      *
      * "In the beginning, there was code. From code came the first Aminals,
      *  the digital Adam and Eve of the blockchain paradise."
      */
     function spawnInitialAminals(GeneInstance[MAX_GENES][] calldata genesisGenes) external onlyOwner {
-        if (initialAminalSpawned) revert GenesisAlreadyCompleted();
         if (genesisGenes.length == 0) revert MustSpawnAtLeastOne();
+        if (genesisAminalsSpawned + genesisGenes.length > MAX_GENESIS_AMINALS) revert GenesisLimitExceeded();
 
-        initialAminalSpawned = true;
+        genesisAminalsSpawned += genesisGenes.length;
 
         for (uint256 i = 0; i < genesisGenes.length; i++) {
             _spawnAminal(

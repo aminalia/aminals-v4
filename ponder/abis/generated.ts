@@ -11,18 +11,11 @@ export const aminalAbi = [
       { name: '_dadAddress', internalType: 'address', type: 'address' },
       { name: '_proposerAddress', internalType: 'address', type: 'address' },
       {
-        name: 'visualTraits',
-        internalType: 'struct IAminalStructs.Visuals',
-        type: 'tuple',
-        components: [
-          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
-        ],
-      },
-      {
-        name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        name: 'genes',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
         type: 'tuple[9]',
         components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
           { name: 'scale', internalType: 'uint16', type: 'uint16' },
@@ -169,33 +162,18 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [{ name: 'aminalID', internalType: 'uint256', type: 'uint256' }],
-    name: 'getAminalPlacementsByID',
+    name: 'getAminalGenesByID',
     outputs: [
       {
         name: '',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
         type: 'tuple[9]',
         components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
           { name: 'scale', internalType: 'uint16', type: 'uint16' },
           { name: 'rotation', internalType: 'uint16', type: 'uint16' },
-        ],
-      },
-    ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'aminalID', internalType: 'uint256', type: 'uint256' }],
-    name: 'getAminalVisualsByID',
-    outputs: [
-      {
-        name: '',
-        internalType: 'struct IAminalStructs.Visuals',
-        type: 'tuple',
-        components: [
-          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
         ],
       },
     ],
@@ -213,6 +191,26 @@ export const aminalAbi = [
     inputs: [],
     name: 'getEnergy',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'getGenes',
+    outputs: [
+      {
+        name: '',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
+      },
+    ],
     stateMutability: 'view',
   },
   {
@@ -242,25 +240,6 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'getPlacements',
-    outputs: [
-      {
-        name: '',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
-        type: 'tuple[9]',
-        components: [
-          { name: 'offsetX', internalType: 'int16', type: 'int16' },
-          { name: 'offsetY', internalType: 'int16', type: 'int16' },
-          { name: 'scale', internalType: 'uint16', type: 'uint16' },
-          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
-        ],
-      },
-    ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
     name: 'getTotalLove',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
@@ -270,22 +249,6 @@ export const aminalAbi = [
     inputs: [],
     name: 'getTreasuryBalance',
     outputs: [{ name: 'balance', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'getVisuals',
-    outputs: [
-      {
-        name: '',
-        internalType: 'struct IAminalStructs.Visuals',
-        type: 'tuple',
-        components: [
-          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
-        ],
-      },
-    ],
     stateMutability: 'view',
   },
   {
@@ -384,13 +347,6 @@ export const aminalAbi = [
     name: 'setApprovalForAll',
     outputs: [],
     stateMutability: 'pure',
-  },
-  {
-    type: 'function',
-    inputs: [{ name: 'amount', internalType: 'uint256', type: 'uint256' }],
-    name: 'squeak',
-    outputs: [],
-    stateMutability: 'payable',
   },
   {
     type: 'function',
@@ -588,43 +544,6 @@ export const aminalAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
-      {
-        name: 'sender',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-      {
-        name: 'amount',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'love',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'totalLove',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'energy',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-    ],
-    name: 'Squeak',
-  },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
       { name: 'from', internalType: 'address', type: 'address', indexed: true },
       { name: 'to', internalType: 'address', type: 'address', indexed: true },
       {
@@ -685,6 +604,13 @@ export const aminalFactoryAbi = [
     type: 'function',
     inputs: [],
     name: 'MAX_GENES',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'MAX_GENESIS_AMINALS',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -766,6 +692,13 @@ export const aminalFactoryAbi = [
   },
   {
     type: 'function',
+    inputs: [],
+    name: 'genesisAminalsSpawned',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [{ name: 'index', internalType: 'uint256', type: 'uint256' }],
     name: 'getAminalByIndex',
     outputs: [
@@ -778,24 +711,21 @@ export const aminalFactoryAbi = [
     inputs: [
       { name: 'aminalAddress', internalType: 'address', type: 'address' },
     ],
-    name: 'getAminalVisualsByAddress',
+    name: 'getAminalGenesByAddress',
     outputs: [
       {
-        name: 'visuals',
-        internalType: 'struct IAminalStructs.Visuals',
-        type: 'tuple',
+        name: 'genes',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
+        type: 'tuple[9]',
         components: [
-          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
         ],
       },
     ],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'initialAminalSpawned',
-    outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
     stateMutability: 'view',
   },
   {
@@ -853,15 +783,11 @@ export const aminalFactoryAbi = [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
       { name: 'proposer', internalType: 'address', type: 'address' },
       {
-        name: 'winningGeneIds',
-        internalType: 'uint256[9]',
-        type: 'uint256[9]',
-      },
-      {
-        name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        name: 'genes',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
         type: 'tuple[9]',
         components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
           { name: 'scale', internalType: 'uint16', type: 'uint16' },
@@ -879,11 +805,15 @@ export const aminalFactoryAbi = [
     type: 'function',
     inputs: [
       {
-        name: '_visuals',
-        internalType: 'struct IAminalStructs.Visuals[]',
-        type: 'tuple[]',
+        name: 'genesisGenes',
+        internalType: 'struct IAminalStructs.GeneInstance[9][]',
+        type: 'tuple[9][]',
         components: [
-          { name: 'genes', internalType: 'uint256[9]', type: 'uint256[9]' },
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
         ],
       },
     ],
@@ -1010,7 +940,7 @@ export const aminalFactoryAbi = [
   { type: 'error', inputs: [], name: 'CallerNotAminal' },
   { type: 'error', inputs: [], name: 'CallerNotAuction' },
   { type: 'error', inputs: [], name: 'CannotBreedWithSelf' },
-  { type: 'error', inputs: [], name: 'GenesisAlreadyCompleted' },
+  { type: 'error', inputs: [], name: 'GenesisLimitExceeded' },
   { type: 'error', inputs: [], name: 'IndexOutOfBounds' },
   { type: 'error', inputs: [], name: 'InsufficientEnergy' },
   { type: 'error', inputs: [], name: 'InsufficientLove' },
@@ -1216,21 +1146,21 @@ export const geneAuctionAbi = [
         internalType: 'struct GeneAuction.AminalDesign',
         type: 'tuple',
         components: [
-          { name: 'geneIds', internalType: 'uint256[9]', type: 'uint256[9]' },
-          { name: 'proposer', internalType: 'address', type: 'address' },
-          { name: 'votes', internalType: 'uint256', type: 'uint256' },
-          { name: 'removed', internalType: 'bool', type: 'bool' },
           {
-            name: 'placements',
-            internalType: 'struct IAminalStructs.GeneMetadata[9]',
+            name: 'genes',
+            internalType: 'struct IAminalStructs.GeneInstance[9]',
             type: 'tuple[9]',
             components: [
+              { name: 'geneId', internalType: 'uint256', type: 'uint256' },
               { name: 'offsetX', internalType: 'int16', type: 'int16' },
               { name: 'offsetY', internalType: 'int16', type: 'int16' },
               { name: 'scale', internalType: 'uint16', type: 'uint16' },
               { name: 'rotation', internalType: 'uint16', type: 'uint16' },
             ],
           },
+          { name: 'proposer', internalType: 'address', type: 'address' },
+          { name: 'votes', internalType: 'uint256', type: 'uint256' },
+          { name: 'removed', internalType: 'bool', type: 'bool' },
         ],
       },
     ],
@@ -1242,13 +1172,14 @@ export const geneAuctionAbi = [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
       { name: 'designId', internalType: 'uint256', type: 'uint256' },
     ],
-    name: 'getDesignPlacements',
+    name: 'getDesignGenes',
     outputs: [
       {
-        name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        name: 'genes',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
         type: 'tuple[9]',
         components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
           { name: 'scale', internalType: 'uint16', type: 'uint16' },
@@ -1314,13 +1245,27 @@ export const geneAuctionAbi = [
     outputs: [
       {
         name: 'parentOneGenes',
-        internalType: 'uint256[9]',
-        type: 'uint256[9]',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
       },
       {
         name: 'parentTwoGenes',
-        internalType: 'uint256[9]',
-        type: 'uint256[9]',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
+        type: 'tuple[9]',
+        components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
+          { name: 'offsetX', internalType: 'int16', type: 'int16' },
+          { name: 'offsetY', internalType: 'int16', type: 'int16' },
+          { name: 'scale', internalType: 'uint16', type: 'uint16' },
+          { name: 'rotation', internalType: 'uint16', type: 'uint16' },
+        ],
       },
     ],
     stateMutability: 'view',
@@ -1377,12 +1322,12 @@ export const geneAuctionAbi = [
     type: 'function',
     inputs: [
       { name: 'auctionId', internalType: 'uint256', type: 'uint256' },
-      { name: 'geneIds', internalType: 'uint256[9]', type: 'uint256[9]' },
       {
-        name: 'placements',
-        internalType: 'struct IAminalStructs.GeneMetadata[9]',
+        name: 'genes',
+        internalType: 'struct IAminalStructs.GeneInstance[9]',
         type: 'tuple[9]',
         components: [
+          { name: 'geneId', internalType: 'uint256', type: 'uint256' },
           { name: 'offsetX', internalType: 'int16', type: 'int16' },
           { name: 'offsetY', internalType: 'int16', type: 'int16' },
           { name: 'scale', internalType: 'uint16', type: 'uint16' },
