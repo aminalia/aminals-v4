@@ -173,7 +173,9 @@ const AminalPage: NextPage = () => {
   const aminalNumber =
     aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown';
   const pageTitle = `Aminal #${aminalNumber} - Autonomous Digital Pet`;
-  const pageDescription = `Meet Aminal #${aminalNumber} with ${Number(aminal.totalLove).toFixed(
+  const pageDescription = `Meet Aminal #${aminalNumber} with ${Number(
+    aminal.totalLove
+  ).toFixed(
     2
   )} total love. Feed, breed, and interact with this unique autonomous digital pet on Ethereum.`;
 
