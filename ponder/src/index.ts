@@ -17,6 +17,7 @@ import {
   geneAuction,
   geneCreatorPayout,
   geneNFT,
+  loveConsumedEvent,
   relationship,
   skillUsedEvent,
   user,
@@ -171,7 +172,6 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
     auctionId: auctionId > 0n ? auctionId : null,
     genes: genesArray,
     genePlacements,
-    energy: 0n,
     totalLove: 0n,
     ethBalance: 0n,
     tokenURI,
@@ -219,8 +219,7 @@ ponder.on("AminalFactory:AminalSpawned", async ({ event, context }) => {
  * Updates Aminal state and creates feed event
  */
 ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
-  const { sender, loveGained, love, totalLove, energyGained, energy } =
-    event.args;
+  const { sender, loveGained, love, totalLove } = event.args;
   const { db } = context;
 
   const aminalId = normalizeAddress(event.log.address);
@@ -243,7 +242,6 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
 
   // Update Aminal state
   await db.update(aminal, { id: aminalId }).set((row) => ({
-    energy: energy,
     totalLove: totalLove,
     ethBalance: row.ethBalance + event.transaction.value,
   }));
@@ -273,7 +271,6 @@ ponder.on("Aminal:FeedAminal", async ({ event, context }) => {
     amount: event.transaction.value,
     love: loveGained,
     totalLove: totalLove,
-    energy: energy,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,
@@ -301,25 +298,49 @@ ponder.on("Aminal:SkillUsed", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Get current energy and subtract cost
-  const aminalRecord = await db.find(aminal, { id: aminalId });
-
-  const newEnergy = (aminalRecord?.energy ?? 0n) - cost;
-  const finalEnergy = newEnergy < 0n ? 0n : newEnergy;
-
-  // Update Aminal energy
-  await db.update(aminal, { id: aminalId }).set({
-    energy: finalEnergy,
-  });
-
-  // Create skill used event
+  // Create skill used event (cost represents love consumed)
   await db.insert(skillUsedEvent).values({
     id: makeEventId(event.transaction.hash, event.log.logIndex),
     aminalId,
     callerId,
     skillAddress: normalizeAddress(target),
     selector: selector as Hex,
-    newEnergy: finalEnergy,
+    loveCost: cost,
+    blockNumber: event.block.number,
+    blockTimestamp: event.block.timestamp,
+    transactionHash: event.transaction.hash,
+  });
+});
+
+/**
+ * Handle Aminal:LoveConsumed
+ * Records all love consumption events (from breeding, actions, and skills)
+ */
+ponder.on("Aminal:LoveConsumed", async ({ event, context }) => {
+  const { user: userAddress, amount, remainingLove, totalLove } = event.args;
+  const { db } = context;
+
+  const aminalId = normalizeAddress(event.log.address);
+  const userId = normalizeAddress(userAddress);
+
+  // Ensure user exists
+  await db
+    .insert(user)
+    .values({
+      id: userId,
+      address: userId,
+      totalSpentFeeding: 0n,
+    })
+    .onConflictDoNothing();
+
+  // Create love consumed event
+  await db.insert(loveConsumedEvent).values({
+    id: makeEventId(event.transaction.hash, event.log.logIndex),
+    aminalId,
+    userId,
+    amount,
+    remainingLove,
+    totalLove,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,
     transactionHash: event.transaction.hash,

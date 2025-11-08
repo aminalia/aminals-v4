@@ -133,8 +133,7 @@ export default function ProposeDesignButton({
       } else if (error.message.includes('InvalidGene')) {
         errorMessage = 'One or more genes are invalid.';
       } else if (error.message.includes('InsufficientLove')) {
-        errorMessage =
-          'Insufficient love/energy. Need 10 ❤️ + 10 ⚡ from each parent.';
+        errorMessage = 'Insufficient love/energy. Need 10 ❤️';
       }
 
       toast.error(errorMessage, {
