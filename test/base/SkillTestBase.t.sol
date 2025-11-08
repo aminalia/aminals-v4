@@ -12,7 +12,7 @@ import {AminalTestBase} from "./AminalTestBase.t.sol";
  */
 abstract contract SkillTestBase is AminalTestBase {
     // Events
-    event SkillUsed(address indexed user, uint256 energyCost, address indexed target, bytes4 indexed selector);
+    event SkillUsed(address indexed user, uint256 cost, address indexed target, bytes4 indexed selector);
 
     // Test aminals for skill testing
     address public testAminal1;
@@ -28,7 +28,7 @@ abstract contract SkillTestBase is AminalTestBase {
         vm.deal(alice, 10 ether);
         vm.deal(bob, 10 ether);
 
-        // Give initial energy/love for skill testing
+        // Give initial love for skill testing
         vm.prank(alice);
         payable(testAminal1).call{value: 1 ether}("");
         vm.prank(bob);
@@ -45,14 +45,7 @@ abstract contract SkillTestBase is AminalTestBase {
         emit SkillUsed(user, expectedCost, skillContract, selector);
     }
 
-    function _assertSkillCost(
-        uint256 energyBefore,
-        uint256 energyAfter,
-        uint256 loveBefore,
-        uint256 loveAfter,
-        uint256 expectedCost
-    ) internal {
-        assertEq(energyBefore - energyAfter, expectedCost, "Energy cost mismatch");
+    function _assertSkillCost(uint256 loveBefore, uint256 loveAfter, uint256 expectedCost) internal {
         assertEq(loveBefore - loveAfter, expectedCost, "Love cost mismatch");
     }
 

@@ -57,7 +57,6 @@ export const aminal = onchainTable("aminal", (t) => ({
   genePlacements: t.text().notNull(),
 
   // State
-  energy: t.bigint().notNull(),
   totalLove: t.bigint().notNull(),
   ethBalance: t.bigint().notNull(),
 
@@ -296,7 +295,6 @@ export const feedEvent = onchainTable("feedEvent", (t) => ({
   amount: t.bigint().notNull(), // ETH amount
   love: t.bigint().notNull(), // Love gained by sender
   totalLove: t.bigint().notNull(), // Total love for Aminal
-  energy: t.bigint().notNull(), // Energy after feeding
 
   // Event info
   blockNumber: t.bigint().notNull(),
@@ -318,7 +316,7 @@ export const skillUsedEvent = onchainTable("skillUsedEvent", (t) => ({
   // Skill details
   skillAddress: t.hex().notNull(),
   selector: t.hex().notNull(), // Function selector
-  newEnergy: t.bigint().notNull(),
+  loveCost: t.bigint().notNull(), // Love consumed for skill usage
 
   // Event info
   blockNumber: t.bigint().notNull(),
@@ -328,6 +326,29 @@ export const skillUsedEvent = onchainTable("skillUsedEvent", (t) => ({
 
 // CREATE INDEX skill_used_events_aminal ON skill_used_events(aminalId);
 // CREATE INDEX skill_used_events_skill ON skill_used_events(skillAddress);
+
+/**
+ * LoveConsumedEvent - Record of all love consumption events
+ * Emitted when love is consumed for breeding, actions, or skill usage
+ */
+export const loveConsumedEvent = onchainTable("loveConsumedEvent", (t) => ({
+  id: t.hex().primaryKey(), // transaction hash + log index
+  aminalId: t.hex().notNull(),
+  userId: t.hex().notNull(),
+
+  // Love consumption details
+  amount: t.bigint().notNull(), // Love consumed
+  remainingLove: t.bigint().notNull(), // User's remaining love for this Aminal
+  totalLove: t.bigint().notNull(), // Total love for Aminal after consumption
+
+  // Event info
+  blockNumber: t.bigint().notNull(),
+  blockTimestamp: t.bigint().notNull(),
+  transactionHash: t.hex().notNull(),
+}));
+
+// CREATE INDEX love_consumed_events_aminal ON love_consumed_events(aminalId);
+// CREATE INDEX love_consumed_events_user ON love_consumed_events(userId);
 
 // ============================================================================
 // RELATIONS (for GraphQL)
@@ -364,6 +385,7 @@ export const aminalRelations = relations(aminal, ({ one, many }) => ({
   lovers: many(relationship),
   feeds: many(feedEvent),
   skillsUsed: many(skillUsedEvent),
+  loveConsumed: many(loveConsumedEvent),
   genes: many(aminalGene),
 }));
 
@@ -380,6 +402,7 @@ export const userRelations = relations(user, ({ many }) => ({
   receivedPayouts: many(geneCreatorPayout),
   feedEvents: many(feedEvent),
   skillEvents: many(skillUsedEvent),
+  loveConsumedEvents: many(loveConsumedEvent),
 }));
 
 export const relationshipRelations = relations(relationship, ({ one }) => ({
@@ -505,6 +528,17 @@ export const skillUsedEventRelations = relations(skillUsedEvent, ({ one }) => ({
   }),
   caller: one(user, {
     fields: [skillUsedEvent.callerId],
+    references: [user.id],
+  }),
+}));
+
+export const loveConsumedEventRelations = relations(loveConsumedEvent, ({ one }) => ({
+  aminal: one(aminal, {
+    fields: [loveConsumedEvent.aminalId],
+    references: [aminal.id],
+  }),
+  user: one(user, {
+    fields: [loveConsumedEvent.userId],
     references: [user.id],
   }),
 }));

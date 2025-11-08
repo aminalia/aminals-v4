@@ -174,8 +174,8 @@ const AminalPage: NextPage = () => {
     aminal.aminalIndex !== undefined ? Number(aminal.aminalIndex) : 'Unknown';
   const pageTitle = `Aminal #${aminalNumber} - Autonomous Digital Pet`;
   const pageDescription = `Meet Aminal #${aminalNumber} with ${Number(
-    aminal.energy
-  ).toFixed(2)} energy and ${Number(aminal.totalLove).toFixed(
+    aminal.totalLove
+  ).toFixed(
     2
   )} total love. Feed, breed, and interact with this unique autonomous digital pet on Ethereum.`;
 
@@ -244,19 +244,8 @@ const AminalPage: NextPage = () => {
                 <div className="rounded-xl border border-border bg-card p-5 space-y-4">
                   <h2 className="text-xl font-semibold">Stats</h2>
 
-                  {/* Energy, Total Love, and ETH Balance */}
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="p-4 bg-muted rounded-lg border border-border relative">
-                      <div className="absolute top-2 right-2">
-                        <Tooltip content="Energy increases when fed and decreases when performing actions. At zero energy, the Aminal can no longer act until fed." />
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        Energy
-                      </div>
-                      <div className="text-xl font-semibold text-energy">
-                        {Number(aminal.energy).toFixed(2)} ⚡
-                      </div>
-                    </div>
+                  {/* Total Love and ETH Balance */}
+                  <div className="grid grid-cols-2 gap-4">
                     <div className="p-4 bg-muted rounded-lg border border-border relative">
                       <div className="absolute top-2 right-2">
                         <Tooltip content="Total attachment level from all feeders. Higher love enables breeding and governance voting rights." />
@@ -527,7 +516,7 @@ const AminalPage: NextPage = () => {
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   Skills
-                  <Tooltip content="Skills are smart contracts that give Aminals new abilities. Anyone can create and register new skills. Using skills consumes energy through the squeak() function." />
+                  <Tooltip content="Skills are smart contracts that give Aminals new abilities. Anyone can create and register new skills. Using skills consumes love based on a percentage of your total love for the Aminal." />
                 </h2>
                 <div className="text-sm text-muted-foreground">
                   Aminals can <em>do</em> things.

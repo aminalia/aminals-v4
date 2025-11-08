@@ -60,10 +60,12 @@ contract GeneRegistry is IAminalStructs, Ownable {
      * @param category Category/tag for filtering (e.g., "eyes", "hat", "background")
      * @return geneId The ID of the created Gene NFT
      */
-    function createGene(string calldata svg, string calldata name, string calldata description, string calldata category)
-        external
-        returns (uint256 geneId)
-    {
+    function createGene(
+        string calldata svg,
+        string calldata name,
+        string calldata description,
+        string calldata category
+    ) external returns (uint256 geneId) {
         return createGeneFor(msg.sender, svg, name, description, category);
     }
 
@@ -156,14 +158,10 @@ contract GeneRegistry is IAminalStructs, Ownable {
         uint256[] storage allGenes = creatorGenes[creator];
         total = allGenes.length;
 
-        if (offset >= total) {
-            return (new uint256[](0), total);
-        }
+        if (offset >= total) return (new uint256[](0), total);
 
         uint256 end = offset + limit;
-        if (end > total) {
-            end = total;
-        }
+        if (end > total) end = total;
 
         uint256 resultLength = end - offset;
         geneIds = new uint256[](resultLength);

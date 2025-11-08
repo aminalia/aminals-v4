@@ -79,17 +79,14 @@ export const transformAminals = (
  */
 export const calculateAminalStats = (aminal: AminalWithRelations) => {
   const totalLove = Number(aminal.totalLove || 0n);
-  const energy = Number(aminal.energy || 0n);
   const ethBalance = Number(aminal.ethBalance || 0n);
   const userLove = Number(aminal.userLove || 0n);
 
   return {
     totalLove,
-    energy,
     ethBalance,
     userLove,
     hasUserLove: userLove > 0,
-    energyPercentage: Math.min(energy / 100, 1) * 100, // Assuming max energy is 100
     loveRank: 'Unknown', // Would need all aminals to calculate
   };
 };
@@ -112,7 +109,6 @@ export const formatAminalForDisplay = (aminal: AminalWithRelations) => {
     contractAddress: aminal.contractAddress,
     aminalIndex: aminal.aminalIndex?.toString() || 'Unknown',
     displayName: `Aminal #${aminal.aminalIndex || 'Unknown'}`,
-    energy: stats.energy.toFixed(2),
     totalLove: stats.totalLove.toFixed(2),
     ethBalance: stats.ethBalance.toFixed(4),
     userLove: stats.userLove.toFixed(2),
@@ -210,12 +206,7 @@ export const calculateCollectionStats = (aminals: AminalWithRelations[]) => {
     (sum, aminal) => sum + Number(aminal.totalLove || 0n),
     0
   );
-  const totalEnergy = aminals.reduce(
-    (sum, aminal) => sum + Number(aminal.energy || 0n),
-    0
-  );
   const averageLove = totalAminals > 0 ? totalLove / totalAminals : 0;
-  const averageEnergy = totalAminals > 0 ? totalEnergy / totalAminals : 0;
 
   const mostLoved = aminals.reduce(
     (max, aminal) =>
@@ -225,19 +216,10 @@ export const calculateCollectionStats = (aminals: AminalWithRelations[]) => {
     aminals[0]
   );
 
-  const mostEnergetic = aminals.reduce(
-    (max, aminal) =>
-      Number(aminal.energy || 0n) > Number(max.energy || 0n) ? aminal : max,
-    aminals[0]
-  );
-
   return {
     totalAminals,
     totalLove,
-    totalEnergy,
     averageLove,
-    averageEnergy,
     mostLoved,
-    mostEnergetic,
   };
 };

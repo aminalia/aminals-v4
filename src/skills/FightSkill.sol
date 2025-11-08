@@ -34,13 +34,15 @@ contract FightSkill is Skill {
         // require(Fighters[victim].fighting == 0, "Cannot attack an Aminal that is already enrolled in a fight");
 
         if (!Fighters[msg.sender].fighting) {
-            Fighters[msg.sender].health = IAminal(msg.sender).getEnergy()
-                + (IAminal(msg.sender).getEnergy() * Fighters[msg.sender].mastery) / 100;
+            // Health based on total love
+            uint256 attackerLove = IAminal(msg.sender).getTotalLove();
+            Fighters[msg.sender].health = attackerLove + (attackerLove * Fighters[msg.sender].mastery) / 100;
             Fighters[msg.sender].fighting = true;
         }
         if (!Fighters[victim].fighting) {
-            Fighters[victim].health =
-                IAminal(victim).getEnergy() + (IAminal(victim).getEnergy() * Fighters[victim].mastery) / 100;
+            // Health based on total love
+            uint256 victimLove = IAminal(victim).getTotalLove();
+            Fighters[victim].health = victimLove + (victimLove * Fighters[victim].mastery) / 100;
             Fighters[victim].fighting = true;
         }
 
@@ -54,9 +56,9 @@ contract FightSkill is Skill {
     }
 
     /**
-     * @dev Calculate cost based on the attack type
+     * @dev Calculate cost percentage based on the attack type
      * @param data The calldata being sent to this skill
-     * @return The amount of energy and love required
+     * @return The percentage of love required (e.g., 10 = 10%)
      */
     function skillCost(bytes calldata data) external pure override returns (uint256) {
         bytes4 selector = bytes4(data);
@@ -65,15 +67,15 @@ contract FightSkill is Skill {
             (, uint256 attackType) = abi.decode(data[4:], (address, uint256));
 
             if (attackType == 1) {
-                // Hit attack costs 10 energy
+                // Hit attack costs 10% of user's love
                 return 10;
             }
-            // Other attack types could have different costs
+            // Other attack types could have different costs (5%)
             return 5;
         }
 
-        // Default cost for unknown actions
-        return 1;
+        // Default cost percentage for unknown actions (10%)
+        return 10;
     }
 
     // Getters
@@ -87,7 +89,7 @@ contract FightSkill is Skill {
 
     // Internal functions
     function _hit(address attacker, address victim) internal {
-        require(IAminal(attacker).getEnergy() >= 10, "Not enough energy to hit !");
+        require(IAminal(attacker).getTotalLove() >= 10, "Not enough love to hit !");
 
         bool win = _success(Fighters[attacker].mastery, Fighters[victim].mastery);
 

@@ -136,7 +136,7 @@ uint256 constant DEFAULT_AUCTION_DURATION = 1 hours;    // Instead of hardcoded
 **Missing Documentation:**
 - Add `@return` tags to all public/external functions
 - Document all internal function parameters
-- Add examples in complex functions (VRGDA calculations, placement transformations)
+- Add examples in complex functions (feeding schedule calculations, placement transformations)
 
 **Example Fix:**
 ```solidity
@@ -391,7 +391,7 @@ contract GasBenchmarksTest is Test {
 **Current Centralization:**
 - Owner can pause auctions
 - Owner can setup contracts
-- Owner deploys VRGDA
+- Owner deploys feeding schedule
 - Owner spawns genesis Aminals
 
 **Recommended Path:**
@@ -435,7 +435,7 @@ modifier onlyGovernance() {
 ✅ Emergency auction pause mechanism
 ✅ Settlement external call caching
 ✅ Comprehensive randomness manipulation documentation
-✅ Setup event emissions (VRGDADeployed)
+✅ Setup event emissions (FeedingScheduleDeployed)
 
 ---
 

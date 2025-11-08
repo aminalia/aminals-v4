@@ -1,8 +1,8 @@
 {
-  "timestamp": "2025-11-07T12:48:03Z",
+  "timestamp": "2025-11-08T13:23:39Z",
   "deployer": "0xDf3679681B87fAE75CE185e4f01d98b64Ddb64a3",
-  "geneRegistry": "0x2D34bD575d793dDb5Dc278BDCd56D9247E3F3Ec6",
-  "aminalFactory": "0xD84e6Cee6c7E4894eE8ef2a3b2E34db152360932",
+  "geneRegistry": "0x7D9ba0754B8009113E111D7E2aE181B73fe6B38b",
+  "aminalFactory": "0x70606E311655F973058c2b36442AAABe7ADC3e78",
   "genes": {},
   "aminals": {
     "blue-animated": {

@@ -1,4 +1,3 @@
-import { Badge } from '@components/ui/Badge';
 import {
   Card,
   CardContent,
@@ -42,22 +41,16 @@ export default function AminalCard({
 
         <CardSection className="border-t flex-1 flex flex-col">
           <CardHeader className="p-4 pb-2">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
-                Aminal #
-                {aminal.aminalIndex !== undefined
-                  ? Number(aminal.aminalIndex)
-                  : 'Unknown'}
-              </CardTitle>
-              <Badge variant="energy" size="sm">
-                <span>⚡</span>
-                {Number(aminal.energy || 0).toFixed(2)}
-              </Badge>
-            </div>
+            <CardTitle className="text-xl font-bold group-hover:text-primary transition-colors">
+              Aminal #
+              {aminal.aminalIndex !== undefined
+                ? Number(aminal.aminalIndex)
+                : 'Unknown'}
+            </CardTitle>
           </CardHeader>
 
           <CardContent className="p-4 space-y-4 flex-1 flex flex-col">
-            {/* Stats - expanded to 3 columns */}
+            {/* Stats - 3 columns */}
             <div className="grid grid-cols-3 gap-2 p-3 rounded-lg bg-muted border border-border">
               <div>
                 <div className="text-xs text-muted-foreground">Total Love</div>

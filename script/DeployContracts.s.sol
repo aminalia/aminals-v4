@@ -120,9 +120,9 @@ contract DeployContracts is Script {
         // Deploy core contracts
         factory = AminalFactory(deployAminalFactory());
 
-        // Setup the factory to deploy loveVRGDA
+        // Setup the factory to deploy feeding schedule
         factory.setup();
-        console.log("Factory setup complete with loveVRGDA");
+        console.log("Factory setup complete with feeding schedule");
 
         // Deploy and register skills
         deploySkills(factory);

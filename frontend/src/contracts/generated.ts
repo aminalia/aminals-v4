@@ -23,7 +23,7 @@ export const aminalAbi = [
         ],
       },
       { name: '_aminalIndex', internalType: 'uint256', type: 'uint256' },
-      { name: '_loveVRGDA', internalType: 'address', type: 'address' },
+      { name: '_feedingSchedule', internalType: 'address', type: 'address' },
     ],
     stateMutability: 'nonpayable',
   },
@@ -31,35 +31,21 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'INITIAL_ENERGY',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'MAX_ENERGY',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'MAX_SKILL_COST',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'MIN_BREEDING_LOVE',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
     name: 'MIN_FEED_AMOUNT',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'MIN_LOVE_PERCENTAGE',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'PERCENTAGE_BASIS',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -84,6 +70,13 @@ export const aminalAbi = [
     type: 'function',
     inputs: [{ name: 'owner', internalType: 'address', type: 'address' }],
     name: 'balanceOf',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'birthTime',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -139,6 +132,19 @@ export const aminalAbi = [
   {
     type: 'function',
     inputs: [],
+    name: 'feedingSchedule',
+    outputs: [
+      {
+        name: '',
+        internalType: 'contract AminalFeedingSchedule',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
     name: 'geneFactory',
     outputs: [
       { name: '', internalType: 'contract GeneRegistry', type: 'address' },
@@ -184,13 +190,6 @@ export const aminalAbi = [
     inputs: [{ name: 'tokenId', internalType: 'uint256', type: 'uint256' }],
     name: 'getApproved',
     outputs: [{ name: '', internalType: 'address', type: 'address' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'getEnergy',
-    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
   {
@@ -266,15 +265,6 @@ export const aminalAbi = [
     inputs: [{ name: 'user', internalType: 'address', type: 'address' }],
     name: 'lovePerUser',
     outputs: [{ name: 'love', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'loveVRGDA',
-    outputs: [
-      { name: '', internalType: 'contract AminalVRGDA', type: 'address' },
-    ],
     stateMutability: 'view',
   },
   {
@@ -381,6 +371,13 @@ export const aminalAbi = [
   },
   {
     type: 'function',
+    inputs: [],
+    name: 'totalEthFed',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     inputs: [
       { name: '', internalType: 'address', type: 'address' },
       { name: '', internalType: 'address', type: 'address' },
@@ -473,18 +470,6 @@ export const aminalAbi = [
         type: 'uint256',
         indexed: false,
       },
-      {
-        name: 'energyGained',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
-        name: 'energy',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
     ],
     name: 'FeedAminal',
   },
@@ -500,19 +485,19 @@ export const aminalAbi = [
         indexed: false,
       },
       {
-        name: 'remainingEnergy',
-        internalType: 'uint256',
-        type: 'uint256',
-        indexed: false,
-      },
-      {
         name: 'remainingLove',
         internalType: 'uint256',
         type: 'uint256',
         indexed: false,
       },
+      {
+        name: 'totalLove',
+        internalType: 'uint256',
+        type: 'uint256',
+        indexed: false,
+      },
     ],
-    name: 'ResourcesConsumed',
+    name: 'LoveConsumed',
   },
   {
     type: 'event',
@@ -580,10 +565,9 @@ export const aminalAbi = [
     ],
     name: 'TreasuryTransferred',
   },
-  { type: 'error', inputs: [], name: 'InsufficientEnergy' },
   { type: 'error', inputs: [], name: 'InsufficientLove' },
+  { type: 'error', inputs: [], name: 'InsufficientTotalLove' },
   { type: 'error', inputs: [], name: 'InsufficientTreasury' },
-  { type: 'error', inputs: [], name: 'NotEnoughEnergy' },
   { type: 'error', inputs: [], name: 'NotEnoughEther' },
   { type: 'error', inputs: [], name: 'NotEnoughLove' },
   { type: 'error', inputs: [], name: 'NotRegisteredSkill' },
@@ -617,43 +601,15 @@ export const aminalFactoryAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'MIN_ENERGY_REQUIRED',
+    name: 'MIN_LOVE_PERCENTAGE',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
   {
     type: 'function',
     inputs: [],
-    name: 'MIN_LOVE_REQUIRED',
+    name: 'PERCENTAGE_BASIS',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'VRGDA_BASE_PRICE',
-    outputs: [{ name: '', internalType: 'int256', type: 'int256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'VRGDA_LOGISTIC_ASYMPTOTE',
-    outputs: [{ name: '', internalType: 'int256', type: 'int256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'VRGDA_PRICE_DECAY',
-    outputs: [{ name: '', internalType: 'int256', type: 'int256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'VRGDA_TIME_SCALE',
-    outputs: [{ name: '', internalType: 'int256', type: 'int256' }],
     stateMutability: 'view',
   },
   {
@@ -673,6 +629,19 @@ export const aminalFactoryAbi = [
     name: 'breedAminals',
     outputs: [{ name: 'auctionId', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'feedingSchedule',
+    outputs: [
+      {
+        name: '',
+        internalType: 'contract AminalFeedingSchedule',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
   },
   {
     type: 'function',
@@ -743,15 +712,6 @@ export const aminalFactoryAbi = [
     inputs: [{ name: '', internalType: 'address', type: 'address' }],
     name: 'isAminal',
     outputs: [{ name: '', internalType: 'bool', type: 'bool' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    inputs: [],
-    name: 'loveVRGDA',
-    outputs: [
-      { name: '', internalType: 'contract AminalVRGDA', type: 'address' },
-    ],
     stateMutability: 'view',
   },
   {
@@ -901,6 +861,19 @@ export const aminalFactoryAbi = [
     type: 'event',
     anonymous: false,
     inputs: [
+      {
+        name: 'feedingScheduleAddress',
+        internalType: 'address',
+        type: 'address',
+        indexed: true,
+      },
+    ],
+    name: 'FeedingScheduleDeployed',
+  },
+  {
+    type: 'event',
+    anonymous: false,
+    inputs: [
       { name: 'version', internalType: 'uint8', type: 'uint8', indexed: false },
     ],
     name: 'Initialized',
@@ -924,26 +897,15 @@ export const aminalFactoryAbi = [
     ],
     name: 'OwnershipTransferred',
   },
-  {
-    type: 'event',
-    anonymous: false,
-    inputs: [
-      {
-        name: 'vrgdaAddress',
-        internalType: 'address',
-        type: 'address',
-        indexed: true,
-      },
-    ],
-    name: 'VRGDADeployed',
-  },
   { type: 'error', inputs: [], name: 'CallerNotAminal' },
   { type: 'error', inputs: [], name: 'CallerNotAuction' },
   { type: 'error', inputs: [], name: 'CannotBreedWithSelf' },
+  { type: 'error', inputs: [], name: 'FeedingScheduleAlreadyDeployed' },
+  { type: 'error', inputs: [], name: 'FeedingScheduleNotDeployed' },
   { type: 'error', inputs: [], name: 'GenesisLimitExceeded' },
   { type: 'error', inputs: [], name: 'IndexOutOfBounds' },
-  { type: 'error', inputs: [], name: 'InsufficientEnergy' },
   { type: 'error', inputs: [], name: 'InsufficientLove' },
+  { type: 'error', inputs: [], name: 'InsufficientLovePercentage' },
   { type: 'error', inputs: [], name: 'InsufficientTotalLove' },
   { type: 'error', inputs: [], name: 'InvalidAminalAddresses' },
   { type: 'error', inputs: [], name: 'InvalidAuctionAddress' },
@@ -952,12 +914,10 @@ export const aminalFactoryAbi = [
   { type: 'error', inputs: [], name: 'InvalidParentTwo' },
   { type: 'error', inputs: [], name: 'MustSpawnAtLeastOne' },
   { type: 'error', inputs: [], name: 'NotRegisteredAminal' },
-  { type: 'error', inputs: [], name: 'VRGDAAlreadyDeployed' },
-  { type: 'error', inputs: [], name: 'VRGDANotDeployed' },
 ] as const
 
 export const aminalFactoryAddress =
-  '0xD84e6Cee6c7E4894eE8ef2a3b2E34db152360932' as const
+  '0x70606E311655F973058c2b36442AAABe7ADC3e78' as const
 
 export const aminalFactoryConfig = {
   address: aminalFactoryAddress,
@@ -987,7 +947,14 @@ export const geneAuctionAbi = [
   {
     type: 'function',
     inputs: [],
-    name: 'PROPOSE_DESIGN_COST',
+    name: 'PERCENTAGE_BASIS',
+    outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    inputs: [],
+    name: 'PROPOSE_DESIGN_COST_PERCENTAGE',
     outputs: [{ name: '', internalType: 'uint256', type: 'uint256' }],
     stateMutability: 'view',
   },
@@ -1749,7 +1716,7 @@ export const geneAuctionAbi = [
 ] as const
 
 export const geneAuctionAddress =
-  '0x361A3df057d7aE9F9a9Bcb81571BfFb305e892E1' as const
+  '0x4677F67ceDF70077A7e9eB32787A38c94E786ac5' as const
 
 export const geneAuctionConfig = {
   address: geneAuctionAddress,
@@ -1950,7 +1917,7 @@ export const geneRegistryAbi = [
 ] as const
 
 export const geneRegistryAddress =
-  '0x2D34bD575d793dDb5Dc278BDCd56D9247E3F3Ec6' as const
+  '0x7D9ba0754B8009113E111D7E2aE181B73fe6B38b' as const
 
 export const geneRegistryConfig = {
   address: geneRegistryAddress,
@@ -2334,7 +2301,7 @@ export const genesAbi = [
 ] as const
 
 export const genesAddress =
-  '0x8BA3B8C08c7D672138284d1765122394203D6aA5' as const
+  '0xb4f2E47C71a511372498A57E001a13D9989d6839' as const
 
 export const genesConfig = { address: genesAddress, abi: genesAbi } as const
 
@@ -2418,6 +2385,6 @@ export const move2DAbi = [
 ] as const
 
 export const move2DAddress =
-  '0x9C410254531A4b7604A1E5FB7eae2648ED8C6189' as const
+  '0x47008402c9c4f985499f6ccEb1E48455EA4E735e' as const
 
 export const move2DConfig = { address: move2DAddress, abi: move2DAbi } as const

@@ -87,9 +87,7 @@ contract Genes is ERC721Enumerable, Initializable, Ownable {
     /// @param name Human-readable name for the gene
     /// @param description Description of the gene
     /// @param category Category/tag for filtering
-    event GeneMetadata(
-        uint256 indexed tokenId, address indexed to, string name, string description, string category
-    );
+    event GeneMetadata(uint256 indexed tokenId, address indexed to, string name, string description, string category);
 
     // ============ CONSTRUCTOR ============
 

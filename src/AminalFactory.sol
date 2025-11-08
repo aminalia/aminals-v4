@@ -9,7 +9,7 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
-import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
+import {AminalFeedingSchedule} from "src/utils/AminalFeedingSchedule.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
@@ -57,7 +57,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error CallerNotAuction();
     error InvalidAuctionAddress();
     error InvalidGenesAddress();
-    error VRGDAAlreadyDeployed();
+    error FeedingScheduleAlreadyDeployed();
     error GenesisLimitExceeded();
     error MustSpawnAtLeastOne();
     error InvalidParentOne();
@@ -65,40 +65,27 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error InvalidAminalAddresses();
     error CannotBreedWithSelf();
     error InsufficientLove();
-    error InsufficientEnergy();
     error IndexOutOfBounds();
     error NotRegisteredAminal();
-    error VRGDANotDeployed();
+    error FeedingScheduleNotDeployed();
     error InsufficientTotalLove();
+    error InsufficientLovePercentage();
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                     📊 CONSTANTS
     // ═══════════════════════════════════════════════════════════════════════════════════
 
-    /// @notice Minimum love required from user to breed an Aminal
-    uint256 public constant MIN_LOVE_REQUIRED = 10;
+    /// @notice Minimum percentage of total love required from user to breed (10%)
+    uint256 public constant MIN_LOVE_PERCENTAGE = 10;
 
-    /// @notice Minimum energy required for each parent to breed
-    uint256 public constant MIN_ENERGY_REQUIRED = 10;
-
-    /// @notice Base price for VRGDA love calculation (1 ETH)
-    int256 public constant VRGDA_BASE_PRICE = 1 ether;
-
-    /// @notice Price decay percentage for VRGDA (10%)
-    int256 public constant VRGDA_PRICE_DECAY = 0.1 ether;
-
-    /// @notice Logistic asymptote for VRGDA curve (100 units)
-    int256 public constant VRGDA_LOGISTIC_ASYMPTOTE = 100 ether;
-
-    /// @notice Time scale for VRGDA curve smoothness
-    int256 public constant VRGDA_TIME_SCALE = 20 ether;
+    /// @notice Basis points for percentage calculations (100 = 100%)
+    uint256 public constant PERCENTAGE_BASIS = 100;
 
     /// @notice Maximum number of genes that can be assigned to an Aminal
     uint256 public constant MAX_GENES = 9;
 
     /// @notice Maximum number of genesis Aminals that can be spawned
     uint256 public constant MAX_GENESIS_AMINALS = 10;
-
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
@@ -126,8 +113,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Gene NFT system for trait management 🎨
     Genes public genes;
 
-    /// @notice VRGDA for calculating love based on energy levels 📈
-    AminalVRGDA public loveVRGDA;
+    /// @notice Feeding schedule for calculating love based on time and cumulative feeding 📈
+    AminalFeedingSchedule public feedingSchedule;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                       📡 EVENTS
@@ -158,10 +145,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     event BreedAminal(address indexed aminalOne, address indexed aminalTwo, uint256 auctionId);
 
     /**
-     * @notice Emitted when VRGDA is deployed
-     * @param vrgdaAddress Address of the deployed VRGDA contract
+     * @notice Emitted when feeding schedule is deployed
+     * @param feedingScheduleAddress Address of the deployed feeding schedule contract
      */
-    event VRGDADeployed(address indexed vrgdaAddress);
+    event FeedingScheduleDeployed(address indexed feedingScheduleAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                      🛡️ MODIFIERS
@@ -187,7 +174,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Ensures factory is fully initialized before critical operations
      */
     modifier whenInitialized() {
-        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
+        if (address(feedingSchedule) == address(0)) revert FeedingScheduleNotDeployed();
         _;
     }
 
@@ -223,25 +210,19 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     }
 
     /**
-     * @notice Deploy and configure the VRGDA system for love calculations
-     * @dev Creates the Variable Rate Gradual Dutch Auction mechanism for love pricing
+     * @notice Deploy and configure the feeding schedule for love calculations
+     * @dev Creates the schedule-based love calculation system
      *
      * Requirements:
      * - Must be called by owner after initialization
-     * - Uses predefined constants for optimal love curve parameters
      */
     function setup() external onlyOwner {
-        if (address(loveVRGDA) != address(0)) revert VRGDAAlreadyDeployed();
+        if (address(feedingSchedule) != address(0)) revert FeedingScheduleAlreadyDeployed();
 
-        // Deploy VRGDA with optimal parameters for love curves
-        loveVRGDA = new AminalVRGDA(
-            VRGDA_BASE_PRICE, // Base price for love calculations
-            VRGDA_PRICE_DECAY, // Rate of price decay over time
-            VRGDA_LOGISTIC_ASYMPTOTE, // Maximum units in logistic curve
-            VRGDA_TIME_SCALE // Time scaling factor for smooth curves
-        );
+        // Deploy feeding schedule calculator
+        feedingSchedule = new AminalFeedingSchedule();
 
-        emit VRGDADeployed(address(loveVRGDA));
+        emit FeedingScheduleDeployed(address(feedingSchedule));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -317,12 +298,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Initiate breeding ceremony between two Aminals 💕
      * @dev Launches gene auctions for offspring
      *
-     *
      * Requirements:
-     * - Minimum breeding fee must be paid
      * - Both addresses must be valid Aminals
-     * - Caller must have sufficient love for at both Aminals
-     * - Both Aminals must have sufficient energy to breed
+     * - Caller must have at least MIN_LOVE_PERCENTAGE (10%) of total love for both Aminals
+     * - Love consumption is percentage-based: if you have X% of total love, you pay X% * 10% of your love
      * - Total love meets minimum slippage threshold
      *
      * @param aminalOne First parent Aminal address
@@ -345,27 +324,33 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
         // Cache love values to avoid redundant external calls
-        uint256 love1 = aminal1.getLoveByUser(msg.sender);
-        uint256 love2 = aminal2.getLoveByUser(msg.sender);
+        uint256 userLove1 = aminal1.getLoveByUser(msg.sender);
+        uint256 userLove2 = aminal2.getLoveByUser(msg.sender);
+        uint256 totalLove1 = aminal1.getTotalLove();
+        uint256 totalLove2 = aminal2.getTotalLove();
 
-        // Check if caller has sufficient love for both Aminals
-        if (love1 < MIN_LOVE_REQUIRED) revert InsufficientLove();
-        if (love2 < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        // Check if total love is sufficient (can't breed if no love exists)
+        if (totalLove1 == 0 || totalLove2 == 0) revert InsufficientTotalLove();
 
-        // Check if both Aminals have sufficient energy to breed
-        if (aminal1.getEnergy() < MIN_ENERGY_REQUIRED || aminal2.getEnergy() < MIN_ENERGY_REQUIRED) {
-            revert InsufficientEnergy();
-        }
+        // Check if caller has at least MIN_LOVE_PERCENTAGE (10%) of total love for each Aminal
+        uint256 minRequired1 = (totalLove1 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 minRequired2 = (totalLove2 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+
+        if (userLove1 < minRequired1 || userLove2 < minRequired2) revert InsufficientLovePercentage();
+
+        // Calculate love to consume: MIN_LOVE_PERCENTAGE of user's love
+        uint256 loveToConsume1 = (userLove1 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 loveToConsume2 = (userLove2 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
 
         // Calculate total love investment from caller for both Aminals
-        uint256 totalLove = love1 + love2;
+        uint256 totalLove = userLove1 + userLove2;
 
         // Slippage protection: ensure total love meets minimum threshold
         if (totalLove < minTotalLove) revert InsufficientTotalLove();
 
-        // Consume Love from caller and energy via squeakFrom
-        aminal1.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);
-        aminal2.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);
+        // Consume love from caller via squeakFrom
+        aminal1.squeakFrom(msg.sender, loveToConsume1);
+        aminal2.squeakFrom(msg.sender, loveToConsume2);
 
         // Create gene auction with combined love as initial value
         auctionId = geneAuction.createAuction(aminal1.aminalIndex(), aminal2.aminalIndex(), totalLove);
@@ -397,7 +382,11 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param aminalAddress Address of the Aminal to query
      * @return genes Complete array of gene instances with placements
      */
-    function getAminalGenesByAddress(address aminalAddress) external view returns (GeneInstance[MAX_GENES] memory genes) {
+    function getAminalGenesByAddress(address aminalAddress)
+        external
+        view
+        returns (GeneInstance[MAX_GENES] memory genes)
+    {
         if (!isAminal[aminalAddress]) revert NotRegisteredAminal();
         return AminalContract(payable(aminalAddress)).getGenes();
     }
@@ -424,7 +413,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address proposer,
         GeneInstance[MAX_GENES] memory genes
     ) internal returns (address childAddress) {
-        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
+        if (address(feedingSchedule) == address(0)) revert FeedingScheduleNotDeployed();
 
         // Deploy new Aminal contract with full genetic and factory context
         AminalContract newAminal = new AminalContract(
@@ -434,7 +423,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             proposer, // Design proposer (or address(0) for genesis/parent designs)
             genes, // Complete genetic profile with placements
             totalAminals, // Unique index for this Aminal
-            address(loveVRGDA) // VRGDA system for love calculations
+            address(feedingSchedule) // Feeding schedule for love calculations
         );
 
         childAddress = address(newAminal);

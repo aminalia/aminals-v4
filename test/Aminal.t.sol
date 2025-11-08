@@ -51,13 +51,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Spawn a test Aminal - use 8 genes in first 8 slots
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[0][i] = GeneInstance({
-                geneId: 1,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[0][i] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         factory.spawnInitialAminals(genesisGenes);
@@ -68,7 +62,6 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalInitialState() public {
         // Test initial state
         assertEq(aminal.getTotalLove(), 0);
-        assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
         // Test genes - check first 8 genes are set to 1
@@ -88,16 +81,15 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalFeeding() public {
         vm.deal(alice, 1 ether);
 
-        // Test feeding increases love and energy
+        // Test feeding increases love
         vm.prank(alice);
-        uint256 energyDelta = aminal.feed{value: 0.01 ether}();
+        uint256 loveDelta = aminal.feed{value: 0.01 ether}();
 
         assertTrue(aminal.getLoveByUser(alice) > 0);
         assertTrue(aminal.getTotalLove() > 0);
-        assertTrue(aminal.getEnergy() > 50);
-        assertTrue(energyDelta > 0);
+        assertTrue(loveDelta > 0);
 
-        // VRGDA gives varying love based on current energy level
+        // Love gained should be consistent
         assertTrue(aminal.getLoveByUser(alice) > 0);
         assertTrue(aminal.getTotalLove() > 0);
         assertEq(aminal.getLoveByUser(alice), aminal.getTotalLove());
@@ -115,14 +107,14 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.prank(bob);
         aminal.feed{value: 0.02 ether}();
 
-        // VRGDA gives diminishing returns as energy increases
+        // Bob should get more love since he fed more ETH
         uint256 aliceLove = aminal.getLoveByUser(alice);
         uint256 bobLove = aminal.getLoveByUser(bob);
         uint256 totalLove = aminal.getTotalLove();
 
         assertTrue(aliceLove > 0);
         assertTrue(bobLove > 0);
-        assertTrue(bobLove > aliceLove); // Bob fed more ETH, gets more total love despite worse rate
+        assertTrue(bobLove > aliceLove); // Bob fed more ETH, gets more love
         assertEq(totalLove, aliceLove + bobLove);
     }
 
@@ -133,26 +125,25 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
-        uint256 initialEnergy = aminal.getEnergy();
         uint256 initialLove = aminal.getLoveByUser(alice);
+        uint256 initialTotalLove = aminal.getTotalLove();
 
-        // Squeak using the skill
+        // Squeak using the skill (10% cost)
         vm.prank(alice);
-        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 1000);
+        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 10);
         aminal.useSkill(address(squeakSkill), squeakData);
 
-        // Energy should decrease
-        assertTrue(aminal.getEnergy() < initialEnergy);
-        // Love should decrease
+        // Love should decrease by approximately 10%
         assertTrue(aminal.getLoveByUser(alice) < initialLove);
+        assertTrue(aminal.getTotalLove() < initialTotalLove);
     }
 
     function testAminalSqueakingWithoutLove() public {
         vm.deal(alice, 1 ether);
 
-        // Try to squeak without love using the skill
+        // Try to squeak without love using the skill (should revert with InsufficientTotalLove)
         vm.prank(alice);
-        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 1000);
+        bytes memory squeakData = abi.encodeWithSelector(squeakSkill.squeak.selector, 10);
         vm.expectRevert();
         aminal.useSkill(address(squeakSkill), squeakData);
     }
@@ -170,13 +161,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalGenes[0][i] = GeneInstance({
-                geneId: 2,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            additionalGenes[0][i] = GeneInstance({geneId: 2, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         factory.spawnInitialAminals(additionalGenes);
         address aminal2Address = factory.getAminalByIndex(1);
@@ -199,13 +184,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalGenes[0][i] = GeneInstance({
-                geneId: 2,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            additionalGenes[0][i] = GeneInstance({geneId: 2, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         factory.spawnInitialAminals(additionalGenes);
         // address aminal2Address = factory.getAminalByIndex(1); // Not needed for this test
@@ -224,11 +203,11 @@ contract IndividualAminalTest is Test, IAminalStructs {
     function testAminalSkillUsage() public {
         vm.deal(alice, 1 ether);
 
-        // Feed to get energy and love
+        // Feed to get love
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
-        uint256 initialEnergy = aminal.getEnergy();
+        uint256 initialLove = aminal.getLoveByUser(alice);
 
         // Use the skill
         bytes memory skillData = move2DSkill.getSkillData(10, 20);
@@ -240,8 +219,8 @@ contract IndividualAminalTest is Test, IAminalStructs {
         assertEq(x, 10);
         assertEq(y, 20);
 
-        // Check that energy was consumed
-        assertTrue(aminal.getEnergy() <= initialEnergy);
+        // Check that love was consumed
+        assertTrue(aminal.getLoveByUser(alice) < initialLove);
     }
 
     function testAminalSkillUsageWithUnregisteredSkill() public {
@@ -250,7 +229,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Deploy another skill (all skills are globally accessible)
         Move2D anotherSkill = new Move2D(address(factory));
 
-        // Feed to get energy
+        // Feed to get love
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
@@ -286,7 +265,6 @@ contract IndividualAminalTest is Test, IAminalStructs {
         vm.deal(alice, 1 ether);
 
         uint256 initialLove = aminal.getLoveByUser(alice);
-        uint256 initialEnergy = aminal.getEnergy();
 
         // Send ETH directly to the contract
         vm.prank(alice);
@@ -295,7 +273,6 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         // Should have fed the Aminal
         assertTrue(aminal.getLoveByUser(alice) > initialLove);
-        assertTrue(aminal.getEnergy() > initialEnergy);
     }
 
     function testGetLoveForAmount() public {
@@ -312,7 +289,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // The actual love received should match the prediction
         assertEq(aminal.getLoveByUser(alice), predictedLove);
 
-        // Query love for another amount after feeding (should be same since VRGDA doesn't change with energy in this implementation)
+        // Query love for another amount after feeding
         uint256 predictedLove2 = aminal.getLoveForAmount(0.01 ether);
         assertTrue(predictedLove2 > 0);
 

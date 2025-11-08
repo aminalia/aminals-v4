@@ -14,7 +14,7 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 /**
  * @title AminalBreedingIntegration
  * @dev Comprehensive integration test covering the complete breeding flow:
- * 1. Aminals are fed to build love and energy
+ * 1. Aminals are fed to build love
  * 2. Breeding is initiated
  * 3. Complete Aminal designs are proposed (1-10 genes with placement metadata)
  * 4. Users vote on entire Aminal designs for visual consistency
@@ -130,7 +130,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // genes[8] is 0 (unused) by default
 
         // Parent 2: Uses alternative set of genes (vibrant theme) for variety
-        genesisGenes[1][0] = GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] =
+            GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][1] = GeneInstance({geneId: altArmsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][2] = GeneInstance({geneId: altTailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][3] = GeneInstance({geneId: altEarsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
@@ -206,7 +207,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function testCompleteBreedingFlow() public {
         console.log("=== STARTING COMPLETE BREEDING FLOW TEST (FULL DESIGN VOTING) ===");
 
-        // STEP 1: Feed Aminals to build love and energy
+        // STEP 1: Feed Aminals to build love
         console.log("\n1. FEEDING AMINALS");
         _feedAminals();
 
@@ -237,13 +238,11 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("Feeding Aminal 1 and 2...");
 
         // Record initial states
-        uint256 aminal1InitialEnergy = aminal1.getEnergy();
-        uint256 aminal2InitialEnergy = aminal2.getEnergy();
         uint256 aminal1InitialLove = aminal1.getLoveByUser(alice);
         uint256 aminal2InitialLove = aminal2.getLoveByUser(alice);
 
         // All users feed both Aminals to have enough love for proposing designs
-        // Each user needs at least 10 love for both aminals to propose designs
+        // Each user needs enough love percentage for both aminals to propose designs
         address[5] memory users = [alice, bob, charlie, david, eve];
 
         for (uint256 i = 0; i < users.length; i++) {
@@ -255,32 +254,33 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         }
 
         // Verify feeding worked
-        assertTrue(aminal1.getEnergy() > aminal1InitialEnergy, "Aminal 1 energy should increase");
-        assertTrue(aminal2.getEnergy() > aminal2InitialEnergy, "Aminal 2 energy should increase");
         assertTrue(aminal1.getLoveByUser(alice) > aminal1InitialLove, "Aminal 1 love should increase");
         assertTrue(aminal2.getLoveByUser(alice) > aminal2InitialLove, "Aminal 2 love should increase");
 
-        console.log("Aminal 1 energy:", aminal1.getEnergy());
-        console.log("Aminal 2 energy:", aminal2.getEnergy());
+        console.log("Aminal 1 total love:", aminal1.getTotalLove());
+        console.log("Aminal 2 total love:", aminal2.getTotalLove());
         console.log("Aminal 1 love from Alice:", aminal1.getLoveByUser(alice));
         console.log("Aminal 2 love from Alice:", aminal2.getLoveByUser(alice));
 
-        // Verify minimum requirements for breeding and proposing
+        // Verify minimum requirements for breeding and proposing (10% of total love)
         uint256 aminal1Love = aminal1.getLoveByUser(alice);
         uint256 aminal2Love = aminal2.getLoveByUser(alice);
-        console.log("Checking love requirements - need 10, Aminal1 has:", aminal1Love);
-        console.log("Checking love requirements - need 10, Aminal2 has:", aminal2Love);
+        uint256 aminal1MinRequired = (aminal1.getTotalLove() * 10) / 100;
+        uint256 aminal2MinRequired = (aminal2.getTotalLove() * 10) / 100;
 
-        assertTrue(aminal1Love >= 10, "Aminal 1 needs at least 10 love");
-        assertTrue(aminal2Love >= 10, "Aminal 2 needs at least 10 love");
-        assertTrue(aminal1.getEnergy() >= 10, "Aminal 1 needs at least 10 energy");
-        assertTrue(aminal2.getEnergy() >= 10, "Aminal 2 needs at least 10 energy");
+        console.log("Checking love requirements - need 10% of total, Aminal1 has:", aminal1Love);
+        console.log("Checking love requirements - need 10% of total, Aminal2 has:", aminal2Love);
+
+        assertTrue(aminal1Love >= aminal1MinRequired, "Aminal 1 needs at least 10% of total love");
+        assertTrue(aminal2Love >= aminal2MinRequired, "Aminal 2 needs at least 10% of total love");
 
         // Verify all users have enough love to propose designs
         address[5] memory verifyUsers = [alice, bob, charlie, david, eve];
         for (uint256 i = 0; i < verifyUsers.length; i++) {
-            assertTrue(aminal1.getLoveByUser(verifyUsers[i]) >= 10, "Each user needs at least 10 love for aminal1");
-            assertTrue(aminal2.getLoveByUser(verifyUsers[i]) >= 10, "Each user needs at least 10 love for aminal2");
+            uint256 userLove1 = aminal1.getLoveByUser(verifyUsers[i]);
+            uint256 userLove2 = aminal2.getLoveByUser(verifyUsers[i]);
+            assertTrue(userLove1 >= aminal1MinRequired, "Each user needs at least 10% of total love for aminal1");
+            assertTrue(userLove2 >= aminal2MinRequired, "Each user needs at least 10% of total love for aminal2");
         }
     }
 
@@ -489,9 +489,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         console.log("Child Aminal created with complete design:");
         for (uint256 i = 0; i < 9; i++) {
-            if (childGenes[i].geneId != 0) {
-                console.log("- Gene slot", i, ":", childGenes[i].geneId);
-            }
+            if (childGenes[i].geneId != 0) console.log("- Gene slot", i, ":", childGenes[i].geneId);
         }
 
         // Verify at least one trait is set (not all zero)

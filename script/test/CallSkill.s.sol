@@ -27,7 +27,7 @@ contract CallSkill is Script {
         Aminal aminal = Aminal(payable(aminalAddress));
 
         console.log("Using Aminal at address:", aminalAddress);
-        console.log("Aminal energy before:", aminal.getEnergy());
+        console.log("Aminal total love before:", aminal.getTotalLove());
 
         // Get skill address (assuming Move2D skill exists)
         address skillAddress = address(vm.envAddress("MOVE2D_SKILL_CONTRACT"));
@@ -41,7 +41,7 @@ contract CallSkill is Script {
         aminal.useSkill(skillAddress, skillData);
 
         console.log("Skill called successfully");
-        console.log("Aminal energy after:", aminal.getEnergy());
+        console.log("Aminal total love after:", aminal.getTotalLove());
 
         // Check if position was updated (this would require reading skill properties)
         console.log("Check Aminal's position properties for movement changes");
@@ -65,10 +65,10 @@ contract CallFight is Script {
         Aminal aminal = Aminal(payable(aminalAddress));
         Aminal victim = Aminal(payable(victimAddress));
 
-        uint256 energy1 = aminal.getEnergy();
-        uint256 energy2 = victim.getEnergy();
-        console.log("Aminal energy before: ", vm.toString(energy1));
-        console.log("Victim energy before: ", vm.toString(energy2));
+        uint256 love1 = aminal.getTotalLove();
+        uint256 love2 = victim.getTotalLove();
+        console.log("Aminal total love before: ", vm.toString(love1));
+        console.log("Victim total love before: ", vm.toString(love2));
 
         // Get skill address (assuming FightSkill skill exists)
         FightSkill skillContract = FightSkill(address(vm.envAddress("FIGHT_SKILL_CONTRACT")));
@@ -87,10 +87,10 @@ contract CallFight is Script {
 
         console.log("Skill called successfully");
 
-        energy1 = aminal.getEnergy();
-        energy2 = victim.getEnergy();
-        console.log("Aminal energy after: ", vm.toString(energy1));
-        console.log("Victim energy after: ", vm.toString(energy2));
+        love1 = aminal.getTotalLove();
+        love2 = victim.getTotalLove();
+        console.log("Aminal total love after: ", vm.toString(love1));
+        console.log("Victim total love after: ", vm.toString(love2));
 
         (health1,) = skillContract.getStats(victimAddress);
         (health2,) = skillContract.getStats(victimAddress);
