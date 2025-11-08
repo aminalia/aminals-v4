@@ -291,8 +291,8 @@ const AuctionPage: NextPage = () => {
       };
 
       // Try to find this gene in parent 1
-      const idx1 = auction.aminalOne.genes.findIndex((g) => g === geneId);
-      if (idx1 !== -1 && auction.aminalOne.genePlacements) {
+      const idx1 = auction.aminalOne?.genes.findIndex((g) => g === geneId) ?? -1;
+      if (idx1 !== -1 && auction.aminalOne?.genePlacements) {
         try {
           const parent1Placements = JSON.parse(auction.aminalOne.genePlacements);
           basePlacement = parent1Placements[idx1];
@@ -301,8 +301,8 @@ const AuctionPage: NextPage = () => {
         }
       } else {
         // Try parent 2
-        const idx2 = auction.aminalTwo.genes.findIndex((g) => g === geneId);
-        if (idx2 !== -1 && auction.aminalTwo.genePlacements) {
+        const idx2 = auction.aminalTwo?.genes.findIndex((g) => g === geneId) ?? -1;
+        if (idx2 !== -1 && auction.aminalTwo?.genePlacements) {
           try {
             const parent2Placements = JSON.parse(
               auction.aminalTwo.genePlacements
