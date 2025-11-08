@@ -28,6 +28,7 @@ import { Button } from '@components/ui/Button';
 
 // Hooks & Types
 import {
+  contractFormatToPlacement,
   useAuction,
   useAuctionVoting,
   useDesignProposals,
@@ -198,8 +199,11 @@ const AuctionPage: NextPage = () => {
       try {
         const allPlacements = JSON.parse(auction.aminalOne.genePlacements);
         // Filter to match filtered genes (skip empty slots)
+        // Convert from contract format (0-359) to UI format (-180 to 180)
         placements = auction.aminalOne.genes
-          .map((geneId, idx) => (geneId !== 0n ? allPlacements[idx] : null))
+          .map((geneId, idx) =>
+            geneId !== 0n ? contractFormatToPlacement(allPlacements[idx]) : null
+          )
           .filter((p): p is GeneMetadata => p !== null);
       } catch (e) {
         console.error('Failed to parse parent 1 placements:', e);
@@ -239,8 +243,11 @@ const AuctionPage: NextPage = () => {
       try {
         const allPlacements = JSON.parse(auction.aminalTwo.genePlacements);
         // Filter to match filtered genes (skip empty slots)
+        // Convert from contract format (0-359) to UI format (-180 to 180)
         placements = auction.aminalTwo.genes
-          .map((geneId, idx) => (geneId !== 0n ? allPlacements[idx] : null))
+          .map((geneId, idx) =>
+            geneId !== 0n ? contractFormatToPlacement(allPlacements[idx]) : null
+          )
           .filter((p): p is GeneMetadata => p !== null);
       } catch (e) {
         console.error('Failed to parse parent 2 placements:', e);
@@ -279,7 +286,7 @@ const AuctionPage: NextPage = () => {
     let parent2Placements: GeneMetadata[] = [];
 
     try {
-      parent1Placements = auction.aminalOne?.genePlacements
+      const rawPlacements = auction.aminalOne?.genePlacements
         ? JSON.parse(auction.aminalOne.genePlacements)
         : parent1Genes.map(() => ({
             offsetX: 0,
@@ -287,6 +294,10 @@ const AuctionPage: NextPage = () => {
             scale: 100,
             rotation: 0,
           }));
+      // Convert from contract format (0-359) to UI format (-180 to 180)
+      parent1Placements = rawPlacements.map((p: any) =>
+        contractFormatToPlacement(p)
+      );
     } catch (e) {
       parent1Placements = parent1Genes.map(() => ({
         offsetX: 0,
@@ -297,7 +308,7 @@ const AuctionPage: NextPage = () => {
     }
 
     try {
-      parent2Placements = auction.aminalTwo?.genePlacements
+      const rawPlacements = auction.aminalTwo?.genePlacements
         ? JSON.parse(auction.aminalTwo.genePlacements)
         : parent2Genes.map(() => ({
             offsetX: 0,
@@ -305,6 +316,10 @@ const AuctionPage: NextPage = () => {
             scale: 100,
             rotation: 0,
           }));
+      // Convert from contract format (0-359) to UI format (-180 to 180)
+      parent2Placements = rawPlacements.map((p: any) =>
+        contractFormatToPlacement(p)
+      );
     } catch (e) {
       parent2Placements = parent2Genes.map(() => ({
         offsetX: 0,

@@ -226,6 +226,15 @@ export default function ProposeDesignButton({
     // Contract expects: struct GeneInstance { geneId, offsetX, offsetY, scale, rotation }[9]
     const geneInstances = paddedGeneIds.map((geneId, index) => {
       const placement = placementToContractFormat(paddedPlacements[index]);
+      // Log rotation normalization if it occurred
+      if (
+        paddedPlacements[index].rotation !== placement.rotation &&
+        geneId !== 0n
+      ) {
+        console.log(
+          `🔄 Normalized rotation for gene ${geneId}: ${paddedPlacements[index].rotation}° → ${placement.rotation}°`
+        );
+      }
       return {
         geneId,
         ...placement,

@@ -4,12 +4,8 @@
 - Fix mobile responsive issues
 
 # Aminal designer
-- Drag and drop genes to change placement
-- No negative rotation 360 degrees
-- double-clicking or click and hold on a slot should open the select gene modal
-- Draft system (Poli easily deleted his hard work)
-- UNDO / REDO
 
+- Draft system (Poli easily deleted his hard work)
 
 ## UI
 

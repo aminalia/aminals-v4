@@ -11,7 +11,7 @@ export interface GeneMetadata {
   offsetX: number; // -500 to 500 (centered at 0)
   offsetY: number; // -500 to 500 (centered at 0)
   scale: number; // 10 to 200 (100 = 100% = default)
-  rotation: number; // -180 to 180 (degrees)
+  rotation: number; // -180 to 180 (degrees, UI display format - stored as 0-359 in contract)
 }
 
 /**
@@ -212,6 +212,7 @@ export function countGenes(geneIds: bigint[]): number {
 
 /**
  * Helper to convert GeneMetadata to contract format
+ * @dev Normalizes rotation from UI range (-180 to 180) to contract range (0 to 359)
  */
 export function placementToContractFormat(placement: GeneMetadata): {
   offsetX: number;
@@ -219,16 +220,24 @@ export function placementToContractFormat(placement: GeneMetadata): {
   scale: number;
   rotation: number;
 } {
+  // Normalize rotation: -180 to 180 → 0 to 359
+  // The modulo ensures we stay in 0-359 range even for values outside -180 to 180
+  let normalizedRotation = placement.rotation % 360;
+  if (normalizedRotation < 0) {
+    normalizedRotation += 360;
+  }
+
   return {
     offsetX: Math.floor(placement.offsetX),
     offsetY: Math.floor(placement.offsetY),
     scale: Math.floor(placement.scale),
-    rotation: Math.floor(placement.rotation),
+    rotation: Math.floor(normalizedRotation),
   };
 }
 
 /**
  * Helper to convert contract placement to GeneMetadata
+ * @dev Denormalizes rotation from contract range (0 to 359) to UI range (-180 to 180)
  */
 export function contractFormatToPlacement(contractPlacement: {
   offsetX: number;
@@ -236,10 +245,17 @@ export function contractFormatToPlacement(contractPlacement: {
   scale: number;
   rotation: number;
 }): GeneMetadata {
+  // Denormalize rotation: 0 to 359 → -180 to 180
+  // Values 0-180 stay the same, values 181-359 become negative
+  let uiRotation = contractPlacement.rotation;
+  if (uiRotation > 180) {
+    uiRotation = uiRotation - 360;
+  }
+
   return {
     offsetX: contractPlacement.offsetX,
     offsetY: contractPlacement.offsetY,
     scale: contractPlacement.scale,
-    rotation: contractPlacement.rotation,
+    rotation: uiRotation,
   };
 }

@@ -20,7 +20,12 @@ export interface InteractiveCanvasProps {
   genes: Gene[];
   onSelect: (index: number) => void;
   onUpdatePlacement: (index: number, placement: Partial<GeneMetadata>) => void;
+  onDragStart?: () => void; // Called when drag operation starts
   disabled?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
+  canUndo?: boolean;
+  canRedo?: boolean;
 }
 
 interface DragState {
@@ -39,7 +44,12 @@ export default function InteractiveCanvas({
   genes,
   onSelect,
   onUpdatePlacement,
+  onDragStart,
   disabled = false,
+  onUndo,
+  onRedo,
+  canUndo = false,
+  canRedo = false,
 }: InteractiveCanvasProps) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -75,6 +85,11 @@ export default function InteractiveCanvas({
       // Select the gene
       onSelect(index);
 
+      // Save history before starting drag
+      if (onDragStart) {
+        onDragStart();
+      }
+
       // Start drag operation
       const svgCoords = screenToSVG(e.clientX, e.clientY);
       setDragState({
@@ -86,7 +101,7 @@ export default function InteractiveCanvas({
         geneIndex: index,
       });
     },
-    [disabled, onSelect, placements, screenToSVG]
+    [disabled, onSelect, onDragStart, placements, screenToSVG]
   );
 
   // Handle mouse move (drag)
@@ -172,11 +187,34 @@ export default function InteractiveCanvas({
     <div className="flex-1 bg-card rounded-lg border border-border p-4">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold">Preview</h3>
-        {selectedIndex !== null && selectedIndex >= 0 && (
-          <span className="text-xs text-muted-foreground">
-            Selected: Slot {selectedIndex + 1}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Undo/Redo buttons */}
+          {onUndo && onRedo && (
+            <>
+              <button
+                onClick={onUndo}
+                disabled={!canUndo || disabled}
+                className="p-1 text-xs hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Undo (Ctrl/Cmd+Z)"
+              >
+                ↶
+              </button>
+              <button
+                onClick={onRedo}
+                disabled={!canRedo || disabled}
+                className="p-1 text-xs hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Redo (Ctrl/Cmd+Shift+Z)"
+              >
+                ↷
+              </button>
+            </>
+          )}
+          {selectedIndex !== null && selectedIndex >= 0 && (
+            <span className="text-xs text-muted-foreground">
+              Selected: Slot {selectedIndex + 1}
+            </span>
+          )}
+        </div>
       </div>
 
       <div

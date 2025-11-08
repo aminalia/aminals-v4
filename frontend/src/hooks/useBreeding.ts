@@ -15,6 +15,7 @@ import type {
   Gene,
   GeneMetadata,
 } from '../types/breeding';
+import { contractFormatToPlacement } from '../types/breeding';
 
 /**
  * Get all design proposals for an auction from Ponder
@@ -94,10 +95,12 @@ export const useDesignProposals = (auctionId: string) => {
 
   // Combine proposals with gene data and proposer data
   const proposalsWithData: DesignProposal[] = proposals.map((proposal) => {
-    // Parse placements from JSON
+    // Parse placements from JSON and convert from contract format to UI format
     let placements: GeneMetadata[] = [];
     try {
-      placements = JSON.parse(proposal.placements);
+      const rawPlacements = JSON.parse(proposal.placements);
+      // Convert from contract format (0-359) to UI format (-180 to 180)
+      placements = rawPlacements.map((p: any) => contractFormatToPlacement(p));
     } catch (e) {
       console.error('Failed to parse placements:', e);
       placements = Array(10).fill({
