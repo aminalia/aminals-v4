@@ -25,8 +25,8 @@ import {FixedPointMathLib} from "lib/VRGDAs/lib/solmate/src/utils/FixedPointMath
  * - Day 1: Feed 1 ETH when target is 0.1 ETH → 0.1x multiplier → 100 love (binge feeding penalty)
  */
 contract AminalVRGDA is LinearVRGDA {
-    /// @notice Fixed rate of energy gained per ETH (for love unit calculation)
-    uint256 public constant ENERGY_PER_ETH = 10_000; // 1 ETH = 10,000 energy units
+    /// @notice Fixed rate of love units per ETH (for love calculation)
+    uint256 public constant LOVE_PER_ETH = 10_000; // 1 ETH = 10,000 love units
 
     /// @notice Target feeding rate: 0.1 ETH per day
     uint256 public constant TARGET_FEED_RATE = 0.1 ether; // per day
@@ -41,13 +41,13 @@ contract AminalVRGDA is LinearVRGDA {
     {}
 
     /**
-     * @notice Calculate how much love is gained for a given ETH amount using VRGDA
-     * @dev Love increases when behind feeding schedule, decreases when ahead
-     * @dev Returns love in the same units as energy (10,000 per ETH)
+     * @notice Calculate how much love is gained for a given ETH amount
+     * @dev Love scales based on feeding schedule: more when behind, less when ahead
+     * @dev Returns love in standard units (10,000 per ETH base rate)
      * @param timeSinceStart Time elapsed since Aminal creation (in seconds)
      * @param totalEthFed Total ETH fed to this Aminal so far (in wei)
      * @param ethAmount Amount of ETH being fed now (in wei)
-     * @return loveGained Amount of love that will be gained (in energy units)
+     * @return loveGained Amount of love that will be gained (in love units)
      */
     function getLoveForETH(uint256 timeSinceStart, uint256 totalEthFed, uint256 ethAmount)
         public
@@ -60,7 +60,7 @@ contract AminalVRGDA is LinearVRGDA {
         uint256 targetEthByNow = (timeSinceStart * TARGET_FEED_RATE) / 1 days;
 
         // Base love: 1 ETH = 10,000 units
-        uint256 baseLove = (ethAmount * ENERGY_PER_ETH) / 1 ether;
+        uint256 baseLove = (ethAmount * LOVE_PER_ETH) / 1 ether;
 
         // Apply schedule-based scaling
         if (timeSinceStart == 0 || targetEthByNow == 0) {
@@ -87,13 +87,13 @@ contract AminalVRGDA is LinearVRGDA {
     }
 
     /**
-     * @notice Calculate how much energy is gained for a given ETH amount
-     * @return energyGained Amount of energy that will be gained (in energy units)
+     * @notice Calculate base love units for a given ETH amount (without schedule scaling)
+     * @return loveAmount Amount of love units for the ETH amount (base rate only)
      */
-    function getEnergyForETH(uint256 ethAmount) public view returns (uint256 energyGained) {
+    function getBaseLoveForETH(uint256 ethAmount) public pure returns (uint256 loveAmount) {
         if (ethAmount == 0) return 0;
 
-        return ethAmount * ENERGY_PER_ETH / 1 ether;
+        return ethAmount * LOVE_PER_ETH / 1 ether;
     }
 
     /**
@@ -101,9 +101,9 @@ contract AminalVRGDA is LinearVRGDA {
      * @dev Returns how much love is gained per 1 ETH given current state
      * @param timeSinceStart Time since Aminal creation (in seconds)
      * @param totalEthFed Total ETH fed so far (in wei)
-     * @return The love amount gained per 1 ETH (in energy units, where 10,000 = 1 ETH)
+     * @return The love amount gained per 1 ETH (in love units, where 10,000 = 1x multiplier)
      */
-    function getLoveMultiplier(uint256 timeSinceStart, uint256 totalEthFed) public view returns (uint256) {
+    function getLoveMultiplier(uint256 timeSinceStart, uint256 totalEthFed) public pure returns (uint256) {
         return getLoveForETH(timeSinceStart, totalEthFed, 1 ether);
     }
 }

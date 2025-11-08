@@ -153,7 +153,7 @@ contract AminalVRGDATest is Test, IAminalStructs {
 
     function test_VRGDAConstants() public {
         // Verify VRGDA constants are set correctly
-        assertEq(vrgda.ENERGY_PER_ETH(), 10_000);
+        assertEq(vrgda.LOVE_PER_ETH(), 10_000);
         assertEq(vrgda.TARGET_FEED_RATE(), 0.1 ether);
     }
 

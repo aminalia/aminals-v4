@@ -34,13 +34,13 @@ contract FightSkill is Skill {
         // require(Fighters[victim].fighting == 0, "Cannot attack an Aminal that is already enrolled in a fight");
 
         if (!Fighters[msg.sender].fighting) {
-            // Health now based on total love instead of energy
+            // Health based on total love
             uint256 attackerLove = IAminal(msg.sender).getTotalLove();
             Fighters[msg.sender].health = attackerLove + (attackerLove * Fighters[msg.sender].mastery) / 100;
             Fighters[msg.sender].fighting = true;
         }
         if (!Fighters[victim].fighting) {
-            // Health now based on total love instead of energy
+            // Health based on total love
             uint256 victimLove = IAminal(victim).getTotalLove();
             Fighters[victim].health = victimLove + (victimLove * Fighters[victim].mastery) / 100;
             Fighters[victim].fighting = true;

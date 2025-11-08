@@ -131,7 +131,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Gene NFT system for trait management 🎨
     Genes public genes;
 
-    /// @notice VRGDA for calculating love based on energy levels 📈
+    /// @notice VRGDA for calculating love based on feeding schedule 📈
     AminalVRGDA public loveVRGDA;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
