@@ -65,21 +65,21 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error InvalidAminalAddresses();
     error CannotBreedWithSelf();
     error InsufficientLove();
-    error InsufficientEnergy();
     error IndexOutOfBounds();
     error NotRegisteredAminal();
     error VRGDANotDeployed();
     error InsufficientTotalLove();
+    error InsufficientLovePercentage();
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                     📊 CONSTANTS
     // ═══════════════════════════════════════════════════════════════════════════════════
 
-    /// @notice Minimum love required from user to breed an Aminal
-    uint256 public constant MIN_LOVE_REQUIRED = 10;
+    /// @notice Minimum percentage of total love required from user to breed (10%)
+    uint256 public constant MIN_LOVE_PERCENTAGE = 10;
 
-    /// @notice Minimum energy required for each parent to breed
-    uint256 public constant MIN_ENERGY_REQUIRED = 10;
+    /// @notice Basis points for percentage calculations (100 = 100%)
+    uint256 public constant PERCENTAGE_BASIS = 100;
 
     /// @notice Base price for VRGDA love calculation (1 ETH)
     int256 public constant VRGDA_BASE_PRICE = 1 ether;
@@ -317,12 +317,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Initiate breeding ceremony between two Aminals 💕
      * @dev Launches gene auctions for offspring
      *
-     *
      * Requirements:
-     * - Minimum breeding fee must be paid
      * - Both addresses must be valid Aminals
-     * - Caller must have sufficient love for at both Aminals
-     * - Both Aminals must have sufficient energy to breed
+     * - Caller must have at least MIN_LOVE_PERCENTAGE (10%) of total love for both Aminals
+     * - Love consumption is percentage-based: if you have X% of total love, you pay X% * 10% of your love
      * - Total love meets minimum slippage threshold
      *
      * @param aminalOne First parent Aminal address
@@ -345,27 +343,33 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         AminalContract aminal2 = AminalContract(payable(aminalTwo));
 
         // Cache love values to avoid redundant external calls
-        uint256 love1 = aminal1.getLoveByUser(msg.sender);
-        uint256 love2 = aminal2.getLoveByUser(msg.sender);
+        uint256 userLove1 = aminal1.getLoveByUser(msg.sender);
+        uint256 userLove2 = aminal2.getLoveByUser(msg.sender);
+        uint256 totalLove1 = aminal1.getTotalLove();
+        uint256 totalLove2 = aminal2.getTotalLove();
 
-        // Check if caller has sufficient love for both Aminals
-        if (love1 < MIN_LOVE_REQUIRED) revert InsufficientLove();
-        if (love2 < MIN_LOVE_REQUIRED) revert InsufficientLove();
+        // Check if total love is sufficient (can't breed if no love exists)
+        if (totalLove1 == 0 || totalLove2 == 0) revert InsufficientTotalLove();
 
-        // Check if both Aminals have sufficient energy to breed
-        if (aminal1.getEnergy() < MIN_ENERGY_REQUIRED || aminal2.getEnergy() < MIN_ENERGY_REQUIRED) {
-            revert InsufficientEnergy();
-        }
+        // Check if caller has at least MIN_LOVE_PERCENTAGE (10%) of total love for each Aminal
+        uint256 minRequired1 = (totalLove1 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 minRequired2 = (totalLove2 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+
+        if (userLove1 < minRequired1 || userLove2 < minRequired2) revert InsufficientLovePercentage();
+
+        // Calculate love to consume: MIN_LOVE_PERCENTAGE of user's love
+        uint256 loveToConsume1 = (userLove1 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 loveToConsume2 = (userLove2 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
 
         // Calculate total love investment from caller for both Aminals
-        uint256 totalLove = love1 + love2;
+        uint256 totalLove = userLove1 + userLove2;
 
         // Slippage protection: ensure total love meets minimum threshold
         if (totalLove < minTotalLove) revert InsufficientTotalLove();
 
-        // Consume Love from caller and energy via squeakFrom
-        aminal1.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);
-        aminal2.squeakFrom(msg.sender, MIN_LOVE_REQUIRED);
+        // Consume love from caller via squeakFrom
+        aminal1.squeakFrom(msg.sender, loveToConsume1);
+        aminal2.squeakFrom(msg.sender, loveToConsume2);
 
         // Create gene auction with combined love as initial value
         auctionId = geneAuction.createAuction(aminal1.aminalIndex(), aminal2.aminalIndex(), totalLove);

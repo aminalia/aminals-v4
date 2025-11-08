@@ -24,7 +24,6 @@ contract FeedAminal is Script {
             console.log("Fed Aminal at address:", aminalAddress);
             console.log("Aminal love by user:", aminal.getLoveByUser(address(vm.envAddress("ADDRESS"))));
             console.log("Aminal total love:", aminal.getTotalLove());
-            console.log("Aminal energy:", aminal.getEnergy());
         }
 
         vm.stopBroadcast();

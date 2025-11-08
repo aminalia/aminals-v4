@@ -34,7 +34,6 @@ contract GetAminalInfo is Script {
             console.log("Mom:", aminal.momAddress());
             console.log("Dad:", aminal.dadAddress());
             console.log("Total Love:", aminal.getTotalLove());
-            console.log("Energy:", aminal.getEnergy());
 
             // Get gene instances (flexible 1-9 gene system)
             IAminalStructs.GeneInstance[9] memory geneInstances = aminal.getGenes();

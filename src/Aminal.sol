@@ -38,8 +38,7 @@ import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
  *
  * Key Features:
  * - 🏦 Treasury: Each Aminal can hold and manage its own funds
- * - 💝 Love System: Community-driven affection mechanics with bonding curves
- * - ⚡ Energy System: Resource management for skills and breeding
+ * - 💝 Love System: Community-driven affection mechanics with percentage-based requirements
  * - 🧬 Breeding: Consensual reproduction creating new Aminals through gene auctions
  * - 🎨 Gene Expression: Visual traits determined by Gene NFT system
  * - 🛠️ Skills: Composable abilities that can be learned and executed
@@ -56,17 +55,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Minimum ETH required to feed an Aminal
     uint256 public constant MIN_FEED_AMOUNT = 0.001 ether;
 
-    /// @notice Maximum energy an Aminal can hold (100 ETH worth)
-    uint256 public constant MAX_ENERGY = 1_000_000;
+    /// @notice Minimum percentage of total love required for actions (10%)
+    uint256 public constant MIN_LOVE_PERCENTAGE = 10;
 
-    /// @notice Initial energy for new Aminals (0.005 ETH worth)
-    uint256 public constant INITIAL_ENERGY = 50;
-
-    /// @notice Minimum love required for breeding
-    uint256 public constant MIN_BREEDING_LOVE = 10;
-
-    /// @notice Maximum skill cost to prevent accidental huge costs
-    uint256 public constant MAX_SKILL_COST = 10_000;
+    /// @notice Basis points for percentage calculations (100 = 100%)
+    uint256 public constant PERCENTAGE_BASIS = 100;
 
     /*//////////////////////////////////////////////////////////////
                             STATE VARIABLES
@@ -96,14 +89,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Unique identifier within the Aminal ecosystem
     uint256 public immutable aminalIndex;
 
-    /// @notice VRGDA instance for calculating love based on energy levels 📈
+    /// @notice VRGDA instance for calculating love gains from ETH 📈
     AminalVRGDA public immutable loveVRGDA;
 
     /// @notice The current sum of all love of all users to this Aminal 💝
     uint256 private totalLove;
-
-    /// @notice Current energy level - the life force for actions ⚡
-    uint256 private energy;
 
     /// @notice Love balance (given - used) by each user to this Aminal
     mapping(address user => uint256 love) public lovePerUser;
@@ -117,23 +107,14 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param loveGained Amount of love gained
     /// @param love Total love from sender after feeding
     /// @param totalLove Total love this Aminal has received
-    /// @param energyGained Amount of energy gained
-    /// @param energy Total energy after feeding
-    event FeedAminal(
-        address indexed sender,
-        uint256 loveGained,
-        uint256 love,
-        uint256 totalLove,
-        uint256 energyGained,
-        uint256 energy
-    );
+    event FeedAminal(address indexed sender, uint256 loveGained, uint256 love, uint256 totalLove);
 
-    /// @notice Emitted when resources (energy and love) are consumed for skill usage
-    /// @param user Address of the skill user
-    /// @param amount Amount of energy and love consumed (same for both)
-    /// @param remainingEnergy Energy remaining after consumption
+    /// @notice Emitted when love is consumed for skill or action usage
+    /// @param user Address of the user consuming love
+    /// @param amount Amount of love consumed
     /// @param remainingLove Love remaining for user after consumption
-    event ResourcesConsumed(address indexed user, uint256 amount, uint256 remainingEnergy, uint256 remainingLove);
+    /// @param totalLove Total love remaining for this Aminal
+    event LoveConsumed(address indexed user, uint256 amount, uint256 remainingLove, uint256 totalLove);
 
     /// @notice Emitted when a skill is successfully used
     /// @param user Address of the skill user
@@ -158,20 +139,17 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Thrown when user doesn't have enough love for an action
     error NotEnoughLove();
 
-    /// @notice Thrown when Aminal doesn't have enough energy for an action
-    error NotEnoughEnergy();
-
     /// @notice Thrown when trying to use an unregistered skill (deprecated)
     error NotRegisteredSkill();
 
     /// @notice Thrown when target contract doesn't implement ISkill interface
     error SkillNotSupported();
 
-    /// @notice Thrown when Aminal has insufficient energy for skill execution
-    error InsufficientEnergy();
-
     /// @notice Thrown when user has insufficient love for skill execution
     error InsufficientLove();
+
+    /// @notice Thrown when total love is insufficient for percentage-based requirements
+    error InsufficientTotalLove();
 
     /// @notice Thrown when skill execution fails
     error SkillCallFailed();
@@ -230,9 +208,6 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         aminalIndex = _aminalIndex;
         loveVRGDA = AminalVRGDA(_loveVRGDA);
 
-        // Initialize with starter energy
-        energy = INITIAL_ENERGY;
-
         // Mint the NFT to the factory (which will transfer to the actual owner)
         _mint(address(_factory), 1);
     }
@@ -242,9 +217,9 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Feed this Aminal with love and energy 🍯
-     * @dev Feeding increases both love and energy through bonding curves
-     * @return energyGained The amount of energy gained from this feeding
+     * @notice Feed this Aminal with love 🍯
+     * @dev Feeding increases love through bonding curves
+     * @return loveGained The amount of love gained from this feeding
      *
      * "To feed an Aminal is to nourish its digital soul,
      *  creating bonds that transcend the boundaries of code"
@@ -256,24 +231,17 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Internal feeding logic called by feed() and receive()
     /// @param feeder Address of the entity providing ETH
     /// @param amount Amount of ETH being fed
-    /// @return energyGained Amount of energy gained from feeding
+    /// @return loveGained Amount of love gained from feeding
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
         if (amount < MIN_FEED_AMOUNT) revert NotEnoughEther();
 
-        // Calculate love using VRGDA based on current energy level
-        uint256 loveGained = loveVRGDA.getLoveForETH(energy, amount);
+        // Calculate love using VRGDA
+        uint256 loveGained = loveVRGDA.getLoveForETH(0, amount); // Pass 0 since we no longer track energy
         lovePerUser[feeder] += loveGained;
         totalLove += loveGained;
 
-        // Calculate energy increase using VRGDA
-        uint256 energyGained = loveVRGDA.getEnergyForETH(amount);
-
-        // Cap energy at maximum to prevent overflow
-        if (energy + energyGained > MAX_ENERGY) energyGained = MAX_ENERGY - energy;
-        energy += energyGained;
-
-        emit FeedAminal(feeder, loveGained, lovePerUser[feeder], totalLove, energyGained, energy);
-        return energyGained;
+        emit FeedAminal(feeder, loveGained, lovePerUser[feeder], totalLove);
+        return loveGained;
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -281,23 +249,21 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Factory-only function to consume love and energy on behalf of a user for breeding
-     * @dev Only callable by the factory contract for breeding mechanics
+     * @notice Factory-only function to consume love on behalf of a user for breeding and actions
+     * @dev Only callable by the factory contract or gene auction for breeding mechanics
      * @param user The user whose love should be consumed
-     * @param amount The amount of love and energy to consume
+     * @param amount The amount of love to consume
      *
      * "In the sacred act of breeding, the factory channels the love of the community
      *  to bring new life into the digital realm"
      */
     function squeakFrom(address user, uint256 amount) external onlyFactoryOrAuction {
         if (lovePerUser[user] < amount) revert NotEnoughLove();
-        if (energy < amount) revert NotEnoughEnergy();
 
-        energy -= amount;
         lovePerUser[user] -= amount;
         totalLove -= amount;
 
-        emit ResourcesConsumed(user, amount, energy, lovePerUser[user]);
+        emit LoveConsumed(user, amount, lovePerUser[user], totalLove);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -305,11 +271,12 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     //////////////////////////////////////////////////////////////*/
 
     /**
-     * @notice Use a skill by calling an external function and consuming energy/love
+     * @notice Use a skill by calling an external function and consuming love
      * @dev Only works with contracts implementing the ISkill interface
-     * @dev Consumes resources equally based on the cost:
-     *      - Energy: Deducted from global pool (per Aminal, shared by all users)
-     *      - Love: Deducted from caller's personal love balance (per user per Aminal)
+     * @dev Consumes love based on percentage of total love:
+     *      - Cost percentage returned from skill determines love consumption
+     *      - Love consumed = (user's love * cost percentage) / 100
+     *      - User must have at least cost percentage of total love
      * @dev Protected against reentrancy attacks with nonReentrant modifier
      * @dev SECURITY: Always calls with 0 ETH value to prevent draining funds through skills
      * @param target The contract address implementing ISkill to call
@@ -326,34 +293,41 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         // Extract function selector for event logging
         bytes4 selector = bytes4(data);
 
-        // Get the cost from the skill contract
-        uint256 energyCost;
+        // Get the cost percentage from the skill contract (e.g., 10 means 10%)
+        uint256 costPercentage;
         try ISkill(target).skillCost(data) returns (uint256 cost) {
-            energyCost = cost;
+            costPercentage = cost;
         } catch {
-            // If cost query fails, default to minimum cost
-            energyCost = 1;
+            // If cost query fails, default to minimum percentage
+            costPercentage = MIN_LOVE_PERCENTAGE;
         }
 
-        // Apply cost limits and minimums
-        if (energyCost > MAX_SKILL_COST) energyCost = energy > MAX_SKILL_COST ? MAX_SKILL_COST : energy;
-        if (energyCost == 0) energyCost = 1;
+        // Cap at 100% and enforce minimum
+        if (costPercentage > PERCENTAGE_BASIS) costPercentage = PERCENTAGE_BASIS;
+        if (costPercentage == 0) costPercentage = MIN_LOVE_PERCENTAGE;
 
-        // Verify sufficient resources before execution
-        if (energy < energyCost) revert InsufficientEnergy();
-        if (lovePerUser[msg.sender] < energyCost) revert InsufficientLove();
+        // Check if total love meets minimum threshold for this percentage
+        if (totalLove == 0) revert InsufficientTotalLove();
+
+        // Calculate minimum love required (percentage of total love)
+        uint256 minLoveRequired = (totalLove * costPercentage) / PERCENTAGE_BASIS;
+
+        // Check if user has the required percentage of total love
+        if (lovePerUser[msg.sender] < minLoveRequired) revert InsufficientLove();
+
+        // Calculate actual love to consume (same as minLoveRequired for this model)
+        uint256 loveToConsume = (lovePerUser[msg.sender] * costPercentage) / PERCENTAGE_BASIS;
 
         // Execute the skill with zero ETH value for security
         (bool success,) = target.call{value: 0}(data);
         if (!success) revert SkillCallFailed();
 
-        // Consume resources only after successful execution
-        energy -= energyCost;
-        lovePerUser[msg.sender] -= energyCost;
-        totalLove -= energyCost;
+        // Consume love only after successful execution
+        lovePerUser[msg.sender] -= loveToConsume;
+        totalLove -= loveToConsume;
 
-        emit ResourcesConsumed(msg.sender, energyCost, energy, lovePerUser[msg.sender]);
-        emit SkillUsed(msg.sender, energyCost, target, selector);
+        emit LoveConsumed(msg.sender, loveToConsume, lovePerUser[msg.sender], totalLove);
+        emit SkillUsed(msg.sender, loveToConsume, target, selector);
     }
 
     /*//////////////////////////////////////////////////////////////
@@ -395,15 +369,9 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     }
 
     /// @notice Get the total love this Aminal has received from all users
-    /// @return totalLove The cumulative love from all interactions
+    /// @return The cumulative love from all interactions
     function getTotalLove() external view returns (uint256) {
         return totalLove;
-    }
-
-    /// @notice Get the current energy level of this Aminal
-    /// @return energy The current energy available for actions
-    function getEnergy() external view returns (uint256) {
-        return energy;
     }
 
     /// @notice Get the parent addresses of this Aminal
@@ -423,7 +391,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param amount The amount of ETH (in wei) to query
     /// @return loveAmount The amount of love that would be received
     function getLoveForAmount(uint256 amount) external view returns (uint256) {
-        return loveVRGDA.getLoveForETH(energy, amount);
+        return loveVRGDA.getLoveForETH(0, amount); // Pass 0 since we no longer track energy
     }
 
     /*//////////////////////////////////////////////////////////////

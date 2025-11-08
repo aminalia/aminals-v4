@@ -32,9 +32,9 @@ contract Move2D is Skill {
     }
 
     /**
-     * @dev Calculate cost based on the movement distance
+     * @dev Calculate cost percentage based on the movement distance
      * @param data The calldata being sent to this skill
-     * @return The amount of energy and love required
+     * @return The percentage of love required (e.g., 10 = 10%)
      */
     function skillCost(bytes calldata data) external view override returns (uint256) {
         bytes4 selector = bytes4(data);
@@ -51,12 +51,13 @@ contract Move2D is Skill {
             uint256 deltaY = y > currentY ? y - currentY : currentY - y;
             uint256 distance = deltaX + deltaY;
 
-            // Base cost of 1 + distance/10 (rounded up)
-            return 1 + (distance + 9) / 10;
+            // Base cost percentage of 10% + 1% per 10 units of distance (capped at 50%)
+            uint256 costPercentage = 10 + (distance / 10);
+            return costPercentage > 50 ? 50 : costPercentage;
         }
 
-        // Default cost for unknown actions
-        return 1;
+        // Default cost percentage for unknown actions (10%)
+        return 10;
     }
 
     // Getters

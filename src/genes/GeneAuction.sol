@@ -45,8 +45,11 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /// @notice Percentage of parent treasury transferred to gene creators (10%)
     uint256 public constant TREASURY_TRANSFER_PERCENTAGE = 10;
 
-    /// @notice Cost in love and energy to propose a design
-    uint256 public constant PROPOSE_DESIGN_COST = 10;
+    /// @notice Cost percentage in love to propose a design (10%)
+    uint256 public constant PROPOSE_DESIGN_COST_PERCENTAGE = 10;
+
+    /// @notice Basis points for percentage calculations (100 = 100%)
+    uint256 public constant PERCENTAGE_BASIS = 100;
 
     /// @notice Minimum fraction of total love required to remove a design (1/3)
     uint256 public constant DESIGN_REMOVAL_THRESHOLD = 3;
@@ -443,6 +446,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
     /**
      * @notice Propose a complete Aminal design (1-9 genes) for voting
      * @dev Anyone can propose designs. Must have at least 1 gene and at most 9.
+     * @dev Cost is PROPOSE_DESIGN_COST_PERCENTAGE (10%) of the proposer's love for each parent
      * @param auctionId The auction to propose the design for
      * @param genes Array of gene instances (gene IDs with placements)
      */
@@ -471,9 +475,19 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // Ensure at least 1 gene and at most 9
         if (geneCount == 0 || geneCount > 9) revert InvalidGeneCount();
 
-        // Consume love from user and energy via squeakFrom
-        IAminal(aminalFactory.getAminalByIndex(auction.aminalOne)).squeakFrom(msg.sender, PROPOSE_DESIGN_COST);
-        IAminal(aminalFactory.getAminalByIndex(auction.aminalTwo)).squeakFrom(msg.sender, PROPOSE_DESIGN_COST);
+        // Get Aminal contracts
+        IAminal aminal1 = IAminal(aminalFactory.getAminalByIndex(auction.aminalOne));
+        IAminal aminal2 = IAminal(aminalFactory.getAminalByIndex(auction.aminalTwo));
+
+        // Calculate love to consume: PROPOSE_DESIGN_COST_PERCENTAGE of user's love for each Aminal
+        uint256 userLove1 = aminal1.getLoveByUser(msg.sender);
+        uint256 userLove2 = aminal2.getLoveByUser(msg.sender);
+        uint256 loveToConsume1 = (userLove1 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 loveToConsume2 = (userLove2 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
+
+        // Consume love from user via squeakFrom
+        aminal1.squeakFrom(msg.sender, loveToConsume1);
+        aminal2.squeakFrom(msg.sender, loveToConsume2);
 
         // Create the new design
         uint256 designId = ++designCounter;

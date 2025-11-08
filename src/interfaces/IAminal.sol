@@ -14,17 +14,17 @@ interface IAminal is IAminalStructs {
                             FEEDING MECHANICS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Feed the Aminal with ETH to gain love and energy
-    /// @return energyGained The amount of energy gained from this feeding
+    /// @notice Feed the Aminal with ETH to gain love
+    /// @return loveGained The amount of love gained from this feeding
     function feed() external payable returns (uint256);
 
     /*//////////////////////////////////////////////////////////////
                            EXPRESSION MECHANICS
     //////////////////////////////////////////////////////////////*/
 
-    /// @notice Factory-only function to consume love and energy on behalf of a user
+    /// @notice Factory-only function to consume love on behalf of a user
     /// @param user The user whose love should be consumed
-    /// @param amount The amount of love and energy to consume
+    /// @param amount The amount of love to consume
     function squeakFrom(address user, uint256 amount) external;
 
     /*//////////////////////////////////////////////////////////////
@@ -63,10 +63,6 @@ interface IAminal is IAminalStructs {
     /// @return totalLove The cumulative love from all users
     function getTotalLove() external view returns (uint256);
 
-    /// @notice Get the current energy level of this Aminal
-    /// @return energy The current energy available for actions
-    function getEnergy() external view returns (uint256);
-
     /// @notice Check if breeding is allowed with another Aminal
     /// @param partner Address of the potential breeding partner
     /// @return allowed True if breeding is allowed with the partner
@@ -93,9 +89,6 @@ interface IAminal is IAminalStructs {
 
     /// @notice Thrown when user doesn't have enough love for an action
     error NotEnoughLove();
-
-    /// @notice Thrown when Aminal doesn't have enough energy for an action
-    error NotEnoughEnergy();
 
     /// @notice Thrown when trying to use an unregistered skill (deprecated)
     error NotRegisteredSkill();

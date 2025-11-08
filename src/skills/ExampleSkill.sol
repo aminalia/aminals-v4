@@ -30,26 +30,25 @@ contract ExampleSkill is Skill {
     }
 
     /**
-     * @dev Calculate cost based on the action being performed
-     * @dev The returned cost is deducted from both:
-     *      - Energy (global per Aminal, shared by all users)
-     *      - Love (per user per Aminal, from the calling user's balance)
+     * @dev Calculate cost percentage based on the action being performed
+     * @dev The returned percentage determines love consumption
      * @param data The calldata being sent to this skill
-     * @return The amount of energy and love required
+     * @return The percentage of love required (e.g., 10 = 10%)
      */
     function skillCost(bytes calldata data) external pure override returns (uint256) {
         bytes4 selector = bytes4(data);
 
         if (selector == this.greet.selector) {
-            // Greeting costs 10 energy
+            // Greeting costs 10% of user's love
             return 10;
         } else if (selector == this.dance.selector) {
-            // Dancing costs depend on intensity
+            // Dancing costs depend on intensity (5% per intensity level, capped at 50%)
             (, uint256 intensity) = abi.decode(data[4:], (string, uint256));
-            return intensity * 5; // 5 energy per intensity level
+            uint256 cost = intensity * 5;
+            return cost > 50 ? 50 : cost;
         }
 
-        // Default cost for unknown actions
-        return 1;
+        // Default cost percentage for unknown actions (10%)
+        return 10;
     }
 }
