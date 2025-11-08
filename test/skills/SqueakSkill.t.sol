@@ -197,7 +197,7 @@ contract SqueakSkillTest is SkillTestBase {
             if (currentLove == 0 || totalLove == 0) break;
 
             // Check if we have enough love to squeak
-            uint256 minRequired = (totalLove * 100) / 100; // Need 100% of total
+            uint256 minRequired = totalLove; // Need 100% of total
             if (currentLove < minRequired) break;
 
             vm.prank(alice);
