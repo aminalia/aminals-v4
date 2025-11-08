@@ -215,8 +215,9 @@ contract SqueakSkillTest is SkillTestBase {
 
         // This might revert or succeed depending on remaining love
         try IAminal(testAminal1).useSkill(address(squeakSkill), squeakOneData) {
-            // If it succeeds, that's fine
-        } catch {
+        // If it succeeds, that's fine
+        }
+            catch {
             // If it reverts, that's also expected
         }
     }

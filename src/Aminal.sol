@@ -178,7 +178,9 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
 
     /// @notice Restricts function access to the AminalFactory contract and gene auction only
     modifier onlyFactoryOrAuction() {
-        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) revert UnauthorizedCaller();
+        if (msg.sender != address(factory) && msg.sender != address(factory.geneAuction())) {
+            revert UnauthorizedCaller();
+        }
         _;
     }
 

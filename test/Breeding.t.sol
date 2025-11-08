@@ -467,7 +467,11 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("New Aminal created - Total Aminals:", factory.totalAminals());
     }
 
-    function _verifyChildBirthAndPayouts(uint256 /* auctionId */ ) internal {
+    function _verifyChildBirthAndPayouts(
+        uint256 /* auctionId */
+    )
+        internal
+    {
         console.log("Verifying child birth with complete design...");
 
         // Get the child Aminal

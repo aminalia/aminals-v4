@@ -507,10 +507,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         for (uint256 i = 0; i < 9;) {
             geneIds[i] = genes[i].geneId;
             placements[i] = GeneMetadata({
-                offsetX: genes[i].offsetX,
-                offsetY: genes[i].offsetY,
-                scale: genes[i].scale,
-                rotation: genes[i].rotation
+                offsetX: genes[i].offsetX, offsetY: genes[i].offsetY, scale: genes[i].scale, rotation: genes[i].rotation
             });
             unchecked {
                 ++i;
@@ -623,20 +620,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         )
     {
         Auction storage auction = auctions[auctionId];
-        return (
-            auction.aminalOne, auction.aminalTwo, auction.totalLove, auction.startTime, auction.endTime, auction.settled
-        );
+        return
+            (
+                auction.aminalOne,
+                auction.aminalTwo,
+                auction.totalLove,
+                auction.startTime,
+                auction.endTime,
+                auction.settled
+            );
     }
 
     /**
      * @notice Get voting information for an auction
      */
-    function getAuctionVoting(uint256 auctionId)
-        external
-        view
-        validVoting(auctionId)
-        returns (AuctionVoteInfo memory)
-    {
+    function getAuctionVoting(uint256 auctionId) external view validVoting(auctionId) returns (AuctionVoteInfo memory) {
         Auction storage auction = auctions[auctionId];
         return AuctionVoteInfo({
             highestVotes: auction.highestVotes,

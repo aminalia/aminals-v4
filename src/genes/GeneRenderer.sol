@@ -75,9 +75,10 @@ abstract contract GeneRenderer is IAminalStructs {
 
         string memory attributes = generateAttributesList(tokenId);
 
-        return constructTokenURI(
-            TokenURIParams({name: name, description: description, image: image, attributes: attributes})
-        );
+        return
+            constructTokenURI(
+                TokenURIParams({name: name, description: description, image: image, attributes: attributes})
+            );
     }
 
     /// @notice Generate JSON attributes list for NFT metadata
