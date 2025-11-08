@@ -9,7 +9,7 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
-import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
+import {AminalFeedingSchedule} from "src/utils/AminalFeedingSchedule.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
@@ -57,7 +57,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error CallerNotAuction();
     error InvalidAuctionAddress();
     error InvalidGenesAddress();
-    error VRGDAAlreadyDeployed();
+    error FeedingScheduleAlreadyDeployed();
     error GenesisLimitExceeded();
     error MustSpawnAtLeastOne();
     error InvalidParentOne();
@@ -67,7 +67,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     error InsufficientLove();
     error IndexOutOfBounds();
     error NotRegisteredAminal();
-    error VRGDANotDeployed();
+    error FeedingScheduleNotDeployed();
     error InsufficientTotalLove();
     error InsufficientLovePercentage();
 
@@ -80,23 +80,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
     /// @notice Basis points for percentage calculations (100 = 100%)
     uint256 public constant PERCENTAGE_BASIS = 100;
-
-    /// @notice Base price for VRGDA love calculation (1 ETH)
-    int256 public constant VRGDA_BASE_PRICE = 1 ether;
-
-    /// @notice Price decay percentage for VRGDA (10%)
-    int256 public constant VRGDA_PRICE_DECAY = 0.1 ether;
-
-    /// @notice Target units per second for Linear VRGDA (in WAD format)
-    /// @dev 1000 units per day = 0.1 ETH/day * 10000 units/ETH
-    /// @dev perTimeUnit = 1000 / 86400 ≈ 0.01157 units/sec
-    /// @dev In WAD: 0.01157 * 1e18 ≈ 11.574e15
-    /// @dev But since sold is also in WAD, perTimeUnit must be: (1000/86400) * 1e18 = 11.574e15
-    /// @dev Actually for wadDiv(soldWAD, perTimeUnitWAD) = timeWAD, we need perTimeUnit in units/second
-    /// @dev If 1000 units should take 86400 seconds, then perTimeUnit = 1000/86400 = 0.01157407... units/sec
-    /// @dev But this needs to work with WAD math: wadDiv(1000e18, X) = 86400e18
-    /// @dev Solving: X = (1000e18 * 1e18) / 86400e18 = 1000e18 / 86400 ≈ 11.574e15
-    int256 public constant VRGDA_PER_TIME_UNIT = 11574074074074074;
 
     /// @notice Maximum number of genes that can be assigned to an Aminal
     uint256 public constant MAX_GENES = 9;
@@ -131,8 +114,8 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Gene NFT system for trait management 🎨
     Genes public genes;
 
-    /// @notice VRGDA for calculating love based on feeding schedule 📈
-    AminalVRGDA public loveVRGDA;
+    /// @notice Feeding schedule for calculating love based on time and cumulative feeding 📈
+    AminalFeedingSchedule public feedingSchedule;
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                       📡 EVENTS
@@ -163,10 +146,10 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     event BreedAminal(address indexed aminalOne, address indexed aminalTwo, uint256 auctionId);
 
     /**
-     * @notice Emitted when VRGDA is deployed
-     * @param vrgdaAddress Address of the deployed VRGDA contract
+     * @notice Emitted when feeding schedule is deployed
+     * @param feedingScheduleAddress Address of the deployed feeding schedule contract
      */
-    event VRGDADeployed(address indexed vrgdaAddress);
+    event FeedingScheduleDeployed(address indexed feedingScheduleAddress);
 
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                      🛡️ MODIFIERS
@@ -192,7 +175,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @notice Ensures factory is fully initialized before critical operations
      */
     modifier whenInitialized() {
-        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
+        if (address(feedingSchedule) == address(0)) revert FeedingScheduleNotDeployed();
         _;
     }
 
@@ -228,24 +211,19 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     }
 
     /**
-     * @notice Deploy and configure the VRGDA system for love calculations
-     * @dev Creates the Variable Rate Gradual Dutch Auction mechanism for love pricing
+     * @notice Deploy and configure the feeding schedule for love calculations
+     * @dev Creates the schedule-based love calculation system
      *
      * Requirements:
      * - Must be called by owner after initialization
-     * - Uses predefined constants for optimal love curve parameters
      */
     function setup() external onlyOwner {
-        if (address(loveVRGDA) != address(0)) revert VRGDAAlreadyDeployed();
+        if (address(feedingSchedule) != address(0)) revert FeedingScheduleAlreadyDeployed();
 
-        // Deploy Linear VRGDA with optimal parameters for love curves
-        loveVRGDA = new AminalVRGDA(
-            VRGDA_BASE_PRICE, // Base price for love calculations
-            VRGDA_PRICE_DECAY, // Rate of price decay over time
-            VRGDA_PER_TIME_UNIT // Target units per second (1000 units/day)
-        );
+        // Deploy feeding schedule calculator
+        feedingSchedule = new AminalFeedingSchedule();
 
-        emit VRGDADeployed(address(loveVRGDA));
+        emit FeedingScheduleDeployed(address(feedingSchedule));
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -432,7 +410,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
         address proposer,
         GeneInstance[MAX_GENES] memory genes
     ) internal returns (address childAddress) {
-        if (address(loveVRGDA) == address(0)) revert VRGDANotDeployed();
+        if (address(feedingSchedule) == address(0)) revert FeedingScheduleNotDeployed();
 
         // Deploy new Aminal contract with full genetic and factory context
         AminalContract newAminal = new AminalContract(
@@ -442,7 +420,7 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
             proposer, // Design proposer (or address(0) for genesis/parent designs)
             genes, // Complete genetic profile with placements
             totalAminals, // Unique index for this Aminal
-            address(loveVRGDA) // VRGDA system for love calculations
+            address(feedingSchedule) // Feeding schedule for love calculations
         );
 
         childAddress = address(newAminal);

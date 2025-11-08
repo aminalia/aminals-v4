@@ -4,16 +4,16 @@ pragma solidity ^0.8.20;
 import {Test, console} from "forge-std/Test.sol";
 import {AminalFactory} from "src/AminalFactory.sol";
 import {Aminal as AminalContract} from "src/Aminal.sol";
-import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
+import {AminalFeedingSchedule} from "src/utils/AminalFeedingSchedule.sol";
 import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 import {GeneAuction} from "src/genes/GeneAuction.sol";
 import {Genes} from "src/genes/Genes.sol";
 import {GeneRegistry} from "src/genes/GeneRegistry.sol";
 
-contract AminalVRGDATest is Test, IAminalStructs {
+contract AminalFeedingScheduleTest is Test, IAminalStructs {
     AminalFactory public factory;
     AminalContract public aminal;
-    AminalVRGDA public vrgda;
+    AminalFeedingSchedule public feedingSchedule;
     GeneAuction public geneAuction;
     Genes public genes;
     GeneRegistry public geneRegistry;
@@ -34,10 +34,10 @@ contract AminalVRGDATest is Test, IAminalStructs {
         // Setup contracts properly
         genes.setup(address(factory), address(geneRegistry));
         geneAuction.setup(address(factory));
-        factory.setup(); // This deploys the VRGDA
+        factory.setup(); // This deploys the feeding schedule
 
-        // Get the VRGDA instance from factory
-        vrgda = factory.loveVRGDA();
+        // Get the feeding schedule instance from factory
+        feedingSchedule = factory.feedingSchedule();
 
         // Spawn a test Aminal
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
@@ -151,10 +151,10 @@ contract AminalVRGDATest is Test, IAminalStructs {
         assertTrue(love1 > love2, "Should get more love when behind schedule");
     }
 
-    function test_VRGDAConstants() public {
-        // Verify VRGDA constants are set correctly
-        assertEq(vrgda.LOVE_PER_ETH(), 10_000);
-        assertEq(vrgda.TARGET_FEED_RATE(), 0.1 ether);
+    function test_FeedingScheduleConstants() public {
+        // Verify feeding schedule constants are set correctly
+        assertEq(feedingSchedule.LOVE_PER_ETH(), 10_000);
+        assertEq(feedingSchedule.TARGET_FEED_RATE(), 0.1 ether);
     }
 
     function test_LoveTrackingPerUser() public {

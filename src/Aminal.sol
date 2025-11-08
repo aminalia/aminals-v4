@@ -7,7 +7,7 @@ import {AminalFactory} from "src/AminalFactory.sol";
 import {ERC721} from "oz/token/ERC721/ERC721.sol";
 import {ReentrancyGuard} from "oz/security/ReentrancyGuard.sol";
 import {GeneRenderer} from "src/genes/GeneRenderer.sol";
-import {AminalVRGDA} from "src/utils/AminalVRGDA.sol";
+import {AminalFeedingSchedule} from "src/utils/AminalFeedingSchedule.sol";
 
 /**
  * ╔═══════════════════════════════════════════════════════════════════════════════════╗
@@ -89,14 +89,14 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Unique identifier within the Aminal ecosystem
     uint256 public immutable aminalIndex;
 
-    /// @notice Birth time of this Aminal (block.timestamp) - used as start time for VRGDA
+    /// @notice Birth time of this Aminal (block.timestamp) - used as start time for feeding schedule
     uint256 public immutable birthTime;
 
-    /// @notice Total ETH fed to this Aminal (tracked for VRGDA)
+    /// @notice Total ETH fed to this Aminal (tracked for feeding schedule)
     uint256 public totalEthFed;
 
-    /// @notice VRGDA instance for calculating love gains from ETH 📈
-    AminalVRGDA public immutable loveVRGDA;
+    /// @notice Feeding schedule for calculating love gains from ETH based on time 📈
+    AminalFeedingSchedule public immutable feedingSchedule;
 
     /// @notice The current sum of all love of all users to this Aminal 💝
     uint256 private totalLove;
@@ -193,7 +193,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param _proposerAddress Address of the design proposer (0x0 for genesis or parent designs)
     /// @param genes Gene instances that define this Aminal's appearance
     /// @param _aminalIndex Unique identifier within the Aminal ecosystem
-    /// @param _loveVRGDA Address of the VRGDA contract for love calculations
+    /// @param _feedingSchedule Address of the feeding schedule contract for love calculations
     constructor(
         address _factory,
         address _momAddress,
@@ -201,7 +201,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         address _proposerAddress,
         GeneInstance[9] memory genes,
         uint256 _aminalIndex,
-        address _loveVRGDA
+        address _feedingSchedule
     )
         ERC721("Aminal", "AMINAL")
         GeneRenderer(address(AminalFactory(_factory).genes()), address(AminalFactory(_factory).genes().geneRegistry()))
@@ -213,7 +213,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         _genes = genes;
         aminalIndex = _aminalIndex;
         birthTime = block.timestamp;
-        loveVRGDA = AminalVRGDA(_loveVRGDA);
+        feedingSchedule = AminalFeedingSchedule(_feedingSchedule);
 
         // Mint the NFT to the factory (which will transfer to the actual owner)
         _mint(address(_factory), 1);
@@ -245,11 +245,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         // Calculate time since birth for VRGDA
         uint256 timeSinceStart = block.timestamp - birthTime;
 
-        // Calculate love using time-based VRGDA
-        // VRGDA will check if we're ahead/behind schedule based on totalEthFed vs time
-        uint256 loveGained = loveVRGDA.getLoveForETH(timeSinceStart, totalEthFed, amount);
+        // Calculate love using time-based feeding schedule
+        // Feeding schedule checks if we're ahead/behind schedule based on totalEthFed vs time
+        uint256 loveGained = feedingSchedule.getLoveForETH(timeSinceStart, totalEthFed, amount);
 
-        // Update total ETH fed for VRGDA tracking
+        // Update total ETH fed for feeding schedule tracking
         totalEthFed += amount;
 
         lovePerUser[feeder] += loveGained;
@@ -407,7 +407,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @return loveAmount The amount of love that would be received
     function getLoveForAmount(uint256 amount) external view returns (uint256) {
         uint256 timeSinceStart = block.timestamp - birthTime;
-        return loveVRGDA.getLoveForETH(timeSinceStart, totalEthFed, amount);
+        return feedingSchedule.getLoveForETH(timeSinceStart, totalEthFed, amount);
     }
 
     /*//////////////////////////////////////////////////////////////
