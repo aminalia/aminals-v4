@@ -23,7 +23,7 @@ Aminals is a sophisticated decentralized digital pet platform that combines NFT 
 
 - **Aminals**: Autonomous digital pets with their own contract addresses that can hold funds and interact with other contracts
 - **Skills**: Small contracts that provide functionality to Aminals (e.g., Move2D, MoveTwice)
-- **Energy/Squeaks**: Resource system for Aminal actions
+- **Love/Squeaks**: Resource system for Aminal actions
 - **Love**: Community appreciation system for Aminals
 - **Breeding**: Mechanism for creating new Aminals from existing ones
 
@@ -103,7 +103,7 @@ npm run deploy             # Deploy to The Graph
 - Skills are globally accessible to any Aminal
 - Skills must be registered in the factory's skills mapping
 - Skills can only be called by factory-created Aminals
-- Skills return energy cost which is deducted from the calling Aminal
+- Skills consume love (percentage-based) from the calling user
 
 ### Gene NFT System
 
