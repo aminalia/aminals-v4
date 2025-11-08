@@ -71,7 +71,6 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         // Test initial state
         assertEq(aminal.getTotalLove(), 0);
-        assertEq(aminal.getEnergy(), 50);
         assertEq(aminal.getLoveByUser(alice), 0);
 
         // Test feeding
@@ -81,7 +80,6 @@ contract AminalFactoryTest is Test, IAminalStructs {
 
         assertTrue(aminal.getLoveByUser(alice) > 0);
         assertTrue(aminal.getTotalLove() > 0);
-        assertTrue(aminal.getEnergy() > 50);
     }
 
     function testSkillUsage() public {
@@ -95,10 +93,12 @@ contract AminalFactoryTest is Test, IAminalStructs {
         address aminalAddress = factory.getAminalByIndex(0);
         AminalContract aminal = AminalContract(payable(aminalAddress));
 
-        // Feed the Aminal first to give it energy
+        // Feed the Aminal first to give it love
         vm.deal(alice, 1 ether);
         vm.prank(alice);
         aminal.feed{value: 0.01 ether}();
+
+        uint256 initialLove = aminal.getLoveByUser(alice);
 
         // Use the skill
         bytes memory skillData = move2DSkill.getSkillData(10, 20);
@@ -110,8 +110,8 @@ contract AminalFactoryTest is Test, IAminalStructs {
         assertEq(x, 10);
         assertEq(y, 20);
 
-        // Check that energy was consumed
-        assertTrue(aminal.getEnergy() < 51 * 10 ** 18); // Should be less due to squeak cost
+        // Check that love was consumed
+        assertTrue(aminal.getLoveByUser(alice) < initialLove);
     }
 
     function testBreedingSetup() public {
