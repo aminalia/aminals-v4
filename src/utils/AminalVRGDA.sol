@@ -79,6 +79,11 @@ contract AminalVRGDA is LinearVRGDA {
             // Example: targetEthByNow = 1 ETH, totalEthFed = 10 ETH -> 0.1x scaling
             loveGained = (baseLove * targetEthByNow) / totalEthFed;
         }
+
+        // Ensure minimum love of 1 if feeding any amount (prevents rounding to zero in edge cases)
+        if (loveGained == 0 && baseLove > 0) {
+            loveGained = 1;
+        }
     }
 
     /**
