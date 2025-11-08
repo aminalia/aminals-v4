@@ -267,64 +267,77 @@ const AuctionPage: NextPage = () => {
     setBuilderKey((k) => k + 1); // Force remount
   }, [auction]);
 
-  // Randomize between parent genes with placement variation
+  // Randomize between parent genes - for each slot, randomly pick gene from either parent
   const handleRandomize = useCallback(() => {
     if (!auction?.aminalOne?.genes || !auction?.aminalTwo?.genes) return;
 
-    // Combine both parent gene pools (no duplicates, no empty slots)
-    const parent1Genes = auction.aminalOne.genes.filter((g) => g !== 0n);
-    const parent2Genes = auction.aminalTwo.genes.filter((g) => g !== 0n);
-    const allGenes = Array.from(new Set([...parent1Genes, ...parent2Genes]));
+    const parent1Genes = auction.aminalOne.genes;
+    const parent2Genes = auction.aminalTwo.genes;
 
-    // Randomly select 4-7 genes
-    const numGenes = Math.floor(Math.random() * 4) + 4; // 4 to 7
-    const shuffled = [...allGenes].sort(() => Math.random() - 0.5);
-    const selectedGenes = shuffled.slice(0, Math.min(numGenes, allGenes.length));
+    // Parse parent placements
+    let parent1Placements: GeneMetadata[] = [];
+    let parent2Placements: GeneMetadata[] = [];
 
-    // For each gene, try to use parent placement with variation
-    const placements: GeneMetadata[] = selectedGenes.map((geneId) => {
-      let basePlacement: GeneMetadata = {
+    try {
+      parent1Placements = auction.aminalOne?.genePlacements
+        ? JSON.parse(auction.aminalOne.genePlacements)
+        : parent1Genes.map(() => ({
+            offsetX: 0,
+            offsetY: 0,
+            scale: 100,
+            rotation: 0,
+          }));
+    } catch (e) {
+      parent1Placements = parent1Genes.map(() => ({
         offsetX: 0,
         offsetY: 0,
         scale: 100,
         rotation: 0,
-      };
+      }));
+    }
 
-      // Try to find this gene in parent 1
-      const idx1 = auction.aminalOne?.genes.findIndex((g) => g === geneId) ?? -1;
-      if (idx1 !== -1 && auction.aminalOne?.genePlacements) {
-        try {
-          const parent1Placements = JSON.parse(auction.aminalOne.genePlacements);
-          basePlacement = parent1Placements[idx1];
-        } catch (e) {
-          // Ignore parsing errors
-        }
-      } else {
-        // Try parent 2
-        const idx2 = auction.aminalTwo?.genes.findIndex((g) => g === geneId) ?? -1;
-        if (idx2 !== -1 && auction.aminalTwo?.genePlacements) {
-          try {
-            const parent2Placements = JSON.parse(
-              auction.aminalTwo.genePlacements
-            );
-            basePlacement = parent2Placements[idx2];
-          } catch (e) {
-            // Ignore parsing errors
-          }
-        }
+    try {
+      parent2Placements = auction.aminalTwo?.genePlacements
+        ? JSON.parse(auction.aminalTwo.genePlacements)
+        : parent2Genes.map(() => ({
+            offsetX: 0,
+            offsetY: 0,
+            scale: 100,
+            rotation: 0,
+          }));
+    } catch (e) {
+      parent2Placements = parent2Genes.map(() => ({
+        offsetX: 0,
+        offsetY: 0,
+        scale: 100,
+        rotation: 0,
+      }));
+    }
+
+    // Determine max slots (up to 9)
+    const maxSlots = Math.max(parent1Genes.length, parent2Genes.length);
+    const selectedGenes: bigint[] = [];
+    const selectedPlacements: GeneMetadata[] = [];
+
+    // For each slot position, randomly pick from either parent
+    for (let i = 0; i < maxSlots && i < 9; i++) {
+      const useParent1 = Math.random() < 0.5;
+
+      if (useParent1 && i < parent1Genes.length && parent1Genes[i] !== 0n) {
+        selectedGenes.push(parent1Genes[i]);
+        selectedPlacements.push(parent1Placements[i]);
+      } else if (i < parent2Genes.length && parent2Genes[i] !== 0n) {
+        selectedGenes.push(parent2Genes[i]);
+        selectedPlacements.push(parent2Placements[i]);
+      } else if (i < parent1Genes.length && parent1Genes[i] !== 0n) {
+        // Fallback to parent 1 if parent 2 slot is empty
+        selectedGenes.push(parent1Genes[i]);
+        selectedPlacements.push(parent1Placements[i]);
       }
-
-      // Add random variation (±30px, ±10% scale, ±15°)
-      return {
-        offsetX: basePlacement.offsetX + (Math.random() * 60 - 30),
-        offsetY: basePlacement.offsetY + (Math.random() * 60 - 30),
-        scale: basePlacement.scale * (0.9 + Math.random() * 0.2), // 90-110%
-        rotation: basePlacement.rotation + (Math.random() * 30 - 15),
-      };
-    });
+    }
 
     setCurrentGeneIds(selectedGenes);
-    setCurrentPlacements(placements);
+    setCurrentPlacements(selectedPlacements);
     setBuilderKey((k) => k + 1);
   }, [auction]);
 
