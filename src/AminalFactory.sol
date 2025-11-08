@@ -87,11 +87,16 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Price decay percentage for VRGDA (10%)
     int256 public constant VRGDA_PRICE_DECAY = 0.1 ether;
 
-    /// @notice Logistic asymptote for VRGDA curve (100 units)
-    int256 public constant VRGDA_LOGISTIC_ASYMPTOTE = 100 ether;
-
-    /// @notice Time scale for VRGDA curve smoothness
-    int256 public constant VRGDA_TIME_SCALE = 20 ether;
+    /// @notice Target units per second for Linear VRGDA (in WAD format)
+    /// @dev 1000 units per day = 0.1 ETH/day * 10000 units/ETH
+    /// @dev perTimeUnit = 1000 / 86400 ≈ 0.01157 units/sec
+    /// @dev In WAD: 0.01157 * 1e18 ≈ 11.574e15
+    /// @dev But since sold is also in WAD, perTimeUnit must be: (1000/86400) * 1e18 = 11.574e15
+    /// @dev Actually for wadDiv(soldWAD, perTimeUnitWAD) = timeWAD, we need perTimeUnit in units/second
+    /// @dev If 1000 units should take 86400 seconds, then perTimeUnit = 1000/86400 = 0.01157407... units/sec
+    /// @dev But this needs to work with WAD math: wadDiv(1000e18, X) = 86400e18
+    /// @dev Solving: X = (1000e18 * 1e18) / 86400e18 = 1000e18 / 86400 ≈ 11.574e15
+    int256 public constant VRGDA_PER_TIME_UNIT = 11574074074074074;
 
     /// @notice Maximum number of genes that can be assigned to an Aminal
     uint256 public constant MAX_GENES = 9;
@@ -233,12 +238,11 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     function setup() external onlyOwner {
         if (address(loveVRGDA) != address(0)) revert VRGDAAlreadyDeployed();
 
-        // Deploy VRGDA with optimal parameters for love curves
+        // Deploy Linear VRGDA with optimal parameters for love curves
         loveVRGDA = new AminalVRGDA(
             VRGDA_BASE_PRICE, // Base price for love calculations
             VRGDA_PRICE_DECAY, // Rate of price decay over time
-            VRGDA_LOGISTIC_ASYMPTOTE, // Maximum units in logistic curve
-            VRGDA_TIME_SCALE // Time scaling factor for smooth curves
+            VRGDA_PER_TIME_UNIT // Target units per second (1000 units/day)
         );
 
         emit VRGDADeployed(address(loveVRGDA));

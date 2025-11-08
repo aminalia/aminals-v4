@@ -1,28 +1,31 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {LogisticVRGDA} from "lib/VRGDAs/src/LogisticVRGDA.sol";
+import {LinearVRGDA} from "lib/VRGDAs/src/LinearVRGDA.sol";
 import {toWadUnsafe, wadDiv} from "lib/VRGDAs/lib/solmate/src/utils/SignedWadMath.sol";
 import {FixedPointMathLib} from "lib/VRGDAs/lib/solmate/src/utils/FixedPointMathLib.sol";
 
 /**
  * @title AminalVRGDA
- * @notice Logistic VRGDA implementation that modulates love based on feeding schedule
- * @dev Target rate: 0.1 ETH worth of feeding per day
- * @dev Feeds more love when behind schedule (not fed enough), less when ahead of schedule (overfed)
+ * @notice Schedule-based love calculation that rewards consistent feeding
+ * @dev Target rate: 0.1 ETH worth of feeding per day on average
+ * @dev Gives more love when behind schedule (underfed), less when ahead of schedule (overfed)
  *
- * @dev VRGDA Mechanics:
- * - Target: 0.1 ETH fed per day (linear schedule)
- * - If fed more than target → price increases → less love per ETH
- * - If fed less than target → price decreases → more love per ETH
+ * @dev Mechanics:
+ * - Target: 0.1 ETH fed per day (cumulative average)
+ * - Compares total ETH fed vs. expected ETH based on time elapsed
+ * - Behind schedule (fed < target) → higher love multiplier (up to 10x)
+ * - On schedule (fed ≈ target) → base love multiplier (1.75x)
+ * - Ahead of schedule (fed > target) → lower love multiplier (down to 0.1x)
  * - Encourages consistent daily feeding rather than binge feeding
  *
  * @dev Example:
- * - Day 1: Feed exactly 0.1 ETH → get base love rate
- * - Day 2: Feed 0.2 ETH total (0.1 ETH extra) → price UP → less love per ETH
- * - Day 3: Don't feed at all → price DOWN → when you do feed, get more love per ETH
+ * - Day 1: Feed exactly 0.1 ETH (on schedule) → get 1.75x multiplier → 1750 love
+ * - Day 2: Have fed 0.2 ETH total (on schedule) → still get 1.75x multiplier
+ * - Day 2 alternate: Have fed 0.5 ETH total (2.5x ahead) → get ~0.72x multiplier → less love
+ * - Day 10: Haven't fed at all (10x behind) → get 10x multiplier → catch up with bonus love
  */
-contract AminalVRGDA is LogisticVRGDA {
+contract AminalVRGDA is LinearVRGDA {
     /// @notice Fixed rate of energy gained per ETH (for love unit calculation)
     uint256 public constant ENERGY_PER_ETH = 10_000; // 1 ETH = 10,000 energy units
 
@@ -36,13 +39,12 @@ contract AminalVRGDA is LogisticVRGDA {
     uint256 public constant MIN_LOVE_MULTIPLIER = 0.1 ether;
 
     /// @notice Constructor to set up the VRGDA parameters for love calculation
-    /// @dev Repurposes Logistic VRGDA where energy acts as both time and units sold
+    /// @dev Uses Linear VRGDA for unlimited feeding over time
     /// @param _targetPrice The base ETH amount for pricing (in wei) - typically 1 ETH
     /// @param _priceDecayPercent Price decay when below target (scaled by 1e18) - affects curve steepness
-    /// @param _logisticAsymptote Maximum units for S-curve (scaled by 1e18) - controls curve shape
-    /// @param _timeScale Controls S-curve transition speed (scaled by 1e18) - affects smoothness
-    constructor(int256 _targetPrice, int256 _priceDecayPercent, int256 _logisticAsymptote, int256 _timeScale)
-        LogisticVRGDA(_targetPrice, _priceDecayPercent, _logisticAsymptote, _timeScale)
+    /// @param _perTimeUnit Target units to be sold per unit of time (scaled by 1e18)
+    constructor(int256 _targetPrice, int256 _priceDecayPercent, int256 _perTimeUnit)
+        LinearVRGDA(_targetPrice, _priceDecayPercent, _perTimeUnit)
     {}
 
     /**
@@ -61,57 +63,62 @@ contract AminalVRGDA is LogisticVRGDA {
     {
         if (ethAmount == 0) return 0;
 
-        // Calculate target ETH that should have been fed by now
-        // Target: 0.1 ETH per day = (timeSinceStart / 1 day) * 0.1 ETH
+        // Calculate target ETH that should have been fed by now based on 0.1 ETH/day average
         uint256 targetEthByNow = (timeSinceStart * TARGET_FEED_RATE) / 1 days;
 
-        // Convert ETH amounts to "units" for VRGDA (using ENERGY_PER_ETH as scaling factor)
-        // This gives us integer units to work with
-        uint256 targetUnitsByNow = (targetEthByNow * ENERGY_PER_ETH) / 1 ether;
-        uint256 unitsFedSoFar = (totalEthFed * ENERGY_PER_ETH) / 1 ether;
+        // Convert to units for easier calculation
         uint256 unitsToFeed = (ethAmount * ENERGY_PER_ETH) / 1 ether;
 
-        // For linear VRGDA, the target time for selling unit n is: f⁻¹(n) = n / rate
-        // We invert this: given current time t, we should have sold f(t) = rate * t units
-        // We've sold unitsFedSoFar, so we're (unitsFedSoFar - targetUnitsByNow) ahead/behind
-
-        // Get VRGDA price for the NEXT unit to be fed
-        // Use toWadUnsafe to convert time to WAD format safely
-        // unitsFedSoFar is the current count sold
-        uint256 vrgdaPrice = getVRGDAPrice(toWadUnsafe(timeSinceStart), unitsFedSoFar);
-
-        // Map VRGDA price to love multiplier
-        // Higher price (behind schedule) = more love per unit
-        // Lower price (ahead of schedule) = less love per unit
+        // Calculate love multiplier based on how far ahead/behind schedule we are
+        // Compare CUMULATIVE feeding to CUMULATIVE target (not individual unit timing)
         uint256 loveMultiplier;
 
-        if (vrgdaPrice == 0) {
-            loveMultiplier = MIN_LOVE_MULTIPLIER; // Far ahead of schedule
-        } else if (vrgdaPrice >= uint256(targetPrice) * 10) {
-            // Far behind schedule
-            loveMultiplier = MAX_LOVE_MULTIPLIER;
+        if (timeSinceStart == 0) {
+            // At t=0, we're on schedule by definition
+            loveMultiplier = 1.75 ether; // Base multiplier for on-schedule feeding
         } else {
-            // Map price range to multiplier range
-            // vrgdaPrice varies around targetPrice
-            // When price = targetPrice, we're on schedule → use middle multiplier
-            // When price > targetPrice, we're behind → increase multiplier
-            // When price < targetPrice, we're ahead → decrease multiplier
+            // Calculate how far ahead or behind we are on the AVERAGE schedule
+            // If totalEthFed > targetEthByNow: we're ahead (overfed) -> lower multiplier
+            // If totalEthFed < targetEthByNow: we're behind (underfed) -> higher multiplier
+            // If totalEthFed ≈ targetEthByNow: on schedule -> base multiplier
 
-            uint256 priceRatio = (vrgdaPrice * 1 ether) / uint256(targetPrice);
+            if (totalEthFed >= targetEthByNow) {
+                // Ahead of schedule or on schedule
+                if (targetEthByNow == 0) {
+                    // Very early and already feeding -> slightly reduce
+                    loveMultiplier = MIN_LOVE_MULTIPLIER;
+                } else {
+                    // Calculate ratio: how much have we fed vs target?
+                    // ratio > 1 means ahead, ratio = 1 means on schedule, ratio < 1 means behind
+                    uint256 ratio = (totalEthFed * 1 ether) / targetEthByNow;
 
-            if (priceRatio >= 5 ether) {
-                // 5x or more above target = max multiplier
-                loveMultiplier = MAX_LOVE_MULTIPLIER;
-            } else if (priceRatio <= 0.2 ether) {
-                // 0.2x or less of target = min multiplier
-                loveMultiplier = MIN_LOVE_MULTIPLIER;
+                    if (ratio >= 5 ether) {
+                        // 5x or more ahead of schedule -> minimum multiplier
+                        loveMultiplier = MIN_LOVE_MULTIPLIER;
+                    } else if (ratio > 1 ether) {
+                        // Between 1x and 5x ahead -> scale from 1.75 down to 0.1
+                        // Map [1.0, 5.0] to [1.75, 0.1]
+                        uint256 normalized = ((ratio - 1 ether) * 1 ether) / 4 ether;
+                        loveMultiplier = 1.75 ether - ((1.65 ether * normalized) / 1 ether);
+                    } else {
+                        // ratio ≈ 1.0: on schedule
+                        loveMultiplier = 1.75 ether;
+                    }
+                }
             } else {
-                // Linear interpolation between min and max based on price ratio
-                // priceRatio of 1.0 (on schedule) should give middle value
-                // Map [0.2, 5.0] to [MIN, MAX]
-                uint256 normalizedRatio = ((priceRatio - 0.2 ether) * 1 ether) / 4.8 ether; // 0-1 range
-                uint256 range = MAX_LOVE_MULTIPLIER - MIN_LOVE_MULTIPLIER;
-                loveMultiplier = MIN_LOVE_MULTIPLIER + ((range * normalizedRatio) / 1 ether);
+                // Behind schedule (totalEthFed < targetEthByNow)
+                // Calculate how far behind: ratio < 1 means behind
+                uint256 ratio = (totalEthFed * 1 ether) / targetEthByNow;
+
+                if (ratio <= 0.2 ether) {
+                    // 5x or more behind (fed less than 20% of target) -> maximum multiplier
+                    loveMultiplier = MAX_LOVE_MULTIPLIER;
+                } else {
+                    // Between 0.2x and 1.0x -> scale from 10 down to 1.75
+                    // Map [0.2, 1.0] to [10, 1.75]
+                    uint256 normalized = ((ratio - 0.2 ether) * 1 ether) / 0.8 ether;
+                    loveMultiplier = MAX_LOVE_MULTIPLIER - ((8.25 ether * normalized) / 1 ether);
+                }
             }
         }
 
