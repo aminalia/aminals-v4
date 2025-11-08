@@ -134,7 +134,6 @@ const ChatSessionPage: NextPage = () => {
           aminalAddress: contractAddress,
           geneIds,
           aminalStats: {
-            energy: Number(aminal?.energy || 0),
             totalLove: Number(aminal?.totalLove || 0),
             ethBalance: aminal?.ethBalance ? aminal.ethBalance.toString() : '0',
             aminalIndex: Number(aminal?.aminalIndex || 0),
@@ -218,7 +217,6 @@ const ChatSessionPage: NextPage = () => {
           aminalAddress: contractAddress,
           geneIds,
           aminalStats: {
-            energy: Number(aminal.energy || 0),
             totalLove: Number(aminal.totalLove || 0),
             ethBalance: aminal.ethBalance ? aminal.ethBalance.toString() : '0',
             aminalIndex: Number(aminal.aminalIndex || 0),

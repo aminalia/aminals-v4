@@ -534,15 +534,6 @@ const AuctionPage: NextPage = () => {
                           <div className="grid grid-cols-2 gap-4">
                             <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
                               <div className="text-sm text-success font-medium">
-                                Energy
-                              </div>
-                              <div className="text-2xl font-bold text-success">
-                                {Number(auction.childAminal.energy).toFixed(2)}{' '}
-                                ⚡
-                              </div>
-                            </div>
-                            <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
-                              <div className="text-sm text-success font-medium">
                                 Total Love
                               </div>
                               <div className="text-2xl font-bold text-success">
