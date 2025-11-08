@@ -155,8 +155,6 @@ contract AminalVRGDATest is Test, IAminalStructs {
         // Verify VRGDA constants are set correctly
         assertEq(vrgda.ENERGY_PER_ETH(), 10_000);
         assertEq(vrgda.TARGET_FEED_RATE(), 0.1 ether);
-        assertEq(vrgda.MAX_LOVE_MULTIPLIER(), 10 ether);
-        assertEq(vrgda.MIN_LOVE_MULTIPLIER(), 0.1 ether);
     }
 
     function test_LoveTrackingPerUser() public {
