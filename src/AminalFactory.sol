@@ -87,7 +87,6 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
     /// @notice Maximum number of genesis Aminals that can be spawned
     uint256 public constant MAX_GENESIS_AMINALS = 10;
 
-
     // ═══════════════════════════════════════════════════════════════════════════════════
     //                                   📊 STATE VARIABLES
     // ═══════════════════════════════════════════════════════════════════════════════════
@@ -383,7 +382,11 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
      * @param aminalAddress Address of the Aminal to query
      * @return genes Complete array of gene instances with placements
      */
-    function getAminalGenesByAddress(address aminalAddress) external view returns (GeneInstance[MAX_GENES] memory genes) {
+    function getAminalGenesByAddress(address aminalAddress)
+        external
+        view
+        returns (GeneInstance[MAX_GENES] memory genes)
+    {
         if (!isAminal[aminalAddress]) revert NotRegisteredAminal();
         return AminalContract(payable(aminalAddress)).getGenes();
     }

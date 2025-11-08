@@ -130,7 +130,8 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         // genes[8] is 0 (unused) by default
 
         // Parent 2: Uses alternative set of genes (vibrant theme) for variety
-        genesisGenes[1][0] = GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
+        genesisGenes[1][0] =
+            GeneInstance({geneId: altBackgroundGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][1] = GeneInstance({geneId: altArmsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][2] = GeneInstance({geneId: altTailGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         genesisGenes[1][3] = GeneInstance({geneId: altEarsGeneId, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
@@ -466,11 +467,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
         console.log("New Aminal created - Total Aminals:", factory.totalAminals());
     }
 
-    function _verifyChildBirthAndPayouts(
-        uint256 /* auctionId */
-    )
-        internal
-    {
+    function _verifyChildBirthAndPayouts(uint256 /* auctionId */ ) internal {
         console.log("Verifying child birth with complete design...");
 
         // Get the child Aminal
@@ -488,9 +485,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
 
         console.log("Child Aminal created with complete design:");
         for (uint256 i = 0; i < 9; i++) {
-            if (childGenes[i].geneId != 0) {
-                console.log("- Gene slot", i, ":", childGenes[i].geneId);
-            }
+            if (childGenes[i].geneId != 0) console.log("- Gene slot", i, ":", childGenes[i].geneId);
         }
 
         // Verify at least one trait is set (not all zero)

@@ -129,23 +129,11 @@ contract GeneNFTSystemTest is Test, IAminalStructs {
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](2);
         // Parent 1 - 9 genes in first 9 slots
         for (uint256 i = 0; i < 9; i++) {
-            genesisGenes[0][i] = GeneInstance({
-                geneId: i + 1,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[0][i] = GeneInstance({geneId: i + 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         // Parent 2 - 9 different genes in first 9 slots
         for (uint256 i = 0; i < 9; i++) {
-            genesisGenes[1][i] = GeneInstance({
-                geneId: i + 9,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[1][i] = GeneInstance({geneId: i + 9, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         aminalFactory.spawnInitialAminals(genesisGenes);
 

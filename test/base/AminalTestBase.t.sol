@@ -56,13 +56,7 @@ abstract contract AminalTestBase is Test, IAminalStructs {
     function spawnTestAminal() internal returns (address) {
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            genesisGenes[0][i] = GeneInstance({
-                geneId: 1,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[0][i] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         factory.spawnInitialAminals(genesisGenes);
@@ -86,10 +80,7 @@ abstract contract AminalTestBase is Test, IAminalStructs {
     /**
      * @dev Helper function to create a gene with metadata for testing
      */
-    function createTestGene(string memory svg, string memory name, string memory category)
-        internal
-        returns (uint256)
-    {
+    function createTestGene(string memory svg, string memory name, string memory category) internal returns (uint256) {
         return geneRegistry.createGene(svg, name, "", category);
     }
 }

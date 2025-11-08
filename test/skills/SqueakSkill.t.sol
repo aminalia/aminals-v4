@@ -53,10 +53,10 @@ contract SqueakSkillTest is SkillTestBase {
         // SkillTestBase already feeds the aminals in setUp
 
         uint256[] memory percentages = new uint256[](5);
-        percentages[0] = 1;   // 1%
-        percentages[1] = 10;  // 10%
-        percentages[2] = 25;  // 25%
-        percentages[3] = 50;  // 50%
+        percentages[0] = 1; // 1%
+        percentages[1] = 10; // 10%
+        percentages[2] = 25; // 25%
+        percentages[3] = 50; // 50%
         percentages[4] = 100; // 100%
 
         for (uint256 i = 0; i < percentages.length; i++) {
@@ -189,7 +189,8 @@ contract SqueakSkillTest is SkillTestBase {
         bytes memory squeakData = abi.encodeWithSelector(SqueakSkill.squeak.selector, 100);
 
         uint256 iterations = 0;
-        while (iterations < 10) { // Safety limit
+        while (iterations < 10) {
+            // Safety limit
             uint256 currentLove = IAminal(testAminal1).getLoveByUser(alice);
             uint256 totalLove = IAminal(testAminal1).getTotalLove();
 

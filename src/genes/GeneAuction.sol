@@ -429,7 +429,12 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
 
             if (selectedGeneId != 0 && geneRegistry.isValidGene(selectedGeneId)) {
                 totalTreasuryTransferred += _payoutGeneCreator(
-                    auctionId, selectedGeneId, perRecipientShareFromOne, perRecipientShareFromTwo, aminalOneAddress, aminalTwoAddress
+                    auctionId,
+                    selectedGeneId,
+                    perRecipientShareFromOne,
+                    perRecipientShareFromTwo,
+                    aminalOneAddress,
+                    aminalTwoAddress
                 );
             }
             unchecked {
@@ -450,10 +455,7 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
      * @param auctionId The auction to propose the design for
      * @param genes Array of gene instances (gene IDs with placements)
      */
-    function proposeDesign(uint256 auctionId, GeneInstance[9] calldata genes)
-        external
-        validVoting(auctionId)
-    {
+    function proposeDesign(uint256 auctionId, GeneInstance[9] calldata genes) external validVoting(auctionId) {
         Auction storage auction = auctions[auctionId];
 
         if (block.timestamp >= uint256(auction.endTime)) revert VotingNotActive();
@@ -621,21 +623,20 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         )
     {
         Auction storage auction = auctions[auctionId];
-        return
-            (
-                auction.aminalOne,
-                auction.aminalTwo,
-                auction.totalLove,
-                auction.startTime,
-                auction.endTime,
-                auction.settled
-            );
+        return (
+            auction.aminalOne, auction.aminalTwo, auction.totalLove, auction.startTime, auction.endTime, auction.settled
+        );
     }
 
     /**
      * @notice Get voting information for an auction
      */
-    function getAuctionVoting(uint256 auctionId) external view validVoting(auctionId) returns (AuctionVoteInfo memory) {
+    function getAuctionVoting(uint256 auctionId)
+        external
+        view
+        validVoting(auctionId)
+        returns (AuctionVoteInfo memory)
+    {
         Auction storage auction = auctions[auctionId];
         return AuctionVoteInfo({
             highestVotes: auction.highestVotes,
@@ -876,11 +877,8 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         // For each gene slot, randomly choose from parent one or parent two
         for (uint256 i = 0; i < 9; i++) {
             uint256 random = _generateRandomness(i, 2); // Use slot index as seed for variety
-            if (random == 0) {
-                childGenes[i] = auction.parentOneGenes[i];
-            } else {
-                childGenes[i] = auction.parentTwoGenes[i];
-            }
+            if (random == 0) childGenes[i] = auction.parentOneGenes[i];
+            else childGenes[i] = auction.parentTwoGenes[i];
         }
 
         return childGenes;

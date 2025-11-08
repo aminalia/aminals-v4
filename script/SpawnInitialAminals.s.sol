@@ -35,46 +35,26 @@ contract SpawnInitialAminals is Script {
         // First Aminal with cute orangey theme (genes 0-7 in first 8 slots)
         // Default placement: centered, 100% scale, no rotation
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[0][i] = IAminalStructs.GeneInstance({
-                geneId: i,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[0][i] =
+                IAminalStructs.GeneInstance({geneId: i, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Second Aminal with 3 eyed monster theme (genes 8-15 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[1][i] = IAminalStructs.GeneInstance({
-                geneId: 8 + i,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[1][i] =
+                IAminalStructs.GeneInstance({geneId: 8 + i, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Third Aminal with blue/moon theme (genes 16-23 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[2][i] = IAminalStructs.GeneInstance({
-                geneId: 16 + i,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[2][i] =
+                IAminalStructs.GeneInstance({geneId: 16 + i, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         // Fourth Aminal (genes 24-31 in first 8 slots)
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[3][i] = IAminalStructs.GeneInstance({
-                geneId: 24 + i,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[3][i] =
+                IAminalStructs.GeneInstance({geneId: 24 + i, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         factory.spawnInitialAminals(genesisGenes);

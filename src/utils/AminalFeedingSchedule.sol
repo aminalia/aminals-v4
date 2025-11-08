@@ -69,8 +69,6 @@ contract AminalFeedingSchedule {
         }
 
         // Ensure minimum love of 1 if feeding any amount (prevents rounding to zero in edge cases)
-        if (loveGained == 0 && baseLove > 0) {
-            loveGained = 1;
-        }
+        if (loveGained == 0 && baseLove > 0) loveGained = 1;
     }
 }

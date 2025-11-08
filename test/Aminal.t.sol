@@ -51,13 +51,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // Spawn a test Aminal - use 8 genes in first 8 slots
         GeneInstance[9][] memory genesisGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 8; i++) {
-            genesisGenes[0][i] = GeneInstance({
-                geneId: 1,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            genesisGenes[0][i] = GeneInstance({geneId: 1, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
 
         factory.spawnInitialAminals(genesisGenes);
@@ -167,13 +161,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalGenes[0][i] = GeneInstance({
-                geneId: 2,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            additionalGenes[0][i] = GeneInstance({geneId: 2, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         factory.spawnInitialAminals(additionalGenes);
         address aminal2Address = factory.getAminalByIndex(1);
@@ -196,13 +184,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
 
         GeneInstance[9][] memory additionalGenes = new GeneInstance[9][](1);
         for (uint256 i = 0; i < 9; i++) {
-            additionalGenes[0][i] = GeneInstance({
-                geneId: 2,
-                offsetX: 0,
-                offsetY: 0,
-                scale: 100,
-                rotation: 0
-            });
+            additionalGenes[0][i] = GeneInstance({geneId: 2, offsetX: 0, offsetY: 0, scale: 100, rotation: 0});
         }
         factory.spawnInitialAminals(additionalGenes);
         // address aminal2Address = factory.getAminalByIndex(1); // Not needed for this test

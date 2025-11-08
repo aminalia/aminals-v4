@@ -75,10 +75,9 @@ abstract contract GeneRenderer is IAminalStructs {
 
         string memory attributes = generateAttributesList(tokenId);
 
-        return
-            constructTokenURI(
-                TokenURIParams({name: name, description: description, image: image, attributes: attributes})
-            );
+        return constructTokenURI(
+            TokenURIParams({name: name, description: description, image: image, attributes: attributes})
+        );
     }
 
     /// @notice Generate JSON attributes list for NFT metadata
@@ -191,7 +190,7 @@ abstract contract GeneRenderer is IAminalStructs {
         string memory transform = _buildTransform(geneInstance);
 
         // Wrap gene SVG in a group with transform
-        return string(abi.encodePacked('<g transform="', transform, '">', geneSvg, '</g>'));
+        return string(abi.encodePacked('<g transform="', transform, '">', geneSvg, "</g>"));
     }
 
     /// @notice Build SVG transform attribute from gene instance placement
@@ -209,11 +208,7 @@ abstract contract GeneRenderer is IAminalStructs {
         if (geneInstance.offsetX != 0 || geneInstance.offsetY != 0) {
             transform = string(
                 abi.encodePacked(
-                    "translate(",
-                    _int16ToString(geneInstance.offsetX),
-                    ",",
-                    _int16ToString(geneInstance.offsetY),
-                    ") "
+                    "translate(", _int16ToString(geneInstance.offsetX), ",", _int16ToString(geneInstance.offsetY), ") "
                 )
             );
         }
@@ -221,26 +216,14 @@ abstract contract GeneRenderer is IAminalStructs {
         // Scale from center of canvas (500, 500)
         if (geneInstance.scale != 100) {
             string memory scaleValue = _scaleToString(geneInstance.scale);
-            transform = string(
-                abi.encodePacked(
-                    transform,
-                    "translate(500,500) scale(",
-                    scaleValue,
-                    ") translate(-500,-500) "
-                )
-            );
+            transform =
+                string(abi.encodePacked(transform, "translate(500,500) scale(", scaleValue, ") translate(-500,-500) "));
         }
 
         // Rotate around center of canvas (500, 500)
         if (geneInstance.rotation != 0) {
-            transform = string(
-                abi.encodePacked(
-                    transform,
-                    "rotate(",
-                    Strings.toString(geneInstance.rotation),
-                    ",500,500)"
-                )
-            );
+            transform =
+                string(abi.encodePacked(transform, "rotate(", Strings.toString(geneInstance.rotation), ",500,500)"));
         }
 
         return transform;
@@ -250,9 +233,7 @@ abstract contract GeneRenderer is IAminalStructs {
     /// @param value The int16 value to convert
     /// @return String representation of the value
     function _int16ToString(int16 value) internal pure returns (string memory) {
-        if (value < 0) {
-            return string(abi.encodePacked("-", Strings.toString(uint16(-value))));
-        }
+        if (value < 0) return string(abi.encodePacked("-", Strings.toString(uint16(-value))));
         return Strings.toString(uint16(value));
     }
 
@@ -265,17 +246,12 @@ abstract contract GeneRenderer is IAminalStructs {
         uint256 integerPart = scale / 100;
         uint256 decimalPart = scale % 100;
 
-        if (decimalPart == 0) {
-            return Strings.toString(integerPart);
-        }
+        if (decimalPart == 0) return Strings.toString(integerPart);
 
         // Format decimal part with leading zeros if needed
         string memory decimalStr;
-        if (decimalPart < 10) {
-            decimalStr = string(abi.encodePacked("0", Strings.toString(decimalPart)));
-        } else {
-            decimalStr = Strings.toString(decimalPart);
-        }
+        if (decimalPart < 10) decimalStr = string(abi.encodePacked("0", Strings.toString(decimalPart)));
+        else decimalStr = Strings.toString(decimalPart);
 
         return string(abi.encodePacked(Strings.toString(integerPart), ".", decimalStr));
     }

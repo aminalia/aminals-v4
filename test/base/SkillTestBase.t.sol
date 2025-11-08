@@ -45,11 +45,7 @@ abstract contract SkillTestBase is AminalTestBase {
         emit SkillUsed(user, expectedCost, skillContract, selector);
     }
 
-    function _assertSkillCost(
-        uint256 loveBefore,
-        uint256 loveAfter,
-        uint256 expectedCost
-    ) internal {
+    function _assertSkillCost(uint256 loveBefore, uint256 loveAfter, uint256 expectedCost) internal {
         assertEq(loveBefore - loveAfter, expectedCost, "Love cost mismatch");
     }
 
