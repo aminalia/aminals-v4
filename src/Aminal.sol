@@ -89,6 +89,12 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @notice Unique identifier within the Aminal ecosystem
     uint256 public immutable aminalIndex;
 
+    /// @notice Birth time of this Aminal (block.timestamp) - used as start time for VRGDA
+    uint256 public immutable birthTime;
+
+    /// @notice Total ETH fed to this Aminal (tracked for VRGDA)
+    uint256 public totalEthFed;
+
     /// @notice VRGDA instance for calculating love gains from ETH 📈
     AminalVRGDA public immutable loveVRGDA;
 
@@ -206,6 +212,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         proposerAddress = _proposerAddress;
         _genes = genes;
         aminalIndex = _aminalIndex;
+        birthTime = block.timestamp;
         loveVRGDA = AminalVRGDA(_loveVRGDA);
 
         // Mint the NFT to the factory (which will transfer to the actual owner)
@@ -235,8 +242,16 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
         if (amount < MIN_FEED_AMOUNT) revert NotEnoughEther();
 
-        // Calculate love using VRGDA
-        uint256 loveGained = loveVRGDA.getLoveForETH(0, amount); // Pass 0 since we no longer track energy
+        // Calculate time since birth for VRGDA
+        uint256 timeSinceStart = block.timestamp - birthTime;
+
+        // Calculate love using time-based VRGDA
+        // VRGDA will check if we're ahead/behind schedule based on totalEthFed vs time
+        uint256 loveGained = loveVRGDA.getLoveForETH(timeSinceStart, totalEthFed, amount);
+
+        // Update total ETH fed for VRGDA tracking
+        totalEthFed += amount;
+
         lovePerUser[feeder] += loveGained;
         totalLove += loveGained;
 
@@ -391,7 +406,8 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     /// @param amount The amount of ETH (in wei) to query
     /// @return loveAmount The amount of love that would be received
     function getLoveForAmount(uint256 amount) external view returns (uint256) {
-        return loveVRGDA.getLoveForETH(0, amount); // Pass 0 since we no longer track energy
+        uint256 timeSinceStart = block.timestamp - birthTime;
+        return loveVRGDA.getLoveForETH(timeSinceStart, totalEthFed, amount);
     }
 
     /*//////////////////////////////////////////////////////////////

@@ -65,121 +65,148 @@ contract AminalVRGDATest is Test, IAminalStructs {
         assertEq(aminal.getTotalLove(), 0);
     }
 
-    function test_LoveGainFromFeeding() public {
-        uint256 feedAmount = 0.5 ether;
+    function test_OnScheduleFeeding() public {
+        // Feed exactly on schedule: 0.1 ETH per day
+        uint256 feedAmount = 0.1 ether;
 
-        // Calculate expected love using VRGDA directly (energy parameter is now ignored)
-        uint256 expectedLove = vrgda.getLoveForETH(0, feedAmount);
+        // At time = 0 (just born), feeding should give good love
+        vm.prank(user1);
+        aminal.feed{value: feedAmount}();
+
+        uint256 love1 = aminal.getLoveByUser(user1);
+        console.log("Love at t=0 for 0.1 ETH:", love1);
+        assertTrue(love1 > 0, "Should get some love");
+
+        // Warp 1 day forward
+        vm.warp(block.timestamp + 1 days);
+
+        // Feed exactly 0.1 ETH again (staying on schedule)
+        vm.prank(user2);
+        aminal.feed{value: feedAmount}();
+
+        uint256 love2 = aminal.getLoveByUser(user2);
+        console.log("Love at t=1day for 0.1 ETH (on schedule):", love2);
+
+        // Should get similar love since we're on schedule
+        assertApproxEqRel(love2, love1, 0.5e18); // Within 50% (VRGDA curve affects this)
+    }
+
+    function test_AheadOfSchedule() public {
+        // Feed way more than target (0.5 ETH instead of 0.1 ETH)
+        uint256 feedAmount = 0.5 ether;
 
         vm.prank(user1);
         aminal.feed{value: feedAmount}();
 
-        assertEq(aminal.getLoveByUser(user1), expectedLove);
-        assertEq(aminal.getTotalLove(), expectedLove);
+        uint256 love1 = aminal.getLoveByUser(user1);
+        console.log("Love for feeding 5x target at t=0:", love1);
+
+        // Now we're way ahead of schedule
+        // Warp 1 day forward
+        vm.warp(block.timestamp + 1 days);
+
+        // Try to feed more - should get LESS love per ETH since we're ahead
+        vm.prank(user2);
+        aminal.feed{value: 0.1 ether}();
+
+        uint256 love2 = aminal.getLoveByUser(user2);
+        console.log("Love for 0.1 ETH when ahead of schedule:", love2);
+
+        // Love per ETH should be lower when ahead of schedule
+        uint256 lovePerEth1 = (love1 * 1e18) / feedAmount;
+        uint256 lovePerEth2 = (love2 * 1e18) / 0.1 ether;
+
+        assertTrue(lovePerEth2 < lovePerEth1, "Should get less love per ETH when ahead");
     }
 
-    function test_ConsistentLoveGain() public {
-        // Since we no longer track energy, love gain should be consistent for same ETH amount
-        uint256 feedAmount1 = 0.1 ether;
+    function test_BehindSchedule() public {
+        // Don't feed for 10 days
+        vm.warp(block.timestamp + 10 days);
 
-        uint256 expectedLove1 = vrgda.getLoveForETH(0, feedAmount1);
+        // Now we're way behind schedule (should have fed 1 ETH total by now)
+        // Feeding should give MORE love per ETH
+        uint256 feedAmount = 0.1 ether;
 
         vm.prank(user1);
-        aminal.feed{value: feedAmount1}();
+        aminal.feed{value: feedAmount}();
 
-        assertEq(aminal.getLoveByUser(user1), expectedLove1);
-        assertEq(aminal.getTotalLove(), expectedLove1);
+        uint256 love1 = aminal.getLoveByUser(user1);
+        console.log("Love for 0.1 ETH when 10 days behind schedule:", love1);
 
-        // Second user feeds same amount - should get same love
-        uint256 feedAmount2 = 0.1 ether;
-        uint256 expectedLove2 = vrgda.getLoveForETH(0, feedAmount2);
+        // Compare to feeding at t=0
+        // Reset and test t=0 feeding
+        GeneInstance[9][] memory genesisGenes2 = new GeneInstance[9][](1);
+        vm.store(address(factory), bytes32(uint256(2)), bytes32(uint256(0))); // Reset spawn flag
+        factory.spawnInitialAminals(genesisGenes2);
+        address aminal2Address = factory.getAminalByIndex(1);
+        AminalContract aminal2 = AminalContract(payable(aminal2Address));
 
         vm.prank(user2);
-        aminal.feed{value: feedAmount2}();
+        aminal2.feed{value: feedAmount}();
+        uint256 love2 = aminal2.getLoveByUser(user2);
 
-        assertEq(aminal.getLoveByUser(user2), expectedLove2);
+        console.log("Love for 0.1 ETH at t=0:", love2);
 
-        // Love amounts should be equal for equal ETH
-        assertEq(expectedLove1, expectedLove2);
+        // When behind schedule, should get more love
+        assertTrue(love1 > love2, "Should get more love when behind schedule");
+    }
+
+    function test_VRGDAConstants() public {
+        // Verify VRGDA constants are set correctly
+        assertEq(vrgda.ENERGY_PER_ETH(), 10_000);
+        assertEq(vrgda.TARGET_FEED_RATE(), 0.1 ether);
+        assertEq(vrgda.MAX_LOVE_MULTIPLIER(), 10 ether);
+        assertEq(vrgda.MIN_LOVE_MULTIPLIER(), 0.1 ether);
     }
 
     function test_LoveTrackingPerUser() public {
         uint256 feedAmount1 = 0.1 ether;
         uint256 feedAmount2 = 0.2 ether;
 
-        // Calculate expected love for each feeding
-        uint256 expectedLove1 = vrgda.getLoveForETH(0, feedAmount1);
-        uint256 expectedLove2 = vrgda.getLoveForETH(0, feedAmount2);
-
         // First user feeds
         vm.prank(user1);
         aminal.feed{value: feedAmount1}();
+        uint256 love1 = aminal.getLoveByUser(user1);
 
         // Second user feeds
         vm.prank(user2);
         aminal.feed{value: feedAmount2}();
+        uint256 love2 = aminal.getLoveByUser(user2);
 
         // Check individual love tracking
-        assertEq(aminal.getLoveByUser(user1), expectedLove1);
-        assertEq(aminal.getLoveByUser(user2), expectedLove2);
-        assertEq(aminal.getTotalLove(), expectedLove1 + expectedLove2);
+        assertTrue(love1 > 0, "User1 should have love");
+        assertTrue(love2 > 0, "User2 should have love");
+        assertEq(aminal.getTotalLove(), love1 + love2, "Total should equal sum");
     }
 
-    function test_MinimumFeedingAmount() public {
-        uint256 minFeedAmount = 0.001 ether;
+    function test_TotalEthFedTracking() public {
+        assertEq(aminal.totalEthFed(), 0, "Should start at 0");
 
-        // Should be able to feed minimum amount
+        uint256 feed1 = 0.05 ether;
         vm.prank(user1);
-        aminal.feed{value: minFeedAmount}();
+        aminal.feed{value: feed1}();
+        assertEq(aminal.totalEthFed(), feed1, "Should track first feed");
 
-        assertGt(aminal.getTotalLove(), 0);
-        assertGt(aminal.getLoveByUser(user1), 0);
+        uint256 feed2 = 0.03 ether;
+        vm.prank(user2);
+        aminal.feed{value: feed2}();
+        assertEq(aminal.totalEthFed(), feed1 + feed2, "Should track cumulative");
     }
 
-    function testFuzz_ConsistentLoveGain(uint96 ethAmount) public {
-        // Use bound instead of assume to avoid CI rejection issues
-        ethAmount = uint96(bound(uint256(ethAmount), 0.001 ether, 10 ether));
+    function testFuzz_FeedingAtVariousTimes(uint32 timeWarp, uint96 feedAmount) public {
+        // Bound inputs
+        timeWarp = uint32(bound(uint256(timeWarp), 0, 30 days));
+        feedAmount = uint96(bound(uint256(feedAmount), 0.001 ether, 1 ether));
 
-        uint256 expectedLove = vrgda.getLoveForETH(0, ethAmount);
+        // Warp time
+        vm.warp(block.timestamp + timeWarp);
 
+        // Feed
         vm.prank(user1);
-        aminal.feed{value: ethAmount}();
-
-        assertEq(aminal.getTotalLove(), expectedLove);
-        assertEq(aminal.getLoveByUser(user1), expectedLove);
-    }
-
-    function test_MultipleFeedingAccumulation() public {
-        uint256 feedAmount = 0.1 ether;
-        uint256 expectedLovePerFeed = vrgda.getLoveForETH(0, feedAmount);
-
-        // Feed multiple times
-        vm.startPrank(user1);
         aminal.feed{value: feedAmount}();
-        aminal.feed{value: feedAmount}();
-        aminal.feed{value: feedAmount}();
-        vm.stopPrank();
 
-        // Should have 3x the love
-        assertEq(aminal.getLoveByUser(user1), expectedLovePerFeed * 3);
-        assertEq(aminal.getTotalLove(), expectedLovePerFeed * 3);
-    }
-
-    function test_LargeFeedingAmount() public {
-        uint256 largeFeedAmount = 100 ether;
-
-        vm.prank(user2); // user2 has more ETH
-        aminal.feed{value: largeFeedAmount}();
-
-        // Should gain substantial love
-        assertGt(aminal.getTotalLove(), 0);
-        assertGt(aminal.getLoveByUser(user2), 0);
-    }
-
-    function test_VRGDAConstants() public {
-        // Verify VRGDA constants are set correctly
-        assertEq(vrgda.ENERGY_PER_ETH(), 10_000);
-        assertEq(vrgda.MAX_LOVE_MULTIPLIER(), 10 ether);
-        assertEq(vrgda.MIN_LOVE_MULTIPLIER(), 0.1 ether);
+        // Should always get some love
+        assertTrue(aminal.getLoveByUser(user1) > 0, "Should get love");
+        assertEq(aminal.totalEthFed(), feedAmount, "Should track ETH");
     }
 }

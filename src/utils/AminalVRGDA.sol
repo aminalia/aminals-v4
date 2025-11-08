@@ -7,34 +7,32 @@ import {FixedPointMathLib} from "lib/VRGDAs/lib/solmate/src/utils/FixedPointMath
 
 /**
  * @title AminalVRGDA
- * @notice Logistic VRGDA implementation that modulates love received based on energy level
- * @dev Energy gain is fixed (10k per ETH), but love varies inversely with energy using a smooth S-curve
- * @dev Thresholds prevent extreme VRGDA values: <10 energy (0.001 ETH) = 10x love, >1M (100 ETH) = 0.1x love
- * @dev Between thresholds, VRGDA price increases with energy, which we invert to create decreasing love multipliers
- * @dev Uses moderate multiplier range (10x to 0.1x) to balance incentives without extreme values
+ * @notice Logistic VRGDA implementation that modulates love based on feeding schedule
+ * @dev Target rate: 0.1 ETH worth of feeding per day
+ * @dev Feeds more love when behind schedule (not fed enough), less when ahead of schedule (overfed)
  *
- * @dev Incentive Design:
- * - Hungry Aminals (<0.005 ETH): Maximum 10x love multiplier encourages feeding neglected Aminals
- * - Recently Fed (0.1-1 ETH): 7.4x-5.5x multiplier still rewards interaction but with diminishing returns
- * - Well Fed (1-10 ETH): 5.5x-3.5x moderate multipliers maintain engagement without overfeeding
- * - Overfed (10-50 ETH): 3.5x-2.3x discourages excessive feeding while allowing some interaction
- * - Extremely Overfed (>100 ETH): 0.1x multiplier strongly discourages wasteful overfeeding
+ * @dev VRGDA Mechanics:
+ * - Target: 0.1 ETH fed per day (linear schedule)
+ * - If fed more than target → price increases → less love per ETH
+ * - If fed less than target → price decreases → more love per ETH
+ * - Encourages consistent daily feeding rather than binge feeding
  *
- * @dev This creates a community dynamic where:
- * - Players seek out hungry Aminals for maximum love returns (10x multiplier)
- * - Feeding an Aminal from 0 to 0.1 ETH costs 0.1 ETH but yields ~0.97 love (9.7x average)
- * - Feeding from 10 to 11 ETH costs 1 ETH but yields only ~3.4 love (3.4x)
- * - Feeding from 50 to 51 ETH costs 1 ETH but yields only ~2.3 love (2.3x)
- * - Natural equilibrium emerges around 1-10 ETH energy levels for most Aminals
+ * @dev Example:
+ * - Day 1: Feed exactly 0.1 ETH → get base love rate
+ * - Day 2: Feed 0.2 ETH total (0.1 ETH extra) → price UP → less love per ETH
+ * - Day 3: Don't feed at all → price DOWN → when you do feed, get more love per ETH
  */
 contract AminalVRGDA is LogisticVRGDA {
-    /// @notice Fixed rate of energy gained per ETH (not affected by VRGDA)
+    /// @notice Fixed rate of energy gained per ETH (for love unit calculation)
     uint256 public constant ENERGY_PER_ETH = 10_000; // 1 ETH = 10,000 energy units
 
-    /// @notice Maximum love multiplier (10x ETH sent)
+    /// @notice Target feeding rate: 0.1 ETH per day
+    uint256 public constant TARGET_FEED_RATE = 0.1 ether; // per day
+
+    /// @notice Maximum love multiplier (when very behind schedule)
     uint256 public constant MAX_LOVE_MULTIPLIER = 10 ether;
 
-    /// @notice Minimum love multiplier (0.1x ETH sent)
+    /// @notice Minimum love multiplier (when very ahead of schedule)
     uint256 public constant MIN_LOVE_MULTIPLIER = 0.1 ether;
 
     /// @notice Constructor to set up the VRGDA parameters for love calculation
@@ -48,85 +46,77 @@ contract AminalVRGDA is LogisticVRGDA {
     {}
 
     /**
-     * @notice Calculate how much love is gained for a given ETH amount
-     * @dev As current energy increases, the love gained per ETH decreases
+     * @notice Calculate how much love is gained for a given ETH amount using VRGDA
+     * @dev Love increases when behind feeding schedule, decreases when ahead
      * @dev Returns love in the same units as energy (10,000 per ETH)
-     * @param currentEnergy Current energy level of the Aminal
-     * @param ethAmount Amount of ETH being sent (in wei)
+     * @param timeSinceStart Time elapsed since Aminal creation (in seconds)
+     * @param totalEthFed Total ETH fed to this Aminal so far (in wei)
+     * @param ethAmount Amount of ETH being fed now (in wei)
      * @return loveGained Amount of love that will be gained (in energy units)
      */
-    function getLoveForETH(uint256 currentEnergy, uint256 ethAmount) public view returns (uint256 loveGained) {
+    function getLoveForETH(uint256 timeSinceStart, uint256 totalEthFed, uint256 ethAmount)
+        public
+        view
+        returns (uint256 loveGained)
+    {
         if (ethAmount == 0) return 0;
 
+        // Calculate target ETH that should have been fed by now
+        // Target: 0.1 ETH per day = (timeSinceStart / 1 day) * 0.1 ETH
+        uint256 targetEthByNow = (timeSinceStart * TARGET_FEED_RATE) / 1 days;
+
+        // Convert ETH amounts to "units" for VRGDA (using ENERGY_PER_ETH as scaling factor)
+        // This gives us integer units to work with
+        uint256 targetUnitsByNow = (targetEthByNow * ENERGY_PER_ETH) / 1 ether;
+        uint256 unitsFedSoFar = (totalEthFed * ENERGY_PER_ETH) / 1 ether;
+        uint256 unitsToFeed = (ethAmount * ENERGY_PER_ETH) / 1 ether;
+
+        // For linear VRGDA, the target time for selling unit n is: f⁻¹(n) = n / rate
+        // We invert this: given current time t, we should have sold f(t) = rate * t units
+        // We've sold unitsFedSoFar, so we're (unitsFedSoFar - targetUnitsByNow) ahead/behind
+
+        // Get VRGDA price for the NEXT unit to be fed
+        // Use toWadUnsafe to convert time to WAD format safely
+        // unitsFedSoFar is the current count sold
+        uint256 vrgdaPrice = getVRGDAPrice(toWadUnsafe(timeSinceStart), unitsFedSoFar);
+
+        // Map VRGDA price to love multiplier
+        // Higher price (behind schedule) = more love per unit
+        // Lower price (ahead of schedule) = less love per unit
         uint256 loveMultiplier;
 
-        // Special cases for energy thresholds
-        if (currentEnergy < 10) {
-            // Very low energy - give maximum love
+        if (vrgdaPrice == 0) {
+            loveMultiplier = MIN_LOVE_MULTIPLIER; // Far ahead of schedule
+        } else if (vrgdaPrice >= uint256(targetPrice) * 10) {
+            // Far behind schedule
             loveMultiplier = MAX_LOVE_MULTIPLIER;
-        } else if (currentEnergy > 1_000_000) {
-            // High energy - give minimum love
-            loveMultiplier = MIN_LOVE_MULTIPLIER;
         } else {
-            // Use VRGDA for normal energy levels
-            // Apply logarithmic-like scaling to spread the curve more evenly
-            // This creates a more gradual transition across the entire range
-            uint256 scaledEnergy;
-            if (currentEnergy < 50) {
-                // Very low energy: start curve immediately
-                scaledEnergy = currentEnergy / 50; // 0.02 to 1
-            } else if (currentEnergy < 1000) {
-                // Low energy: very gradual scaling
-                scaledEnergy = 1 + (currentEnergy - 50) / 200; // 1 to ~5.75
-            } else if (currentEnergy < 10_000) {
-                // Low to medium energy: gradual scaling
-                scaledEnergy = 6 + (currentEnergy - 1000) / 1500; // 6 to ~12
-            } else if (currentEnergy < 100_000) {
-                // Medium energy: moderate scaling
-                scaledEnergy = 12 + (currentEnergy - 10_000) / 10_000; // 12 to ~21
-            } else {
-                // High energy: slower scaling to avoid overflow
-                scaledEnergy = 21 + (currentEnergy - 100_000) / 50_000; // 21 to ~39
-            }
+            // Map price range to multiplier range
+            // vrgdaPrice varies around targetPrice
+            // When price = targetPrice, we're on schedule → use middle multiplier
+            // When price > targetPrice, we're behind → increase multiplier
+            // When price < targetPrice, we're ahead → decrease multiplier
 
-            // Get VRGDA price for current energy level
-            // For Logistic VRGDA: price starts low and increases with "time" (energy)
-            uint256 vrgdaPrice = getVRGDAPrice(toWadUnsafe(scaledEnergy), scaledEnergy);
+            uint256 priceRatio = (vrgdaPrice * 1 ether) / uint256(targetPrice);
 
-            // Map VRGDA price to love multiplier with inverse relationship
-            // As VRGDA price increases (energy increases), love multiplier decreases
-            // This creates the desired diminishing returns for well-fed Aminals
-
-            // VRGDA price DECREASES as energy increases (we're "ahead of schedule")
-            // We want love multiplier to DECREASE as energy increases
-            // So we need to invert the relationship
-
-            if (vrgdaPrice == 0) {
-                loveMultiplier = MIN_LOVE_MULTIPLIER; // Very high energy
-            } else if (vrgdaPrice >= uint256(targetPrice)) {
-                // Price at or above target = low energy = high multiplier
+            if (priceRatio >= 5 ether) {
+                // 5x or more above target = max multiplier
                 loveMultiplier = MAX_LOVE_MULTIPLIER;
+            } else if (priceRatio <= 0.2 ether) {
+                // 0.2x or less of target = min multiplier
+                loveMultiplier = MIN_LOVE_MULTIPLIER;
             } else {
-                // Price below target = higher energy = lower multiplier
-                // Map price range [0 to targetPrice] to multiplier range [MIN to MAX]
-                // As price goes from targetPrice to 0, multiplier goes from MAX to MIN
-
-                uint256 progress = (vrgdaPrice * 1 ether) / uint256(targetPrice);
+                // Linear interpolation between min and max based on price ratio
+                // priceRatio of 1.0 (on schedule) should give middle value
+                // Map [0.2, 5.0] to [MIN, MAX]
+                uint256 normalizedRatio = ((priceRatio - 0.2 ether) * 1 ether) / 4.8 ether; // 0-1 range
                 uint256 range = MAX_LOVE_MULTIPLIER - MIN_LOVE_MULTIPLIER;
-
-                // Linear interpolation: high price (near target) = high multiplier
-                loveMultiplier = MIN_LOVE_MULTIPLIER + ((range * progress) / 1 ether);
+                loveMultiplier = MIN_LOVE_MULTIPLIER + ((range * normalizedRatio) / 1 ether);
             }
-
-            // Apply bounds to keep multiplier reasonable
-            if (loveMultiplier > MAX_LOVE_MULTIPLIER) loveMultiplier = MAX_LOVE_MULTIPLIER;
-            else if (loveMultiplier < MIN_LOVE_MULTIPLIER) loveMultiplier = MIN_LOVE_MULTIPLIER;
         }
 
-        // Calculate love gained in same units as energy (10,000 per ETH)
-        // First convert ETH to energy units, then apply multiplier
-        uint256 baseUnits = (ethAmount * ENERGY_PER_ETH) / 1 ether;
-        loveGained = (baseUnits * loveMultiplier) / 1 ether;
+        // Calculate love gained: base units * multiplier
+        loveGained = (unitsToFeed * loveMultiplier) / 1 ether;
     }
 
     /**
@@ -140,12 +130,13 @@ contract AminalVRGDA is LogisticVRGDA {
     }
 
     /**
-     * @notice Get the current love multiplier based on energy level
-     * @dev Returns how much love is gained per 1 ETH
-     * @param currentEnergy Current energy level
+     * @notice Get the current love multiplier based on feeding schedule
+     * @dev Returns how much love is gained per 1 ETH given current state
+     * @param timeSinceStart Time since Aminal creation (in seconds)
+     * @param totalEthFed Total ETH fed so far (in wei)
      * @return The love amount gained per 1 ETH (in energy units, where 10,000 = 1 ETH)
      */
-    function getLoveMultiplier(uint256 currentEnergy) public view returns (uint256) {
-        return getLoveForETH(currentEnergy, 1 ether);
+    function getLoveMultiplier(uint256 timeSinceStart, uint256 totalEthFed) public view returns (uint256) {
+        return getLoveForETH(timeSinceStart, totalEthFed, 1 ether);
     }
 }
