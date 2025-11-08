@@ -307,7 +307,7 @@ contract IndividualAminalTest is Test, IAminalStructs {
         // The actual love received should match the prediction
         assertEq(aminal.getLoveByUser(alice), predictedLove);
 
-        // Query love for another amount after feeding (should be same since energy is no longer tracked)
+        // Query love for another amount after feeding
         uint256 predictedLove2 = aminal.getLoveForAmount(0.01 ether);
         assertTrue(predictedLove2 > 0);
 

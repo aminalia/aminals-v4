@@ -14,7 +14,7 @@ import {IAminalStructs} from "src/interfaces/IAminalStructs.sol";
 /**
  * @title AminalBreedingIntegration
  * @dev Comprehensive integration test covering the complete breeding flow:
- * 1. Aminals are fed to build love and energy
+ * 1. Aminals are fed to build love
  * 2. Breeding is initiated
  * 3. Complete Aminal designs are proposed (1-10 genes with placement metadata)
  * 4. Users vote on entire Aminal designs for visual consistency
@@ -206,7 +206,7 @@ contract AminalBreedingIntegrationTest is Test, IAminalStructs {
     function testCompleteBreedingFlow() public {
         console.log("=== STARTING COMPLETE BREEDING FLOW TEST (FULL DESIGN VOTING) ===");
 
-        // STEP 1: Feed Aminals to build love and energy
+        // STEP 1: Feed Aminals to build love
         console.log("\n1. FEEDING AMINALS");
         _feedAminals();
 
