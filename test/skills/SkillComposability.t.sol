@@ -63,11 +63,10 @@ contract SkillComposabilityTest is Test, IAminalStructs {
     function testBasicSkillUsage() public {
         vm.deal(alice, 1 ether);
 
-        // Feed the Aminal to give it energy and love
+        // Feed the Aminal to give it love
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
-        uint256 initialEnergy = aminal.getEnergy();
         uint256 initialLove = aminal.getLoveByUser(alice);
 
         // Use the Move2D skill
@@ -80,15 +79,14 @@ contract SkillComposabilityTest is Test, IAminalStructs {
         assertEq(x, 10, "X coordinate should be 10");
         assertEq(y, 20, "Y coordinate should be 20");
 
-        // Energy and love should be consumed by the skill calls
-        assertTrue(aminal.getEnergy() < initialEnergy, "Energy should be consumed");
+        // Love should be consumed by the skill calls
         assertTrue(aminal.getLoveByUser(alice) < initialLove, "Love should be consumed");
     }
 
     function testMultipleSkillCalls() public {
         vm.deal(alice, 1 ether);
 
-        // Feed the Aminal to give it energy and love
+        // Feed the Aminal to give it love
         vm.prank(alice);
         aminal.feed{value: 0.1 ether}();
 
