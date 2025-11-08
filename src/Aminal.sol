@@ -242,7 +242,7 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
     function _feed(address feeder, uint256 amount) internal returns (uint256) {
         if (amount < MIN_FEED_AMOUNT) revert NotEnoughEther();
 
-        // Calculate time since birth for VRGDA
+        // Calculate time since birth for feeding schedule
         uint256 timeSinceStart = block.timestamp - birthTime;
 
         // Calculate love using time-based feeding schedule
