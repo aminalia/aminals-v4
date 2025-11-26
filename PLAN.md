@@ -1,7 +1,14 @@
 # Plan
 
 # Bugs
-- Fix mobile responsive issues
+- Fix flow... new auction, create first proposal
+- Activity page on profile should show more info
+
+
+Let's work on some indexer improvements:
+- Make sure for genes we are indexing gene name, description, and categories
+- Make sure we're also indexing how much a particular gene has earned
+- Index these things on create gene
 
 # Aminal designer
 
@@ -10,8 +17,6 @@
 ## UI
 
 - Show on Aminal detail page that "Aminals cannot be owned"
-- Randomize Aminal Option on Aminal designer
-- Show love costs and energy costs
 - Show how much money genes have made on the card
 
 ### Chat Feature Improvements
@@ -25,7 +30,6 @@
 
 General:
 
-- [ ] Tooltips and more info
 - [ ] Love should be a percentage?
 
 Profile:
@@ -41,11 +45,8 @@ Genes:
 
 Breeding:
 
-- [x] SVG creator should just be text / preview
 - [ ] "Time Left" -> "Incubation Period"
-- [x] Propose gene button placement is bad, should be next to gene pool header
 - [ ] Button to breed aminals on Breeding page?
-- [x] Voting none seems to not work? (investigated: fixed in indexer)
 - [ ] Communicate the amount of energy / love to breed (MIN_LOVE_REQUIRED / MIN_ENERGY_REQUIRED)
 
 Desgin challenges:
@@ -61,13 +62,6 @@ Contract Changes:
 - [ ] Remember aminal state in aminal builder
 
 # Contracts
-
-- Review vibe coded love bonding curve math
-- Make sure geneNFTs show up well on OpenSea / wallets
-- Remove proposals?
-- Some events might be redundent (squeak vs EnergyChange / LoveChange)
-- Investigate whether there should be some limits on gene proposals during auctions
-- When initializing aminal genes during deployment, gene #0 has issues
 
 - Do we want "This NFT represents a digital pet. This NFT cannot be transfered." as the Aminal description?
 - Name / description is not actually being used when creating a new gene, not being stored in contracts

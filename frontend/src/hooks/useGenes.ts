@@ -65,6 +65,7 @@ export const useGenes = (
           aminalGenesResult.data as any[],
           filter,
           sort,
+          category,
           userAddress
         )
       : genesResult.data
@@ -73,6 +74,7 @@ export const useGenes = (
           [],
           filter,
           sort,
+          category,
           userAddress
         )
       : undefined;
@@ -93,6 +95,7 @@ function processGenes(
   aminalGenes: any[],
   filter: GeneFilter,
   sort: GeneSort,
+  category: CategoryFilter,
   userAddress?: string
 ): Array<GeneNFT & { aminalCount: number }> {
   // Count aminals per gene
@@ -115,6 +118,13 @@ function processGenes(
     );
   }
 
+  // Apply category filter (case-insensitive match)
+  if (category !== 'all') {
+    processed = processed.filter(
+      (gene) => gene.category?.toLowerCase() === category.toLowerCase()
+    );
+  }
+
   // Apply sorting
   processed.sort((a, b) => {
     switch (sort) {
@@ -123,6 +133,9 @@ function processGenes(
         return b.aminalCount - a.aminalCount;
       case 'created-at':
         return Number(b.blockTimestamp - a.blockTimestamp);
+      case 'most-profitable':
+        // Sort by total earnings (highest first)
+        return Number(b.totalEarnings - a.totalEarnings);
       default:
         return 0;
     }

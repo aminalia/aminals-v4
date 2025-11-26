@@ -245,7 +245,7 @@ const AminalPage: NextPage = () => {
                   <h2 className="text-xl font-semibold">Stats</h2>
 
                   {/* Total Love and ETH Balance */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="p-4 bg-muted rounded-lg border border-border relative">
                       <div className="absolute top-2 right-2">
                         <Tooltip content="Total attachment level from all feeders. Higher love enables breeding and governance voting rights." />
@@ -360,7 +360,7 @@ const AminalPage: NextPage = () => {
                       <h4 className="text-sm font-medium text-foreground mb-2 px-3">
                         Parents
                       </h4>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="p-3 bg-muted rounded-lg border border-border">
                           <div className="text-sm text-muted-foreground">
                             Parent A
@@ -455,7 +455,7 @@ const AminalPage: NextPage = () => {
                       Traits
                       <Tooltip content="Each Aminal has 8 trait types (Background, Arms, Tail, Ears, Body, Face, Mouth, Misc). Traits are Gene NFTs created by the community. Gene owners earn revenue when offspring inherit their genes." />
                     </h3>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {aminal.genes
                         .map((geneTokenId, slotIndex) => {
                           // Skip empty gene slots
@@ -512,7 +512,7 @@ const AminalPage: NextPage = () => {
             </div>
 
             {/* Global Skills Section */}
-            <div className="mt-4 p-6 bg-muted rounded-xl border border-border">
+            <div className="mt-4 p-4 sm:p-6 bg-muted rounded-xl border border-border">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
                 <h2 className="text-2xl font-bold flex items-center gap-2">
                   Skills

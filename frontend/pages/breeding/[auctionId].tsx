@@ -12,7 +12,7 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
@@ -24,7 +24,9 @@ import DesignBuilder from '@components/breeding/DesignBuilder';
 import DesignGallery from '@components/breeding/DesignGallery';
 import DesignVoteStats from '@components/breeding/DesignVoteStats';
 import ProposeDesignButton from '@components/breeding/ProposeDesignButton';
+import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/Tabs';
 
 // Hooks & Types
 import {
@@ -122,6 +124,28 @@ const AuctionPage: NextPage = () => {
     const now = Math.floor(Date.now() / 1000);
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
+
+  // Track if we've done initial tab selection
+  const hasSetInitialTab = useRef(false);
+
+  // Auto-switch to Create tab for new auctions (no community designs yet) - only on initial load
+  // Wait for designs.length > 0 because parent designs should always exist once data loads
+  useEffect(() => {
+    if (
+      !isLoadingDesigns &&
+      !auction?.finished &&
+      !hasSetInitialTab.current &&
+      designs.length > 0
+    ) {
+      hasSetInitialTab.current = true;
+      const hasCommunityDesigns = designs.some(
+        (d) => !d.isParentDesign && !d.removed
+      );
+      if (!hasCommunityDesigns) {
+        setActiveTab('create');
+      }
+    }
+  }, [isLoadingDesigns, designs, auction?.finished]);
 
   // Get all unique gene IDs from parents
   const parentGeneIds = useMemo(() => {
@@ -414,12 +438,12 @@ const AuctionPage: NextPage = () => {
               <div className="flex items-center gap-3">
                 <Link
                   href="/breeding"
-                  className="text-energy hover:text-energy/80 text-sm font-medium"
+                  className="hover:text-energy/80 text-sm font-medium"
                 >
                   ← Back to Breeding
                 </Link>
                 <span className="px-2 py-1 text-sm bg-secondary text-foreground rounded font-medium">
-                  #{auctionId}
+                  Auction #{auctionId}
                 </span>
               </div>
             </div>
@@ -439,45 +463,62 @@ const AuctionPage: NextPage = () => {
               {/* Main Content */}
               <div className="bg-card rounded-lg border border-border overflow-hidden">
                 {/* Parents Info with Countdown Timer */}
-                <div className="bg-muted border-b border-border px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-6">
+                <div className="bg-muted border-b border-border px-4 md:px-6 py-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                    {/* Parent Links with Images */}
+                    <div className="flex items-center gap-2 md:gap-4">
+                      {/* Parent 1 */}
                       <Link
                         href={`/aminals/${
                           auction?.aminalOne?.contractAddress ||
                           auction?.aminalOne?.aminalIndex
                         }`}
-                        className="text-lg font-semibold text-energy hover:text-energy/80 transition-colors"
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                       >
-                        Aminal #
-                        {auction?.aminalOne?.aminalIndex !== undefined
-                          ? Number(auction.aminalOne.aminalIndex)
-                          : '?'}
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden bg-secondary border-2 border-border flex-shrink-0">
+                          {auction?.aminalOne && (
+                            <AminalVisualImage aminal={auction.aminalOne} />
+                          )}
+                        </div>
+                        <span className="text-base md:text-lg font-semibold text-primary">
+                          #
+                          {auction?.aminalOne?.aminalIndex !== undefined
+                            ? Number(auction.aminalOne.aminalIndex)
+                            : '?'}
+                        </span>
                       </Link>
-                      <div className="text-muted-foreground">×</div>
+
+                      {/* Heart connector */}
+                      <div className="text-love text-lg">💕</div>
+
+                      {/* Parent 2 */}
                       <Link
                         href={`/aminals/${
                           auction?.aminalTwo?.contractAddress ||
                           auction?.aminalTwo?.aminalIndex
                         }`}
-                        className="text-lg font-semibold text-energy hover:text-energy/80 transition-colors"
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                       >
-                        Aminal #
-                        {auction?.aminalTwo?.aminalIndex !== undefined
-                          ? Number(auction.aminalTwo.aminalIndex)
-                          : '?'}
+                        <div className="w-10 h-10 md:w-12 md:h-12 rounded-full overflow-hidden bg-secondary border-2 border-border flex-shrink-0">
+                          {auction?.aminalTwo && (
+                            <AminalVisualImage aminal={auction.aminalTwo} />
+                          )}
+                        </div>
+                        <span className="text-base md:text-lg font-semibold text-primary">
+                          #
+                          {auction?.aminalTwo?.aminalIndex !== undefined
+                            ? Number(auction.aminalTwo.aminalIndex)
+                            : '?'}
+                        </span>
                       </Link>
                     </div>
 
-                    <div>
-                      {/* Countdown Timer or End Auction Button */}
+                    {/* Status / Timer */}
+                    <div className="flex-shrink-0">
                       {auction?.finished ? (
-                        <div className="flex items-center gap-2 bg-success/10 text-success px-3 py-1 rounded text-sm">
-                          <div>✓</div>
-                          <div className="font-medium">Completed</div>
-                        </div>
+                        <Badge variant="success">Completed</Badge>
                       ) : isAuctionEnded ? (
-                        <EndAuctionButton auctionId={auctionId} />
+                        <Badge variant="warning">Ready to Birth</Badge>
                       ) : (
                         <CountdownTimer endTime={auctionEndTime} />
                       )}
@@ -487,77 +528,53 @@ const AuctionPage: NextPage = () => {
 
                 {/* Show new Aminal if auction is finished */}
                 {auction?.finished && auction?.childAminal ? (
-                  <div className="p-4">
-                    <div className="bg-success/10 border border-success/30 rounded-xl p-6">
-                      <div className="text-center mb-6">
-                        <div className="text-4xl mb-2">🎉</div>
-                        <h2 className="text-2xl font-bold text-success mb-2">
-                          New Aminal Has Been Born!
-                        </h2>
-                        <p className="text-success">
-                          The community has voted and created a new Aminal from
-                          this breeding auction.
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                        {/* Left Column - New Aminal Display */}
-                        <div className="flex justify-center">
-                          <div className="relative">
-                            <div className="w-80 h-80 rounded-2xl overflow-hidden bg-success/20 border-4 border-success shadow-2xl">
-                              <AminalVisualImage aminal={auction.childAminal} />
-                            </div>
-                            <div className="absolute -top-4 -right-4 bg-success text-white rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold shadow-lg animate-bounce">
-                              👶
-                            </div>
-                          </div>
+                  <div className="p-4 md:p-6 space-y-6">
+                    {/* New Aminal Card */}
+                    <div className="bg-muted border border-border rounded-lg p-6">
+                      <div className="flex flex-col md:flex-row gap-6 items-center">
+                        {/* Aminal Image */}
+                        <div className="w-48 h-48 md:w-64 md:h-64 rounded-lg overflow-hidden bg-secondary border border-border flex-shrink-0">
+                          <AminalVisualImage aminal={auction.childAminal} />
                         </div>
 
-                        {/* Right Column - Aminal Details */}
-                        <div className="space-y-6">
-                          <div className="text-center lg:text-left">
-                            <Link
-                              href={`/aminals/${auction.childAminal.contractAddress}`}
-                              className="text-4xl font-bold text-success hover:text-success/80 transition-colors underline decoration-2 underline-offset-4"
-                            >
+                        {/* Aminal Details */}
+                        <div className="flex-1 text-center md:text-left space-y-4">
+                          <div>
+                            <Badge variant="success" className="mb-2">
+                              Born!
+                            </Badge>
+                            <h2 className="text-2xl font-bold">
                               Aminal #{auction.childAminal.aminalIndex}
-                            </Link>
-                            <p className="text-xl text-success mt-2 font-medium">
-                              Has been born!
-                            </p>
-                            <p className="text-success mt-1">
+                            </h2>
+                            <p className="text-sm text-muted-foreground mt-1">
                               Child of #{auction.aminalOne?.aminalIndex} × #
                               {auction.aminalTwo?.aminalIndex}
                             </p>
                           </div>
 
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-card rounded-lg p-4 border border-success/30 shadow-sm">
-                              <div className="text-sm text-success font-medium">
-                                Total Love
-                              </div>
-                              <div className="text-2xl font-bold text-success">
-                                {Number(auction.childAminal.totalLove).toFixed(
-                                  2
-                                )}{' '}
-                                ❤️
-                              </div>
+                          <div className="bg-card rounded-lg p-3 border border-border inline-block">
+                            <div className="text-xs text-muted-foreground">
+                              Total Love
+                            </div>
+                            <div className="text-lg font-bold text-love">
+                              {Number(auction.childAminal.totalLove).toFixed(2)}
                             </div>
                           </div>
 
-                          <div className="text-center lg:text-left">
+                          <div>
                             <Link
                               href={`/aminals/${auction.childAminal.contractAddress}`}
-                              className="inline-flex items-center gap-3 bg-success hover:bg-success/80 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all hover:shadow-lg transform hover:-translate-y-0.5"
                             >
-                              <span>👀</span>
-                              Visit Aminal Page
-                              <span>→</span>
+                              <Button variant="default">
+                                Visit Aminal Page
+                              </Button>
                             </Link>
                           </div>
                         </div>
                       </div>
                     </div>
+
+                    {/* Vote Stats */}
                     <div className="bg-card rounded-lg border border-border p-4">
                       <DesignVoteStats
                         auctionId={auctionId}
@@ -565,126 +582,124 @@ const AuctionPage: NextPage = () => {
                       />
                     </div>
                   </div>
+                ) : isAuctionEnded && !auction?.finished ? (
+                  /* Ready to Birth State - Auction ended but not yet settled */
+                  <ReadyToBirthSection
+                    auctionId={auctionId}
+                    designs={designs}
+                    winningDesignId={auctionVoting?.winningDesignId}
+                    totalLove={auction?.totalLove || 0n}
+                  />
                 ) : (
                   <>
                     {/* Tab Navigation */}
-                    <div className="border-b border-border">
-                      <div className="flex gap-4 px-6">
-                        <button
-                          onClick={() => setActiveTab('browse')}
-                          className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeTab === 'browse'
-                              ? 'border-energy text-energy'
-                              : 'border-transparent text-muted-foreground hover:text-foreground'
-                          }`}
-                          disabled={isAuctionEnded}
-                        >
-                          📊 Browse Designs
-                        </button>
-                        <button
-                          onClick={() => setActiveTab('create')}
-                          className={`py-4 px-2 text-sm font-medium border-b-2 transition-colors ${
-                            activeTab === 'create'
-                              ? 'border-energy text-energy'
-                              : 'border-transparent text-muted-foreground hover:text-foreground'
-                          }`}
-                          disabled={isAuctionEnded}
-                        >
-                          ✨ Create New Design
-                        </button>
+                    <Tabs
+                      value={activeTab}
+                      onValueChange={(v) => setActiveTab(v as TabType)}
+                      className="w-full"
+                    >
+                      <div className="px-4 md:px-6 pt-4">
+                        <TabsList>
+                          <TabsTrigger value="browse" disabled={isAuctionEnded}>
+                            Browse Designs
+                          </TabsTrigger>
+                          <TabsTrigger value="create" disabled={isAuctionEnded}>
+                            Create New Design
+                          </TabsTrigger>
+                        </TabsList>
                       </div>
-                    </div>
 
-                    {/* Tab Content */}
-                    <div className="p-6">
-                      {activeTab === 'browse' ? (
-                        <DesignGallery
-                          auctionId={auctionId}
-                          designs={designs}
-                          userVotedDesignId={userVotedDesignId}
-                          userVotingPower={userVotingPower}
-                          totalLove={auction?.totalLove || 0n}
-                          winningDesignId={auctionVoting?.winningDesignId}
-                          onVoteSuccess={handleVoteSuccess}
-                          onViewDesign={handleViewDesign}
-                          disabled={isAuctionEnded}
-                          isLoading={isLoadingDesigns}
-                        />
-                      ) : (
-                        <div className="space-y-6">
-                          {/* Quick Start Templates */}
-                          <div className="bg-muted rounded-lg border border-border p-4">
-                            <h3 className="text-sm font-semibold mb-3">
-                              💡 Quick Start Templates
-                            </h3>
-                            <div className="flex gap-3">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleLoadParent1}
-                                disabled={isAuctionEnded}
-                              >
-                                Start with Parent 1
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleLoadParent2}
-                                disabled={isAuctionEnded}
-                              >
-                                Start with Parent 2
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={handleRandomize}
-                                disabled={isAuctionEnded}
-                                className="text-energy border-energy/30 hover:bg-energy/10"
-                              >
-                                🎲 Randomize
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setCurrentGeneIds([]);
-                                  setCurrentPlacements([]);
-                                  setBuilderKey((k) => k + 1); // Force remount
-                                }}
-                                disabled={isAuctionEnded}
-                              >
-                                Start Fresh
-                              </Button>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2">
-                              Try randomize for creative gene combinations with
-                              placement variations!
-                            </p>
-                          </div>
-
-                          {/* Design Builder */}
-                          <DesignBuilder
-                            key={builderKey}
-                            initialGeneIds={currentGeneIds}
-                            initialPlacements={currentPlacements}
-                            availableGenes={availableGenes}
-                            onDesignChange={handleDesignChange}
+                      {/* Tab Content */}
+                      <div className="p-6">
+                        <TabsContent value="browse" className="mt-0">
+                          <DesignGallery
+                            auctionId={auctionId}
+                            designs={designs}
+                            userVotedDesignId={userVotedDesignId}
+                            userVotingPower={userVotingPower}
+                            totalLove={auction?.totalLove || 0n}
+                            winningDesignId={auctionVoting?.winningDesignId}
+                            onVoteSuccess={handleVoteSuccess}
+                            onViewDesign={handleViewDesign}
                             disabled={isAuctionEnded}
-                            maxGenes={9}
+                            isLoading={isLoadingDesigns}
                           />
+                        </TabsContent>
 
-                          {/* Propose Button */}
-                          {!isAuctionEnded && (
-                            <ProposeDesignButton
-                              auctionId={auctionId}
-                              geneIds={currentGeneIds}
-                              placements={currentPlacements}
-                              onSuccess={handleProposeSuccess}
+                        <TabsContent value="create" className="mt-0">
+                          <div className="space-y-6">
+                            {/* Quick Start Templates */}
+                            <div className="bg-muted rounded-lg border border-border p-4">
+                              <h3 className="text-sm font-semibold mb-3">
+                                Quick Start Templates
+                              </h3>
+                              <div className="grid grid-cols-2 md:flex gap-2 md:gap-3">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleLoadParent1}
+                                  disabled={isAuctionEnded}
+                                >
+                                  Parent 1
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleLoadParent2}
+                                  disabled={isAuctionEnded}
+                                >
+                                  Parent 2
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={handleRandomize}
+                                  disabled={isAuctionEnded}
+                                >
+                                  Randomize
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setCurrentGeneIds([]);
+                                    setCurrentPlacements([]);
+                                    setBuilderKey((k) => k + 1); // Force remount
+                                  }}
+                                  disabled={isAuctionEnded}
+                                >
+                                  Start Fresh
+                                </Button>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-2">
+                                Load a parent design or randomize to get started
+                              </p>
+                            </div>
+
+                            {/* Design Builder */}
+                            <DesignBuilder
+                              key={builderKey}
+                              initialGeneIds={currentGeneIds}
+                              initialPlacements={currentPlacements}
+                              availableGenes={availableGenes}
+                              onDesignChange={handleDesignChange}
+                              disabled={isAuctionEnded}
+                              maxGenes={9}
                             />
-                          )}
-                        </div>
-                      )}
-                    </div>
+
+                            {/* Propose Button */}
+                            {!isAuctionEnded && (
+                              <ProposeDesignButton
+                                auctionId={auctionId}
+                                geneIds={currentGeneIds}
+                                placements={currentPlacements}
+                                onSuccess={handleProposeSuccess}
+                              />
+                            )}
+                          </div>
+                        </TabsContent>
+                      </div>
+                    </Tabs>
                   </>
                 )}
               </div>
@@ -695,5 +710,154 @@ const AuctionPage: NextPage = () => {
     </Layout>
   );
 };
+
+/**
+ * Ready to Birth Section - Shown when auction has ended but not yet settled
+ */
+function ReadyToBirthSection({
+  auctionId,
+  designs,
+  winningDesignId,
+  totalLove,
+}: {
+  auctionId: string;
+  designs: DesignProposal[];
+  winningDesignId?: bigint;
+  totalLove: bigint;
+}) {
+  // Find the winning design
+  const winningDesign = useMemo(() => {
+    if (winningDesignId === undefined) return null;
+    return designs.find((d) => d.designIndex === Number(winningDesignId));
+  }, [designs, winningDesignId]);
+
+  // Render winning design SVG
+  const winningDesignSvg = useMemo(() => {
+    if (!winningDesign?.genes || winningDesign.genes.length === 0) return '';
+
+    return winningDesign.geneIds
+      .map((geneId, index) => {
+        if (geneId === 0n) return '';
+
+        const gene = winningDesign.genes?.find(
+          (g) => BigInt(g.tokenId) === geneId
+        );
+        if (!gene?.svg) return '';
+
+        const placement = winningDesign.placements[index];
+        if (!placement) return gene.svg;
+
+        const { offsetX, offsetY, scale, rotation } = placement;
+
+        return `
+          <g transform="translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
+          scale / 100
+        })">
+            ${gene.svg}
+          </g>
+        `;
+      })
+      .join('');
+  }, [winningDesign]);
+
+  // Calculate vote percentage for winning design
+  const winningVotePercentage = useMemo(() => {
+    if (!winningDesign || totalLove === 0n) return 0;
+    return Number((winningDesign.votes * 100n) / totalLove);
+  }, [winningDesign, totalLove]);
+
+  // Count genes in winning design
+  const geneCount =
+    winningDesign?.geneIds.filter((id) => id !== 0n).length || 0;
+
+  return (
+    <div className="p-4 md:p-6 space-y-6">
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Winning Design Preview */}
+        <div className="flex-1">
+          <div className="bg-muted border border-border rounded-lg overflow-hidden">
+            <div className="px-4 py-3 border-b border-border bg-card">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-sm">Winning Design</h3>
+                {winningDesign && (
+                  <Badge variant="success" className="text-xs">
+                    🏆 #{winningDesign.designIndex}
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            {winningDesign ? (
+              <div className="p-4">
+                <div className="aspect-square bg-card rounded-lg overflow-hidden border border-border mb-4 max-w-sm mx-auto">
+                  <svg
+                    viewBox="0 0 1000 1000"
+                    className="w-full h-full"
+                    dangerouslySetInnerHTML={{ __html: winningDesignSvg }}
+                  />
+                </div>
+
+                {/* Design Stats */}
+                <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+                  <div className="bg-card rounded-lg p-3 border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Votes</div>
+                    <div className="text-lg font-semibold text-love">
+                      {winningDesign.votes.toString()} ❤️
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {winningVotePercentage.toFixed(1)}% of total
+                    </div>
+                  </div>
+                  <div className="bg-card rounded-lg p-3 border border-border text-center">
+                    <div className="text-xs text-muted-foreground">Genes</div>
+                    <div className="text-lg font-semibold">{geneCount}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {winningDesign.isParentDesign
+                        ? 'Parent Design'
+                        : `By ${winningDesign.proposer.address.slice(0, 6)}...`}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6 text-center text-muted-foreground">
+                <div className="text-2xl mb-2">🤔</div>
+                <p className="text-sm">No winning design found</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Birth Action Panel */}
+        <div className="flex-1">
+          <div className="bg-card border border-border rounded-lg p-6 space-y-4 h-full flex flex-col justify-center">
+            <div className="text-center">
+              <div className="text-5xl mb-4">👶</div>
+              <h3 className="text-xl font-bold mb-2">Birth the Aminal</h3>
+              <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                Voting has ended! Click below to finalize the breeding and
+                create the new Aminal with the winning design.
+              </p>
+            </div>
+
+            <div className="max-w-xs mx-auto w-full">
+              <EndAuctionButton auctionId={auctionId} className="w-full" />
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Anyone can settle the auction. The caller pays gas but helps the
+              community!
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Vote Stats Summary */}
+      <div className="bg-card rounded-lg border border-border p-4">
+        <DesignVoteStats auctionId={auctionId} totalLove={totalLove} />
+      </div>
+    </div>
+  );
+}
 
 export default AuctionPage;

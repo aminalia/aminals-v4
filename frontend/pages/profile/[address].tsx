@@ -1,17 +1,21 @@
 import AminalGrid from '@components/AminalGrid';
-import TraitCard from '@components/TraitCard';
+import GeneCard from '@components/GeneCard';
 import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
+import { Card, CardContent, CardHeader, CardTitle } from '@components/ui/Card';
+import { EmptyState } from '@components/ui/EmptyState';
+import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/Tabs';
 import { useUserEarnings, useUserProfile } from '@hooks';
 import { useHasMounted } from '@hooks/useHasMounted';
 import { Check, Copy } from 'lucide-react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
-import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useState as useReactState, useState } from 'react';
+import { useState } from 'react';
 import { formatEther } from 'viem';
-import { useAccount, useEnsAvatar, useEnsName } from 'wagmi';
+import { useAccount, useEnsName } from 'wagmi';
 import Layout from '../_layout';
 
 const ProfilePage: NextPage = () => {
@@ -19,12 +23,9 @@ const ProfilePage: NextPage = () => {
   const { address: connectedAddress } = useAccount();
   const { address } = router.query;
   const hasMounted = useHasMounted();
-  const [activeTab, setActiveTab] = useState<
-    'loved' | 'genes' | 'earnings' | 'activity'
-  >('loved');
-  const [copied, setCopied] = useReactState(false);
+  const [activeTab, setActiveTab] = useState<string>('loved');
+  const [copied, setCopied] = useState(false);
 
-  // Show loading state if router is not ready or address is not available
   const isRouterReady =
     router.isReady &&
     address &&
@@ -37,15 +38,9 @@ const ProfilePage: NextPage = () => {
     connectedAddress &&
     profileAddress?.toLowerCase() === connectedAddress.toLowerCase();
 
-  // ENS resolution
   const { data: ensName } = useEnsName({
     address: isRouterReady ? (profileAddress as `0x${string}`) : undefined,
-    chainId: 1, // Mainnet for ENS
-  });
-
-  const { data: ensAvatar } = useEnsAvatar({
-    name: ensName || undefined,
-    chainId: 1, // Mainnet for ENS
+    chainId: 1,
   });
 
   const { data: userProfile, isLoading: profileLoading } = useUserProfile(
@@ -55,66 +50,41 @@ const ProfilePage: NextPage = () => {
     isRouterReady ? profileAddress : ''
   );
 
-  // Handle fallback state for static export
-  if (router.isFallback) {
+  if (
+    router.isFallback ||
+    !isRouterReady ||
+    !hasMounted ||
+    profileLoading ||
+    earningsLoading
+  ) {
     return (
-      <>
+      <Layout>
         <Head>
           <title>Profile - Aminals</title>
           <link href="/favicon.ico" rel="icon" />
         </Head>
-        <Layout>
-          <div className="container max-w-5xl mx-auto px-4 py-8">
-            <div className="text-center py-20">
-              <div className="text-4xl mb-4">⏳</div>
-              <div className="text-muted-foreground">Loading profile...</div>
-            </div>
-          </div>
-        </Layout>
-      </>
-    );
-  }
-
-  if (!isRouterReady || !hasMounted || profileLoading || earningsLoading) {
-    return (
-      <>
-        <Head>
-          <title>Profile - Aminals</title>
-          <link href="/favicon.ico" rel="icon" />
-        </Head>
-        <Layout>
-          <div className="container mx-auto px-4 py-8">
-            <div className="text-center py-20">
-              <div className="text-4xl mb-4">⏳</div>
-              <div className="text-muted-foreground">Loading...</div>
-            </div>
-          </div>
-        </Layout>
-      </>
+        <PageLoadingSpinner />
+      </Layout>
     );
   }
 
   if (!userProfile) {
     return (
-      <>
+      <Layout>
         <Head>
           <title>Profile Not Found - Aminals</title>
           <link href="/favicon.ico" rel="icon" />
         </Head>
-        <Layout>
-          <div className="py-8">
-            <div className="text-center py-20">
-              <div className="text-4xl mb-4">🔍</div>
-              <div className="text-muted-foreground">
-                No profile found for this address
-              </div>
-              <div className="text-sm text-muted-foreground/60 mt-2 font-mono">
-                {profileAddress}
-              </div>
-            </div>
-          </div>
-        </Layout>
-      </>
+        <div className="py-8">
+          <EmptyState
+            icon="🔍"
+            title="No profile found"
+            description={`No activity found for ${formatAddress(
+              profileAddress
+            )}`}
+          />
+        </div>
+      </Layout>
     );
   }
 
@@ -124,16 +94,16 @@ const ProfilePage: NextPage = () => {
       BigInt(0)
     ) || BigInt(0);
 
-  const totalLoveGiven =
-    userProfile.lovers?.reduce(
-      (sum, lover) => sum + BigInt(lover.love || '0'),
-      BigInt(0)
-    ) || BigInt(0);
+  const totalSpent =
+    userProfile.feedEvents?.reduce(
+      (sum, event) => sum + (event.amount || 0n),
+      0n
+    ) || 0n;
 
-  const formatAddress = (addr: string) => {
+  function formatAddress(addr: string) {
     if (!addr) return '';
     return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-  };
+  }
 
   const copyAddress = async () => {
     try {
@@ -143,17 +113,6 @@ const ProfilePage: NextPage = () => {
     } catch (error) {
       console.error('Failed to copy address:', error);
     }
-  };
-
-  const getDisplayName = () => {
-    if (ensName) return ensName;
-    return formatAddress(profileAddress);
-  };
-
-  const getAvatarSrc = () => {
-    if (ensAvatar) return ensAvatar;
-    // Fallback to a generated avatar based on address
-    return `https://api.dicebear.com/7.x/identicon/svg?seed=${profileAddress}&backgroundColor=e1f5fe,e8f5e8,f3e5f5,fff3e0,fce4ec`;
   };
 
   const formatTimeAgo = (timestamp: bigint | string) => {
@@ -170,283 +129,192 @@ const ProfilePage: NextPage = () => {
   };
 
   return (
-    <>
+    <Layout>
       <Head>
-        <title>
-          {isOwnProfile ? 'Your Profile' : 'User Profile'} - Aminals
-        </title>
+        <title>{ensName || formatAddress(profileAddress)} - Aminals</title>
         <link href="/favicon.ico" rel="icon" />
       </Head>
-      <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col gap-8">
-            {/* Hero Section */}
-            <div className="text-center space-y-4">
-              {/* Mobile: Stack vertically, Desktop: Side by side */}
-              <div className="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-6">
-                {/* Avatar */}
-                <div className="relative">
-                  <Image
-                    src={getAvatarSrc()}
-                    alt={`Avatar for ${getDisplayName()}`}
-                    width={80}
-                    height={80}
-                    className="w-20 h-20 rounded-full border-4 border-card shadow-lg bg-card"
-                    onError={(e) => {
-                      // Fallback to emoji if image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                  <div className="w-20 h-20 rounded-full border-4 border-card shadow-lg bg-muted text-3xl items-center justify-center hidden">
-                    👤
-                  </div>
-                </div>
-
-                <div className="text-center md:text-left">
-                  <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-energy">
-                    {isOwnProfile ? 'Your Profile' : getDisplayName()}
-                  </h1>
-
-                  {/* Address with copy functionality */}
-                  <div className="flex items-center justify-center md:justify-start gap-2 mt-2">
-                    <p className="text-base md:text-lg text-muted-foreground font-mono">
-                      {/* Show full address only when ENS is available (so it's below the ENS name), otherwise truncate */}
-                      {ensName ? (
-                        <>
-                          <span className="hidden md:inline">
-                            {profileAddress}
-                          </span>
-                          <span className="md:hidden">
-                            {formatAddress(profileAddress)}
-                          </span>
-                        </>
-                      ) : (
-                        formatAddress(profileAddress)
-                      )}
-                    </p>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={copyAddress}
-                      className="h-7 w-7 p-0"
-                    >
-                      {copied ? (
-                        <Check className="h-4 w-4 text-success" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                    </Button>
-                  </div>
-
-                  {/* ENS name if available */}
-                  {ensName && (
-                    <div className="flex items-center justify-center md:justify-start gap-1 mt-1">
-                      <div className="w-2 h-2 bg-success rounded-full"></div>
-                      <span className="text-sm text-success font-medium">
-                        {ensName}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+      <div className="py-8">
+        <div className="flex flex-col gap-8">
+          {/* Header */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h1 className="text-2xl font-bold">
+                {ensName || (
+                  <>
+                    <span className="md:hidden">
+                      {formatAddress(profileAddress)}
+                    </span>
+                    <span className="hidden md:inline font-mono">
+                      {profileAddress}
+                    </span>
+                  </>
+                )}
+              </h1>
+              {isOwnProfile && <Badge variant="secondary">You</Badge>}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyAddress}
+                className="h-8 w-8 p-0"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-success" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </Button>
             </div>
+            {ensName && (
+              <div className="text-sm text-muted-foreground font-mono">
+                <span className="md:hidden">
+                  {formatAddress(profileAddress)}
+                </span>
+                <span className="hidden md:inline">{profileAddress}</span>
+              </div>
+            )}
+            <Link
+              href="/"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
+            >
+              ← Back to Aminals
+            </Link>
+          </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 mb-4 md:mb-2">
-              <div className="bg-love/10 border border-love/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
-                <div className="text-lg md:text-2xl font-bold text-love">
+          {/* Stats Row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">
                   {userProfile.lovers?.length || 0}
                 </div>
-                <div className="text-xs md:text-sm text-love font-medium">
+                <div className="text-sm text-muted-foreground">
                   Aminals Loved
                 </div>
-              </div>
-              <div className="bg-energy/10 border border-energy/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
-                <div className="text-lg md:text-2xl font-bold text-energy">
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">
                   {userProfile.genesCreated?.length || 0}
                 </div>
-                <div className="text-xs md:text-sm text-energy font-medium">
+                <div className="text-sm text-muted-foreground">
                   Genes Created
                 </div>
-              </div>
-              <div className="bg-success/10 border border-success/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
-                <div className="text-lg md:text-2xl font-bold text-success">
-                  {Number(formatEther(totalEarnings)).toFixed(4)} ETH
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {Number(formatEther(totalEarnings)).toFixed(4)}
                 </div>
-                <div className="text-xs md:text-sm text-success font-medium">
-                  Total Earnings
+                <div className="text-sm text-muted-foreground">ETH Earned</div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold">
+                  {Number(formatEther(totalSpent)).toFixed(4)}
                 </div>
-              </div>
-              <div className="bg-primary/10 border border-primary/30 rounded-lg md:rounded-xl p-3 md:p-4 text-center">
-                <div className="text-lg md:text-2xl font-bold text-primary">
-                  {Number(
-                    formatEther(
-                      userProfile.feedEvents?.reduce(
-                        (sum, event) => sum + event.amount,
-                        0n
-                      ) || 0n
-                    )
-                  ).toFixed(4)}{' '}
-                  ETH
+                <div className="text-sm text-muted-foreground">ETH Spent</div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="w-full justify-start">
+              <TabsTrigger value="loved">
+                Loved ({userProfile.lovers?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="genes">
+                Genes ({userProfile.genesCreated?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="earnings">Earnings</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="loved" className="mt-6">
+              {userProfile.lovers && userProfile.lovers.length > 0 ? (
+                <AminalGrid
+                  aminals={userProfile.lovers.map((lover) => ({
+                    ...lover.aminal,
+                    lovers: { items: [{ ...lover, love: lover.love }] },
+                  }))}
+                />
+              ) : (
+                <EmptyState
+                  icon="💔"
+                  title="No loved Aminals yet"
+                  description="Start showing some love to Aminals to see them here!"
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="genes" className="mt-6">
+              {userProfile.genesCreated &&
+              userProfile.genesCreated.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {userProfile.genesCreated.map((gene) => (
+                    <GeneCard
+                      key={gene.id}
+                      trait={{
+                        id: gene.id,
+                        tokenId: gene.tokenId.toString(),
+                        svg: gene.svg,
+                        name: gene.name,
+                        creator: {
+                          address: profileAddress,
+                        },
+                      }}
+                    />
+                  ))}
                 </div>
-                <div className="text-xs md:text-sm text-primary font-medium">
-                  Spent Feeding
-                </div>
-              </div>
-            </div>
+              ) : (
+                <EmptyState
+                  icon="🧬"
+                  title="No genes created yet"
+                  description="Create your first gene to contribute to the Aminals ecosystem!"
+                />
+              )}
+            </TabsContent>
 
-            {/* Filter Buttons */}
-            <div className="flex justify-center px-2">
-              <div className="flex flex-wrap md:flex-nowrap gap-1 md:gap-2 bg-card border border-border rounded-xl md:rounded-full p-2 shadow-sm max-w-full">
-                <Button
-                  variant={activeTab === 'loved' ? 'love' : 'ghost'}
-                  onClick={() => setActiveTab('loved')}
-                  className="rounded-lg md:rounded-full px-3 md:px-6 py-2 text-xs md:text-sm font-medium transition-all flex-1 md:flex-none"
-                >
-                  <span className="md:hidden">
-                    ❤️ {userProfile.lovers?.length || 0}
-                  </span>
-                  <span className="hidden md:inline">
-                    ❤️ Loved ({userProfile.lovers?.length || 0})
-                  </span>
-                </Button>
-                <Button
-                  variant={activeTab === 'genes' ? 'energy' : 'ghost'}
-                  onClick={() => setActiveTab('genes')}
-                  className="rounded-lg md:rounded-full px-3 md:px-6 py-2 text-xs md:text-sm font-medium transition-all flex-1 md:flex-none"
-                >
-                  <span className="md:hidden">
-                    🧬 {userProfile.genesCreated?.length || 0}
-                  </span>
-                  <span className="hidden md:inline">
-                    🧬 Genes ({userProfile.genesCreated?.length || 0})
-                  </span>
-                </Button>
-                <Button
-                  variant={activeTab === 'earnings' ? 'success' : 'ghost'}
-                  onClick={() => setActiveTab('earnings')}
-                  className="rounded-lg md:rounded-full px-3 md:px-6 py-2 text-xs md:text-sm font-medium transition-all flex-1 md:flex-none"
-                >
-                  <span className="md:hidden">💰</span>
-                  <span className="hidden md:inline">💰 Earnings</span>
-                </Button>
-                <Button
-                  variant={activeTab === 'activity' ? 'default' : 'ghost'}
-                  onClick={() => setActiveTab('activity')}
-                  className="rounded-lg md:rounded-full px-3 md:px-6 py-2 text-xs md:text-sm font-medium transition-all flex-1 md:flex-none"
-                >
-                  <span className="md:hidden">📊</span>
-                  <span className="hidden md:inline">📊 Activity</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Content */}
-            {activeTab === 'loved' && (
-              <div className="space-y-6">
-                {userProfile.lovers && userProfile.lovers.length > 0 ? (
-                  <AminalGrid
-                    aminals={userProfile.lovers.map((lover) => ({
-                      ...lover.aminal,
-                      lovers: { items: [{ ...lover, love: lover.love }] },
-                    }))}
-                  />
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="bg-love/10 rounded-2xl p-8 border border-love/30">
-                      <div className="text-6xl mb-4">💔</div>
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        No loved Aminals yet
-                      </h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Start showing some love to Aminals to see them here!
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'genes' && (
-              <div className="space-y-6">
-                {userProfile.genesCreated &&
-                userProfile.genesCreated.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {userProfile.genesCreated.map((gene) => (
-                      <TraitCard
-                        key={gene.id}
-                        trait={{
-                          id: gene.id,
-                          tokenId: gene.tokenId.toString(),
-                          svg: gene.svg,
-                          name: gene.name,
-                          creator: {
-                            address: profileAddress,
-                          },
-                        }}
-                      />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="bg-energy/10 rounded-2xl p-8 border border-energy/30">
-                      <div className="text-6xl mb-4">🧬</div>
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        No genes created yet
-                      </h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Create your first gene to contribute to the Aminals
-                        ecosystem!
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {activeTab === 'earnings' && (
-              <div className="space-y-6">
-                {userEarnings?.genesCreated &&
-                userEarnings.genesCreated.filter(
-                  (gene) => gene.payouts && gene.payouts.length > 0
-                ).length > 0 ? (
-                  <div className="space-y-4">
-                    {userEarnings.genesCreated
-                      .filter((gene) => gene.payouts && gene.payouts.length > 0)
-                      .map((gene) => (
-                        <div
-                          key={gene.id}
-                          className="bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow p-6"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
+            <TabsContent value="earnings" className="mt-6">
+              {userEarnings?.genesCreated &&
+              userEarnings.genesCreated.filter(
+                (gene) => gene.payouts && gene.payouts.length > 0
+              ).length > 0 ? (
+                <div className="space-y-4">
+                  {userEarnings.genesCreated
+                    .filter((gene) => gene.payouts && gene.payouts.length > 0)
+                    .map((gene) => (
+                      <Card key={gene.id}>
+                        <CardHeader className="pb-2">
+                          <div className="flex items-center justify-between">
                             <div>
-                              <h3 className="font-semibold text-lg">
+                              <CardTitle className="text-lg">
                                 {gene.name || `Gene #${gene.tokenId}`}
-                              </h3>
-                              <Badge variant="secondary" className="mt-1">
-                                Gene
-                              </Badge>
+                              </CardTitle>
+                              <div className="text-sm text-muted-foreground">
+                                {gene.payouts?.length || 0} payouts
+                              </div>
                             </div>
-                            <div className="text-right mt-2 sm:mt-0">
-                              <div className="text-2xl font-bold text-success">
+                            <div className="text-right">
+                              <div className="text-xl font-bold text-success">
                                 {Number(
                                   formatEther(BigInt(gene.totalEarnings || '0'))
                                 ).toFixed(4)}{' '}
                                 ETH
                               </div>
-                              <div className="text-sm text-muted-foreground">
-                                {gene.payouts?.length || 0} payouts
-                              </div>
                             </div>
                           </div>
+                        </CardHeader>
+                        <CardContent>
                           <div className="space-y-2">
                             {gene.payouts?.map((payout) => (
                               <div
                                 key={payout.id}
-                                className="flex items-center justify-between text-sm bg-success/10 border border-success/30 p-3 rounded-lg"
+                                className="flex items-center justify-between text-sm p-2 bg-muted rounded"
                               >
                                 <div>
                                   <span className="font-medium">
@@ -456,7 +324,7 @@ const ProfilePage: NextPage = () => {
                                     {formatTimeAgo(payout.blockTimestamp)}
                                   </span>
                                 </div>
-                                <div className="font-mono text-success font-medium">
+                                <div className="font-mono text-success">
                                   +
                                   {Number(
                                     formatEther(BigInt(payout.amount))
@@ -466,130 +334,119 @@ const ProfilePage: NextPage = () => {
                               </div>
                             ))}
                           </div>
-                        </div>
-                      ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-16">
-                    <div className="bg-success/10 rounded-2xl p-8 border border-success/30">
-                      <div className="text-6xl mb-4">💰</div>
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        No earnings yet
-                      </h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Create genes and participate in auctions to start
-                        earning!
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                </div>
+              ) : (
+                <EmptyState
+                  icon="💰"
+                  title="No earnings yet"
+                  description="Create genes and participate in auctions to start earning!"
+                />
+              )}
+            </TabsContent>
 
-            {activeTab === 'activity' && (
+            <TabsContent value="activity" className="mt-6">
               <div className="space-y-6">
-                {/* Summary Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                  <div className="bg-love/10 border border-love/30 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-love">
-                      {Number(formatEther(totalLoveGiven)).toFixed(2)}
-                    </div>
-                    <div className="text-sm text-love font-medium">
-                      Total Love Given
-                    </div>
-                  </div>
-                  <div className="bg-energy/10 border border-energy/30 rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-energy">
-                      {userProfile.designVotes?.length || 0}
-                    </div>
-                    <div className="text-sm text-energy font-medium">
-                      Design Votes Cast
-                    </div>
-                  </div>
-                  <div className="bg-secondary/50 border border-border rounded-xl p-4 text-center">
-                    <div className="text-2xl font-bold text-foreground">
-                      {userProfile.genesOwned?.length || 0}
-                    </div>
-                    <div className="text-sm text-foreground font-medium">
-                      Genes Owned
-                    </div>
-                  </div>
+                {/* Activity Stats */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold">
+                        {Number(formatEther(totalSpent)).toFixed(4)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ETH Spent
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold">
+                        {userProfile.designVotes?.length || 0}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Design Votes Cast
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4 text-center">
+                      <div className="text-2xl font-bold">
+                        {userProfile.genesOwned?.length || 0}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Genes Owned
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 {/* Recent Votes */}
                 {userProfile.designVotes &&
                 userProfile.designVotes.length > 0 ? (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-foreground mb-4">
+                    <h3 className="text-lg font-semibold">
                       Recent Design Votes
                     </h3>
                     {userProfile.designVotes.slice(0, 5).map((vote: any) => {
-                      // Skip votes without proposal data
                       if (!vote.proposal) return null;
-
                       return (
-                        <div
-                          key={vote.id}
-                          className="bg-card rounded-xl border border-border shadow-sm hover:shadow-md transition-shadow p-4"
-                        >
-                          <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-                            <div className="flex-1">
-                              <div className="font-medium">
-                                {vote.isRemoveVote
-                                  ? 'Voted to remove'
-                                  : 'Voted for'}{' '}
-                                {vote.proposal.geneNFT.name ||
-                                  `Gene #${vote.proposal.geneNFT.tokenId}`}
+                        <Card key={vote.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <div className="font-medium">
+                                  {vote.isRemoveVote
+                                    ? 'Voted to remove'
+                                    : 'Voted for'}{' '}
+                                  {vote.proposal.geneNFT.name ||
+                                    `Gene #${vote.proposal.geneNFT.tokenId}`}
+                                </div>
+                                <div className="text-sm text-muted-foreground">
+                                  Auction #
+                                  {vote.auction?.auctionId ?? 'Unknown'} •{' '}
+                                  {formatTimeAgo(vote.blockTimestamp)}
+                                </div>
                               </div>
-                              <div className="text-sm text-muted-foreground mt-1">
-                                Auction #{vote.auction?.auctionId ?? 'Unknown'}{' '}
-                                • {formatTimeAgo(vote.blockTimestamp)}
+                              <div className="text-right">
+                                <div className="text-sm font-medium">
+                                  {Number(
+                                    formatEther(BigInt(vote.loveAmount))
+                                  ).toFixed(2)}{' '}
+                                  Love
+                                </div>
+                                <Badge
+                                  variant={
+                                    vote.isRemoveVote
+                                      ? 'destructive'
+                                      : 'secondary'
+                                  }
+                                >
+                                  {vote.isRemoveVote ? 'Remove' : 'Support'}
+                                </Badge>
                               </div>
                             </div>
-                            <div className="text-right mt-2 sm:mt-0">
-                              <div className="text-sm font-medium text-energy">
-                                {Number(
-                                  formatEther(BigInt(vote.loveAmount))
-                                ).toFixed(2)}{' '}
-                                Love
-                              </div>
-                              <Badge
-                                variant={
-                                  vote.isRemoveVote ? 'destructive' : 'default'
-                                }
-                                className="mt-1"
-                              >
-                                {vote.isRemoveVote ? 'Remove' : 'Support'}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       );
                     })}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <div className="bg-secondary/50 rounded-2xl p-8 border border-border">
-                      <div className="text-6xl mb-4">📊</div>
-                      <h3 className="text-xl font-semibold text-foreground mb-2">
-                        No activity yet
-                      </h3>
-                      <p className="text-muted-foreground max-w-md mx-auto">
-                        Start participating in gene votes and loving Aminals to
-                        see your activity here!
-                      </p>
-                    </div>
-                  </div>
+                  <EmptyState
+                    icon="📊"
+                    title="No activity yet"
+                    description="Start participating in gene votes and loving Aminals to see your activity here!"
+                  />
                 )}
               </div>
-            )}
-          </div>
+            </TabsContent>
+          </Tabs>
         </div>
-      </Layout>
-    </>
+      </div>
+    </Layout>
   );
 };
 
 export default ProfilePage;
-
-// Remove static generation - use server-side rendering for dynamic routes

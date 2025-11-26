@@ -3,6 +3,7 @@ import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
 import { EmptyState } from '@components/ui/EmptyState';
 import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { getCategoryEmoji } from '@constants/trait-categories';
 import { genesAddress } from '@contracts/generated';
 import { useGene } from '@hooks';
 import { ExternalLink } from 'lucide-react';
@@ -60,8 +61,10 @@ const GeneDetailPage: NextPage = () => {
     );
   }
 
-  // Note: traitType removed - genes are now flexible (no fixed categories)
-  const category = { name: 'Gene', emoji: '🧬' }; // Placeholder
+  // Get display values with fallbacks
+  const displayName = gene.name || `Gene #${gene.tokenId}`;
+  const displayDescription =
+    gene.description || 'A permissionless gene NFT for Aminal compositions';
 
   // Get aminals that have this gene in their traits
   const aminalsWithGene = gene.aminals || [];
@@ -84,13 +87,12 @@ const GeneDetailPage: NextPage = () => {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold flex items-center gap-2">
-                  <span className="text-3xl">{category.emoji}</span>
-                  Gene #{gene.tokenId.toString()}
-                </h1>
-                <Badge variant="default" size="lg">
-                  {category.name}
-                </Badge>
+                <h1 className="text-3xl font-bold">{displayName}</h1>
+                {gene.category && (
+                  <Badge variant="secondary" size="lg">
+                    {getCategoryEmoji(gene.category)} {gene.category}
+                  </Badge>
+                )}
               </div>
               <Button
                 variant="outline"
@@ -130,17 +132,13 @@ const GeneDetailPage: NextPage = () => {
                 />
               </div>
               {/* Gene name */}
-              {gene.name && (
-                <div className="text-center text-lg font-semibold">
-                  {gene.name}
-                </div>
-              )}
+              <div className="text-center text-lg font-semibold">
+                {displayName}
+              </div>
               {/* Description as image caption */}
-              {gene.description && (
-                <div className="text-center text-sm text-muted-foreground italic leading-relaxed px-2">
-                  {gene.description}
-                </div>
-              )}
+              <div className="text-center text-sm text-muted-foreground italic leading-relaxed px-2">
+                {displayDescription}
+              </div>
             </div>
 
             {/* Right Column - Details */}
