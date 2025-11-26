@@ -76,11 +76,15 @@ export default function InteractiveCanvas({
     return { x: svgP.x, y: svgP.y };
   }, []);
 
-  // Handle mouse down on gene
-  const handleGeneMouseDown = useCallback(
-    (e: React.MouseEvent, index: number) => {
+  // Handle pointer down on gene (works for both mouse and touch)
+  const handleGenePointerDown = useCallback(
+    (e: React.PointerEvent, index: number) => {
       if (disabled) return;
       e.stopPropagation();
+      e.preventDefault();
+
+      // Capture pointer for this element to receive all pointer events
+      (e.target as Element).setPointerCapture(e.pointerId);
 
       // Select the gene
       onSelect(index);
@@ -104,11 +108,12 @@ export default function InteractiveCanvas({
     [disabled, onSelect, onDragStart, placements, screenToSVG]
   );
 
-  // Handle mouse move (drag)
+  // Handle pointer move (drag) - works for both mouse and touch
   useEffect(() => {
     if (!dragState || !dragState.isDragging) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      e.preventDefault();
       const svgCoords = screenToSVG(e.clientX, e.clientY);
       const deltaX = svgCoords.x - dragState.startX;
       const deltaY = svgCoords.y - dragState.startY;
@@ -119,16 +124,18 @@ export default function InteractiveCanvas({
       });
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       setDragState(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [dragState, onUpdatePlacement, screenToSVG]);
 
@@ -147,10 +154,11 @@ export default function InteractiveCanvas({
           transform={`translate(${offsetX}, ${offsetY}) rotate(${rotation}, 500, 500) scale(${
             scale / 100
           })`}
-          onMouseDown={(e) => handleGeneMouseDown(e, index)}
+          onPointerDown={(e) => handleGenePointerDown(e, index)}
           style={{
             cursor: disabled ? 'default' : 'move',
             pointerEvents: disabled ? 'none' : 'auto',
+            touchAction: 'none',
           }}
           className={isSelected ? 'gene-selected' : 'gene-unselected'}
         >
@@ -158,7 +166,7 @@ export default function InteractiveCanvas({
         </g>
       );
     },
-    [getGeneById, selectedIndex, handleGeneMouseDown, disabled]
+    [getGeneById, selectedIndex, handleGenePointerDown, disabled]
   );
 
   // Render transform handles for selected gene

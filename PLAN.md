@@ -3,21 +3,16 @@
 # Bugs
 - Fix flow... new auction, create first proposal
 - Activity page on profile should show more info
+- Check proposal cost
+- Add dismissible instructions?
 
-
-Let's work on some indexer improvements:
-- Make sure for genes we are indexing gene name, description, and categories
-- Make sure we're also indexing how much a particular gene has earned
-- Index these things on create gene
-
-# Aminal designer
-
-- Draft system (Poli easily deleted his hard work)
 
 ## UI
 
 - Show on Aminal detail page that "Aminals cannot be owned"
 - Show how much money genes have made on the card
+- Draft system (Poli easily deleted his hard work)
+
 
 ### Chat Feature Improvements
 

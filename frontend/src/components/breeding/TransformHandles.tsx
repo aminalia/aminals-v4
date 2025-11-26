@@ -70,11 +70,15 @@ export default function TransformHandles({
     y: centerY - halfHeight - rotationHandleDistance,
   };
 
-  // Handle mouse down on scale handle
-  const handleScaleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // Handle pointer down on scale handle (works for both mouse and touch)
+  const handleScalePointerDown = useCallback(
+    (e: React.PointerEvent) => {
       if (disabled) return;
       e.stopPropagation();
+      e.preventDefault();
+
+      // Capture pointer for this element
+      (e.target as Element).setPointerCapture(e.pointerId);
 
       setTransformState({
         type: 'scale',
@@ -86,11 +90,15 @@ export default function TransformHandles({
     [disabled, scale]
   );
 
-  // Handle mouse down on rotation handle
-  const handleRotateMouseDown = useCallback(
-    (e: React.MouseEvent) => {
+  // Handle pointer down on rotation handle (works for both mouse and touch)
+  const handleRotatePointerDown = useCallback(
+    (e: React.PointerEvent) => {
       if (disabled) return;
       e.stopPropagation();
+      e.preventDefault();
+
+      // Capture pointer for this element
+      (e.target as Element).setPointerCapture(e.pointerId);
 
       setTransformState({
         type: 'rotate',
@@ -102,13 +110,14 @@ export default function TransformHandles({
     [disabled, rotation]
   );
 
-  // Handle mouse move for transforms
+  // Handle pointer move for transforms (works for both mouse and touch)
   useEffect(() => {
     if (!transformState) return;
 
-    const handleMouseMove = (e: MouseEvent) => {
+    const handlePointerMove = (e: PointerEvent) => {
+      e.preventDefault();
       if (transformState.type === 'scale') {
-        // Calculate scale based on vertical mouse movement
+        // Calculate scale based on vertical pointer movement
         const deltaY = transformState.startY - e.clientY;
         const scaleDelta = deltaY * 0.5; // Sensitivity
         const newScale = Math.max(
@@ -118,7 +127,7 @@ export default function TransformHandles({
 
         onUpdatePlacement({ scale: newScale });
       } else if (transformState.type === 'rotate') {
-        // Calculate rotation based on horizontal mouse movement
+        // Calculate rotation based on horizontal pointer movement
         const deltaX = e.clientX - transformState.startX;
         const rotationDelta = deltaX * 0.5; // Sensitivity
         let newRotation = transformState.startValue + rotationDelta;
@@ -131,16 +140,18 @@ export default function TransformHandles({
       }
     };
 
-    const handleMouseUp = () => {
+    const handlePointerUp = () => {
       setTransformState(null);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('pointermove', handlePointerMove);
+    document.addEventListener('pointerup', handlePointerUp);
+    document.addEventListener('pointercancel', handlePointerUp);
 
     return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      document.removeEventListener('pointermove', handlePointerMove);
+      document.removeEventListener('pointerup', handlePointerUp);
+      document.removeEventListener('pointercancel', handlePointerUp);
     };
   }, [transformState, onUpdatePlacement]);
 
@@ -165,14 +176,14 @@ export default function TransformHandles({
       {/* Corner handles (for scale) - IMPROVED */}
       {[topLeft, topRight, bottomLeft, bottomRight].map((corner, i) => (
         <g key={`corner-${i}`}>
-          {/* Larger hit area */}
+          {/* Larger hit area for touch */}
           <circle
             cx={corner.x}
             cy={corner.y}
-            r="12"
+            r="20"
             fill="transparent"
-            style={{ cursor: 'nwse-resize' }}
-            onMouseDown={handleScaleMouseDown}
+            style={{ cursor: 'nwse-resize', touchAction: 'none' }}
+            onPointerDown={handleScalePointerDown}
           />
           {/* Visible handle with shadow */}
           <circle
@@ -202,14 +213,14 @@ export default function TransformHandles({
           opacity="0.6"
           pointerEvents="none"
         />
-        {/* Larger hit area */}
+        {/* Larger hit area for touch */}
         <circle
           cx={rotationHandle.x}
           cy={rotationHandle.y}
-          r="16"
+          r="24"
           fill="transparent"
-          style={{ cursor: 'grab' }}
-          onMouseDown={handleRotateMouseDown}
+          style={{ cursor: 'grab', touchAction: 'none' }}
+          onPointerDown={handleRotatePointerDown}
         />
         {/* Visible handle with shadow */}
         <circle
