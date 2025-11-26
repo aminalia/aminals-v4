@@ -160,29 +160,45 @@ export default function AuctionCard({
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted border border-border">
-              <div>
-                <div className="text-xs text-muted-foreground">Child</div>
-                {childAminal ? (
-                  <Link
-                    href={`/aminals/${childAminal.contractAddress}`}
-                    className="text-sm font-semibold text-primary hover:underline"
-                  >
-                    #{childAminal.aminalIndex?.toString()}
-                  </Link>
-                ) : (
+            {childAminal ? (
+              /* Child Born - show preview */
+              <Link
+                href={`/aminals/${childAminal.contractAddress}`}
+                className="flex items-center gap-3 p-3 rounded-lg bg-success/10 border border-success/30 hover:bg-success/20 transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary border-2 border-success flex-shrink-0">
+                  <TokenUriImage tokenUri={childAminal.tokenURI} />
+                </div>
+                <div className="flex-1">
+                  <div className="text-xs text-success">Child Born!</div>
+                  <div className="text-sm font-semibold">
+                    Aminal #{childAminal.aminalIndex?.toString()}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground">Total Love</div>
+                  <div className="text-sm font-semibold text-love">
+                    ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              /* No child yet - show stats grid */
+              <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted border border-border">
+                <div>
+                  <div className="text-xs text-muted-foreground">Child</div>
                   <div className="text-sm font-semibold text-muted-foreground">
                     {isAuctionEnded ? 'Settling...' : 'TBD'}
                   </div>
-                )}
-              </div>
-              <div>
-                <div className="text-xs text-muted-foreground">Total Love</div>
-                <div className="text-sm font-semibold text-love">
-                  ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground">Total Love</div>
+                  <div className="text-sm font-semibold text-love">
+                    ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Call to Action */}
             <Link href={`/breeding/${auction.auctionId}`}>
