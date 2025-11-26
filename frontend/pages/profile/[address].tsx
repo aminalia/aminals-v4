@@ -1,5 +1,5 @@
 import AminalGrid from '@components/AminalGrid';
-import TraitCard from '@components/TraitCard';
+import GeneCard from '@components/GeneCard';
 import { Badge } from '@components/ui/Badge';
 import { Button } from '@components/ui/Button';
 import { useUserEarnings, useUserProfile } from '@hooks';
@@ -376,7 +376,7 @@ const ProfilePage: NextPage = () => {
                 userProfile.genesCreated.length > 0 ? (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {userProfile.genesCreated.map((gene) => (
-                      <TraitCard
+                      <GeneCard
                         key={gene.id}
                         trait={{
                           id: gene.id,

@@ -1,8 +1,8 @@
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { getCategoryEmoji, SUGGESTED_CATEGORIES } from '@constants/trait-categories';
 import { CategoryFilter, useGenes } from '@hooks';
 import { cn } from '@lib/utils';
 import { X } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   useAccount,
@@ -19,23 +19,19 @@ interface ProposeGeneModalProps {
   onClose: () => void;
 }
 
-const CATEGORIES = [
-  { id: 0, label: 'Background' },
-  { id: 1, label: 'Arms' },
-  { id: 2, label: 'Tail' },
-  { id: 3, label: 'Ears' },
-  { id: 4, label: 'Body' },
-  { id: 5, label: 'Face' },
-  { id: 6, label: 'Mouth' },
-  { id: 7, label: 'Misc' },
-];
+// Build category options from SUGGESTED_CATEGORIES
+const CATEGORY_OPTIONS = Object.entries(SUGGESTED_CATEGORIES).map(([key, { label, emoji }]) => ({
+  id: key,
+  label,
+  emoji,
+}));
 
 export default function ProposeGeneModal({
   auctionId,
   isOpen,
   onClose,
 }: ProposeGeneModalProps) {
-  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>(CATEGORY_OPTIONS[0]?.id || 'Background');
   const [selectedGeneId, setSelectedGeneId] = useState<string>('');
   const [manualGeneId, setManualGeneId] = useState<string>('');
   const [useManualId, setUseManualId] = useState(false);
@@ -52,16 +48,11 @@ export default function ProposeGeneModal({
     hash,
   });
 
-  // Get category key for the API
-  const categoryKey = useMemo(() => {
-    return selectedCategory.toString() as CategoryFilter;
-  }, [selectedCategory]);
-
   // Fetch genes for the selected category
   const { data: genes, isLoading: isLoadingGenes } = useGenes(
     'all',
     'aminals-count',
-    categoryKey
+    selectedCategory as CategoryFilter
   );
 
   // Track which toast has been shown to prevent duplicates
@@ -103,7 +94,7 @@ export default function ProposeGeneModal({
       setSelectedGeneId('');
       setManualGeneId('');
       setUseManualId(false);
-      setSelectedCategory(0);
+      setSelectedCategory(CATEGORY_OPTIONS[0]?.id || 'Background');
       // Reset toast state for next transaction
       toastStateRef.current = null;
       return;
@@ -193,27 +184,21 @@ export default function ProposeGeneModal({
               <div className="mb-6">
                 <h3 className="text-lg font-semibold mb-3">Select Category</h3>
                 <div className="flex flex-wrap gap-2">
-                  {CATEGORIES.map((category) => {
-                    const emoji =
-                      TRAIT_CATEGORIES[
-                        category.id as keyof typeof TRAIT_CATEGORIES
-                      ]?.emoji || '🎨';
-                    return (
-                      <button
-                        key={category.id}
-                        onClick={() => setSelectedCategory(category.id)}
-                        className={cn(
-                          'px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
-                          selectedCategory === category.id
-                            ? 'bg-energy text-energy-foreground'
-                            : 'bg-muted hover:bg-muted/80 text-foreground'
-                        )}
-                      >
-                        <span>{emoji}</span>
-                        <span>{category.label}</span>
-                      </button>
-                    );
-                  })}
+                  {CATEGORY_OPTIONS.map((category) => (
+                    <button
+                      key={category.id}
+                      onClick={() => setSelectedCategory(category.id)}
+                      className={cn(
+                        'px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
+                        selectedCategory === category.id
+                          ? 'bg-energy text-energy-foreground'
+                          : 'bg-muted hover:bg-muted/80 text-foreground'
+                      )}
+                    >
+                      <span>{category.emoji}</span>
+                      <span>{category.label}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
 

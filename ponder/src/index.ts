@@ -357,8 +357,8 @@ ponder.on("Aminal:LoveConsumed", async ({ event, context }) => {
  * Creates new GeneNFT entity when gene is registered
  */
 ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
-  const { geneId, creator, svg } = event.args;
-  const { db, client, contracts } = context;
+  const { geneId, creator, svg, name, description, category } = event.args;
+  const { db } = context;
 
   const creatorId = normalizeAddress(creator);
 
@@ -372,21 +372,16 @@ ponder.on("GeneRegistry:GeneCreated", async ({ event, context }) => {
     })
     .onConflictDoNothing();
 
-  // Note: Name and description are generated in the tokenURI and not stored separately
-  // So we'll just use simple defaults
-  const name: string = `Gene #${geneId}`;
-  const description: string = "An Aminal gene trait";
-
-  // Create GeneNFT entity
-  // No more category or placement metadata - those are per-Aminal now
+  // Create GeneNFT entity with metadata from the event
   await db.insert(geneNFT).values({
     id: makeGeneNFTId(geneId),
     tokenId: geneId,
     ownerId: creatorId, // Creator is initial owner
     creatorId,
     svg,
-    name,
-    description,
+    name: name || `Gene #${geneId}`, // Fallback if empty
+    description: description || null,
+    category: category || null,
     totalEarnings: 0n,
     blockNumber: event.block.number,
     blockTimestamp: event.block.timestamp,

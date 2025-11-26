@@ -14,9 +14,9 @@ type GeneCreatorPayout = typeof schema.geneCreatorPayout.$inferSelect;
 type User = typeof schema.user.$inferSelect;
 
 export type GeneFilter = 'all' | 'yours';
-export type GeneSort = 'aminals-count' | 'created-at';
-// Note: Category filter removed - genes are now flexible (no fixed categories)
-export type CategoryFilter = 'all';
+export type GeneSort = 'aminals-count' | 'created-at' | 'most-profitable';
+// Category filter now supports 'all' or any string category name
+export type CategoryFilter = 'all' | (string & {});
 
 // Extended type with relationships (matches hook return type)
 export interface GeneNFTWithRelations extends GeneNFT {

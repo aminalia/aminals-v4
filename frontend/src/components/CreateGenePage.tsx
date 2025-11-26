@@ -1,6 +1,6 @@
 'use client';
 
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { SUGGESTED_CATEGORIES } from '@constants/trait-categories';
 import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
@@ -17,7 +17,7 @@ interface CreateGenePageProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: (geneId?: string) => void;
-  preSelectedCategory?: number;
+  preSelectedCategory?: string;
 }
 
 interface ValidationError {
@@ -28,19 +28,21 @@ interface ValidationError {
 
 type WizardStep = 'design' | 'review';
 
+// Get default category from suggested categories
+const DEFAULT_CATEGORY = Object.keys(SUGGESTED_CATEGORIES)[0] || 'Background';
+
 function CreateGenePage({
   isOpen,
   onClose,
   onSuccess,
-  preSelectedCategory = 0,
+  preSelectedCategory,
 }: CreateGenePageProps) {
   const { address } = useAccount();
   const [currentStep, setCurrentStep] = useState<WizardStep>('design');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState<string>(
-    TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
-      ?.name || 'Background'
+    preSelectedCategory || DEFAULT_CATEGORY
   );
   const [svg, setSvg] = useState(
     '<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>'
@@ -72,10 +74,9 @@ function CreateGenePage({
 
   // Update category when prop changes
   useEffect(() => {
-    const categoryName =
-      TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
-        ?.name || 'Background';
-    setCategory(categoryName);
+    if (preSelectedCategory) {
+      setCategory(preSelectedCategory);
+    }
   }, [preSelectedCategory]);
 
   // Validate SVG in real-time
@@ -95,10 +96,7 @@ function CreateGenePage({
       // Reset form
       setName('');
       setDescription('');
-      const categoryName =
-        TRAIT_CATEGORIES[preSelectedCategory as keyof typeof TRAIT_CATEGORIES]
-          ?.name || 'Background';
-      setCategory(categoryName);
+      setCategory(preSelectedCategory || DEFAULT_CATEGORY);
       setSvg('<circle cx="500" cy="500" r="200" fill="#ff6b6b"/>');
       setCurrentStep('design');
       onSuccess?.();
@@ -741,10 +739,10 @@ Note: SVG wrapper tags are not required"
                       onChange={(e) => setCategory(e.target.value)}
                       className="w-full px-3 py-2 border border-border rounded-md text-sm bg-background"
                     >
-                      {Object.entries(TRAIT_CATEGORIES).map(
-                        ([key, { name, emoji }]) => (
-                          <option key={key} value={name}>
-                            {emoji} {name}
+                      {Object.entries(SUGGESTED_CATEGORIES).map(
+                        ([key, { label, emoji }]) => (
+                          <option key={key} value={key}>
+                            {emoji} {label}
                           </option>
                         )
                       )}

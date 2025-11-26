@@ -1,16 +1,24 @@
 import { Button } from '@components/ui/Button';
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import {
+  SearchableSelect,
+  type SelectOption,
+} from '@components/ui/SearchableSelect';
+import {
+  getCategoryEmoji,
+  getCategoryLabel,
+  SUGGESTED_CATEGORIES,
+} from '@constants/trait-categories';
 import { CategoryFilter, GeneFilter, GeneSort, useGenes } from '@hooks';
 import { useHasMounted } from '@hooks/useHasMounted';
 import { cn } from '@lib/utils';
 import type { NextPage } from 'next';
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
 // Import dynamically to avoid module resolution issues
-const TraitCard = dynamic(() => import('../../src/components/TraitCard'), {
+const GeneCard = dynamic(() => import('../../src/components/GeneCard'), {
   ssr: false,
 });
 
@@ -32,6 +40,15 @@ const TraitsPage: NextPage = () => {
   const [category, setCategory] = useState<CategoryFilter>('all');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
+  // Fetch all genes first (unfiltered by category) to discover categories
+  const { data: allGenes, isLoading: isLoadingAllGenes } = useGenes(
+    filter,
+    sort,
+    'all',
+    address
+  );
+
+  // Then apply category filter for display
   const {
     data: genes,
     isLoading: isLoadingGenes,
@@ -39,14 +56,69 @@ const TraitsPage: NextPage = () => {
     isError: isGenesError,
   } = useGenes(filter, sort, category, address);
 
-  console.log('Genes data:', genes);
-  console.log('Genes loading:', isLoadingGenes);
-  console.log('Genes error:', genesError);
-  console.log('Is genes error:', isGenesError);
-  console.log(
-    'Ponder URL:',
-    process.env.NEXT_PUBLIC_PONDER_URL || 'http://localhost:42069/sql'
-  );
+  // Build hybrid category list: suggested categories + discovered from data
+  const categoryOptions: SelectOption[] = useMemo(() => {
+    // Start with suggested categories
+    const suggestedKeys = Object.keys(SUGGESTED_CATEGORIES);
+
+    // Discover unique categories from the data
+    const discoveredCategories = new Set<string>();
+    if (allGenes) {
+      for (const gene of allGenes) {
+        if (gene.category) {
+          discoveredCategories.add(gene.category);
+        }
+      }
+    }
+
+    // Combine: suggested first (if they exist in data), then any additional discovered
+    const result: SelectOption[] = [];
+    const addedKeys = new Set<string>();
+
+    // Add suggested categories that exist in the data
+    for (const key of suggestedKeys) {
+      const matchingGenes =
+        allGenes?.filter(
+          (g) => g.category?.toLowerCase() === key.toLowerCase()
+        ) || [];
+      if (matchingGenes.length > 0) {
+        result.push({
+          value: key,
+          label: getCategoryLabel(key),
+          emoji: getCategoryEmoji(key),
+          count: matchingGenes.length,
+        });
+        addedKeys.add(key.toLowerCase());
+      }
+    }
+
+    // Add any discovered categories not in suggested
+    for (const cat of discoveredCategories) {
+      if (!addedKeys.has(cat.toLowerCase())) {
+        const count =
+          allGenes?.filter(
+            (g) => g.category?.toLowerCase() === cat.toLowerCase()
+          ).length || 0;
+        result.push({
+          value: cat,
+          label: getCategoryLabel(cat),
+          emoji: getCategoryEmoji(cat),
+          count,
+        });
+        addedKeys.add(cat.toLowerCase());
+      }
+    }
+
+    // Sort by count (most used first)
+    result.sort((a, b) => (b.count || 0) - (a.count || 0));
+
+    return result;
+  }, [allGenes]);
+
+  // Total count for "All" option
+  const totalGeneCount = allGenes?.length || 0;
+
+  const isLoading = isLoadingGenes || isLoadingAllGenes;
 
   return (
     <Layout>
@@ -68,98 +140,76 @@ const TraitsPage: NextPage = () => {
             </Button>
           </div>
 
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 flex-wrap">
-            {/* Count */}
-            <div className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-              {genes?.length || 0} Genes found
-            </div>
+          {/* Filter Bar */}
+          <div className="flex flex-col sm:flex-row gap-3 bg-muted/50 rounded-xl">
+            {/* Left side - Category & Owner filters */}
+            <div className="flex flex-col sm:flex-row gap-2 flex-1">
+              {/* Category Select */}
+              <SearchableSelect
+                options={categoryOptions}
+                value={category}
+                onChange={(val) => setCategory(val as CategoryFilter)}
+                placeholder="All Categories"
+                searchPlaceholder="Search"
+                allOption={{
+                  value: 'all',
+                  label: 'All Categories',
+                  emoji: '🧬',
+                }}
+                className="sm:w-48"
+              />
 
-            <div className="flex flex-wrap gap-3">
-              {/* Filter Buttons */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Filter:</span>
-                <div className="flex gap-2">
-                  <button
-                    className={cn(
-                      'px-3 py-1.5 text-sm rounded-full font-medium transition-colors',
-                      filter === 'all'
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-card border border-border text-foreground hover:bg-muted'
-                    )}
-                    onClick={() => setFilter('all')}
-                  >
-                    All
-                  </button>
-                  <button
-                    className={cn(
-                      'px-3 py-1.5 text-sm rounded-full font-medium transition-colors',
-                      filter === 'yours'
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-card border border-border text-foreground hover:bg-muted',
-                      // Only apply disabled styles after mount to prevent hydration mismatch
-                      hasMounted && !address && 'opacity-50 cursor-not-allowed'
-                    )}
-                    onClick={() => setFilter('yours')}
-                    disabled={hasMounted && !address}
-                  >
-                    Your Genes
-                  </button>
-                </div>
-              </div>
-
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">Sort by:</span>
-                <select
-                  className="px-3 py-1.5 text-sm rounded-full border border-border bg-card text-foreground font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
-                  value={sort}
-                  onChange={(e) => setSort(e.target.value as GeneSort)}
+              {/* Owner Toggle */}
+              <div className="flex rounded-lg border border-border bg-card p-0.5">
+                <button
+                  className={cn(
+                    'px-4 py-1.5 text-sm rounded-md font-medium transition-all',
+                    filter === 'all'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setFilter('all')}
                 >
-                  <option value="aminals-count">Most Used</option>
-                  <option value="created-at">Most Recent</option>
-                </select>
+                  All Genes
+                </button>
+                <button
+                  className={cn(
+                    'px-4 py-1.5 text-sm rounded-md font-medium transition-all',
+                    filter === 'yours'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                    hasMounted && !address && 'opacity-50 cursor-not-allowed'
+                  )}
+                  onClick={() => setFilter('yours')}
+                  disabled={hasMounted && !address}
+                  title={
+                    !address ? 'Connect wallet to view your genes' : undefined
+                  }
+                >
+                  My Genes
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* Category Filters */}
-          <div className="overflow-x-auto pb-2">
-            <div className="flex gap-2 min-w-max">
-              <button
-                className={cn(
-                  'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
-                  category === 'all'
-                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                    : 'bg-card border border-border text-foreground hover:bg-muted'
-                )}
-                onClick={() => setCategory('all')}
+            {/* Right side - Sort & Count */}
+            <div className="flex items-center gap-3">
+              <select
+                className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground font-medium cursor-pointer focus:outline-none focus:ring-2 focus:ring-ring"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as GeneSort)}
               >
-                <span>🔍</span>
-                <span>All Categories</span>
-              </button>
+                <option value="aminals-count">Most Used</option>
+                <option value="most-profitable">Most Profitable</option>
+                <option value="created-at">Newest</option>
+              </select>
 
-              {/* Generate a button for each trait category */}
-              {Object.entries(TRAIT_CATEGORIES).map(
-                ([key, { name, emoji }]) => (
-                  <button
-                    key={key}
-                    className={cn(
-                      'px-3 py-1.5 text-sm rounded-full font-medium transition-colors flex items-center gap-1',
-                      category === key
-                        ? 'bg-primary text-primary-foreground hover:bg-primary/90'
-                        : 'bg-card border border-border text-foreground hover:bg-muted'
-                    )}
-                    onClick={() => setCategory(key as CategoryFilter)}
-                  >
-                    <span>{emoji}</span>
-                    <span>{name}</span>
-                  </button>
-                )
-              )}
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                {genes?.length || 0} results
+              </span>
             </div>
           </div>
 
-          {isLoadingGenes ? (
+          {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
             </div>
@@ -181,7 +231,7 @@ const TraitsPage: NextPage = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {genes.map((gene: any) => (
-                <TraitCard
+                <GeneCard
                   key={gene.id}
                   trait={gene}
                   aminalCount={gene.aminalCount || 0}

@@ -1,7 +1,19 @@
-import { TRAIT_CATEGORIES } from '@constants/trait-categories';
+import { getCategoryEmoji, getCategoryLabel, SUGGESTED_CATEGORIES } from '@constants/trait-categories';
 import { useAuction, useAuctionVotes, useAuctions } from '@hooks';
 import { cn } from '@lib/utils';
 import { useMemo, useState } from 'react';
+
+// Legacy category index to name mapping (for backwards compatibility with vote data)
+const CATEGORY_INDEX_TO_NAME: Record<number, string> = {
+  0: 'Background',
+  1: 'Arms',
+  2: 'Tail',
+  3: 'Ears',
+  4: 'Body',
+  5: 'Face',
+  6: 'Mouth',
+  7: 'Misc',
+};
 
 interface VoteStatsProps {
   auctionId: string;
@@ -87,9 +99,10 @@ const VoteStats = ({
   const filteredVoteStats = useMemo(() => {
     if (selectedCategory === 'all') return voteStats;
 
-    const categoryIndex = Object.keys(TRAIT_CATEGORIES).find(
-      (key) => key === selectedCategory
-    );
+    // Find the numeric index that corresponds to this category name
+    const categoryIndex = Object.entries(CATEGORY_INDEX_TO_NAME).find(
+      ([, name]) => name.toLowerCase() === selectedCategory.toLowerCase()
+    )?.[0];
 
     if (!categoryIndex) return voteStats;
 
@@ -294,7 +307,7 @@ const VoteStats = ({
             <span>All Categories</span>
           </button>
 
-          {Object.entries(TRAIT_CATEGORIES).map(([key, { name, emoji }]) => (
+          {Object.entries(SUGGESTED_CATEGORIES).map(([key, { label, emoji }]) => (
             <button
               key={key}
               className={cn(
@@ -306,7 +319,7 @@ const VoteStats = ({
               onClick={() => setSelectedCategory(key)}
             >
               <span>{emoji}</span>
-              <span>{name}</span>
+              <span>{label}</span>
             </button>
           ))}
         </div>
@@ -319,20 +332,10 @@ const VoteStats = ({
           <div className="text-center py-6 bg-muted rounded-lg">
             <div className="text-muted-foreground">
               <span className="text-lg block mb-2">
-                {
-                  TRAIT_CATEGORIES[
-                    Number(selectedCategory) as keyof typeof TRAIT_CATEGORIES
-                  ]?.emoji
-                }
+                {getCategoryEmoji(selectedCategory)}
               </span>
               <div className="font-medium">
-                No votes for{' '}
-                {
-                  TRAIT_CATEGORIES[
-                    Number(selectedCategory) as keyof typeof TRAIT_CATEGORIES
-                  ]?.name
-                }{' '}
-                yet
+                No votes for {getCategoryLabel(selectedCategory)} yet
               </div>
               <div className="text-sm mt-1">
                 Try selecting a different category or vote on genes to see
@@ -343,8 +346,7 @@ const VoteStats = ({
         ) : (
           Object.entries(filteredVoteStats).map(([traitType, genes]) => {
             const categoryIndex = Number(traitType);
-            const category =
-              TRAIT_CATEGORIES[categoryIndex as keyof typeof TRAIT_CATEGORIES];
+            const categoryName = CATEGORY_INDEX_TO_NAME[categoryIndex] || `Category ${categoryIndex}`;
 
             return (
               <div
@@ -352,8 +354,8 @@ const VoteStats = ({
                 className="border border-border rounded-lg p-3"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <span>{category?.emoji}</span>
-                  <h4 className="font-medium text-sm">{category?.name}</h4>
+                  <span>{getCategoryEmoji(categoryName)}</span>
+                  <h4 className="font-medium text-sm">{categoryName}</h4>
                 </div>
 
                 <div className="space-y-1">

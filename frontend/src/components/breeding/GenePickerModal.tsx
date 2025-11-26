@@ -4,21 +4,21 @@
  */
 
 import { Button } from '@components/ui/Button';
-import { CategoryFilter, useGenes } from '@hooks';
+import {
+  SearchableSelect,
+  type SelectOption,
+} from '@components/ui/SearchableSelect';
+import {
+  getCategoryEmoji,
+  getCategoryLabel,
+  SUGGESTED_CATEGORIES,
+} from '@constants/trait-categories';
+import { CategoryFilter, GeneFilter, useGenes } from '@hooks';
+import { cn } from '@lib/utils';
 import { useMemo, useState } from 'react';
+import { useAccount } from 'wagmi';
 import type { Gene } from '../../types/breeding';
 import CreateGenePage from '../CreateGenePage';
-
-const CATEGORIES = [
-  { id: 0, label: 'Background', emoji: '🌄' },
-  { id: 1, label: 'Arms', emoji: '💪' },
-  { id: 2, label: 'Tail', emoji: '🦎' },
-  { id: 3, label: 'Ears', emoji: '👂' },
-  { id: 4, label: 'Body', emoji: '🎨' },
-  { id: 5, label: 'Face', emoji: '😊' },
-  { id: 6, label: 'Mouth', emoji: '👄' },
-  { id: 7, label: 'Misc', emoji: '✨' },
-];
 
 export interface GenePickerModalProps {
   availableGenes: Gene[];
@@ -31,22 +31,80 @@ export default function GenePickerModal({
   onSelectGene,
   onClose,
 }: GenePickerModalProps) {
+  const { address } = useAccount();
   const [view, setView] = useState<'parent' | 'all'>('parent');
   const [showCreateGene, setShowCreateGene] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<number>(0);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [ownerFilter, setOwnerFilter] = useState<GeneFilter>('all');
 
-  // Get category key for the API
-  const categoryKey = useMemo(() => {
-    return selectedCategory.toString() as CategoryFilter;
-  }, [selectedCategory]);
-
-  // Fetch all genes when in "all" view (only fetch when view is "all")
-  const shouldFetchAll = view === 'all';
-  const { data: allGenes, isLoading: isLoadingAllGenes } = useGenes(
+  // Fetch all genes (unfiltered) for category discovery
+  const { data: allGenesUnfiltered } = useGenes(
     'all',
     'created-at',
-    categoryKey
+    'all',
+    address
   );
+
+  // Fetch filtered genes based on selected category and owner filter
+  const { data: allGenes, isLoading: isLoadingAllGenes } = useGenes(
+    ownerFilter,
+    'created-at',
+    selectedCategory as CategoryFilter,
+    address
+  );
+
+  // Build category options dynamically from gene data
+  const categoryOptions: SelectOption[] = useMemo(() => {
+    const suggestedKeys = Object.keys(SUGGESTED_CATEGORIES);
+    const discoveredCategories = new Set<string>();
+
+    if (allGenesUnfiltered) {
+      for (const gene of allGenesUnfiltered) {
+        if (gene.category) {
+          discoveredCategories.add(gene.category);
+        }
+      }
+    }
+
+    const result: SelectOption[] = [];
+    const addedKeys = new Set<string>();
+
+    // Add suggested categories that exist in data
+    for (const key of suggestedKeys) {
+      const count =
+        allGenesUnfiltered?.filter(
+          (g) => g.category?.toLowerCase() === key.toLowerCase()
+        ).length || 0;
+      if (count > 0) {
+        result.push({
+          value: key,
+          label: getCategoryLabel(key),
+          emoji: getCategoryEmoji(key),
+          count,
+        });
+        addedKeys.add(key.toLowerCase());
+      }
+    }
+
+    // Add discovered categories not in suggested
+    for (const cat of discoveredCategories) {
+      if (!addedKeys.has(cat.toLowerCase())) {
+        const count =
+          allGenesUnfiltered?.filter(
+            (g) => g.category?.toLowerCase() === cat.toLowerCase()
+          ).length || 0;
+        result.push({
+          value: cat,
+          label: getCategoryLabel(cat),
+          emoji: getCategoryEmoji(cat),
+          count,
+        });
+      }
+    }
+
+    result.sort((a, b) => (b.count || 0) - (a.count || 0));
+    return result;
+  }, [allGenesUnfiltered]);
 
   // Determine which genes to show - map allGenes to Gene type if needed
   const genesToShow: Gene[] = useMemo(() => {
@@ -151,24 +209,57 @@ export default function GenePickerModal({
           </div>
         </div>
 
-        {/* Category Filter (only for "all" view) */}
+        {/* Filters (only for "all" view) */}
         {view === 'all' && (
           <div className="px-6 py-3 border-b border-border">
-            <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((category) => (
+            <div className="flex flex-wrap items-center gap-3">
+              {/* Category Filter */}
+              <SearchableSelect
+                options={categoryOptions}
+                value={selectedCategory}
+                onChange={setSelectedCategory}
+                placeholder="All Categories"
+                searchPlaceholder="Search"
+                allOption={{
+                  value: 'all',
+                  label: 'All Categories',
+                  emoji: '🧬',
+                }}
+                className="w-48"
+              />
+
+              {/* Owner Toggle */}
+              <div className="flex rounded-lg border border-border bg-card p-0.5">
                 <button
-                  key={category.id}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors flex items-center gap-1.5 ${
-                    selectedCategory === category.id
-                      ? 'bg-energy/20 text-energy border border-energy/30'
-                      : 'bg-muted hover:bg-muted/80 text-foreground'
-                  }`}
+                  className={cn(
+                    'px-3 py-1 text-xs rounded-md font-medium transition-all',
+                    ownerFilter === 'all'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
+                  onClick={() => setOwnerFilter('all')}
                 >
-                  <span>{category.emoji}</span>
-                  <span>{category.label}</span>
+                  All
                 </button>
-              ))}
+                <button
+                  className={cn(
+                    'px-3 py-1 text-xs rounded-md font-medium transition-all',
+                    ownerFilter === 'yours'
+                      ? 'bg-primary text-primary-foreground shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground',
+                    !address && 'opacity-50 cursor-not-allowed'
+                  )}
+                  onClick={() => address && setOwnerFilter('yours')}
+                  disabled={!address}
+                  title={!address ? 'Connect wallet to filter' : undefined}
+                >
+                  My Genes
+                </button>
+              </div>
+
+              <span className="text-sm text-muted-foreground ml-auto">
+                {genesToShow.length} genes
+              </span>
             </div>
           </div>
         )}
@@ -189,6 +280,8 @@ export default function GenePickerModal({
               <p className="text-sm">
                 {view === 'parent'
                   ? 'No genes available from parents'
+                  : ownerFilter === 'yours'
+                  ? "You don't own any genes yet"
                   : 'No genes found in this category'}
               </p>
               {view === 'all' && (
@@ -198,7 +291,9 @@ export default function GenePickerModal({
                   onClick={() => setShowCreateGene(true)}
                   className="mt-4"
                 >
-                  Create the first one
+                  {ownerFilter === 'yours'
+                    ? 'Create your first gene'
+                    : 'Create the first one'}
                 </Button>
               )}
             </div>
@@ -216,8 +311,8 @@ export default function GenePickerModal({
                     dangerouslySetInnerHTML={{ __html: gene.svg || '' }}
                   />
                   <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                    <div className="text-xs text-white font-medium text-center">
-                      Gene #{gene.tokenId}
+                    <div className="text-xs text-white font-medium text-center truncate">
+                      {gene.name || `Gene #${gene.tokenId}`}
                     </div>
                   </div>
                   {/* Hover indicator */}
