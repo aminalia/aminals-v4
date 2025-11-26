@@ -8,6 +8,7 @@
  * - Placement controls (x, y, scale, rotation) per gene
  */
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/Tabs';
 import { countGenes, createEmptyDesign, DEFAULT_PLACEMENT } from '@hooks';
 import { useCallback, useEffect, useState } from 'react';
 import type {
@@ -18,6 +19,8 @@ import type {
 } from '../../types/breeding';
 import GenePickerModal from './GenePickerModal';
 import InteractiveCanvas from './InteractiveCanvas';
+
+type MobileTab = 'genes' | 'canvas' | 'adjust';
 
 export interface DesignBuilderProps {
   initialGeneIds?: bigint[];
@@ -65,6 +68,9 @@ export default function DesignBuilder({
   const [showGenePickerIndex, setShowGenePickerIndex] = useState<number | null>(
     null
   );
+
+  // Mobile tab state
+  const [mobileTab, setMobileTab] = useState<MobileTab>('canvas');
 
   // Drag and drop state
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -611,305 +617,330 @@ export default function DesignBuilder({
     .map((id) => getGeneById(id))
     .filter((gene): gene is Gene => gene !== undefined);
 
-  return (
-    <div
-      className={`flex flex-col lg:flex-row gap-4 ${
-        disabled ? 'opacity-60 pointer-events-none' : ''
-      }`}
-    >
-      {/* Gene Slots Panel (Left) */}
-      <div className="w-full lg:w-64 bg-card rounded-lg border border-border p-4">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold">Gene Slots</h3>
-          <span className="text-xs text-muted-foreground">
-            {geneCount}/9 genes
-          </span>
-        </div>
-
-        {/* Gene Slots List */}
-        <div className="space-y-2">
-          {design.geneIds.map((geneId, index) => {
-            const gene = geneId !== 0n ? getGeneById(geneId) : null;
-            const isDragging = draggedIndex === index;
-            const showDropBefore =
-              dropPosition?.index === index &&
-              dropPosition?.position === 'before';
-            const showDropAfter =
-              dropPosition?.index === index &&
-              dropPosition?.position === 'after';
-
-            return (
-              <div key={index} className="relative">
-                {/* Drop indicator line - BEFORE */}
-                {showDropBefore && (
-                  <div className="absolute -top-1 left-0 right-0 z-10 h-0.5 bg-energy rounded-full shadow-lg shadow-energy/50 animate-pulse" />
-                )}
-
-                <div
-                  onDragOver={(e) => handleDragOver(e, index)}
-                  onDragLeave={handleDragLeave}
-                  onDoubleClick={() => handleDoubleClick(index)}
-                  className={`p-2 rounded border transition-all ${
-                    design.selectedGeneIndex === index
-                      ? 'border-energy bg-energy/10'
-                      : 'border-border hover:border-energy/50'
-                  } ${geneId === 0n ? 'opacity-50' : ''} ${
-                    isDragging ? 'opacity-50 scale-95' : ''
-                  }`}
-                  onClick={() => !disabled && handleSelectGene(index)}
-                >
-                  {geneId === 0n ? (
-                    <div
-                      className="text-xs text-center py-1 text-muted-foreground cursor-pointer hover:text-energy"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setShowGenePickerIndex(index);
-                      }}
-                    >
-                      + Add to slot {index + 1}
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      {/* Drag handle */}
-                      <div
-                        draggable={!disabled}
-                        onDragStart={(e) => {
-                          e.stopPropagation();
-                          handleDragStart(index);
-                        }}
-                        onDragEnd={handleDragEnd}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                        }}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                        }}
-                        onMouseUp={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="flex flex-col gap-1 py-1 px-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-energy transition-colors"
-                        title="Drag to reorder"
-                      >
-                        <div className="w-3 h-0.5 bg-current rounded-full"></div>
-                        <div className="w-3 h-0.5 bg-current rounded-full"></div>
-                        <div className="w-3 h-0.5 bg-current rounded-full"></div>
-                      </div>
-                      {/* Gene preview thumbnail and info - supports long press */}
-                      <div
-                        className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
-                        onMouseDown={() => handleMouseDown(index)}
-                        onMouseUp={handleMouseUp}
-                        onMouseLeave={handleMouseLeave}
-                        onTouchStart={() => handleMouseDown(index)}
-                        onTouchEnd={handleMouseUp}
-                      >
-                        {gene?.svg && (
-                          <div className="w-8 h-8 bg-muted rounded border border-border overflow-hidden flex-shrink-0">
-                            <svg
-                              viewBox="0 0 1000 1000"
-                              className="w-full h-full"
-                              dangerouslySetInnerHTML={{ __html: gene.svg }}
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-xs font-medium truncate">
-                            Gene #{geneId.toString()}
-                          </div>
-                          <div className="text-[10px] text-muted-foreground">
-                            Slot {index + 1}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Remove button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleRemoveGene(index);
-                        }}
-                        onMouseDown={(e) => {
-                          e.stopPropagation();
-                        }}
-                        className="text-xs text-destructive hover:text-destructive/80"
-                        disabled={disabled}
-                        title="Remove gene"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Drop indicator line - AFTER */}
-                {showDropAfter && (
-                  <div className="absolute -bottom-1 left-0 right-0 z-10 h-0.5 bg-energy rounded-full shadow-lg shadow-energy/50 animate-pulse" />
-                )}
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Add Gene Button */}
-        {geneCount < maxGenes && (
-          <button
-            className="w-full mt-3 py-2 text-sm border border-dashed border-border rounded hover:border-energy hover:bg-energy/5 transition-colors"
-            onClick={() => {
-              const firstEmptyIndex = design.geneIds.findIndex(
-                (id) => id === 0n
-              );
-              setShowGenePickerIndex(firstEmptyIndex);
-            }}
-            disabled={disabled}
-          >
-            + Add Gene
-          </button>
-        )}
-
-        {/* Gene Picker Modal */}
-        {showGenePickerIndex !== null && (
-          <GenePickerModal
-            availableGenes={availableGenes}
-            onSelectGene={handleAddGene}
-            onClose={() => setShowGenePickerIndex(null)}
-          />
-        )}
+  // Gene Slots Panel content
+  const geneSlotsContent = (
+    <div className="bg-card rounded-lg border border-border p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold">Gene Slots</h3>
+        <span className="text-xs text-muted-foreground">
+          {geneCount}/9 genes
+        </span>
       </div>
 
-      {/* Canvas Preview (Center) - Now Interactive */}
-      <InteractiveCanvas
-        geneIds={design.geneIds}
-        placements={design.placements}
-        selectedIndex={design.selectedGeneIndex}
-        genes={genesInDesign}
-        onSelect={handleSelectGene}
-        onUpdatePlacement={handleUpdatePlacement}
-        onDragStart={handleCanvasDragStart}
-        disabled={disabled}
-        onUndo={handleUndo}
-        onRedo={handleRedo}
-        canUndo={canUndo}
-        canRedo={canRedo}
-      />
+      {/* Gene Slots List */}
+      <div className="space-y-2">
+        {design.geneIds.map((geneId, index) => {
+          const gene = geneId !== 0n ? getGeneById(geneId) : null;
+          const isDragging = draggedIndex === index;
+          const showDropBefore =
+            dropPosition?.index === index &&
+            dropPosition?.position === 'before';
+          const showDropAfter =
+            dropPosition?.index === index &&
+            dropPosition?.position === 'after';
 
-      {/* Placement Controls (Right) */}
-      <div className="w-full lg:w-64 bg-card rounded-lg border border-border p-4">
-        <h3 className="text-sm font-semibold mb-3">Placement</h3>
+          return (
+            <div key={index} className="relative">
+              {/* Drop indicator line - BEFORE */}
+              {showDropBefore && (
+                <div className="absolute -top-1 left-0 right-0 z-10 h-0.5 bg-primary rounded-full shadow-lg shadow-primary/50 animate-pulse" />
+              )}
 
-        {selectedGene === null || selectedGene === 0n ? (
-          <div className="text-xs text-muted-foreground text-center py-8">
-            Select a gene to adjust placement
+              <div
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDragLeave={handleDragLeave}
+                onDoubleClick={() => handleDoubleClick(index)}
+                className={`p-2 rounded border transition-all ${
+                  design.selectedGeneIndex === index
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                } ${geneId === 0n ? 'opacity-50' : ''} ${
+                  isDragging ? 'opacity-50 scale-95' : ''
+                }`}
+                onClick={() => !disabled && handleSelectGene(index)}
+              >
+                {geneId === 0n ? (
+                  <div
+                    className="text-xs text-center py-1 text-muted-foreground cursor-pointer hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowGenePickerIndex(index);
+                    }}
+                  >
+                    + Add to slot {index + 1}
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    {/* Drag handle */}
+                    <div
+                      draggable={!disabled}
+                      onDragStart={(e) => {
+                        e.stopPropagation();
+                        handleDragStart(index);
+                      }}
+                      onDragEnd={handleDragEnd}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      onMouseUp={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="flex flex-col gap-1 py-1 px-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-primary transition-colors"
+                      title="Drag to reorder"
+                    >
+                      <div className="w-3 h-0.5 bg-current rounded-full"></div>
+                      <div className="w-3 h-0.5 bg-current rounded-full"></div>
+                      <div className="w-3 h-0.5 bg-current rounded-full"></div>
+                    </div>
+                    {/* Gene preview thumbnail and info - supports long press */}
+                    <div
+                      className="flex items-center gap-2 flex-1 min-w-0 cursor-pointer"
+                      onMouseDown={() => handleMouseDown(index)}
+                      onMouseUp={handleMouseUp}
+                      onMouseLeave={handleMouseLeave}
+                      onTouchStart={() => handleMouseDown(index)}
+                      onTouchEnd={handleMouseUp}
+                    >
+                      {gene?.svg && (
+                        <div className="w-8 h-8 bg-muted rounded border border-border overflow-hidden flex-shrink-0">
+                          <svg
+                            viewBox="0 0 1000 1000"
+                            className="w-full h-full"
+                            dangerouslySetInnerHTML={{ __html: gene.svg }}
+                          />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium truncate">
+                          Gene #{geneId.toString()}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          Slot {index + 1}
+                        </div>
+                      </div>
+                    </div>
+                    {/* Remove button */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveGene(index);
+                      }}
+                      onMouseDown={(e) => {
+                        e.stopPropagation();
+                      }}
+                      className="text-xs text-destructive hover:text-destructive/80"
+                      disabled={disabled}
+                      title="Remove gene"
+                    >
+                      ×
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Drop indicator line - AFTER */}
+              {showDropAfter && (
+                <div className="absolute -bottom-1 left-0 right-0 z-10 h-0.5 bg-primary rounded-full shadow-lg shadow-primary/50 animate-pulse" />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Add Gene Button */}
+      {geneCount < maxGenes && (
+        <button
+          className="w-full mt-3 py-2 text-sm border border-dashed border-border rounded hover:border-primary hover:bg-primary/5 transition-colors"
+          onClick={() => {
+            const firstEmptyIndex = design.geneIds.findIndex(
+              (id) => id === 0n
+            );
+            setShowGenePickerIndex(firstEmptyIndex);
+          }}
+          disabled={disabled}
+        >
+          + Add Gene
+        </button>
+      )}
+    </div>
+  );
+
+  // Canvas content
+  const canvasContent = (
+    <InteractiveCanvas
+      geneIds={design.geneIds}
+      placements={design.placements}
+      selectedIndex={design.selectedGeneIndex}
+      genes={genesInDesign}
+      onSelect={handleSelectGene}
+      onUpdatePlacement={handleUpdatePlacement}
+      onDragStart={handleCanvasDragStart}
+      disabled={disabled}
+      onUndo={handleUndo}
+      onRedo={handleRedo}
+      canUndo={canUndo}
+      canRedo={canRedo}
+    />
+  );
+
+  // Placement Controls content
+  const placementContent = (
+    <div className="bg-card rounded-lg border border-border p-4">
+      <h3 className="text-sm font-semibold mb-3">Placement</h3>
+
+      {selectedGene === null || selectedGene === 0n ? (
+        <div className="text-xs text-muted-foreground text-center py-8">
+          Select a gene to adjust placement
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <div className="text-xs font-medium mb-2">
+            Gene #{selectedGene.toString()}
           </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="text-xs font-medium mb-2">
-              Gene #{selectedGene.toString()}
-            </div>
 
-            {/* X Offset */}
-            <div>
-              <label className="text-xs text-muted-foreground">
-                X Offset: {selectedPlacement?.offsetX || 0}
-              </label>
-              <input
-                type="range"
-                min="-500"
-                max="500"
-                value={selectedPlacement?.offsetX || 0}
-                onChange={(e) =>
-                  handleUpdatePlacement(design.selectedGeneIndex!, {
-                    offsetX: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                disabled={disabled}
-              />
-            </div>
-
-            {/* Y Offset */}
-            <div>
-              <label className="text-xs text-muted-foreground">
-                Y Offset: {selectedPlacement?.offsetY || 0}
-              </label>
-              <input
-                type="range"
-                min="-500"
-                max="500"
-                value={selectedPlacement?.offsetY || 0}
-                onChange={(e) =>
-                  handleUpdatePlacement(design.selectedGeneIndex!, {
-                    offsetY: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                disabled={disabled}
-              />
-            </div>
-
-            {/* Scale */}
-            <div>
-              <label className="text-xs text-muted-foreground">
-                Scale: {selectedPlacement?.scale || 100}%
-              </label>
-              <input
-                type="range"
-                min="10"
-                max="400"
-                value={selectedPlacement?.scale || 100}
-                onChange={(e) =>
-                  handleUpdatePlacement(design.selectedGeneIndex!, {
-                    scale: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                disabled={disabled}
-              />
-            </div>
-
-            {/* Rotation */}
-            <div>
-              <label className="text-xs text-muted-foreground">
-                Rotation: {selectedPlacement?.rotation || 0}°
-              </label>
-              <input
-                type="range"
-                min="-180"
-                max="180"
-                value={selectedPlacement?.rotation || 0}
-                onChange={(e) =>
-                  handleUpdatePlacement(design.selectedGeneIndex!, {
-                    rotation: Number(e.target.value),
-                  })
-                }
-                className="w-full"
-                disabled={disabled}
-              />
-            </div>
-
-            {/* Reset Button */}
-            <button
-              className="w-full text-xs py-2 border border-border rounded hover:bg-muted transition-colors"
-              onClick={handleResetPlacement}
+          {/* X Offset */}
+          <div>
+            <label className="text-xs text-muted-foreground">
+              X Offset: {selectedPlacement?.offsetX || 0}
+            </label>
+            <input
+              type="range"
+              min="-500"
+              max="500"
+              value={selectedPlacement?.offsetX || 0}
+              onChange={(e) =>
+                handleUpdatePlacement(design.selectedGeneIndex!, {
+                  offsetX: Number(e.target.value),
+                })
+              }
+              className="w-full"
               disabled={disabled}
-            >
-              Reset Placement
-            </button>
-
-            {/* Info */}
-            <div className="text-[10px] text-muted-foreground mt-4 space-y-1">
-              <div className="font-semibold mb-1">💡 Tips & Shortcuts:</div>
-              <div>• Drag genes by handle to reorder slots</div>
-              <div>• Double-click slot to change gene</div>
-              <div>• Arrows: nudge ±10px (Shift for ±1px)</div>
-              <div>• [ / ] keys: scale ±5%</div>
-              <div>• R key: reset placement</div>
-              <div>• Ctrl/Cmd+z: undo</div>
-              <div>• Ctrl/Cmd+Shift+z: redo</div>
-              <div>• Use sliders for precise adjustments</div>
-              <div>• Order: Slot 1 (back) → Slot 9 (front)</div>
-              <div>• Delete/Backspace: remove selected gene</div>
-            </div>
+            />
           </div>
-        )}
+
+          {/* Y Offset */}
+          <div>
+            <label className="text-xs text-muted-foreground">
+              Y Offset: {selectedPlacement?.offsetY || 0}
+            </label>
+            <input
+              type="range"
+              min="-500"
+              max="500"
+              value={selectedPlacement?.offsetY || 0}
+              onChange={(e) =>
+                handleUpdatePlacement(design.selectedGeneIndex!, {
+                  offsetY: Number(e.target.value),
+                })
+              }
+              className="w-full"
+              disabled={disabled}
+            />
+          </div>
+
+          {/* Scale */}
+          <div>
+            <label className="text-xs text-muted-foreground">
+              Scale: {selectedPlacement?.scale || 100}%
+            </label>
+            <input
+              type="range"
+              min="10"
+              max="400"
+              value={selectedPlacement?.scale || 100}
+              onChange={(e) =>
+                handleUpdatePlacement(design.selectedGeneIndex!, {
+                  scale: Number(e.target.value),
+                })
+              }
+              className="w-full"
+              disabled={disabled}
+            />
+          </div>
+
+          {/* Rotation */}
+          <div>
+            <label className="text-xs text-muted-foreground">
+              Rotation: {selectedPlacement?.rotation || 0}°
+            </label>
+            <input
+              type="range"
+              min="-180"
+              max="180"
+              value={selectedPlacement?.rotation || 0}
+              onChange={(e) =>
+                handleUpdatePlacement(design.selectedGeneIndex!, {
+                  rotation: Number(e.target.value),
+                })
+              }
+              className="w-full"
+              disabled={disabled}
+            />
+          </div>
+
+          {/* Reset Button */}
+          <button
+            className="w-full text-xs py-2 border border-border rounded hover:bg-muted transition-colors"
+            onClick={handleResetPlacement}
+            disabled={disabled}
+          >
+            Reset Placement
+          </button>
+
+          {/* Info - only on desktop */}
+          <div className="text-[10px] text-muted-foreground mt-4 space-y-1 hidden md:block">
+            <div className="font-semibold mb-1">Shortcuts:</div>
+            <div>• Arrows: nudge ±10px (Shift for ±1px)</div>
+            <div>• [ / ] keys: scale ±5%</div>
+            <div>• R key: reset placement</div>
+            <div>• Ctrl/Cmd+z: undo</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={disabled ? 'opacity-60 pointer-events-none' : ''}>
+      {/* Gene Picker Modal */}
+      {showGenePickerIndex !== null && (
+        <GenePickerModal
+          availableGenes={availableGenes}
+          onSelectGene={handleAddGene}
+          onClose={() => setShowGenePickerIndex(null)}
+        />
+      )}
+
+      {/* Mobile View - Tab-based */}
+      <div className="md:hidden">
+        <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as MobileTab)}>
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="genes">
+              Genes ({geneCount}/9)
+            </TabsTrigger>
+            <TabsTrigger value="canvas">Canvas</TabsTrigger>
+            <TabsTrigger value="adjust">Adjust</TabsTrigger>
+          </TabsList>
+          <TabsContent value="genes" className="mt-4">
+            {geneSlotsContent}
+          </TabsContent>
+          <TabsContent value="canvas" className="mt-4">
+            {canvasContent}
+          </TabsContent>
+          <TabsContent value="adjust" className="mt-4">
+            {placementContent}
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Desktop View - 3 columns */}
+      <div className="hidden md:flex md:flex-row gap-4">
+        <div className="w-64 flex-shrink-0">{geneSlotsContent}</div>
+        <div className="flex-1">{canvasContent}</div>
+        <div className="w-64 flex-shrink-0">{placementContent}</div>
       </div>
     </div>
   );

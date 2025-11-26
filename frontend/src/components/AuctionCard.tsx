@@ -186,8 +186,16 @@ export default function AuctionCard({
 
             {/* Call to Action */}
             <Link href={`/breeding/${auction.auctionId}`}>
-              <Button variant="breed" className="w-full mt-4">
-                {auction.finished ? 'View Results' : 'Join Breeding'} →
+              <Button
+                variant={isAuctionEnded && !auction.finished ? 'energy' : 'breed'}
+                className="w-full mt-4"
+              >
+                {auction.finished
+                  ? 'View Results'
+                  : isAuctionEnded
+                  ? '👶 Birth Aminal'
+                  : 'Join Breeding'}{' '}
+                →
               </Button>
             </Link>
           </div>

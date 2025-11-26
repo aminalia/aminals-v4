@@ -333,42 +333,30 @@ export default function ProposeDesignButton({
   };
 
   return (
-    <div className="space-y-2">
-      {/* Cost info */}
-      <div className="text-sm text-muted-foreground text-center">
-        Cost: <span className="font-medium">10 ❤️ + 10 ⚡</span> (from each
-        parent)
-      </div>
-
-      <Button
-        type="button"
-        onClick={handlePropose}
-        disabled={
-          !enabled ||
-          !validation.isValid ||
-          disabled ||
-          isPending ||
-          isConfirming
-        }
-        variant="success"
-        size="lg"
-        className={`w-full ${className}`}
-      >
-        <span className="flex items-center justify-center gap-2">
-          {isPending || isConfirming ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current"></div>
-              {isPending ? 'Proposing...' : 'Confirming...'}
-            </>
-          ) : !enabled ? (
-            <>Connect Wallet</>
-          ) : !validation.isValid ? (
-            <>{validation.error}</>
-          ) : (
-            <>🧬 Propose Design ({geneCount} genes)</>
-          )}
-        </span>
-      </Button>
-    </div>
+    <Button
+      type="button"
+      onClick={handlePropose}
+      disabled={
+        !enabled ||
+        !validation.isValid ||
+        disabled ||
+        isPending ||
+        isConfirming
+      }
+      variant="feed"
+      className={`w-full ${className}`}
+    >
+      {isPending || isConfirming ? (
+        <>
+          {isPending ? '⏳ Proposing...' : '⏳ Confirming...'}
+        </>
+      ) : !enabled ? (
+        'Connect Wallet'
+      ) : !validation.isValid ? (
+        validation.error
+      ) : (
+        `🧬 Propose Design (${geneCount} genes)`
+      )}
+    </Button>
   );
 }

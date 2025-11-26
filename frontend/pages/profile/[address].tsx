@@ -50,7 +50,13 @@ const ProfilePage: NextPage = () => {
     isRouterReady ? profileAddress : ''
   );
 
-  if (router.isFallback || !isRouterReady || !hasMounted || profileLoading || earningsLoading) {
+  if (
+    router.isFallback ||
+    !isRouterReady ||
+    !hasMounted ||
+    profileLoading ||
+    earningsLoading
+  ) {
     return (
       <Layout>
         <Head>
@@ -73,7 +79,9 @@ const ProfilePage: NextPage = () => {
           <EmptyState
             icon="🔍"
             title="No profile found"
-            description={`No activity found for ${formatAddress(profileAddress)}`}
+            description={`No activity found for ${formatAddress(
+              profileAddress
+            )}`}
           />
         </div>
       </Layout>
@@ -131,17 +139,19 @@ const ProfilePage: NextPage = () => {
           {/* Header */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-3 flex-wrap">
-              <h1 className="text-2xl md:text-3xl font-bold">
+              <h1 className="text-2xl font-bold">
                 {ensName || (
                   <>
-                    <span className="md:hidden">{formatAddress(profileAddress)}</span>
-                    <span className="hidden md:inline font-mono">{profileAddress}</span>
+                    <span className="md:hidden">
+                      {formatAddress(profileAddress)}
+                    </span>
+                    <span className="hidden md:inline font-mono">
+                      {profileAddress}
+                    </span>
                   </>
                 )}
               </h1>
-              {isOwnProfile && (
-                <Badge variant="secondary">You</Badge>
-              )}
+              {isOwnProfile && <Badge variant="secondary">You</Badge>}
               <Button
                 variant="ghost"
                 size="sm"
@@ -157,7 +167,9 @@ const ProfilePage: NextPage = () => {
             </div>
             {ensName && (
               <div className="text-sm text-muted-foreground font-mono">
-                <span className="md:hidden">{formatAddress(profileAddress)}</span>
+                <span className="md:hidden">
+                  {formatAddress(profileAddress)}
+                </span>
                 <span className="hidden md:inline">{profileAddress}</span>
               </div>
             )}
@@ -176,7 +188,9 @@ const ProfilePage: NextPage = () => {
                 <div className="text-2xl font-bold">
                   {userProfile.lovers?.length || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Aminals Loved</div>
+                <div className="text-sm text-muted-foreground">
+                  Aminals Loved
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -184,7 +198,9 @@ const ProfilePage: NextPage = () => {
                 <div className="text-2xl font-bold">
                   {userProfile.genesCreated?.length || 0}
                 </div>
-                <div className="text-sm text-muted-foreground">Genes Created</div>
+                <div className="text-sm text-muted-foreground">
+                  Genes Created
+                </div>
               </CardContent>
             </Card>
             <Card>
@@ -236,7 +252,8 @@ const ProfilePage: NextPage = () => {
             </TabsContent>
 
             <TabsContent value="genes" className="mt-6">
-              {userProfile.genesCreated && userProfile.genesCreated.length > 0 ? (
+              {userProfile.genesCreated &&
+              userProfile.genesCreated.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {userProfile.genesCreated.map((gene) => (
                     <GeneCard
@@ -308,7 +325,11 @@ const ProfilePage: NextPage = () => {
                                   </span>
                                 </div>
                                 <div className="font-mono text-success">
-                                  +{Number(formatEther(BigInt(payout.amount))).toFixed(4)} ETH
+                                  +
+                                  {Number(
+                                    formatEther(BigInt(payout.amount))
+                                  ).toFixed(4)}{' '}
+                                  ETH
                                 </div>
                               </div>
                             ))}
@@ -363,9 +384,12 @@ const ProfilePage: NextPage = () => {
                 </div>
 
                 {/* Recent Votes */}
-                {userProfile.designVotes && userProfile.designVotes.length > 0 ? (
+                {userProfile.designVotes &&
+                userProfile.designVotes.length > 0 ? (
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Recent Design Votes</h3>
+                    <h3 className="text-lg font-semibold">
+                      Recent Design Votes
+                    </h3>
                     {userProfile.designVotes.slice(0, 5).map((vote: any) => {
                       if (!vote.proposal) return null;
                       return (
@@ -374,20 +398,32 @@ const ProfilePage: NextPage = () => {
                             <div className="flex items-center justify-between">
                               <div>
                                 <div className="font-medium">
-                                  {vote.isRemoveVote ? 'Voted to remove' : 'Voted for'}{' '}
+                                  {vote.isRemoveVote
+                                    ? 'Voted to remove'
+                                    : 'Voted for'}{' '}
                                   {vote.proposal.geneNFT.name ||
                                     `Gene #${vote.proposal.geneNFT.tokenId}`}
                                 </div>
                                 <div className="text-sm text-muted-foreground">
-                                  Auction #{vote.auction?.auctionId ?? 'Unknown'} •{' '}
+                                  Auction #
+                                  {vote.auction?.auctionId ?? 'Unknown'} •{' '}
                                   {formatTimeAgo(vote.blockTimestamp)}
                                 </div>
                               </div>
                               <div className="text-right">
                                 <div className="text-sm font-medium">
-                                  {Number(formatEther(BigInt(vote.loveAmount))).toFixed(2)} Love
+                                  {Number(
+                                    formatEther(BigInt(vote.loveAmount))
+                                  ).toFixed(2)}{' '}
+                                  Love
                                 </div>
-                                <Badge variant={vote.isRemoveVote ? 'destructive' : 'secondary'}>
+                                <Badge
+                                  variant={
+                                    vote.isRemoveVote
+                                      ? 'destructive'
+                                      : 'secondary'
+                                  }
+                                >
                                   {vote.isRemoveVote ? 'Remove' : 'Support'}
                                 </Badge>
                               </div>

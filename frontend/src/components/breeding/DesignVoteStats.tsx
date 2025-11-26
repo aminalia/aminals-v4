@@ -131,7 +131,7 @@ export default function DesignVoteStats({
             return (
               <div
                 key={design.id}
-                className={`border-2 rounded-lg p-4 transition-all ${
+                className={`border-2 rounded-lg p-3 md:p-4 transition-all ${
                   isWinning
                     ? 'border-success bg-success/5'
                     : index === 0
@@ -139,9 +139,9 @@ export default function DesignVoteStats({
                     : 'border-border'
                 }`}
               >
-                <div className="flex gap-4">
+                <div className="flex gap-3 md:gap-4">
                   {/* Preview */}
-                  <div className="w-24 h-24 bg-muted rounded-lg overflow-hidden border border-border flex-shrink-0">
+                  <div className="w-16 h-16 md:w-24 md:h-24 bg-muted rounded-lg overflow-hidden border border-border flex-shrink-0">
                     <svg
                       viewBox="0 0 1000 1000"
                       className="w-full h-full"
@@ -153,10 +153,10 @@ export default function DesignVoteStats({
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                    <div className="flex items-center gap-2 mb-1 flex-wrap">
                       {isWinning && (
                         <span
-                          className="text-lg leading-none"
+                          className="text-base md:text-lg leading-none"
                           title="Winning Design"
                         >
                           🏆
@@ -164,7 +164,7 @@ export default function DesignVoteStats({
                       )}
                       {!isWinning && index === 0 && (
                         <span
-                          className="text-lg leading-none"
+                          className="text-base md:text-lg leading-none"
                           title="Most Votes"
                         >
                           ⭐
@@ -180,7 +180,7 @@ export default function DesignVoteStats({
                       )}
                     </div>
 
-                    <div className="text-xs text-muted-foreground mb-2">
+                    <div className="text-xs text-muted-foreground mb-2 truncate">
                       {design.isParentDesign
                         ? 'System (Parent Design)'
                         : `By ${design.proposer.address.slice(
@@ -189,24 +189,28 @@ export default function DesignVoteStats({
                           )}...${design.proposer.address.slice(-4)}`}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs">
+                    {/* Stats - responsive grid */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                       <div className="flex items-center gap-1">
                         <span className="font-medium">
                           {design.votes.toString()}
                         </span>
                         <span className="text-muted-foreground">❤️</span>
                       </div>
-                      <div className="text-muted-foreground">•</div>
+                      <div className="hidden sm:block text-muted-foreground">
+                        •
+                      </div>
                       <div className="flex items-center gap-1">
                         <span className="font-medium">{geneCount}</span>
                         <span className="text-muted-foreground">genes</span>
                       </div>
-                      <div className="text-muted-foreground">•</div>
+                      <div className="hidden sm:block text-muted-foreground">
+                        •
+                      </div>
                       <div className="flex items-center gap-1">
                         <span className="font-medium">
                           {votePercentage.toFixed(1)}%
                         </span>
-                        <span className="text-muted-foreground">of total</span>
                       </div>
                     </div>
 
