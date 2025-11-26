@@ -337,19 +337,13 @@ export default function ProposeDesignButton({
       type="button"
       onClick={handlePropose}
       disabled={
-        !enabled ||
-        !validation.isValid ||
-        disabled ||
-        isPending ||
-        isConfirming
+        !enabled || !validation.isValid || disabled || isPending || isConfirming
       }
       variant="feed"
       className={`w-full ${className}`}
     >
       {isPending || isConfirming ? (
-        <>
-          {isPending ? '⏳ Proposing...' : '⏳ Confirming...'}
-        </>
+        <>{isPending ? '⏳ Proposing...' : '⏳ Confirming...'}</>
       ) : !enabled ? (
         'Connect Wallet'
       ) : !validation.isValid ? (

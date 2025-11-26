@@ -44,7 +44,10 @@ export function SearchableSelect({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
         setSearch('');
       }
@@ -67,12 +70,16 @@ export function SearchableSelect({
   );
 
   // Get the currently selected option for display
-  const selectedOption: SelectOption | AllOption | undefined = value === allOption?.value
-    ? allOption
-    : options.find((opt) => opt.value.toLowerCase() === value.toLowerCase());
+  const selectedOption: SelectOption | AllOption | undefined =
+    value === allOption?.value
+      ? allOption
+      : options.find((opt) => opt.value.toLowerCase() === value.toLowerCase());
 
   // Get count from selected option (only available for regular options, not allOption)
-  const selectedCount = selectedOption && 'count' in selectedOption ? selectedOption.count : undefined;
+  const selectedCount =
+    selectedOption && 'count' in selectedOption
+      ? selectedOption.count
+      : undefined;
 
   const handleSelect = (optionValue: string) => {
     onChange(optionValue);
@@ -169,7 +176,8 @@ export function SearchableSelect({
                 className={cn(
                   'w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm',
                   'hover:bg-muted transition-colors text-left',
-                  value === allOption.value && 'bg-primary/10 text-primary font-medium'
+                  value === allOption.value &&
+                    'bg-primary/10 text-primary font-medium'
                 )}
               >
                 {allOption.emoji && <span>{allOption.emoji}</span>}

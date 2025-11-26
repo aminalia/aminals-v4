@@ -87,9 +87,7 @@ const GeneDetailPage: NextPage = () => {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">
-                  {displayName}
-                </h1>
+                <h1 className="text-3xl font-bold">{displayName}</h1>
                 {gene.category && (
                   <Badge variant="secondary" size="lg">
                     {getCategoryEmoji(gene.category)} {gene.category}

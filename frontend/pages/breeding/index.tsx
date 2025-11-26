@@ -23,8 +23,8 @@ const BreedingPage: NextPage = () => {
     filter === 'all'
       ? auctions
       : filter === 'active'
-        ? activeAuctions
-        : completedAuctions;
+      ? activeAuctions
+      : completedAuctions;
 
   if (isLoading) {
     return (
@@ -50,7 +50,9 @@ const BreedingPage: NextPage = () => {
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-2xl md:text-3xl font-bold">Breeding Auctions</h1>
+                <h1 className="text-2xl md:text-3xl font-bold">
+                  Breeding Auctions
+                </h1>
                 <p className="text-muted-foreground mt-1">
                   Create new Aminals through community-driven breeding
                 </p>
@@ -73,9 +75,15 @@ const BreedingPage: NextPage = () => {
           {/* Tabs */}
           <Tabs value={filter} onValueChange={setFilter}>
             <TabsList>
-              <TabsTrigger value="all">All ({auctions?.length || 0})</TabsTrigger>
-              <TabsTrigger value="active">Active ({activeAuctions.length})</TabsTrigger>
-              <TabsTrigger value="completed">Completed ({completedAuctions.length})</TabsTrigger>
+              <TabsTrigger value="all">
+                All ({auctions?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger value="active">
+                Active ({activeAuctions.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed ({completedAuctions.length})
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="all" className="mt-6">

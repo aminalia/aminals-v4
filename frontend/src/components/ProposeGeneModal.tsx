@@ -1,4 +1,4 @@
-import { getCategoryEmoji, SUGGESTED_CATEGORIES } from '@constants/trait-categories';
+import { SUGGESTED_CATEGORIES } from '@constants/trait-categories';
 import { CategoryFilter, useGenes } from '@hooks';
 import { cn } from '@lib/utils';
 import { X } from 'lucide-react';
@@ -20,18 +20,22 @@ interface ProposeGeneModalProps {
 }
 
 // Build category options from SUGGESTED_CATEGORIES
-const CATEGORY_OPTIONS = Object.entries(SUGGESTED_CATEGORIES).map(([key, { label, emoji }]) => ({
-  id: key,
-  label,
-  emoji,
-}));
+const CATEGORY_OPTIONS = Object.entries(SUGGESTED_CATEGORIES).map(
+  ([key, { label, emoji }]) => ({
+    id: key,
+    label,
+    emoji,
+  })
+);
 
 export default function ProposeGeneModal({
   auctionId,
   isOpen,
   onClose,
 }: ProposeGeneModalProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>(CATEGORY_OPTIONS[0]?.id || 'Background');
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    CATEGORY_OPTIONS[0]?.id || 'Background'
+  );
   const [selectedGeneId, setSelectedGeneId] = useState<string>('');
   const [manualGeneId, setManualGeneId] = useState<string>('');
   const [useManualId, setUseManualId] = useState(false);

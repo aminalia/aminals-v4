@@ -39,7 +39,8 @@ const GeneCard = ({ trait, aminalCount = 0 }: GeneCardProps) => {
   // Format earnings from wei to ETH
   const formatEarnings = (earnings: bigint | string | number | undefined) => {
     if (!earnings) return '0';
-    const earningsNum = typeof earnings === 'bigint' ? Number(earnings) : Number(earnings);
+    const earningsNum =
+      typeof earnings === 'bigint' ? Number(earnings) : Number(earnings);
     const earningsInEth = earningsNum / 1e18;
     if (earningsInEth === 0) return '0';
     if (earningsInEth < 0.0001) return '<0.0001';

@@ -176,7 +176,9 @@ export default function AuctionCard({
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs text-muted-foreground">Total Love</div>
+                  <div className="text-xs text-muted-foreground">
+                    Total Love
+                  </div>
                   <div className="text-sm font-semibold text-love">
                     ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
                   </div>
@@ -192,7 +194,9 @@ export default function AuctionCard({
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground">Total Love</div>
+                  <div className="text-xs text-muted-foreground">
+                    Total Love
+                  </div>
                   <div className="text-sm font-semibold text-love">
                     ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
                   </div>
@@ -203,7 +207,9 @@ export default function AuctionCard({
             {/* Call to Action */}
             <Link href={`/breeding/${auction.auctionId}`}>
               <Button
-                variant={isAuctionEnded && !auction.finished ? 'energy' : 'breed'}
+                variant={
+                  isAuctionEnded && !auction.finished ? 'energy' : 'breed'
+                }
                 className="w-full mt-4"
               >
                 {auction.finished

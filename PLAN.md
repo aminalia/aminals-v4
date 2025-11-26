@@ -1,8 +1,6 @@
 # Plan
 
 # Bugs
-- Fix mobile responsive issues
-
 - Fix flow... new auction, create first proposal
 - Activity page on profile should show more info
 

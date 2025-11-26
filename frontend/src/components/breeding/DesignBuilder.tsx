@@ -636,8 +636,7 @@ export default function DesignBuilder({
             dropPosition?.index === index &&
             dropPosition?.position === 'before';
           const showDropAfter =
-            dropPosition?.index === index &&
-            dropPosition?.position === 'after';
+            dropPosition?.index === index && dropPosition?.position === 'after';
 
           return (
             <div key={index} className="relative">
@@ -755,9 +754,7 @@ export default function DesignBuilder({
         <button
           className="w-full mt-3 py-2 text-sm border border-dashed border-border rounded hover:border-primary hover:bg-primary/5 transition-colors"
           onClick={() => {
-            const firstEmptyIndex = design.geneIds.findIndex(
-              (id) => id === 0n
-            );
+            const firstEmptyIndex = design.geneIds.findIndex((id) => id === 0n);
             setShowGenePickerIndex(firstEmptyIndex);
           }}
           disabled={disabled}
@@ -916,11 +913,12 @@ export default function DesignBuilder({
 
       {/* Mobile View - Tab-based */}
       <div className="md:hidden">
-        <Tabs value={mobileTab} onValueChange={(v) => setMobileTab(v as MobileTab)}>
+        <Tabs
+          value={mobileTab}
+          onValueChange={(v) => setMobileTab(v as MobileTab)}
+        >
           <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="genes">
-              Genes ({geneCount}/9)
-            </TabsTrigger>
+            <TabsTrigger value="genes">Genes ({geneCount}/9)</TabsTrigger>
             <TabsTrigger value="canvas">Canvas</TabsTrigger>
             <TabsTrigger value="adjust">Adjust</TabsTrigger>
           </TabsList>

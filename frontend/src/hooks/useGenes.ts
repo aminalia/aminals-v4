@@ -121,8 +121,7 @@ function processGenes(
   // Apply category filter (case-insensitive match)
   if (category !== 'all') {
     processed = processed.filter(
-      (gene) =>
-        gene.category?.toLowerCase() === category.toLowerCase()
+      (gene) => gene.category?.toLowerCase() === category.toLowerCase()
     );
   }
 

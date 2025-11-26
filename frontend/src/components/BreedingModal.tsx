@@ -61,7 +61,9 @@ export default function BreedingModal({
 
     // In single selection mode, filter out the pre-selected aminal
     if (!isDualSelectionMode && aminal) {
-      filtered = aminals.filter((a: any) => a.contractAddress !== aminal.contractAddress);
+      filtered = aminals.filter(
+        (a: any) => a.contractAddress !== aminal.contractAddress
+      );
     }
 
     return filtered.sort((a: any, b: any) => {
@@ -262,7 +264,9 @@ export default function BreedingModal({
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border shrink-0">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg sm:text-xl font-bold truncate">
-              {isDualSelectionMode ? 'Start Breeding Auction' : 'Find Breeding Partner'}
+              {isDualSelectionMode
+                ? 'Start Breeding Auction'
+                : 'Find Breeding Partner'}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
               {isDualSelectionMode
@@ -300,7 +304,9 @@ export default function BreedingModal({
                     </div>
                   ) : (
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">First</span>
+                      <span className="text-xs text-muted-foreground">
+                        First
+                      </span>
                     </div>
                   )}
                 </div>
@@ -320,7 +326,9 @@ export default function BreedingModal({
                     </div>
                   ) : (
                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
-                      <span className="text-xs text-muted-foreground">Second</span>
+                      <span className="text-xs text-muted-foreground">
+                        Second
+                      </span>
                     </div>
                   )}
                 </div>
@@ -375,10 +383,10 @@ export default function BreedingModal({
                         selectionState === 'first'
                           ? 'border-primary bg-primary/10'
                           : selectionState === 'second'
-                            ? 'border-love bg-love/10'
-                            : selectionState === 'selected'
-                              ? 'border-love bg-love/10'
-                              : 'border-border hover:border-muted-foreground'
+                          ? 'border-love bg-love/10'
+                          : selectionState === 'selected'
+                          ? 'border-love bg-love/10'
+                          : 'border-border hover:border-muted-foreground'
                       )}
                       onClick={() => handleAminalClick(aminalOption)}
                     >
@@ -394,11 +402,19 @@ export default function BreedingModal({
                         </div>
                       </div>
                       {selectionState && (
-                        <div className={cn(
-                          'text-xs text-center mt-2 font-medium',
-                          selectionState === 'first' ? 'text-primary' : 'text-love'
-                        )}>
-                          {selectionState === 'first' ? '1st' : selectionState === 'second' ? '2nd' : 'Selected'}
+                        <div
+                          className={cn(
+                            'text-xs text-center mt-2 font-medium',
+                            selectionState === 'first'
+                              ? 'text-primary'
+                              : 'text-love'
+                          )}
+                        >
+                          {selectionState === 'first'
+                            ? '1st'
+                            : selectionState === 'second'
+                            ? '2nd'
+                            : 'Selected'}
                         </div>
                       )}
                     </div>

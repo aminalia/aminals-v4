@@ -12,7 +12,7 @@
 import type { NextPage } from 'next';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAccount } from 'wagmi';
 import Layout from '../_layout';
 
@@ -125,9 +125,19 @@ const AuctionPage: NextPage = () => {
     return auction.finished || now >= auctionEndTime;
   }, [auction, auctionEndTime]);
 
-  // Auto-switch to Create tab for new auctions (no community designs yet)
+  // Track if we've done initial tab selection
+  const hasSetInitialTab = useRef(false);
+
+  // Auto-switch to Create tab for new auctions (no community designs yet) - only on initial load
+  // Wait for designs.length > 0 because parent designs should always exist once data loads
   useEffect(() => {
-    if (!isLoadingDesigns && designs.length > 0 && !auction?.finished) {
+    if (
+      !isLoadingDesigns &&
+      !auction?.finished &&
+      !hasSetInitialTab.current &&
+      designs.length > 0
+    ) {
+      hasSetInitialTab.current = true;
       const hasCommunityDesigns = designs.some(
         (d) => !d.isParentDesign && !d.removed
       );
@@ -718,9 +728,7 @@ function ReadyToBirthSection({
   // Find the winning design
   const winningDesign = useMemo(() => {
     if (winningDesignId === undefined) return null;
-    return designs.find(
-      (d) => d.designIndex === Number(winningDesignId)
-    );
+    return designs.find((d) => d.designIndex === Number(winningDesignId));
   }, [designs, winningDesignId]);
 
   // Render winning design SVG
@@ -759,7 +767,8 @@ function ReadyToBirthSection({
   }, [winningDesign, totalLove]);
 
   // Count genes in winning design
-  const geneCount = winningDesign?.geneIds.filter((id) => id !== 0n).length || 0;
+  const geneCount =
+    winningDesign?.geneIds.filter((id) => id !== 0n).length || 0;
 
   return (
     <div className="p-4 md:p-6 space-y-6">
