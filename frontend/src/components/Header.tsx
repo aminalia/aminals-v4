@@ -72,7 +72,7 @@ export default function Header() {
       </header>
 
       {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/98 backdrop-blur-xl border-t z-50 shadow-lg">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background border-t z-50 shadow-lg">
         <div
           className={`grid gap-1 p-2 ${
             hasMounted && address ? 'grid-cols-5' : 'grid-cols-4'

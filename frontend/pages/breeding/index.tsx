@@ -1,143 +1,141 @@
 import AuctionCard from '@components/AuctionCard';
+import BreedingModal from '@components/BreedingModal';
 import { Button } from '@components/ui/Button';
+import { EmptyState, NoAuctionsFound } from '@components/ui/EmptyState';
+import { PageLoadingSpinner } from '@components/ui/LoadingSpinner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@components/ui/Tabs';
 import { useAuctions } from '@hooks';
 import type { NextPage } from 'next';
+import Head from 'next/head';
+import Link from 'next/link';
 import { useState } from 'react';
 import Layout from '../_layout';
 
-const AuctionsPage: NextPage = () => {
-  const { data: auctions, isLoading: isLoadingAuctions, error } = useAuctions();
-  const [filter, setFilter] = useState<'all' | 'active' | 'inactive'>('all');
+const BreedingPage: NextPage = () => {
+  const { data: auctions, isLoading, refetch } = useAuctions();
+  const [filter, setFilter] = useState<string>('all');
+  const [isBreedingModalOpen, setIsBreedingModalOpen] = useState(false);
+
+  const activeAuctions = auctions?.filter((a) => !a.finished) || [];
+  const completedAuctions = auctions?.filter((a) => a.finished) || [];
 
   const filteredAuctions =
-    auctions?.filter((auction) => {
-      if (filter === 'all') return true;
-      if (filter === 'active') return !auction.finished;
-      return auction.finished;
-    }) || [];
+    filter === 'all'
+      ? auctions
+      : filter === 'active'
+        ? activeAuctions
+        : completedAuctions;
 
-  const activeCount = auctions?.filter((a) => !a.finished).length || 0;
-  const completedCount = auctions?.filter((a) => a.finished).length || 0;
+  if (isLoading) {
+    return (
+      <Layout>
+        <Head>
+          <title>Breeding - Aminals</title>
+          <link href="/favicon.ico" rel="icon" />
+        </Head>
+        <PageLoadingSpinner />
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
+      <Head>
+        <title>Breeding - Aminals</title>
+        <link href="/favicon.ico" rel="icon" />
+      </Head>
       <div className="py-8">
         <div className="flex flex-col gap-8">
-          {/* Hero Section */}
-          <div className="text-center space-y-4">
-            <div className="flex justify-center items-center gap-3">
-              <div className="text-6xl">💕</div>
+          {/* Header */}
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between flex-wrap gap-4">
               <div>
-                <h1 className="text-4xl md:text-5xl font-bold text-love">
-                  Aminal Breeding
-                </h1>
-                <p className="text-lg text-muted-foreground mt-2">
+                <h1 className="text-2xl md:text-3xl font-bold">Breeding Auctions</h1>
+                <p className="text-muted-foreground mt-1">
                   Create new Aminals through community-driven breeding
                 </p>
               </div>
-            </div>
-          </div>
-
-          {/* Stats Bar */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-2">
-            <div className="bg-success/10 border border-success/30 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-success">
-                {activeCount}
-              </div>
-              <div className="text-sm text-success font-medium">
-                Active Auctions
-              </div>
-            </div>
-            <div className="bg-energy/10 border border-energy/30 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-energy">
-                {auctions?.length || 0}
-              </div>
-              <div className="text-sm text-energy font-medium">
-                Total Auctions
-              </div>
-            </div>
-            <div className="bg-love/10 border border-love/30 rounded-xl p-4 text-center">
-              <div className="text-2xl font-bold text-love">
-                {completedCount}
-              </div>
-              <div className="text-sm text-love font-medium">Completed</div>
-            </div>
-          </div>
-
-          {/* Filter Buttons */}
-          <div className="flex justify-center">
-            <div className="flex gap-2 bg-card border border-border rounded-full p-2 shadow-sm">
               <Button
-                variant={filter === 'all' ? 'default' : 'ghost'}
-                onClick={() => setFilter('all')}
-                className="rounded-full px-6 font-medium"
+                onClick={() => setIsBreedingModalOpen(true)}
+                className="bg-foreground text-background hover:bg-foreground/90"
               >
-                All ({auctions?.length || 0})
-              </Button>
-              <Button
-                variant={filter === 'active' ? 'success' : 'ghost'}
-                onClick={() => setFilter('active')}
-                className="rounded-full px-6 font-medium"
-              >
-                🔥 Active ({activeCount})
-              </Button>
-              <Button
-                variant={filter === 'inactive' ? 'love' : 'ghost'}
-                onClick={() => setFilter('inactive')}
-                className="rounded-full px-6 font-medium"
-              >
-                ✅ Completed ({completedCount})
+                💕 Start Breeding
               </Button>
             </div>
+            <Link
+              href="/"
+              className="text-primary hover:text-primary/80 text-sm font-medium"
+            >
+              ← Back to Aminals
+            </Link>
           </div>
 
-          {/* Auctions List */}
-          {isLoadingAuctions ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="flex flex-col items-center gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-love"></div>
-                <div className="text-muted-foreground">
-                  Loading breeding auctions...
-                </div>
-              </div>
-            </div>
-          ) : filteredAuctions.length === 0 ? (
-            <div className="text-center py-16">
-              <div className="bg-muted rounded-2xl p-8 border border-border">
-                <div className="text-6xl mb-4">
-                  {filter === 'active'
-                    ? '🔥'
-                    : filter === 'inactive'
-                    ? '✅'
-                    : '🧬'}
-                </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  {filter === 'active'
-                    ? 'No Active Auctions'
-                    : filter === 'inactive'
-                    ? 'No Completed Auctions'
-                    : 'No Auctions Found'}
-                </h3>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  {filter === 'active'
-                    ? 'All current breeding auctions have ended. Check back soon for new ones!'
-                    : filter === 'inactive'
-                    ? 'No auctions have been completed yet.'
-                    : 'No breeding auctions match your current filter.'}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {filteredAuctions.map((auction) => (
-                <AuctionCard key={auction.auctionId} auction={auction} />
-              ))}
-            </div>
-          )}
+          {/* Tabs */}
+          <Tabs value={filter} onValueChange={setFilter}>
+            <TabsList>
+              <TabsTrigger value="all">All ({auctions?.length || 0})</TabsTrigger>
+              <TabsTrigger value="active">Active ({activeAuctions.length})</TabsTrigger>
+              <TabsTrigger value="completed">Completed ({completedAuctions.length})</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="all" className="mt-6">
+              {renderAuctions(filteredAuctions, 'all')}
+            </TabsContent>
+
+            <TabsContent value="active" className="mt-6">
+              {renderAuctions(filteredAuctions, 'active')}
+            </TabsContent>
+
+            <TabsContent value="completed" className="mt-6">
+              {renderAuctions(filteredAuctions, 'completed')}
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
+
+      {/* Breeding Modal - no aminal prop means dual selection mode */}
+      <BreedingModal
+        isOpen={isBreedingModalOpen}
+        onClose={() => setIsBreedingModalOpen(false)}
+        onSuccess={() => refetch()}
+      />
     </Layout>
   );
+
+  function renderAuctions(
+    auctionList: typeof auctions,
+    type: 'all' | 'active' | 'completed'
+  ) {
+    if (!auctionList || auctionList.length === 0) {
+      if (type === 'active') {
+        return (
+          <EmptyState
+            icon="🔥"
+            title="No active auctions"
+            description="All breeding auctions have ended. Check back soon for new ones!"
+          />
+        );
+      }
+      if (type === 'completed') {
+        return (
+          <EmptyState
+            icon="✅"
+            title="No completed auctions"
+            description="No auctions have been completed yet."
+          />
+        );
+      }
+      return <NoAuctionsFound />;
+    }
+
+    return (
+      <div className="space-y-6">
+        {auctionList.map((auction) => (
+          <AuctionCard key={auction.auctionId} auction={auction} />
+        ))}
+      </div>
+    );
+  }
 };
 
-export default AuctionsPage;
+export default BreedingPage;

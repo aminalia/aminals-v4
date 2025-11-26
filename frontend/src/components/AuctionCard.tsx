@@ -86,10 +86,8 @@ export default function AuctionCard({
         {/* Images Section - Always side by side */}
         <div className="flex w-full md:w-1/2 relative min-h-[200px] md:min-h-[300px]">
           {/* Heart connector between images */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-card rounded-full p-2 shadow-lg border-2 border-love/30 group-hover:border-love transition-all">
-            <div className="text-lg text-love group-hover:scale-110 transition-transform">
-              💕
-            </div>
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 bg-card rounded-full p-2 shadow-lg border border-border">
+            <div className="text-lg">💕</div>
           </div>
 
           <div className="w-1/2 relative group/image">
@@ -121,13 +119,13 @@ export default function AuctionCard({
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
             <div className="flex-1">
               <Link href={`/breeding/${auction.auctionId}`}>
-                <h2 className="text-xl sm:text-2xl font-bold hover:text-love transition-colors group/title text-love">
+                <h2 className="text-xl sm:text-2xl font-bold hover:text-love transition-colors group/title">
                   #{aminalOne?.aminalIndex?.toString() || '?'} × #
                   {aminalTwo?.aminalIndex?.toString() || '?'}
                 </h2>
               </Link>
               <div className="text-sm text-muted-foreground mt-1">
-                Breeding Auction #{auction.auctionId}
+                Breeding Auction #{auction.auctionId?.toString()}
               </div>
             </div>
             <Badge
@@ -136,59 +134,52 @@ export default function AuctionCard({
                   ? 'secondary'
                   : isAuctionEnded
                   ? 'warning'
-                  : 'success'
+                  : 'active'
               }
-              className="transition-all duration-300 px-3 py-2 font-medium text-sm self-start"
+              size={!auction.finished && !isAuctionEnded ? 'lg' : 'default'}
+              className="self-start"
             >
               {auction.finished
-                ? '🎉 Completed'
+                ? 'Completed'
                 : isAuctionEnded
-                ? '⏰ Ended'
-                : '🔥 Active'}
+                ? 'Ended'
+                : 'Active'}
             </Badge>
           </div>
 
           <div className="space-y-4">
-            {/* Countdown Timer Row */}
-            {!auction.finished && (
-              <div className="bg-warning/10 border border-warning/30 rounded-xl p-4">
+            {/* Countdown Timer Row - only show when auction is active */}
+            {!auction.finished && !isAuctionEnded && (
+              <div className="bg-muted border border-border rounded-lg p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-foreground flex items-center gap-2.5 font-medium">
-                    <span className="text-xl">⏰</span>
+                  <span className="text-sm text-muted-foreground">
                     Time Left
                   </span>
-                  <span className="font-bold text-xl text-warning">
-                    {formatTime(timeLeft)}
-                  </span>
+                  <span className="font-semibold">{formatTime(timeLeft)}</span>
                 </div>
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="bg-energy/10 border border-energy/30 rounded-xl p-3 sm:p-4 text-center">
-                <div className="text-2xl mb-1">👶</div>
-                <div className="text-sm text-muted-foreground mb-1">Child</div>
+            <div className="grid grid-cols-2 gap-3 p-3 rounded-lg bg-muted border border-border">
+              <div>
+                <div className="text-xs text-muted-foreground">Child</div>
                 {childAminal ? (
                   <Link
                     href={`/aminals/${childAminal.contractAddress}`}
-                    className="font-bold text-energy hover:text-energy/80 underline transition-colors"
+                    className="text-sm font-semibold text-primary hover:underline"
                   >
                     #{childAminal.aminalIndex?.toString()}
                   </Link>
                 ) : (
-                  <div className="font-bold text-muted-foreground">
+                  <div className="text-sm font-semibold text-muted-foreground">
                     {isAuctionEnded ? 'Settling...' : 'TBD'}
                   </div>
                 )}
               </div>
-
-              <div className="bg-love/10 border border-love/30 rounded-xl p-3 sm:p-4 text-center">
-                <div className="text-2xl mb-1">❤️</div>
-                <div className="text-sm text-muted-foreground mb-1">
-                  Total Love
-                </div>
-                <div className="font-bold text-love">
-                  {auction.totalLove ? auction.totalLove.toString() : '0'}
+              <div>
+                <div className="text-xs text-muted-foreground">Total Love</div>
+                <div className="text-sm font-semibold text-love">
+                  ❤️ {auction.totalLove ? auction.totalLove.toString() : '0'}
                 </div>
               </div>
             </div>

@@ -15,7 +15,7 @@ import { AminalVisualImage } from './AminalCard';
 import { Button } from './ui/Button';
 
 interface BreedingModalProps {
-  aminal: any;
+  aminal?: any; // Optional - if not provided, user selects both aminals
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
@@ -27,11 +27,15 @@ export default function BreedingModal({
   onClose,
   onSuccess,
 }: BreedingModalProps) {
-  const [selectedPartner, setSelectedPartner] = useState<any>(null);
+  const [selectedFirst, setSelectedFirst] = useState<any>(null);
+  const [selectedSecond, setSelectedSecond] = useState<any>(null);
   const { writeContract, isPending, data: hash, error } = useWriteContract();
   const { isConnected, chain, address } = useAccount();
   const router = useRouter();
   const enabled = isConnected && chain;
+
+  // Determine mode: single selection (partner only) or dual selection
+  const isDualSelectionMode = !aminal;
 
   const {
     isLoading: isConfirming,
@@ -49,23 +53,34 @@ export default function BreedingModal({
     'most-loved'
   );
 
-  // Filter out current aminal
+  // Filter out current aminal (only in single selection mode)
   const availableAminals = useMemo(() => {
     if (!aminals) return [];
 
-    return aminals
-      .filter((a: any) => a.contractAddress !== aminal.contractAddress)
-      .sort((a: any, b: any) => {
-        // Sort by total love in descending order
-        return Number(b.totalLove) - Number(a.totalLove);
-      });
-  }, [aminals, aminal]);
+    let filtered = aminals;
+
+    // In single selection mode, filter out the pre-selected aminal
+    if (!isDualSelectionMode && aminal) {
+      filtered = aminals.filter((a: any) => a.contractAddress !== aminal.contractAddress);
+    }
+
+    return filtered.sort((a: any, b: any) => {
+      return Number(b.totalLove) - Number(a.totalLove);
+    });
+  }, [aminals, aminal, isDualSelectionMode]);
+
+  // Reset selections when modal opens/closes or mode changes
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedFirst(null);
+      setSelectedSecond(null);
+    }
+  }, [isOpen]);
 
   // Handle transaction success and extract auction ID for redirect
   useEffect(() => {
     if (isConfirmed && receipt) {
       try {
-        // Find the BreedAminal event in the transaction logs
         const breedAminalEvent = receipt.logs.find((log) => {
           try {
             const decoded = decodeEventLog({
@@ -90,7 +105,7 @@ export default function BreedingModal({
             const auctionId = decoded.args.auctionId;
 
             toast.success(
-              '🍼 Gene auction started! Redirecting to voting page...',
+              'Gene auction started! Redirecting to voting page...',
               {
                 id: 'breed-tx',
                 duration: 4000,
@@ -99,21 +114,19 @@ export default function BreedingModal({
 
             onSuccess?.();
             onClose();
-            // Reset form
-            setSelectedPartner(null);
+            setSelectedFirst(null);
+            setSelectedSecond(null);
 
-            // Redirect to the gene auction page
             setTimeout(() => {
               router.push(`/breeding/${auctionId}`);
-            }, 1500); // Small delay to let toast show and ensure subgraph indexing
+            }, 1500);
 
             return;
           }
         }
 
-        // Fallback if event not found
         toast.success(
-          '🍼 Gene auction started! Check the breeding page for your auction.',
+          'Gene auction started! Check the breeding page for your auction.',
           {
             id: 'breed-tx',
             duration: 6000,
@@ -121,11 +134,12 @@ export default function BreedingModal({
         );
         onSuccess?.();
         onClose();
-        setSelectedPartner(null);
+        setSelectedFirst(null);
+        setSelectedSecond(null);
       } catch (error) {
         console.error('Error parsing transaction receipt:', error);
         toast.success(
-          '🍼 Gene auction started! Check the breeding page for your auction.',
+          'Gene auction started! Check the breeding page for your auction.',
           {
             id: 'breed-tx',
             duration: 6000,
@@ -133,7 +147,8 @@ export default function BreedingModal({
         );
         onSuccess?.();
         onClose();
-        setSelectedPartner(null);
+        setSelectedFirst(null);
+        setSelectedSecond(null);
       }
     }
   }, [isConfirmed, receipt, onSuccess, onClose, router]);
@@ -152,7 +167,6 @@ export default function BreedingModal({
     }
   }, [error]);
 
-  // Handle receipt errors
   useEffect(() => {
     if (receiptError) {
       console.error('Breeding transaction receipt error:', receiptError);
@@ -160,26 +174,64 @@ export default function BreedingModal({
     }
   }, [receiptError]);
 
-  // Handle pending state
   useEffect(() => {
     if (isPending) {
       toast.loading('Preparing transaction...', { id: 'breed-tx' });
     }
   }, [isPending]);
 
-  // Handle confirmation state
   useEffect(() => {
     if (isConfirming) {
       toast.loading('Starting gene auction...', { id: 'breed-tx' });
     }
   }, [isConfirming]);
 
+  const handleAminalClick = (clickedAminal: any) => {
+    if (isDualSelectionMode) {
+      // Dual selection mode: toggle selection
+      if (selectedFirst?.id === clickedAminal.id) {
+        setSelectedFirst(null);
+      } else if (selectedSecond?.id === clickedAminal.id) {
+        setSelectedSecond(null);
+      } else if (!selectedFirst) {
+        setSelectedFirst(clickedAminal);
+      } else if (!selectedSecond) {
+        setSelectedSecond(clickedAminal);
+      } else {
+        // Both selected, replace second
+        setSelectedSecond(clickedAminal);
+      }
+    } else {
+      // Single selection mode (partner only)
+      setSelectedSecond(clickedAminal);
+    }
+  };
+
+  const getSelectionState = (aminalOption: any) => {
+    if (isDualSelectionMode) {
+      if (selectedFirst?.id === aminalOption.id) return 'first';
+      if (selectedSecond?.id === aminalOption.id) return 'second';
+    } else {
+      if (selectedSecond?.id === aminalOption.id) return 'selected';
+    }
+    return null;
+  };
+
   const handleBreeding = () => {
     if (!enabled) return;
 
-    const partnerAddress = selectedPartner?.contractAddress;
-    if (!partnerAddress || !isAddress(partnerAddress)) {
-      toast.error('Please select a valid partner');
+    const firstAminal = isDualSelectionMode ? selectedFirst : aminal;
+    const secondAminal = selectedSecond;
+
+    const firstAddress = firstAminal?.contractAddress;
+    const secondAddress = secondAminal?.contractAddress;
+
+    if (!firstAddress || !isAddress(firstAddress)) {
+      toast.error('Please select the first aminal');
+      return;
+    }
+    if (!secondAddress || !isAddress(secondAddress)) {
+      toast.error('Please select the second aminal');
       return;
     }
 
@@ -187,31 +239,35 @@ export default function BreedingModal({
       abi: aminalFactoryAbi,
       address: aminalFactoryAddress,
       functionName: 'breedAminals',
-      args: [aminal.contractAddress, partnerAddress as `0x${string}`, 0n],
+      args: [firstAddress as `0x${string}`, secondAddress as `0x${string}`, 0n],
     });
   };
 
   const getActionText = () => {
     if (!enabled) return 'Connect Wallet';
-    if (isPending || isConfirming) {
-      return 'Starting Auction...';
-    }
-    return '🍼 Start Gene Auction';
+    if (isPending || isConfirming) return 'Starting Auction...';
+    return 'Start Gene Auction';
   };
+
+  const canBreed = isDualSelectionMode
+    ? selectedFirst && selectedSecond
+    : selectedSecond;
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
       <div className="bg-card rounded-xl shadow-xl w-full max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 sm:p-6 border-b border-border shrink-0">
           <div className="flex-1 min-w-0">
             <h2 className="text-lg sm:text-xl font-bold truncate">
-              Find Breeding Partner
+              {isDualSelectionMode ? 'Start Breeding Auction' : 'Find Breeding Partner'}
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground mt-1 hidden sm:block">
-              Select one of your loved Aminals to breed with.
+              {isDualSelectionMode
+                ? 'Select two of your loved Aminals to breed together.'
+                : 'Select one of your loved Aminals to breed with.'}
             </p>
           </div>
           <button
@@ -224,75 +280,141 @@ export default function BreedingModal({
 
         {/* Content */}
         <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
-          {/* Selection Method */}
-          <div className="mb-6">
-            <div>
-              {/* Aminals Grid */}
-              {isLoadingAminals ? (
-                <div className="flex justify-center items-center h-32">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-energy"></div>
+          {/* Selected Aminals Preview (dual mode) */}
+          {isDualSelectionMode && (selectedFirst || selectedSecond) && (
+            <div className="mb-6 p-4 bg-muted border border-border rounded-lg">
+              <div className="text-sm font-medium mb-3">Selected Aminals</div>
+              <div className="flex items-center justify-center gap-4">
+                <div className="text-center">
+                  {selectedFirst ? (
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setSelectedFirst(null)}
+                    >
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-primary bg-secondary">
+                        <AminalVisualImage aminal={selectedFirst} />
+                      </div>
+                      <div className="text-xs mt-1 font-medium">
+                        #{selectedFirst.aminalIndex?.toString()}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">First</span>
+                    </div>
+                  )}
                 </div>
-              ) : !availableAminals || availableAminals.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No available Aminals found
+                <div className="text-2xl text-muted-foreground">×</div>
+                <div className="text-center">
+                  {selectedSecond ? (
+                    <div
+                      className="cursor-pointer"
+                      onClick={() => setSelectedSecond(null)}
+                    >
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-love bg-secondary">
+                        <AminalVisualImage aminal={selectedSecond} />
+                      </div>
+                      <div className="text-xs mt-1 font-medium">
+                        #{selectedSecond.aminalIndex?.toString()}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-border flex items-center justify-center">
+                      <span className="text-xs text-muted-foreground">Second</span>
+                    </div>
+                  )}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-                  {availableAminals.map((aminalOption: any) => (
+              </div>
+            </div>
+          )}
+
+          {/* Pre-selected Aminal (single mode) */}
+          {!isDualSelectionMode && aminal && (
+            <div className="mb-6 p-4 bg-muted border border-border rounded-lg">
+              <div className="text-sm font-medium mb-3">Breeding From</div>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg overflow-hidden border border-border bg-secondary">
+                  <AminalVisualImage aminal={aminal} />
+                </div>
+                <div>
+                  <div className="font-medium">
+                    Aminal #{aminal.aminalIndex?.toString()}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {Number(aminal.totalLove || 0).toFixed(0)} total love
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Aminals Grid */}
+          <div>
+            <div className="text-sm font-medium mb-3">
+              {isDualSelectionMode ? 'Your Loved Aminals' : 'Select Partner'}
+            </div>
+            {isLoadingAminals ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : !availableAminals || availableAminals.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                {isDualSelectionMode
+                  ? 'No Aminals found. You need to love at least 2 Aminals to breed.'
+                  : 'No available Aminals found.'}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+                {availableAminals.map((aminalOption: any) => {
+                  const selectionState = getSelectionState(aminalOption);
+                  return (
                     <div
                       key={aminalOption.id}
                       className={cn(
                         'border-2 rounded-lg p-2 sm:p-3 cursor-pointer transition-all active:scale-95',
-                        selectedPartner?.id === aminalOption.id
-                          ? 'border-love bg-love/10'
-                          : 'border-border hover:border-love/50'
+                        selectionState === 'first'
+                          ? 'border-primary bg-primary/10'
+                          : selectionState === 'second'
+                            ? 'border-love bg-love/10'
+                            : selectionState === 'selected'
+                              ? 'border-love bg-love/10'
+                              : 'border-border hover:border-muted-foreground'
                       )}
-                      onClick={() => setSelectedPartner(aminalOption)}
+                      onClick={() => handleAminalClick(aminalOption)}
                     >
                       <div className="aspect-square mb-2 bg-secondary rounded-lg overflow-hidden">
                         <AminalVisualImage aminal={aminalOption} />
                       </div>
                       <div className="text-center space-y-1">
                         <div className="text-xs sm:text-sm font-medium truncate">
-                          Aminal #{aminalOption.aminalIndex}
+                          Aminal #{aminalOption.aminalIndex?.toString()}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          {Number(aminalOption.totalLove).toFixed(0)} ❤️
+                          {Number(aminalOption.totalLove).toFixed(0)} love
                         </div>
                       </div>
+                      {selectionState && (
+                        <div className={cn(
+                          'text-xs text-center mt-2 font-medium',
+                          selectionState === 'first' ? 'text-primary' : 'text-love'
+                        )}>
+                          {selectionState === 'first' ? '1st' : selectionState === 'second' ? '2nd' : 'Selected'}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Selected Partner Info */}
-          {selectedPartner && (
-            <div className="bg-love/10 border border-love/30 rounded-lg p-4 mb-4">
-              <h4 className="font-medium text-love mb-2">Selected Partner</h4>
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-card rounded-lg overflow-hidden border border-love/30">
-                  <AminalVisualImage aminal={selectedPartner} />
-                </div>
-                <div>
-                  <div className="font-medium">
-                    Aminal #{selectedPartner.aminalIndex}
-                  </div>
-                  <div className="text-sm text-love">
-                    {selectedPartner.contractAddress}
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Footer */}
         <div className="border-t border-border p-4 sm:p-6 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between shrink-0">
           <div className="text-xs sm:text-sm text-muted-foreground order-2 sm:order-1">
-            Start the gene auction to create offspring with your selected
-            partner
+            {isDualSelectionMode
+              ? 'Select two Aminals to start a gene auction'
+              : 'Select a partner to start a gene auction'}
           </div>
           <div className="flex gap-3 order-1 sm:order-2">
             <Button
@@ -304,9 +426,7 @@ export default function BreedingModal({
             </Button>
             <Button
               onClick={handleBreeding}
-              disabled={
-                !enabled || !selectedPartner || isPending || isConfirming
-              }
+              disabled={!enabled || !canBreed || isPending || isConfirming}
               variant="breed"
               className="flex-1 sm:flex-initial"
             >
