@@ -481,11 +481,21 @@ contract GeneAuction is IAminalStructs, Initializable, Ownable, ReentrancyGuard 
         IAminal aminal1 = IAminal(aminalFactory.getAminalByIndex(auction.aminalOne));
         IAminal aminal2 = IAminal(aminalFactory.getAminalByIndex(auction.aminalTwo));
 
-        // Calculate love to consume: PROPOSE_DESIGN_COST_PERCENTAGE of user's love for each Aminal
+        // Get love values
         uint256 userLove1 = aminal1.getLoveByUser(msg.sender);
         uint256 userLove2 = aminal2.getLoveByUser(msg.sender);
-        uint256 loveToConsume1 = (userLove1 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
-        uint256 loveToConsume2 = (userLove2 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 totalLove1 = aminal1.getTotalLove();
+        uint256 totalLove2 = aminal2.getTotalLove();
+
+        // Validate user has minimum required love (PROPOSE_DESIGN_COST_PERCENTAGE of total love)
+        uint256 minRequired1 = (totalLove1 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
+        uint256 minRequired2 = (totalLove2 * PROPOSE_DESIGN_COST_PERCENTAGE) / PERCENTAGE_BASIS;
+
+        if (userLove1 < minRequired1 || userLove2 < minRequired2) revert InsufficientLove();
+
+        // Calculate love to consume (same as requirement for consistency)
+        uint256 loveToConsume1 = minRequired1;
+        uint256 loveToConsume2 = minRequired2;
 
         // Consume love from user via squeakFrom
         aminal1.squeakFrom(msg.sender, loveToConsume1);

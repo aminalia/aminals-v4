@@ -338,9 +338,9 @@ contract AminalFactory is IAminalFactory, Initializable, Ownable {
 
         if (userLove1 < minRequired1 || userLove2 < minRequired2) revert InsufficientLovePercentage();
 
-        // Calculate love to consume: MIN_LOVE_PERCENTAGE of user's love
-        uint256 loveToConsume1 = (userLove1 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
-        uint256 loveToConsume2 = (userLove2 * MIN_LOVE_PERCENTAGE) / PERCENTAGE_BASIS;
+        // Calculate love to consume: MIN_LOVE_PERCENTAGE of total love (same as requirement check)
+        uint256 loveToConsume1 = minRequired1;
+        uint256 loveToConsume2 = minRequired2;
 
         // Calculate total love investment from caller for both Aminals
         uint256 totalLove = userLove1 + userLove2;

@@ -311,11 +311,11 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         bytes4 selector = bytes4(data);
 
         // Get the cost percentage from the skill contract (e.g., 10 means 10%)
-        uint256 costPercentage;
+        uint256 costPercentage = MIN_LOVE_PERCENTAGE; // Initialize with default
         try ISkill(target).skillCost(data) returns (uint256 cost) {
             costPercentage = cost;
         } catch {
-            // If cost query fails, default to minimum percentage
+            // If cost query fails, use default minimum percentage
             costPercentage = MIN_LOVE_PERCENTAGE;
         }
 
@@ -332,8 +332,8 @@ contract Aminal is IAminalStructs, ERC721, ReentrancyGuard, GeneRenderer {
         // Check if user has the required percentage of total love
         if (lovePerUser[msg.sender] < minLoveRequired) revert InsufficientLove();
 
-        // Calculate actual love to consume (same as minLoveRequired for this model)
-        uint256 loveToConsume = (lovePerUser[msg.sender] * costPercentage) / PERCENTAGE_BASIS;
+        // Calculate actual love to consume (must match minLoveRequired for consistency)
+        uint256 loveToConsume = minLoveRequired;
 
         // Execute the skill with zero ETH value for security
         (bool success,) = target.call{value: 0}(data);

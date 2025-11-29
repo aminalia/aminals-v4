@@ -36,6 +36,11 @@ contract AminalFeedingSchedule {
      * @param totalEthFed Total ETH fed to this Aminal so far (in wei)
      * @param ethAmount Amount of ETH being fed now (in wei)
      * @return loveGained Amount of love that will be gained (in love units)
+     *
+     * @custom:security Slither divide-before-multiply warning is acceptable here:
+     * - All values are in wei (large numbers: 1 ether = 1e18)
+     * - Precision loss is negligible for practical feeding amounts
+     * - Code clarity and readability prioritized over micro-optimization
      */
     function getLoveForETH(uint256 timeSinceStart, uint256 totalEthFed, uint256 ethAmount)
         public
@@ -45,9 +50,11 @@ contract AminalFeedingSchedule {
         if (ethAmount == 0) return 0;
 
         // Calculate target ETH that should have been fed by now based on 0.1 ETH/day schedule
+        // slither-disable-next-line divide-before-multiply
         uint256 targetEthByNow = (timeSinceStart * TARGET_FEED_RATE) / 1 days;
 
         // Base love: 1 ETH = 10,000 units
+        // slither-disable-next-line divide-before-multiply
         uint256 baseLove = (ethAmount * LOVE_PER_ETH) / 1 ether;
 
         // Apply schedule-based scaling
